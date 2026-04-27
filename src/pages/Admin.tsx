@@ -15,6 +15,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Plus, Pencil, Trash2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { ImageUploader } from "@/components/site/ImageUploader";
+import { Separator } from "@/components/ui/separator";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -221,6 +223,15 @@ function PropertyForm({ initial, locations, agents, onClose }: any) {
       </div>
       <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={form.featured} onChange={(e) => setForm({ ...form, featured: e.target.checked })} /> Featured</label>
       <Button type="submit" disabled={saving} className="w-full bg-gradient-warm hover:opacity-95">{saving ? "Saving..." : "Save"}</Button>
+      {initial?.id && (
+        <>
+          <Separator className="my-4" />
+          <div className="space-y-2">
+            <Label>Property images</Label>
+            <ImageUploader propertyId={initial.id} />
+          </div>
+        </>
+      )}
     </form>
   );
 }
