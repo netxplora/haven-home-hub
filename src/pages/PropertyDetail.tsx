@@ -14,6 +14,7 @@ import { formatPrice, propertyTypeLabel, statusLabel, resolveImage } from "@/lib
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
+import { Reviews } from "@/components/site/Reviews";
 
 export default function PropertyDetail() {
   const { slug } = useParams();
@@ -174,6 +175,8 @@ export default function PropertyDetail() {
               </div>
             </div>
           )}
+
+          <Reviews target={{ propertyId: property.id }} />
         </div>
 
         {/* Sidebar */}
