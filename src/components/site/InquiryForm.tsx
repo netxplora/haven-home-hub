@@ -36,10 +36,12 @@ export function InquiryForm({ propertyId, agentId, onSuccess }: Props) {
     setLoading(true);
     const { error } = await supabase.from("inquiries").insert({
       property_id: propertyId,
-      agent_id: agentId ?? null,
-      user_id: user?.id ?? null,
-      ...parsed.data,
-      phone: parsed.data.phone || null,
+      agent_id: agentId ?? undefined,
+      user_id: user?.id ?? undefined,
+      name: parsed.data.name,
+      email: parsed.data.email,
+      message: parsed.data.message,
+      phone: parsed.data.phone || undefined,
     });
     setLoading(false);
     if (error) {

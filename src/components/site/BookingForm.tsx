@@ -39,13 +39,13 @@ export function BookingForm({ propertyId, agentId, onSuccess }: Props) {
     setLoading(true);
     const { error } = await supabase.from("bookings").insert({
       property_id: propertyId,
-      agent_id: agentId ?? null,
-      user_id: user?.id ?? null,
+      agent_id: agentId ?? undefined,
+      user_id: user?.id ?? undefined,
       name: parsed.data.name,
       email: parsed.data.email,
-      phone: parsed.data.phone || null,
+      phone: parsed.data.phone || undefined,
       preferred_date: new Date(parsed.data.preferred_date).toISOString(),
-      notes: parsed.data.notes || null,
+      notes: parsed.data.notes || undefined,
     });
     setLoading(false);
     if (error) {
