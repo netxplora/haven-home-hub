@@ -17,6 +17,7 @@ import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { ImageUploader } from "@/components/site/ImageUploader";
 import { Separator } from "@/components/ui/separator";
+import { formatMoney } from "@/lib/invest";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -44,6 +45,10 @@ export default function Admin() {
             <TabsTrigger value="locations">Locations</TabsTrigger>
             <TabsTrigger value="inquiries">Inquiries</TabsTrigger>
             <TabsTrigger value="bookings">Bookings</TabsTrigger>
+            <TabsTrigger value="invest">Invest</TabsTrigger>
+            <TabsTrigger value="investors">Investors</TabsTrigger>
+            <TabsTrigger value="payouts">Payouts</TabsTrigger>
+            <TabsTrigger value="payments">Payments</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
           <TabsContent value="properties" className="pt-6"><AdminProperties /></TabsContent>
@@ -51,6 +56,10 @@ export default function Admin() {
           <TabsContent value="locations" className="pt-6"><AdminLocations /></TabsContent>
           <TabsContent value="inquiries" className="pt-6"><AdminInquiries /></TabsContent>
           <TabsContent value="bookings" className="pt-6"><AdminBookings /></TabsContent>
+          <TabsContent value="invest" className="pt-6"><AdminInvest /></TabsContent>
+          <TabsContent value="investors" className="pt-6"><AdminInvestors /></TabsContent>
+          <TabsContent value="payouts" className="pt-6"><AdminPayouts /></TabsContent>
+          <TabsContent value="payments" className="pt-6"><AdminPayments /></TabsContent>
           <TabsContent value="users" className="pt-6"><AdminUsers /></TabsContent>
         </Tabs>
       </div>
@@ -458,6 +467,312 @@ function AdminUsers() {
           </Select>
         </div>
       ))}
+    </div>
+  );
+}
+
+/* ===== INVEST ===== */
+function AdminInvest() {
+  const qc = useQueryClient();
+  const [open, setOpen] = useState(false);
+  const [editing, setEditing] = useState<any>(null);
+  const { data = [] } = useQuery({
+    queryKey: ["admin-invest"],
+    queryFn: async () => (await supabase.from("investment_properties").select("*").order("created_at", { ascending: false })).data ?? [],
+  });
+  async function remove(id: string) {
+    if (!confirm("Delete this investment property?")) return;
+    const { error } = await supabase.from("investment_properties").delete().eq("id", id);
+    if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
+    else qc.invalidateQueries({ queryKey: ["admin-invest"] });
+  }
+  return (
+    <div>
+      <div className="mb-4 flex justify-end">
+        <Button onClick={() => { setEditing(null); setOpen(true); }} className="bg-gradient-gold text-[hsl(var(--gold-foreground))] hover:opacity-95">
+          <Plus className="mr-2 h-4 w-4" /> New investment property
+        </Button>
+      </div>
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary/60 text-left">
+            <tr><th className="p-3">Title</th><th className="p-3">Location</th><th className="p-3">Status</th><th className="p-3">Units</th><th className="p-3">Min.</th><th className="p-3 text-right">Actions</th></tr>
+          </thead>
+          <tbody>
+            {data.map((p: any) => (
+              <tr key={p.id} className="border-t border-border">
+                <td className="p-3"><Link to={`/invest/${p.slug}`} className="font-medium hover:text-primary">{p.title}</Link></td>
+                <td className="p-3">{p.location}</td>
+                <td className="p-3"><Badge variant={p.status === "open" ? "default" : "secondary"}>{p.status}</Badge></td>
+                <td className="p-3">{p.units_sold}/{p.total_units}</td>
+                <td className="p-3">{formatMoney(Number(p.min_investment), p.currency)}</td>
+                <td className="p-3 text-right">
+                  <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }}><Pencil className="h-4 w-4" /></Button>
+                  <Button size="icon" variant="ghost" onClick={() => remove(p.id)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-h-[90vh] max-w-2xl overflow-y-auto">
+          <DialogHeader><DialogTitle>{editing ? "Edit investment property" : "New investment property"}</DialogTitle></DialogHeader>
+          <InvestPropForm initial={editing} onClose={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }} />
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
+function InvestPropForm({ initial, onClose }: any) {
+  const [f, setF] = useState(() => ({
+    title: initial?.title ?? "",
+    slug: initial?.slug ?? "",
+    description: initial?.description ?? "",
+    location: initial?.location ?? "",
+    property_type: initial?.property_type ?? "residential",
+    cover_image_url: initial?.cover_image_url ?? "",
+    total_value: initial?.total_value ?? 0,
+    unit_price: initial?.unit_price ?? 500,
+    total_units: initial?.total_units ?? 0,
+    min_investment: initial?.min_investment ?? 500,
+    projected_return_min: initial?.projected_return_min ?? 6,
+    projected_return_max: initial?.projected_return_max ?? 10,
+    estimated_rental_yield: initial?.estimated_rental_yield ?? 7,
+    distribution_frequency: initial?.distribution_frequency ?? "quarterly",
+    holding_period_months: initial?.holding_period_months ?? 48,
+    income_model: initial?.income_model ?? "Rental income distributed to unit holders.",
+    risk_notes: initial?.risk_notes ?? "",
+    status: initial?.status ?? "draft",
+    currency: initial?.currency ?? "USD",
+    featured: initial?.featured ?? false,
+  }));
+  const [saving, setSaving] = useState(false);
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    setSaving(true);
+    const payload: any = {
+      ...f,
+      slug: f.slug || slugify(f.title) + "-" + Math.random().toString(36).slice(2, 6),
+      total_value: Number(f.total_value),
+      unit_price: Number(f.unit_price),
+      total_units: Number(f.total_units),
+      min_investment: Number(f.min_investment),
+      projected_return_min: Number(f.projected_return_min),
+      projected_return_max: Number(f.projected_return_max),
+      estimated_rental_yield: f.estimated_rental_yield === "" ? null : Number(f.estimated_rental_yield),
+      holding_period_months: Number(f.holding_period_months),
+    };
+    const { error } = initial
+      ? await supabase.from("investment_properties").update(payload).eq("id", initial.id)
+      : await supabase.from("investment_properties").insert(payload);
+    setSaving(false);
+    if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "Saved" }); onClose(); }
+  }
+  return (
+    <form onSubmit={save} className="space-y-3">
+      <div className="space-y-1.5"><Label>Title</Label><Input required value={f.title} onChange={(e) => setF({ ...f, title: e.target.value })} /></div>
+      <div className="space-y-1.5"><Label>Description</Label><Textarea rows={3} value={f.description} onChange={(e) => setF({ ...f, description: e.target.value })} /></div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5"><Label>Location</Label><Input required value={f.location} onChange={(e) => setF({ ...f, location: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Property type</Label><Input value={f.property_type} onChange={(e) => setF({ ...f, property_type: e.target.value })} /></div>
+      </div>
+      <div className="space-y-1.5"><Label>Cover image URL</Label><Input value={f.cover_image_url} onChange={(e) => setF({ ...f, cover_image_url: e.target.value })} /></div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5"><Label>Total value</Label><Input type="number" required value={f.total_value} onChange={(e) => setF({ ...f, total_value: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Unit price</Label><Input type="number" required value={f.unit_price} onChange={(e) => setF({ ...f, unit_price: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Total units</Label><Input type="number" required value={f.total_units} onChange={(e) => setF({ ...f, total_units: e.target.value })} /></div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5"><Label>Min. investment</Label><Input type="number" required value={f.min_investment} onChange={(e) => setF({ ...f, min_investment: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Currency</Label><Input value={f.currency} onChange={(e) => setF({ ...f, currency: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Holding (months)</Label><Input type="number" value={f.holding_period_months} onChange={(e) => setF({ ...f, holding_period_months: e.target.value })} /></div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <div className="space-y-1.5"><Label>Projected return min %</Label><Input type="number" step="0.1" value={f.projected_return_min} onChange={(e) => setF({ ...f, projected_return_min: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Projected return max %</Label><Input type="number" step="0.1" value={f.projected_return_max} onChange={(e) => setF({ ...f, projected_return_max: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Rental yield %</Label><Input type="number" step="0.1" value={f.estimated_rental_yield} onChange={(e) => setF({ ...f, estimated_rental_yield: e.target.value })} /></div>
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="space-y-1.5"><Label>Distribution frequency</Label>
+          <Select value={f.distribution_frequency} onValueChange={(v) => setF({ ...f, distribution_frequency: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="monthly">Monthly</SelectItem>
+              <SelectItem value="quarterly">Quarterly</SelectItem>
+              <SelectItem value="semi_annual">Semi-annual</SelectItem>
+              <SelectItem value="annual">Annual</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5"><Label>Status</Label>
+          <Select value={f.status} onValueChange={(v) => setF({ ...f, status: v })}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">Draft</SelectItem>
+              <SelectItem value="open">Open</SelectItem>
+              <SelectItem value="funded">Funded</SelectItem>
+              <SelectItem value="paused">Paused</SelectItem>
+              <SelectItem value="closed">Closed</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="space-y-1.5"><Label>Income model</Label><Textarea rows={2} value={f.income_model} onChange={(e) => setF({ ...f, income_model: e.target.value })} /></div>
+      <div className="space-y-1.5"><Label>Risk notes</Label><Textarea rows={2} value={f.risk_notes} onChange={(e) => setF({ ...f, risk_notes: e.target.value })} /></div>
+      <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={f.featured} onChange={(e) => setF({ ...f, featured: e.target.checked })} /> Featured</label>
+      <Button type="submit" disabled={saving} className="w-full bg-gradient-gold text-[hsl(var(--gold-foreground))] hover:opacity-95">{saving ? "Saving..." : "Save"}</Button>
+    </form>
+  );
+}
+
+/* ===== INVESTORS ===== */
+function AdminInvestors() {
+  const { data = [] } = useQuery({
+    queryKey: ["admin-investors"],
+    queryFn: async () => (await supabase.from("user_investments").select("*, investment_properties(title, slug, currency), profiles(full_name)").order("created_at", { ascending: false })).data ?? [],
+  });
+  return (
+    <div className="overflow-hidden rounded-xl border border-border">
+      <table className="w-full text-sm">
+        <thead className="bg-secondary/60 text-left"><tr><th className="p-3">When</th><th className="p-3">Investor</th><th className="p-3">Property</th><th className="p-3">Units</th><th className="p-3 text-right">Amount</th><th className="p-3">Status</th></tr></thead>
+        <tbody>
+          {data.length === 0 ? <tr><td colSpan={6} className="p-6 text-center text-muted-foreground">No investors yet.</td></tr> : data.map((i: any) => (
+            <tr key={i.id} className="border-t border-border">
+              <td className="p-3">{new Date(i.created_at).toLocaleDateString()}</td>
+              <td className="p-3">{i.profiles?.full_name ?? i.user_id.slice(0,8)}</td>
+              <td className="p-3"><Link to={`/invest/${i.investment_properties?.slug}`} className="hover:text-primary">{i.investment_properties?.title}</Link></td>
+              <td className="p-3">{i.units_owned}</td>
+              <td className="p-3 text-right">{formatMoney(Number(i.amount_invested), i.investment_properties?.currency ?? "USD")}</td>
+              <td className="p-3"><Badge variant={i.status === "confirmed" ? "default" : "secondary"}>{i.status}</Badge></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+/* ===== PAYOUTS ===== */
+function AdminPayouts() {
+  const qc = useQueryClient();
+  const { data: payouts = [] } = useQuery({ queryKey: ["admin-payouts"], queryFn: async () => (await supabase.from("payouts").select("*, investment_properties(title, currency)").order("distribution_date", { ascending: false })).data ?? [] });
+  const { data: props = [] } = useQuery({ queryKey: ["admin-invest-list"], queryFn: async () => (await supabase.from("investment_properties").select("id, title").order("title")).data ?? [] });
+  const [f, setF] = useState({ property_id: "", amount: "", distribution_date: new Date().toISOString().slice(0,10), notes: "" });
+  async function add(e: React.FormEvent) {
+    e.preventDefault();
+    if (!f.property_id) return;
+    // Create payout
+    const { data: payout, error } = await supabase.from("payouts").insert({
+      property_id: f.property_id, amount: Number(f.amount), distribution_date: f.distribution_date, notes: f.notes || null,
+    }).select().single();
+    if (error) { toast({ title: "Failed", description: error.message, variant: "destructive" }); return; }
+    // Distribute pro-rata to confirmed investors
+    const { data: invs } = await supabase.from("user_investments").select("user_id, units_owned").eq("property_id", f.property_id).eq("status", "confirmed");
+    const totalUnits = (invs ?? []).reduce((s: number, r: any) => s + r.units_owned, 0);
+    if (totalUnits > 0) {
+      const rows = (invs ?? []).map((r: any) => ({
+        user_id: r.user_id,
+        property_id: f.property_id,
+        payout_id: payout.id,
+        amount_received: Number(((Number(f.amount) * r.units_owned) / totalUnits).toFixed(2)),
+        distribution_date: f.distribution_date,
+      }));
+      await supabase.from("returns").insert(rows);
+    }
+    setF({ property_id: "", amount: "", distribution_date: new Date().toISOString().slice(0,10), notes: "" });
+    qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+    toast({ title: "Payout recorded and distributed" });
+  }
+  return (
+    <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
+      <div className="overflow-hidden rounded-xl border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary/60 text-left"><tr><th className="p-3">Date</th><th className="p-3">Property</th><th className="p-3 text-right">Amount</th><th className="p-3">Notes</th></tr></thead>
+          <tbody>
+            {payouts.length === 0 ? <tr><td colSpan={4} className="p-6 text-center text-muted-foreground">No payouts yet.</td></tr> : payouts.map((p: any) => (
+              <tr key={p.id} className="border-t border-border">
+                <td className="p-3">{new Date(p.distribution_date).toLocaleDateString()}</td>
+                <td className="p-3">{p.investment_properties?.title}</td>
+                <td className="p-3 text-right">{formatMoney(Number(p.amount), p.investment_properties?.currency ?? "USD")}</td>
+                <td className="p-3 text-muted-foreground">{p.notes ?? "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      <form onSubmit={add} className="space-y-3 rounded-xl border border-border bg-card p-5">
+        <p className="font-serif text-lg font-semibold">Record payout</p>
+        <div className="space-y-1.5"><Label>Property</Label>
+          <Select value={f.property_id} onValueChange={(v) => setF({ ...f, property_id: v })}>
+            <SelectTrigger><SelectValue placeholder="Pick property" /></SelectTrigger>
+            <SelectContent>{props.map((p: any) => <SelectItem key={p.id} value={p.id}>{p.title}</SelectItem>)}</SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-1.5"><Label>Total amount distributed</Label><Input type="number" required value={f.amount} onChange={(e) => setF({ ...f, amount: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Date</Label><Input type="date" value={f.distribution_date} onChange={(e) => setF({ ...f, distribution_date: e.target.value })} /></div>
+        <div className="space-y-1.5"><Label>Notes</Label><Textarea rows={2} value={f.notes} onChange={(e) => setF({ ...f, notes: e.target.value })} /></div>
+        <Button type="submit" className="w-full bg-gradient-gold text-[hsl(var(--gold-foreground))] hover:opacity-95">Record & distribute</Button>
+        <p className="text-xs text-muted-foreground">Amount is distributed pro-rata to confirmed investors by units held.</p>
+      </form>
+    </div>
+  );
+}
+
+/* ===== PAYMENTS ===== */
+function AdminPayments() {
+  const qc = useQueryClient();
+  const [status, setStatus] = useState("all");
+  const [type, setType] = useState("all");
+  const { data = [] } = useQuery({
+    queryKey: ["admin-payments", status, type],
+    queryFn: async () => {
+      let q = supabase.from("payments").select("*").order("created_at", { ascending: false }).limit(500);
+      if (status !== "all") q = q.eq("status", status as any);
+      if (type !== "all") q = q.eq("payment_type", type as any);
+      return (await q).data ?? [];
+    },
+  });
+  async function mark(id: string, action: "success" | "failed") {
+    const { error } = await supabase.functions.invoke("verify-payment", { body: { payment_id: id, action } });
+    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+    else { toast({ title: `Marked ${action}` }); qc.invalidateQueries({ queryKey: ["admin-payments"] }); }
+  }
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap gap-3">
+        <Select value={status} onValueChange={setStatus}>
+          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All statuses</SelectItem><SelectItem value="pending">Pending</SelectItem><SelectItem value="processing">Processing</SelectItem><SelectItem value="success">Success</SelectItem><SelectItem value="failed">Failed</SelectItem></SelectContent>
+        </Select>
+        <Select value={type} onValueChange={setType}>
+          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectContent><SelectItem value="all">All types</SelectItem><SelectItem value="investment">Investment</SelectItem><SelectItem value="booking">Booking</SelectItem><SelectItem value="reservation">Reservation</SelectItem></SelectContent>
+        </Select>
+      </div>
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="w-full text-sm">
+          <thead className="bg-secondary/60 text-left"><tr><th className="p-3">When</th><th className="p-3">Reference</th><th className="p-3">Type</th><th className="p-3">Method</th><th className="p-3">Status</th><th className="p-3 text-right">Amount</th><th className="p-3 text-right">Actions</th></tr></thead>
+          <tbody>
+            {data.length === 0 ? <tr><td colSpan={7} className="p-6 text-center text-muted-foreground">No payments.</td></tr> : data.map((p: any) => (
+              <tr key={p.id} className="border-t border-border">
+                <td className="p-3">{new Date(p.created_at).toLocaleString()}</td>
+                <td className="p-3 font-mono text-xs">{p.reference}</td>
+                <td className="p-3 capitalize">{p.payment_type}</td>
+                <td className="p-3 capitalize">{p.provider.replace("_"," ")}</td>
+                <td className="p-3"><Badge variant={p.status === "success" ? "default" : p.status === "failed" ? "destructive" : "secondary"}>{p.status}</Badge></td>
+                <td className="p-3 text-right">{formatMoney(Number(p.amount), p.currency)}</td>
+                <td className="p-3 text-right">
+                  {p.status !== "success" && <Button size="sm" variant="outline" onClick={() => mark(p.id, "success")}>Verify</Button>}
+                  {" "}{p.status !== "failed" && <Button size="sm" variant="ghost" onClick={() => mark(p.id, "failed")}>Reject</Button>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }
