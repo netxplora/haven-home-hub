@@ -40,7 +40,7 @@ export default function InvestDetail() {
 
   const pct = fundingPercent(data);
   const avail = availableUnits(data);
-  const units = useMemo(() => unitsForAmount(Number(amount || 0), Number(data.unit_price)), [amount, data.unit_price]);
+  const units = unitsForAmount(Number(amount || 0), Number(data.unit_price));
   const minOk = Number(amount || 0) >= Number(data.min_investment);
   const unitsOk = units > 0 && units <= avail;
   const canInvest = minOk && unitsOk;
