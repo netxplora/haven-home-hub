@@ -33,16 +33,30 @@ export default function Dashboard() {
             <TabsTrigger value="saved">Saved</TabsTrigger>
             <TabsTrigger value="inquiries">Inquiries</TabsTrigger>
             <TabsTrigger value="bookings">Inspections</TabsTrigger>
+            <TabsTrigger value="investments">Investments</TabsTrigger>
             <TabsTrigger value="profile">Profile</TabsTrigger>
           </TabsList>
 
           <TabsContent value="saved" className="pt-6"><Saved userId={user.id} /></TabsContent>
           <TabsContent value="inquiries" className="pt-6"><Inquiries userId={user.id} /></TabsContent>
           <TabsContent value="bookings" className="pt-6"><Bookings userId={user.id} /></TabsContent>
+          <TabsContent value="investments" className="pt-6"><InvestmentsPanel /></TabsContent>
           <TabsContent value="profile" className="pt-6"><Profile userId={user.id} /></TabsContent>
         </Tabs>
       </div>
     </SiteLayout>
+  );
+}
+
+function InvestmentsPanel() {
+  return (
+    <div className="rounded-2xl border border-border bg-card p-8 text-center shadow-soft">
+      <p className="font-serif text-2xl">Your investment portfolio</p>
+      <p className="mt-2 text-sm text-muted-foreground">Track investments, returns and payouts in one place.</p>
+      <Button asChild className="mt-5 bg-gradient-gold text-[hsl(var(--gold-foreground))] hover:opacity-95">
+        <Link to="/invest/portfolio">Open portfolio</Link>
+      </Button>
+    </div>
   );
 }
 
