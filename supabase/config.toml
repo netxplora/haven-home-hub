@@ -1,1 +1,10 @@
 project_id = "eokfgjpurqdhknhnzpya"
+
+[functions.paystack-webhook]
+verify_jwt = false
+
+[functions.flutterwave-webhook]
+verify_jwt = false
+
+[functions.nowpayments-webhook]
+verify_jwt = false

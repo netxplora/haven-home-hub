@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowRight, ShieldCheck, Sparkles, TrendingUp, Users } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -171,6 +171,28 @@ export default function Home() {
               <p className="mt-3 text-sm text-foreground/80">{a.bio}</p>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Invest CTA */}
+      <section className="container-wide pb-20">
+        <div className="relative overflow-hidden rounded-3xl border border-border bg-gradient-to-br from-foreground to-foreground/90 p-10 text-primary-foreground shadow-lux sm:p-14">
+          <div className="grid gap-6 md:grid-cols-[1fr_auto] md:items-center">
+            <div>
+              <p className="inline-flex items-center gap-2 text-xs font-medium tracking-wider uppercase text-[hsl(var(--gold-soft))]">
+                <TrendingUp className="h-3 w-3" /> New · Fractional Ownership
+              </p>
+              <h2 className="mt-3 font-serif text-3xl font-semibold sm:text-4xl">
+                Invest in real estate from any amount.
+              </h2>
+              <p className="mt-3 max-w-2xl text-primary-foreground/80">
+                Co-invest in professionally managed, income-generating properties and track your returns from one clean portfolio.
+              </p>
+            </div>
+            <Button asChild size="lg" className="bg-gradient-gold text-[hsl(var(--gold-foreground))] hover:opacity-95">
+              <Link to="/invest">Explore Invest <ArrowRight className="ml-1 h-4 w-4" /></Link>
+            </Button>
+          </div>
         </div>
       </section>
     </SiteLayout>

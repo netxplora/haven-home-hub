@@ -176,6 +176,122 @@ export type Database = {
           },
         ]
       }
+      investment_properties: {
+        Row: {
+          cover_image_url: string | null
+          created_at: string
+          currency: string
+          description: string
+          distribution_frequency: Database["public"]["Enums"]["distribution_frequency"]
+          estimated_rental_yield: number | null
+          featured: boolean
+          holding_period_months: number
+          id: string
+          income_model: string
+          location: string
+          min_investment: number
+          projected_return_max: number
+          projected_return_min: number
+          property_type: string
+          risk_notes: string
+          slug: string
+          status: Database["public"]["Enums"]["investment_status"]
+          title: string
+          total_units: number
+          total_value: number
+          unit_price: number
+          units_sold: number
+          updated_at: string
+        }
+        Insert: {
+          cover_image_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string
+          distribution_frequency?: Database["public"]["Enums"]["distribution_frequency"]
+          estimated_rental_yield?: number | null
+          featured?: boolean
+          holding_period_months?: number
+          id?: string
+          income_model?: string
+          location: string
+          min_investment: number
+          projected_return_max?: number
+          projected_return_min?: number
+          property_type?: string
+          risk_notes?: string
+          slug: string
+          status?: Database["public"]["Enums"]["investment_status"]
+          title: string
+          total_units: number
+          total_value: number
+          unit_price: number
+          units_sold?: number
+          updated_at?: string
+        }
+        Update: {
+          cover_image_url?: string | null
+          created_at?: string
+          currency?: string
+          description?: string
+          distribution_frequency?: Database["public"]["Enums"]["distribution_frequency"]
+          estimated_rental_yield?: number | null
+          featured?: boolean
+          holding_period_months?: number
+          id?: string
+          income_model?: string
+          location?: string
+          min_investment?: number
+          projected_return_max?: number
+          projected_return_min?: number
+          property_type?: string
+          risk_notes?: string
+          slug?: string
+          status?: Database["public"]["Enums"]["investment_status"]
+          title?: string
+          total_units?: number
+          total_value?: number
+          unit_price?: number
+          units_sold?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      investment_property_images: {
+        Row: {
+          created_at: string
+          id: string
+          is_cover: boolean
+          property_id: string
+          sort_order: number
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          property_id: string
+          sort_order?: number
+          url: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_cover?: boolean
+          property_id?: string
+          sort_order?: number
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "investment_property_images_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "investment_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       locations: {
         Row: {
           created_at: string
@@ -202,6 +318,107 @@ export type Database = {
           slug?: string
         }
         Relationships: []
+      }
+      payments: {
+        Row: {
+          amount: number
+          booking_id: string | null
+          created_at: string
+          crypto_address: string | null
+          crypto_amount: number | null
+          crypto_currency: string | null
+          currency: string
+          external_reference: string | null
+          id: string
+          investment_id: string | null
+          investment_property_id: string | null
+          metadata: Json
+          payment_type: Database["public"]["Enums"]["payment_type"]
+          property_id: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          reference: string
+          status: Database["public"]["Enums"]["payment_status"]
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          amount: number
+          booking_id?: string | null
+          created_at?: string
+          crypto_address?: string | null
+          crypto_amount?: number | null
+          crypto_currency?: string | null
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          investment_id?: string | null
+          investment_property_id?: string | null
+          metadata?: Json
+          payment_type: Database["public"]["Enums"]["payment_type"]
+          property_id?: string | null
+          provider: Database["public"]["Enums"]["payment_provider"]
+          reference: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          amount?: number
+          booking_id?: string | null
+          created_at?: string
+          crypto_address?: string | null
+          crypto_amount?: number | null
+          crypto_currency?: string | null
+          currency?: string
+          external_reference?: string | null
+          id?: string
+          investment_id?: string | null
+          investment_property_id?: string | null
+          metadata?: Json
+          payment_type?: Database["public"]["Enums"]["payment_type"]
+          property_id?: string | null
+          provider?: Database["public"]["Enums"]["payment_provider"]
+          reference?: string
+          status?: Database["public"]["Enums"]["payment_status"]
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      payouts: {
+        Row: {
+          amount: number
+          created_at: string
+          distribution_date: string
+          id: string
+          notes: string | null
+          property_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          distribution_date: string
+          id?: string
+          notes?: string | null
+          property_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          distribution_date?: string
+          id?: string
+          notes?: string | null
+          property_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payouts_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "investment_properties"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -349,6 +566,51 @@ export type Database = {
           },
         ]
       }
+      returns: {
+        Row: {
+          amount_received: number
+          created_at: string
+          distribution_date: string
+          id: string
+          payout_id: string | null
+          property_id: string
+          user_id: string
+        }
+        Insert: {
+          amount_received: number
+          created_at?: string
+          distribution_date: string
+          id?: string
+          payout_id?: string | null
+          property_id: string
+          user_id: string
+        }
+        Update: {
+          amount_received?: number
+          created_at?: string
+          distribution_date?: string
+          id?: string
+          payout_id?: string | null
+          property_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "returns_payout_id_fkey"
+            columns: ["payout_id"]
+            isOneToOne: false
+            referencedRelation: "payouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "returns_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "investment_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reviews: {
         Row: {
           agent_id: string | null
@@ -429,6 +691,50 @@ export type Database = {
           },
         ]
       }
+      user_investments: {
+        Row: {
+          amount_invested: number
+          created_at: string
+          id: string
+          payment_id: string | null
+          property_id: string
+          status: Database["public"]["Enums"]["user_investment_status"]
+          units_owned: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount_invested: number
+          created_at?: string
+          id?: string
+          payment_id?: string | null
+          property_id: string
+          status?: Database["public"]["Enums"]["user_investment_status"]
+          units_owned: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount_invested?: number
+          created_at?: string
+          id?: string
+          payment_id?: string | null
+          property_id?: string
+          status?: Database["public"]["Enums"]["user_investment_status"]
+          units_owned?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_investments_property_id_fkey"
+            columns: ["property_id"]
+            isOneToOne: false
+            referencedRelation: "investment_properties"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -455,6 +761,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      allocate_investment_units: {
+        Args: { _property_id: string; _units: number }
+        Returns: boolean
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -462,13 +772,28 @@ export type Database = {
         }
         Returns: boolean
       }
+      release_investment_units: {
+        Args: { _property_id: string; _units: number }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "agent" | "user"
       booking_status: "pending" | "confirmed" | "completed" | "cancelled"
+      distribution_frequency: "monthly" | "quarterly" | "semi_annual" | "annual"
       inquiry_status: "new" | "in_progress" | "resolved" | "closed"
+      investment_status: "draft" | "open" | "funded" | "closed" | "paused"
+      payment_provider: "paystack" | "flutterwave" | "crypto" | "manual_bank"
+      payment_status:
+        | "pending"
+        | "processing"
+        | "success"
+        | "failed"
+        | "refunded"
+      payment_type: "booking" | "reservation" | "investment"
       property_status: "available" | "reserved" | "sold"
       property_type: "buy" | "rent" | "land"
+      user_investment_status: "pending" | "confirmed" | "cancelled" | "refunded"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -598,9 +923,21 @@ export const Constants = {
     Enums: {
       app_role: ["admin", "agent", "user"],
       booking_status: ["pending", "confirmed", "completed", "cancelled"],
+      distribution_frequency: ["monthly", "quarterly", "semi_annual", "annual"],
       inquiry_status: ["new", "in_progress", "resolved", "closed"],
+      investment_status: ["draft", "open", "funded", "closed", "paused"],
+      payment_provider: ["paystack", "flutterwave", "crypto", "manual_bank"],
+      payment_status: [
+        "pending",
+        "processing",
+        "success",
+        "failed",
+        "refunded",
+      ],
+      payment_type: ["booking", "reservation", "investment"],
       property_status: ["available", "reserved", "sold"],
       property_type: ["buy", "rent", "land"],
+      user_investment_status: ["pending", "confirmed", "cancelled", "refunded"],
     },
   },
 } as const

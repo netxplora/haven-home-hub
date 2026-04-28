@@ -29,6 +29,11 @@
     --accent: 142 30% 28%;             /* forest green */
     --accent-foreground: 36 50% 98%;
 
+    /* Gold accent for Invest / premium surfaces */
+    --gold: 38 58% 48%;
+    --gold-foreground: 24 14% 14%;
+    --gold-soft: 42 60% 88%;
+
     --muted: 34 25% 93%;
     --muted-foreground: 24 8% 40%;
 
@@ -45,11 +50,15 @@
     --gradient-warm: linear-gradient(135deg, hsl(14 65% 42%) 0%, hsl(18 78% 56%) 100%);
     --gradient-hero: linear-gradient(180deg, hsl(24 14% 14% / 0.55) 0%, hsl(24 14% 14% / 0.25) 50%, hsl(24 14% 14% / 0.65) 100%);
     --gradient-soft: linear-gradient(180deg, hsl(38 33% 97%) 0%, hsl(36 30% 92%) 100%);
+    --gradient-gold: linear-gradient(135deg, hsl(38 58% 48%) 0%, hsl(42 72% 62%) 100%);
+    --gradient-invest: linear-gradient(180deg, hsl(24 14% 12% / 0.75) 0%, hsl(24 14% 14% / 0.35) 50%, hsl(24 14% 14% / 0.8) 100%);
 
     /* Shadows */
     --shadow-soft: 0 2px 12px -4px hsl(24 14% 14% / 0.08);
     --shadow-warm: 0 12px 40px -16px hsl(14 65% 42% / 0.35);
     --shadow-card: 0 4px 20px -8px hsl(24 14% 14% / 0.12);
+    --shadow-gold: 0 12px 40px -16px hsl(38 58% 48% / 0.35);
+    --shadow-lux: 0 20px 60px -24px hsl(24 14% 14% / 0.22);
 
     /* Sidebar (admin) */
     --sidebar-background: 36 40% 99%;

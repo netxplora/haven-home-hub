@@ -13,6 +13,11 @@ import Dashboard from "./pages/Dashboard";
 import AgentDashboard from "./pages/AgentDashboard";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
+import InvestHome from "./pages/invest/InvestHome";
+import InvestOpportunities from "./pages/invest/InvestOpportunities";
+import InvestDetail from "./pages/invest/InvestDetail";
+import InvestPortfolio from "./pages/invest/InvestPortfolio";
+import PaymentStatus from "./pages/PaymentStatus";
 
 const queryClient = new QueryClient();
 
@@ -32,6 +37,11 @@ const App = () => (
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/agent" element={<AgentDashboard />} />
             <Route path="/admin" element={<Admin />} />
+            <Route path="/invest" element={<InvestHome />} />
+            <Route path="/invest/opportunities" element={<InvestOpportunities />} />
+            <Route path="/invest/portfolio" element={<InvestPortfolio />} />
+            <Route path="/invest/:slug" element={<InvestDetail />} />
+            <Route path="/payments/:id" element={<PaymentStatus />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
