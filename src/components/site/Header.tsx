@@ -14,6 +14,7 @@ const nav = [
   { to: "/properties?type=buy", label: "Buy" },
   { to: "/properties?type=rent", label: "Rent" },
   { to: "/properties?type=land", label: "Land" },
+  { to: "/invest", label: "Invest" },
   { to: "/agents", label: "Agents" },
 ];
 
