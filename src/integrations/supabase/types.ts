@@ -319,6 +319,42 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          body: string
+          created_at: string
+          id: string
+          link: string | null
+          metadata: Json
+          read_at: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Insert: {
+          body?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json
+          read_at?: string | null
+          title: string
+          type: Database["public"]["Enums"]["notification_type"]
+          user_id: string
+        }
+        Update: {
+          body?: string
+          created_at?: string
+          id?: string
+          link?: string | null
+          metadata?: Json
+          read_at?: string | null
+          title?: string
+          type?: Database["public"]["Enums"]["notification_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           amount: number
@@ -756,6 +792,72 @@ export type Database = {
         }
         Relationships: []
       }
+      withdrawal_requests: {
+        Row: {
+          admin_notes: string | null
+          amount: number
+          bank_account_name: string | null
+          bank_account_number: string | null
+          bank_name: string | null
+          completed_at: string | null
+          created_at: string
+          crypto_address: string | null
+          crypto_currency: string | null
+          currency: string
+          id: string
+          method: Database["public"]["Enums"]["withdrawal_method"]
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["withdrawal_status"]
+          transaction_reference: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          amount: number
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          crypto_address?: string | null
+          crypto_currency?: string | null
+          currency?: string
+          id?: string
+          method: Database["public"]["Enums"]["withdrawal_method"]
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          transaction_reference?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_notes?: string | null
+          amount?: number
+          bank_account_name?: string | null
+          bank_account_number?: string | null
+          bank_name?: string | null
+          completed_at?: string | null
+          created_at?: string
+          crypto_address?: string | null
+          crypto_currency?: string | null
+          currency?: string
+          id?: string
+          method?: Database["public"]["Enums"]["withdrawal_method"]
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["withdrawal_status"]
+          transaction_reference?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -764,6 +866,17 @@ export type Database = {
       allocate_investment_units: {
         Args: { _property_id: string; _units: number }
         Returns: boolean
+      }
+      create_notification: {
+        Args: {
+          _body?: string
+          _link?: string
+          _metadata?: Json
+          _title: string
+          _type: Database["public"]["Enums"]["notification_type"]
+          _user_id: string
+        }
+        Returns: string
       }
       has_role: {
         Args: {
@@ -776,6 +889,7 @@ export type Database = {
         Args: { _property_id: string; _units: number }
         Returns: undefined
       }
+      user_available_balance: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "agent" | "user"
@@ -783,6 +897,17 @@ export type Database = {
       distribution_frequency: "monthly" | "quarterly" | "semi_annual" | "annual"
       inquiry_status: "new" | "in_progress" | "resolved" | "closed"
       investment_status: "draft" | "open" | "funded" | "closed" | "paused"
+      notification_type:
+        | "payment_confirmed"
+        | "payment_failed"
+        | "investment_confirmed"
+        | "booking_confirmed"
+        | "payout_received"
+        | "withdrawal_submitted"
+        | "withdrawal_approved"
+        | "withdrawal_rejected"
+        | "withdrawal_completed"
+        | "system"
       payment_provider: "paystack" | "flutterwave" | "crypto" | "manual_bank"
       payment_status:
         | "pending"
@@ -794,6 +919,14 @@ export type Database = {
       property_status: "available" | "reserved" | "sold"
       property_type: "buy" | "rent" | "land"
       user_investment_status: "pending" | "confirmed" | "cancelled" | "refunded"
+      withdrawal_method: "bank_transfer" | "crypto"
+      withdrawal_status:
+        | "pending"
+        | "approved"
+        | "processing"
+        | "completed"
+        | "rejected"
+        | "failed"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -926,6 +1059,18 @@ export const Constants = {
       distribution_frequency: ["monthly", "quarterly", "semi_annual", "annual"],
       inquiry_status: ["new", "in_progress", "resolved", "closed"],
       investment_status: ["draft", "open", "funded", "closed", "paused"],
+      notification_type: [
+        "payment_confirmed",
+        "payment_failed",
+        "investment_confirmed",
+        "booking_confirmed",
+        "payout_received",
+        "withdrawal_submitted",
+        "withdrawal_approved",
+        "withdrawal_rejected",
+        "withdrawal_completed",
+        "system",
+      ],
       payment_provider: ["paystack", "flutterwave", "crypto", "manual_bank"],
       payment_status: [
         "pending",
@@ -938,6 +1083,15 @@ export const Constants = {
       property_status: ["available", "reserved", "sold"],
       property_type: ["buy", "rent", "land"],
       user_investment_status: ["pending", "confirmed", "cancelled", "refunded"],
+      withdrawal_method: ["bank_transfer", "crypto"],
+      withdrawal_status: [
+        "pending",
+        "approved",
+        "processing",
+        "completed",
+        "rejected",
+        "failed",
+      ],
     },
   },
 } as const

@@ -1,5 +1,5 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Home, Menu, User as UserIcon, LogOut, LayoutDashboard, Shield } from "lucide-react";
+import { Menu, User as UserIcon, LogOut, LayoutDashboard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -9,6 +9,8 @@ import {
 import {
   Sheet, SheetContent, SheetTrigger,
 } from "@/components/ui/sheet";
+import { NotificationBell } from "@/components/site/NotificationBell";
+import logo from "@/assets/logo-emerald.png";
 
 const nav = [
   { to: "/properties?type=buy", label: "Buy" },
@@ -25,11 +27,8 @@ export function Header() {
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
       <div className="container-wide flex h-16 items-center justify-between gap-4">
-        <Link to="/" className="flex items-center gap-2 font-serif text-xl font-semibold text-foreground">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-gradient-warm text-primary-foreground shadow-warm">
-            <Home className="h-4 w-4" />
-          </span>
-          Warm Estate
+        <Link to="/" className="flex items-center" aria-label="Verdant Estate home">
+          <img src={logo} alt="Verdant Estate" width={144} height={48} className="h-9 w-auto" />
         </Link>
 
         <nav className="hidden items-center gap-7 md:flex">
@@ -50,7 +49,9 @@ export function Header() {
 
         <div className="hidden items-center gap-2 md:flex">
           {user ? (
-            <DropdownMenu>
+            <>
+              <NotificationBell />
+              <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2">
                   <UserIcon className="h-4 w-4" />
@@ -78,7 +79,8 @@ export function Header() {
                   <LogOut className="mr-2 h-4 w-4" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
-            </DropdownMenu>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>

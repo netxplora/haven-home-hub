@@ -49,6 +49,7 @@ export default function Admin() {
             <TabsTrigger value="investors">Investors</TabsTrigger>
             <TabsTrigger value="payouts">Payouts</TabsTrigger>
             <TabsTrigger value="payments">Payments</TabsTrigger>
+            <TabsTrigger value="withdrawals">Withdrawals</TabsTrigger>
             <TabsTrigger value="users">Users</TabsTrigger>
           </TabsList>
           <TabsContent value="properties" className="pt-6"><AdminProperties /></TabsContent>
@@ -60,6 +61,7 @@ export default function Admin() {
           <TabsContent value="investors" className="pt-6"><AdminInvestors /></TabsContent>
           <TabsContent value="payouts" className="pt-6"><AdminPayouts /></TabsContent>
           <TabsContent value="payments" className="pt-6"><AdminPayments /></TabsContent>
+          <TabsContent value="withdrawals" className="pt-6"><AdminWithdrawals /></TabsContent>
           <TabsContent value="users" className="pt-6"><AdminUsers /></TabsContent>
         </Tabs>
       </div>
@@ -772,6 +774,79 @@ function AdminPayments() {
             ))}
           </tbody>
         </table>
+      </div>
+    </div>
+  );
+}
+
+/* ===== WITHDRAWALS ===== */
+function AdminWithdrawals() {
+  const qc = useQueryClient();
+  const [statusF, setStatusF] = useState("all");
+  const { data = [] } = useQuery({
+    queryKey: ["admin-withdrawals", statusF],
+    queryFn: async () => {
+      let q = supabase.from("withdrawal_requests").select("*, profiles(full_name)").order("created_at", { ascending: false }).limit(500);
+      if (statusF !== "all") q = q.eq("status", statusF as any);
+      return (await q).data ?? [];
+    },
+  });
+  async function act(id: string, action: "approve" | "reject" | "complete" | "fail", extra: Record<string, string> = {}) {
+    const { error } = await supabase.functions.invoke("manage-withdrawal", { body: { withdrawal_id: id, action, ...extra } });
+    if (error) toast({ title: "Failed", description: error.message, variant: "destructive" });
+    else { toast({ title: `Marked ${action}` }); qc.invalidateQueries({ queryKey: ["admin-withdrawals"] }); }
+  }
+  return (
+    <div className="space-y-4">
+      <Select value={statusF} onValueChange={setStatusF}>
+        <SelectTrigger className="w-[180px]"><SelectValue /></SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">All statuses</SelectItem>
+          <SelectItem value="pending">Pending</SelectItem>
+          <SelectItem value="approved">Approved</SelectItem>
+          <SelectItem value="completed">Completed</SelectItem>
+          <SelectItem value="rejected">Rejected</SelectItem>
+          <SelectItem value="failed">Failed</SelectItem>
+        </SelectContent>
+      </Select>
+      <div className="space-y-3">
+        {data.length === 0 && <p className="text-sm text-muted-foreground">No withdrawal requests.</p>}
+        {data.map((w: any) => (
+          <div key={w.id} className="rounded-xl border border-border bg-card p-5">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="font-serif text-lg font-semibold">{formatMoney(Number(w.amount), w.currency)}</p>
+                <p className="text-xs text-muted-foreground">
+                  {w.profiles?.full_name ?? w.user_id.slice(0,8)} · {w.method.replace("_"," ")} · {new Date(w.created_at).toLocaleString()}
+                </p>
+                {w.method === "bank_transfer" ? (
+                  <p className="mt-2 text-sm">{w.bank_name} · {w.bank_account_name} · <span className="font-mono">{w.bank_account_number}</span></p>
+                ) : (
+                  <p className="mt-2 text-sm">{w.crypto_currency}: <span className="font-mono text-xs break-all">{w.crypto_address}</span></p>
+                )}
+                {w.transaction_reference && <p className="mt-1 text-xs text-muted-foreground">Tx ref: {w.transaction_reference}</p>}
+                {w.rejection_reason && <p className="mt-1 text-xs text-destructive">Reason: {w.rejection_reason}</p>}
+              </div>
+              <div className="flex flex-col items-end gap-2">
+                <Badge variant={w.status === "completed" ? "default" : w.status === "rejected" || w.status === "failed" ? "destructive" : "secondary"}>{w.status}</Badge>
+                <div className="flex flex-wrap gap-2">
+                  {w.status === "pending" && (
+                    <>
+                      <Button size="sm" onClick={() => act(w.id, "approve")} className="bg-gradient-warm hover:opacity-95">Approve</Button>
+                      <Button size="sm" variant="outline" onClick={() => { const r = prompt("Reason for rejection?"); if (r) act(w.id, "reject", { rejection_reason: r }); }}>Reject</Button>
+                    </>
+                  )}
+                  {w.status === "approved" && (
+                    <>
+                      <Button size="sm" onClick={() => { const ref = prompt("Transaction reference / tx hash?") ?? ""; act(w.id, "complete", { transaction_reference: ref }); }} className="bg-gradient-warm hover:opacity-95">Mark paid</Button>
+                      <Button size="sm" variant="outline" onClick={() => { const r = prompt("Failure reason?") ?? ""; act(w.id, "fail", { rejection_reason: r }); }}>Mark failed</Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );

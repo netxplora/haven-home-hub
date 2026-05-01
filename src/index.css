@@ -19,14 +19,14 @@
     --popover-foreground: 24 14% 14%;
 
     /* Brand */
-    --primary: 14 65% 42%;             /* deep terracotta */
+    --primary: 158 72% 28%;            /* deep emerald */
     --primary-foreground: 36 50% 98%;
-    --primary-glow: 18 78% 56%;        /* warmer terracotta */
+    --primary-glow: 152 58% 42%;       /* lighter emerald */
 
     --secondary: 36 30% 92%;           /* light sand */
     --secondary-foreground: 24 14% 14%;
 
-    --accent: 142 30% 28%;             /* forest green */
+    --accent: 158 72% 28%;             /* emerald accent */
     --accent-foreground: 36 50% 98%;
 
     /* Gold accent for Invest / premium surfaces */
@@ -42,12 +42,12 @@
 
     --border: 30 20% 86%;
     --input: 30 20% 86%;
-    --ring: 14 65% 42%;
+    --ring: 158 72% 28%;
 
     --radius: 0.75rem;
 
     /* Gradients */
-    --gradient-warm: linear-gradient(135deg, hsl(14 65% 42%) 0%, hsl(18 78% 56%) 100%);
+    --gradient-warm: linear-gradient(135deg, hsl(158 72% 28%) 0%, hsl(152 58% 42%) 100%);
     --gradient-hero: linear-gradient(180deg, hsl(24 14% 14% / 0.55) 0%, hsl(24 14% 14% / 0.25) 50%, hsl(24 14% 14% / 0.65) 100%);
     --gradient-soft: linear-gradient(180deg, hsl(38 33% 97%) 0%, hsl(36 30% 92%) 100%);
     --gradient-gold: linear-gradient(135deg, hsl(38 58% 48%) 0%, hsl(42 72% 62%) 100%);
@@ -55,7 +55,7 @@
 
     /* Shadows */
     --shadow-soft: 0 2px 12px -4px hsl(24 14% 14% / 0.08);
-    --shadow-warm: 0 12px 40px -16px hsl(14 65% 42% / 0.35);
+    --shadow-warm: 0 12px 40px -16px hsl(158 72% 28% / 0.30);
     --shadow-card: 0 4px 20px -8px hsl(24 14% 14% / 0.12);
     --shadow-gold: 0 12px 40px -16px hsl(38 58% 48% / 0.35);
     --shadow-lux: 0 20px 60px -24px hsl(24 14% 14% / 0.22);
@@ -63,12 +63,12 @@
     /* Sidebar (admin) */
     --sidebar-background: 36 40% 99%;
     --sidebar-foreground: 24 14% 14%;
-    --sidebar-primary: 14 65% 42%;
+    --sidebar-primary: 158 72% 28%;
     --sidebar-primary-foreground: 36 50% 98%;
     --sidebar-accent: 36 30% 92%;
     --sidebar-accent-foreground: 24 14% 14%;
     --sidebar-border: 30 20% 86%;
-    --sidebar-ring: 14 65% 42%;
+    --sidebar-ring: 158 72% 28%;
   }
 
   .dark {
@@ -78,12 +78,12 @@
     --card-foreground: 36 30% 95%;
     --popover: 24 14% 13%;
     --popover-foreground: 36 30% 95%;
-    --primary: 18 78% 56%;
+    --primary: 152 58% 48%;
     --primary-foreground: 24 14% 10%;
-    --primary-glow: 14 65% 50%;
+    --primary-glow: 158 72% 38%;
     --secondary: 24 14% 18%;
     --secondary-foreground: 36 30% 95%;
-    --accent: 142 30% 38%;
+    --accent: 152 58% 48%;
     --accent-foreground: 36 30% 95%;
     --muted: 24 14% 18%;
     --muted-foreground: 30 10% 65%;
@@ -91,15 +91,15 @@
     --destructive-foreground: 36 30% 95%;
     --border: 24 14% 22%;
     --input: 24 14% 22%;
-    --ring: 18 78% 56%;
+    --ring: 152 58% 48%;
     --sidebar-background: 24 14% 13%;
     --sidebar-foreground: 36 30% 95%;
-    --sidebar-primary: 18 78% 56%;
+    --sidebar-primary: 152 58% 48%;
     --sidebar-primary-foreground: 24 14% 10%;
     --sidebar-accent: 24 14% 18%;
     --sidebar-accent-foreground: 36 30% 95%;
     --sidebar-border: 24 14% 22%;
-    --sidebar-ring: 18 78% 56%;
+    --sidebar-ring: 152 58% 48%;
   }
 }
 

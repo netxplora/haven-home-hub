@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft, Building2, CalendarClock, ChartLine, Coins, MapPin, ShieldAlert, Wallet } from "lucide-react";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { resolveImage } from "@/lib/format";
 import { availableUnits, formatMoney, fundingPercent, unitsForAmount, type InvestmentProperty } from "@/lib/invest";
 import { useAuth } from "@/hooks/useAuth";
@@ -19,6 +20,7 @@ export default function InvestDetail() {
   const { user } = useAuth();
   const [open, setOpen] = useState(false);
   const [amount, setAmount] = useState<string>("");
+  const [riskAck, setRiskAck] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["invest-detail", slug],
@@ -43,7 +45,7 @@ export default function InvestDetail() {
   const units = unitsForAmount(Number(amount || 0), Number(data.unit_price));
   const minOk = Number(amount || 0) >= Number(data.min_investment);
   const unitsOk = units > 0 && units <= avail;
-  const canInvest = minOk && unitsOk;
+  const canInvest = minOk && unitsOk && riskAck;
 
   const gallery = [
     { url: data.cover_image_url },
@@ -193,6 +195,18 @@ export default function InvestDetail() {
             >
               <Wallet className="mr-2 h-4 w-4" /> Invest now
             </Button>
+            <label className="mt-4 flex items-start gap-2 text-xs text-foreground/85">
+              <Checkbox
+                id="risk-ack"
+                checked={riskAck}
+                onCheckedChange={(v) => setRiskAck(v === true)}
+                className="mt-0.5"
+              />
+              <span>
+                I have read and understood the <strong>risk disclosure</strong>, that returns are projections and not guaranteed,
+                and that this investment is illiquid for the stated holding period.
+              </span>
+            </label>
             {!user && (
               <p className="mt-3 text-center text-xs text-muted-foreground">
                 <Link to="/auth" className="font-medium text-primary hover:underline">Sign in</Link> to invest
