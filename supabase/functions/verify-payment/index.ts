@@ -58,6 +58,29 @@ Deno.serve(async (req) => {
       }
     }
 
+    // Notifications
+    if (pay.user_id) {
+      if (newStatus === "success") {
+        await admin.rpc("create_notification", {
+          _user_id: pay.user_id,
+          _type: pay.payment_type === "investment" ? "investment_confirmed" : pay.payment_type === "booking" ? "booking_confirmed" : "payment_confirmed",
+          _title: pay.payment_type === "investment" ? "Investment confirmed" : pay.payment_type === "booking" ? "Booking confirmed" : "Payment confirmed",
+          _body: `Your payment of ${pay.amount} ${pay.currency} (${pay.reference}) was confirmed.`,
+          _link: `/payments/${pay.id}`,
+          _metadata: { payment_id: pay.id },
+        });
+      } else if (newStatus === "failed") {
+        await admin.rpc("create_notification", {
+          _user_id: pay.user_id,
+          _type: "payment_failed",
+          _title: "Payment failed",
+          _body: `Your payment of ${pay.amount} ${pay.currency} (${pay.reference}) could not be processed.`,
+          _link: `/payments/${pay.id}`,
+          _metadata: { payment_id: pay.id },
+        });
+      }
+    }
+
     return json({ ok: true, status: newStatus });
   } catch (e) {
     return json({ error: (e as Error).message }, 500);
