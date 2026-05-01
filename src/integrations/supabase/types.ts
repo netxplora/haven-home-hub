@@ -889,7 +889,7 @@ export type Database = {
         Args: { _property_id: string; _units: number }
         Returns: undefined
       }
-      user_available_balance: { Args: { _user_id: string }; Returns: number }
+      user_available_balance: { Args: never; Returns: number }
     }
     Enums: {
       app_role: "admin" | "agent" | "user"
