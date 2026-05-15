@@ -1,8 +1,9 @@
 import { useRef, useState } from "react";
-import { Upload, X, Star } from "lucide-react";
+import { Upload, X, Star, Link } from "lucide-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { resolveImage } from "@/lib/format";
 
@@ -14,6 +15,7 @@ export function ImageUploader({ propertyId }: Props) {
   const qc = useQueryClient();
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploading, setUploading] = useState(false);
+  const [externalUrl, setExternalUrl] = useState("");
 
   const { data: images = [] } = useQuery({
     queryKey: ["property_images_admin", propertyId],
@@ -26,6 +28,38 @@ export function ImageUploader({ propertyId }: Props) {
       return data ?? [];
     },
   });
+
+  async function handleAddExternalUrl() {
+    if (!externalUrl) return;
+    
+    // Validate simple URL format
+    try {
+      new URL(externalUrl);
+    } catch {
+      toast({ title: "Invalid URL", description: "Please enter a valid URL.", variant: "destructive" });
+      return;
+    }
+
+    setUploading(true);
+    let order = images.length;
+    
+    const { error: insErr } = await supabase.from("property_images").insert({
+      property_id: propertyId,
+      url: externalUrl,
+      sort_order: order,
+      is_cover: false,
+    });
+    
+    setUploading(false);
+    
+    if (insErr) {
+      toast({ title: "Could not add image", description: insErr.message, variant: "destructive" });
+    } else {
+      setExternalUrl("");
+      qc.invalidateQueries({ queryKey: ["property_images_admin", propertyId] });
+      toast({ title: "Image added from URL" });
+    }
+  }
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
@@ -77,27 +111,48 @@ export function ImageUploader({ propertyId }: Props) {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <p className="text-sm text-muted-foreground">{images.length} image{images.length === 1 ? "" : "s"}</p>
-        <Button type="button" size="sm" variant="outline" disabled={uploading} onClick={() => inputRef.current?.click()}>
-          <Upload className="mr-1.5 h-4 w-4" />
-          {uploading ? "Uploading..." : "Upload images"}
-        </Button>
-        <input
-          ref={inputRef}
-          type="file"
-          accept="image/*"
-          multiple
-          className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
-        />
+    <div className="space-y-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <p className="text-sm text-muted-foreground">{images.length} image{images.length === 1 ? "" : "s"}</p>
+          <Button type="button" size="sm" variant="outline" disabled={uploading} onClick={() => inputRef.current?.click()}>
+            <Upload className="mr-1.5 h-4 w-4" />
+            {uploading ? "Uploading..." : "Upload files"}
+          </Button>
+          <input
+            ref={inputRef}
+            type="file"
+            accept="image/*"
+            multiple
+            className="hidden"
+            onChange={(e) => handleFiles(e.target.files)}
+          />
+        </div>
+        
+        <div className="flex gap-2">
+          <Input 
+            value={externalUrl} 
+            onChange={(e) => setExternalUrl(e.target.value)} 
+            placeholder="Or paste external image URL..." 
+            className="flex-1 bg-accent/50 h-10 border-none rounded-lg"
+          />
+          <Button type="button" onClick={handleAddExternalUrl} disabled={!externalUrl || uploading} className="h-10 rounded-lg">
+            <Link className="h-4 w-4 mr-2" />
+            Add URL
+          </Button>
+        </div>
       </div>
+      
       {images.length > 0 && (
         <div className="grid grid-cols-3 gap-2 sm:grid-cols-4">
           {images.map((img: any) => (
             <div key={img.id} className="group relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
-              <img src={resolveImage(img.url)} alt="" className="h-full w-full object-cover" />
+              <img 
+                src={resolveImage(img.url)} 
+                alt="" 
+                className="h-full w-full object-cover" 
+                onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
+              />
               {img.is_cover && (
                 <span className="absolute left-1 top-1 rounded bg-accent px-1.5 py-0.5 text-[10px] font-medium text-accent-foreground">
                   Cover

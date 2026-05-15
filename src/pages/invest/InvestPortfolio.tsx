@@ -29,72 +29,118 @@ export default function InvestPortfolio() {
     },
   });
 
-  const invested = (data?.investments ?? []).filter((i: any) => i.status === "confirmed")
-    .reduce((s: number, i: any) => s + Number(i.amount_invested), 0);
+  const invested = (data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active")
+    .reduce((s: number, i: any) => s + Number(i.total_amount ?? i.amount_invested ?? 0), 0);
   const earned = (data?.returns ?? []).reduce((s: number, r: any) => s + Number(r.amount_received), 0);
-  const active = (data?.investments ?? []).filter((i: any) => i.status === "confirmed").length;
+  const active = (data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active").length;
 
   return (
     <SiteLayout>
-      <div className="border-b border-border bg-secondary/40">
-        <div className="container-wide py-10">
-          <p className="text-xs font-medium tracking-wider text-[hsl(var(--gold))] uppercase">Invest</p>
-          <h1 className="mt-1 font-serif text-3xl font-semibold sm:text-4xl">My investment portfolio</h1>
-          <p className="mt-2 text-muted-foreground">Track your active investments, returns and transaction history.</p>
+      {/* Hero Header */}
+      <div className="relative overflow-hidden min-h-[280px] sm:min-h-[320px] flex items-center bg-secondary">
+        <img 
+          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1920&q=80" 
+          alt="Financial Architecture" 
+          className="absolute inset-0 h-full w-full object-cover opacity-30"
+          crossOrigin="anonymous"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 to-secondary/40 z-[1]" />
+        
+        <div className="container-wide relative z-10 text-white py-14">
+          <p className="mb-2 text-xs font-medium tracking-wider uppercase text-primary">My Portfolio</p>
+          <h1 className="font-serif text-3xl font-semibold sm:text-4xl text-white">
+            Investment Portfolio
+          </h1>
+          <p className="mt-2 max-w-lg text-base text-white/70">
+            Track your active investments, payouts, and history.
+          </p>
         </div>
       </div>
 
-      <div className="container-wide py-10 space-y-10">
+      <div className="container-wide py-10 space-y-8">
+        {/* KPI Cards */}
         <div className="grid gap-4 sm:grid-cols-3">
           <KPI label="Total invested" value={formatMoney(invested)} icon={Wallet} />
-          <KPI label="Returns earned" value={formatMoney(earned)} icon={TrendingUp} />
+          <KPI label="Total payouts" value={formatMoney(earned)} icon={TrendingUp} />
           <KPI label="Active investments" value={String(active)} icon={PiggyBank} />
         </div>
 
         {/* Investments */}
         <section>
-          <h2 className="font-serif text-2xl font-semibold">My investments</h2>
+          <h2 className="font-serif text-xl font-semibold">My Investments</h2>
           <div className="mt-4 space-y-3">
             {isLoading ? <Skeleton className="h-40" /> :
               (data?.investments ?? []).length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-border p-10 text-center">
-                  <p className="font-serif text-xl">You have no investments yet</p>
+                <div className="rounded-xl border border-dashed border-border p-10 text-center">
+                  <p className="font-serif text-lg">You have no investments yet</p>
                   <Link to="/invest/opportunities" className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline">
                     Explore opportunities <ArrowRight className="h-4 w-4" />
                   </Link>
                 </div>
-              ) : data!.investments.map((i: any) => (
-                <Link key={i.id} to={`/invest/${i.investment_properties?.slug}`} className="flex items-center gap-4 rounded-xl border border-border bg-card p-4 transition hover:shadow-soft">
-                  <div className="h-16 w-20 overflow-hidden rounded-lg bg-secondary">
-                    {i.investment_properties?.cover_image_url && <img src={i.investment_properties.cover_image_url} alt="" className="h-full w-full object-cover" />}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-serif text-lg font-semibold truncate">{i.investment_properties?.title}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {i.units_owned} units · Projected {i.investment_properties?.projected_return_min}–{i.investment_properties?.projected_return_max}% p.a.
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-serif text-lg font-semibold">{formatMoney(Number(i.amount_invested), i.investment_properties?.currency ?? "USD")}</p>
-                    <Badge variant={i.status === "confirmed" ? "default" : "secondary"}>{i.status}</Badge>
-                  </div>
-                </Link>
-              ))}
+              ) : data!.investments.map((i: any) => {
+                const isInstallment = i.investment_type === "installment";
+                const total = Number(i.total_amount ?? i.amount_invested ?? 0);
+                const paid = Number(i.amount_paid ?? (isInstallment ? 0 : total));
+                const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
+
+                return (
+                  <Link key={i.id} to={`/invest/${i.investment_properties?.slug}`} className="flex items-center gap-4 rounded-xl border border-border/50 bg-card p-5 transition-all duration-200 hover:shadow-card hover:border-border">
+                    <div className="h-16 w-24 overflow-hidden rounded-lg bg-muted shrink-0">
+                      {i.investment_properties?.cover_image_url && <img src={i.investment_properties.cover_image_url} alt="" className="h-full w-full object-cover" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-serif text-base font-semibold text-foreground truncate">{i.investment_properties?.title}</p>
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <Badge variant="outline" className={`text-[10px] font-medium px-2 py-0.5 ${isInstallment ? "text-secondary border-secondary/20" : "text-primary border-primary/20"}`}>
+                          {isInstallment ? "Installment" : "Full Payment"}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {i.units_owned} Units · {i.investment_properties?.projected_return_min}–{i.investment_properties?.projected_return_max}% p.a.
+                        </span>
+                      </div>
+                      {isInstallment && (
+                        <div className="mt-2.5 flex items-center gap-3">
+                          <div className="flex-1 max-w-[180px]">
+                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                            </div>
+                          </div>
+                          <span className="text-[11px] font-medium text-muted-foreground">{pct}% Paid</span>
+                          {i.next_payment_due && i.status !== "completed" && (
+                            <span className="text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
+                              Due: {new Date(i.next_payment_due).toLocaleDateString()}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <p className="font-serif text-lg font-semibold text-foreground">{formatMoney(total, i.investment_properties?.currency ?? "USD")}</p>
+                      {isInstallment && (
+                        <p className="text-[11px] text-amber-600 mt-0.5">
+                          {formatMoney(Number(i.remaining_balance ?? 0), i.investment_properties?.currency ?? "USD")} left
+                        </p>
+                      )}
+                      <Badge variant={i.status === "confirmed" || i.status === "active" ? "default" : i.status === "completed" ? "secondary" : "destructive"} className="mt-1 text-[10px]">{i.status}</Badge>
+                    </div>
+                  </Link>
+                );
+              })}
           </div>
         </section>
 
         {/* Returns */}
         <section>
-          <h2 className="font-serif text-2xl font-semibold">Payout history</h2>
-          <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
+          <h2 className="font-serif text-xl font-semibold">Payout History</h2>
+          <div className="mt-4 overflow-hidden rounded-xl border border-border/50 bg-card">
             <table className="w-full text-sm">
-              <thead className="bg-secondary/60 text-left"><tr><th className="p-3">Date</th><th className="p-3">Property</th><th className="p-3 text-right">Amount</th></tr></thead>
+              <thead className="bg-accent text-left"><tr><th className="p-3 text-xs font-medium text-muted-foreground">Date</th><th className="p-3 text-xs font-medium text-muted-foreground">Property</th><th className="p-3 text-right text-xs font-medium text-muted-foreground">Amount</th></tr></thead>
               <tbody>
                 {(data?.returns ?? []).length === 0 ? (
                   <tr><td colSpan={3} className="p-6 text-center text-sm text-muted-foreground">No payouts yet.</td></tr>
                 ) : data!.returns.map((r: any) => (
-                  <tr key={r.id} className="border-t border-border">
-                    <td className="p-3">{new Date(r.distribution_date).toLocaleDateString()}</td>
+                  <tr key={r.id} className="border-t border-border/40">
+                    <td className="p-3 text-muted-foreground">{new Date(r.distribution_date).toLocaleDateString()}</td>
                     <td className="p-3">{r.investment_properties?.title}</td>
                     <td className="p-3 text-right font-medium">{formatMoney(Number(r.amount_received), r.investment_properties?.currency ?? "USD")}</td>
                   </tr>
@@ -106,19 +152,19 @@ export default function InvestPortfolio() {
 
         {/* Transactions */}
         <section>
-          <h2 className="font-serif text-2xl font-semibold">Transaction history</h2>
-          <div className="mt-4 overflow-hidden rounded-xl border border-border bg-card">
+          <h2 className="font-serif text-xl font-semibold">Payment History</h2>
+          <div className="mt-4 overflow-hidden rounded-xl border border-border/50 bg-card">
             <table className="w-full text-sm">
-              <thead className="bg-secondary/60 text-left"><tr><th className="p-3">Date</th><th className="p-3">Reference</th><th className="p-3">Method</th><th className="p-3">Status</th><th className="p-3 text-right">Amount</th></tr></thead>
+              <thead className="bg-accent text-left"><tr><th className="p-3 text-xs font-medium text-muted-foreground">Date</th><th className="p-3 text-xs font-medium text-muted-foreground">Reference</th><th className="p-3 text-xs font-medium text-muted-foreground">Method</th><th className="p-3 text-xs font-medium text-muted-foreground">Status</th><th className="p-3 text-right text-xs font-medium text-muted-foreground">Amount</th></tr></thead>
               <tbody>
                 {(data?.payments ?? []).length === 0 ? (
                   <tr><td colSpan={5} className="p-6 text-center text-sm text-muted-foreground">No transactions yet.</td></tr>
                 ) : data!.payments.map((p: any) => (
-                  <tr key={p.id} className="border-t border-border">
-                    <td className="p-3">{new Date(p.created_at).toLocaleDateString()}</td>
-                    <td className="p-3 font-mono text-xs">{p.reference.slice(0, 12)}…</td>
-                    <td className="p-3 capitalize">{p.provider.replace("_"," ")}</td>
-                    <td className="p-3"><Badge variant={p.status === "success" ? "default" : p.status === "failed" ? "destructive" : "secondary"}>{p.status}</Badge></td>
+                  <tr key={p.id} className="border-t border-border/40">
+                    <td className="p-3 text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</td>
+                    <td className="p-3 font-mono text-xs">{p.reference ? `${p.reference.slice(0, 12)}…` : 'N/A'}</td>
+                    <td className="p-3 capitalize text-muted-foreground">{p.provider ? p.provider.replace("_"," ") : 'N/A'}</td>
+                    <td className="p-3"><Badge variant={p.status === "success" ? "default" : p.status === "failed" ? "destructive" : "secondary"} className="text-[10px]">{p.status}</Badge></td>
                     <td className="p-3 text-right font-medium">{formatMoney(Number(p.amount), p.currency)}</td>
                   </tr>
                 ))}
@@ -133,14 +179,14 @@ export default function InvestPortfolio() {
 
 function KPI({ label, value, icon: Icon }: { label: string; value: string; icon: any }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 shadow-soft">
-      <div className="flex items-center justify-between">
-        <p className="text-xs uppercase tracking-wider text-muted-foreground">{label}</p>
-        <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-gold text-[hsl(var(--gold-foreground))]">
+    <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
+      <div className="flex items-center justify-between mb-4">
+        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{label}</p>
+        <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/8 text-primary">
           <Icon className="h-4 w-4" />
         </span>
       </div>
-      <p className="mt-2 font-serif text-3xl font-semibold">{value}</p>
+      <p className="font-serif text-2xl font-semibold text-foreground">{value}</p>
     </div>
   );
 }

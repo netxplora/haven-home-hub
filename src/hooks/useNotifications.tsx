@@ -10,6 +10,9 @@ export type Notification = {
   title: string;
   body: string;
   link: string | null;
+  action_url?: string | null;
+  category?: string | null;
+  priority?: string | null;
   metadata: Record<string, unknown>;
   read_at: string | null;
   created_at: string;
@@ -35,7 +38,7 @@ export function useNotifications() {
   useEffect(() => {
     if (!user) return;
     const ch = supabase
-      .channel(`notif-${user.id}`)
+      .channel(`notif-${user.id}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },

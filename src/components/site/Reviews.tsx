@@ -146,7 +146,7 @@ function ReviewForm({ target, onDone }: { target: Target; onDone: () => void }) 
         <Label htmlFor="rev-body">Review</Label>
         <Textarea id="rev-body" value={body} onChange={(e) => setBody(e.target.value)} rows={3} maxLength={1000} placeholder="Tell others what you thought..." />
       </div>
-      <Button type="submit" disabled={busy} className="mt-3 bg-gradient-warm hover:opacity-95">
+      <Button type="submit" disabled={busy} className="mt-3 bg-primary text-primary-foreground hover:bg-primary/90">
         {busy ? "Posting..." : "Post review"}
       </Button>
     </form>

@@ -74,7 +74,7 @@ export function InquiryForm({ propertyId, agentId, onSuccess }: Props) {
         <Textarea id="iq-msg" rows={4} required value={form.message} onChange={(e) => setForm({ ...form, message: e.target.value })}
           placeholder="Hi, I'd like to know more about this property." />
       </div>
-      <Button type="submit" disabled={loading} className="w-full bg-gradient-warm hover:opacity-95">
+      <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
         {loading ? "Sending..." : "Send inquiry"}
       </Button>
     </form>

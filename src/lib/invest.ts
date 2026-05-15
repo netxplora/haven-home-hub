@@ -1,6 +1,13 @@
 import type { Database } from "@/integrations/supabase/types";
 
-export type InvestmentProperty = Database["public"]["Tables"]["investment_properties"]["Row"];
+export type InvestmentProperty = Database["public"]["Tables"]["investment_properties"]["Row"] & {
+  city?: string | null;
+  state?: string | null;
+  country?: string | null;
+  property_category?: string | null;
+  installment_available?: boolean;
+  min_down_payment_pct?: number;
+};
 export type UserInvestment = Database["public"]["Tables"]["user_investments"]["Row"];
 
 export function formatMoney(amount: number, currency = "USD") {

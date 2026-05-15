@@ -84,7 +84,7 @@ export function BookingForm({ propertyId, agentId, onSuccess }: Props) {
         <Textarea id="b-notes" rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })}
           placeholder="Anything we should know before the inspection?" />
       </div>
-      <Button type="submit" disabled={loading} className="w-full bg-gradient-warm hover:opacity-95">
+      <Button type="submit" disabled={loading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
         {loading ? "Booking..." : "Request inspection"}
       </Button>
     </form>

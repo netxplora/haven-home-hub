@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -76,52 +77,79 @@ export function WithdrawalDialog({
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle className="font-serif">Request a withdrawal</DialogTitle>
+        <DialogHeader className="p-10 bg-accent/40 border-b border-border/40">
+          <DialogTitle className="font-serif text-3xl font-bold text-foreground">Withdraw Funds</DialogTitle>
+          <div className="flex items-center gap-2 mt-3">
+             <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Available for Payout</p>
+             <Badge className="bg-primary text-primary-foreground font-bold rounded-lg border-none">{formatMoney(available)}</Badge>
+          </div>
         </DialogHeader>
-        <p className="text-sm text-muted-foreground">
-          Available balance: <span className="font-semibold text-foreground">{formatMoney(available)}</span>
-        </p>
+        
+        <DialogBody className="space-y-6 py-6">
+          <div className="space-y-2">
+            <Label htmlFor="wamt" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Amount (USD)</Label>
+            <Input
+              id="wamt"
+              type="number"
+              min={1}
+              max={available}
+              step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              className="h-12 rounded-xl bg-accent/50 focus:bg-background transition-all font-bold text-lg"
+              placeholder="0.00"
+            />
+            {amt > available && <p className="text-xs text-destructive mt-1 ml-1">Amount exceeds your available balance.</p>}
+          </div>
 
-        <div className="space-y-1.5">
-          <Label htmlFor="wamt">Amount (USD)</Label>
-          <Input
-            id="wamt"
-            type="number"
-            min={1}
-            max={available}
-            step="0.01"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-          {amt > available && <p className="text-xs text-destructive">Amount exceeds your available balance.</p>}
-        </div>
+          <Tabs value={method} onValueChange={(v) => setMethod(v as "bank_transfer" | "crypto")} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 p-1 bg-accent rounded-xl mb-4">
+              <TabsTrigger value="bank_transfer" className="rounded-lg data-[state=active]:bg-background">Bank transfer</TabsTrigger>
+              <TabsTrigger value="crypto" className="rounded-lg data-[state=active]:bg-background">Digital Currency</TabsTrigger>
+            </TabsList>
+            <TabsContent value="bank_transfer" className="space-y-5 animate-in fade-in slide-in-from-top-1">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Bank name</Label>
+                <Input value={bank.bank_name} onChange={(e) => setBank({ ...bank, bank_name: e.target.value })} maxLength={120} className="h-11 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Account holder name</Label>
+                <Input value={bank.bank_account_name} onChange={(e) => setBank({ ...bank, bank_account_name: e.target.value })} maxLength={120} className="h-11 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Account number / IBAN</Label>
+                <Input value={bank.bank_account_number} onChange={(e) => setBank({ ...bank, bank_account_number: e.target.value })} maxLength={64} className="h-11 rounded-xl" />
+              </div>
+            </TabsContent>
+            <TabsContent value="crypto" className="space-y-5 animate-in fade-in slide-in-from-top-1">
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Currency / network</Label>
+                <Input value={crypto.crypto_currency} onChange={(e) => setCrypto({ ...crypto, crypto_currency: e.target.value })} placeholder="USDT-TRC20, BTC, ETH..." maxLength={32} className="h-11 rounded-xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Wallet address</Label>
+                <Input value={crypto.crypto_address} onChange={(e) => setCrypto({ ...crypto, crypto_address: e.target.value })} maxLength={120} className="h-11 rounded-xl font-mono text-[10px]" />
+              </div>
+              <p className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-3 text-[10px] text-amber-700 font-medium">
+                Double-check the address. Withdrawals sent to incorrect addresses cannot be reversed.
+              </p>
+            </TabsContent>
+          </Tabs>
 
-        <Tabs value={method} onValueChange={(v) => setMethod(v as "bank_transfer" | "crypto")}>
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="bank_transfer">Bank transfer</TabsTrigger>
-            <TabsTrigger value="crypto">Crypto</TabsTrigger>
-          </TabsList>
-          <TabsContent value="bank_transfer" className="space-y-3 pt-3">
-            <div className="space-y-1.5"><Label>Bank name</Label><Input value={bank.bank_name} onChange={(e) => setBank({ ...bank, bank_name: e.target.value })} maxLength={120} /></div>
-            <div className="space-y-1.5"><Label>Account holder name</Label><Input value={bank.bank_account_name} onChange={(e) => setBank({ ...bank, bank_account_name: e.target.value })} maxLength={120} /></div>
-            <div className="space-y-1.5"><Label>Account number / IBAN</Label><Input value={bank.bank_account_number} onChange={(e) => setBank({ ...bank, bank_account_number: e.target.value })} maxLength={64} /></div>
-          </TabsContent>
-          <TabsContent value="crypto" className="space-y-3 pt-3">
-            <div className="space-y-1.5"><Label>Currency / network</Label><Input value={crypto.crypto_currency} onChange={(e) => setCrypto({ ...crypto, crypto_currency: e.target.value })} placeholder="USDT-TRC20, BTC, ETH..." maxLength={32} /></div>
-            <div className="space-y-1.5"><Label>Wallet address</Label><Input value={crypto.crypto_address} onChange={(e) => setCrypto({ ...crypto, crypto_address: e.target.value })} maxLength={120} className="font-mono text-xs" /></div>
-            <p className="rounded-md bg-secondary/60 p-2 text-xs text-muted-foreground">
-              Double-check the address. Withdrawals sent to incorrect addresses cannot be recovered.
-            </p>
-          </TabsContent>
-        </Tabs>
+          <p className="text-[10px] text-muted-foreground text-center px-4 italic">
+            Withdrawals are processed by our team within 1–3 business days.
+          </p>
+        </DialogBody>
 
-        <Button className="w-full bg-gradient-warm hover:opacity-95" disabled={!canSubmit} onClick={submit}>
-          {submitting ? "Submitting…" : "Submit request"}
-        </Button>
-        <p className="text-[10px] text-muted-foreground">
-          Withdrawals are reviewed manually and typically processed within 1–3 business days.
-        </p>
+        <DialogFooter className="bg-accent/20 pt-8 pb-8 px-10 border-t border-border/40">
+          <Button 
+            className="w-full h-14 bg-primary text-primary-foreground hover:opacity-90 rounded-xl font-bold shadow-sm transition-all active:scale-[0.98]" 
+            disabled={!canSubmit} 
+            onClick={submit}
+          >
+            {submitting ? "Processing Request…" : "Confirm Withdrawal"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

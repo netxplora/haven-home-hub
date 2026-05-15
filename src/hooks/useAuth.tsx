@@ -36,10 +36,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     // Then existing session
-    supabase.auth.getSession().then(({ data: { session: sess } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: sess } }) => {
       setSession(sess);
       setUser(sess?.user ?? null);
-      if (sess?.user) fetchRoles(sess.user.id);
+      if (sess?.user) {
+        await fetchRoles(sess.user.id);
+      }
       setLoading(false);
     });
 
@@ -47,8 +49,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function fetchRoles(userId: string) {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", userId);
-    setRoles((data ?? []).map((r) => r.role as AppRole));
+    try {
+      const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", userId);
+      if (error) throw error;
+      setRoles((data ?? []).map((r) => r.role as AppRole));
+    } catch (err) {
+      console.error("Error fetching roles:", err);
+      setRoles([]);
+    }
   }
 
   async function signOut() {

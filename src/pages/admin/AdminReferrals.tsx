@@ -1,0 +1,228 @@
+import React from "react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Users, User, Calendar, DollarSign, Award, ArrowUpRight, Settings, Save, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { formatMoney } from "@/lib/invest";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+export function AdminReferrals() {
+  const [isSaving, setIsSaving] = React.useState(false);
+  const [settings, setSettings] = React.useState<any>({
+    bonus_percentage: 5,
+    min_investment_required: 1000,
+    max_bonus_cap: 500
+  });
+
+  const { data: config } = useQuery({
+    queryKey: ["referral-settings"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("system_configs")
+        .select("value")
+        .eq("key", "referral_settings")
+        .maybeSingle();
+      if (data?.value) setSettings(data.value);
+      return data?.value;
+    }
+  });
+
+  const handleSaveSettings = async () => {
+    setIsSaving(true);
+    try {
+      const { error } = await supabase
+        .from("system_configs")
+        .upsert({ 
+          key: "referral_settings", 
+          value: settings,
+          updated_at: new Date().toISOString()
+        });
+      if (error) throw error;
+      toast({ title: "Settings updated", description: "Referral program configuration has been saved." });
+    } catch (e: any) {
+      toast({ title: "Failed to save", description: e.message, variant: "destructive" });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+  const { data: referrals = [], isLoading } = useQuery({
+    queryKey: ["admin-referrals"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("referrals")
+        .select(`
+          *,
+          referrer:referrer_id(full_name, email),
+          referred:referred_id(full_name, email)
+        `)
+        .order("created_at", { ascending: false });
+      return data ?? [];
+    }
+  });
+
+  const totalRewards = referrals.reduce((acc: number, curr: any) => acc + (curr.bonus_earned || 0), 0);
+  const investedReferrals = referrals.filter((r: any) => r.status === 'invested').length;
+
+  return (
+    <div className="space-y-8">
+      <div>
+        <h2 className="text-2xl font-serif font-bold">Referral Program</h2>
+        <p className="text-sm text-muted-foreground">Monitor user referrals and distributed bonuses.</p>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-[1fr_350px]">
+        {/* Stats */}
+        <div className="grid gap-6 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-primary/10 p-3 text-primary">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Total Referrals</p>
+                <p className="text-2xl font-serif font-bold">{referrals.length}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-green-500/10 p-3 text-green-600">
+                <Award className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Active Investors</p>
+                <p className="text-2xl font-serif font-bold">{investedReferrals}</p>
+              </div>
+            </div>
+          </div>
+          <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
+            <div className="flex items-center gap-4">
+              <div className="rounded-xl bg-amber-500/10 p-3 text-amber-600">
+                <DollarSign className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Rewards Paid</p>
+                <p className="text-2xl font-serif font-bold">{formatMoney(totalRewards)}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Settings Card */}
+        <Card className="rounded-xl border-primary/20 shadow-card overflow-hidden">
+          <CardHeader className="bg-accent/50 pb-4">
+            <div className="flex items-center gap-2">
+              <Settings className="h-4 w-4 text-primary" />
+              <CardTitle className="text-sm font-bold uppercase tracking-widest">Program Settings</CardTitle>
+            </div>
+            <CardDescription className="text-[10px]">Configure bonus rules and caps.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4 pt-6">
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Bonus Percentage (%)</Label>
+              <Input 
+                type="number" 
+                value={settings.bonus_percentage} 
+                onChange={e => setSettings({...settings, bonus_percentage: Number(e.target.value)})}
+                className="h-9 text-sm font-bold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Min. Investment Required ($)</Label>
+              <Input 
+                type="number" 
+                value={settings.min_investment_required} 
+                onChange={e => setSettings({...settings, min_investment_required: Number(e.target.value)})}
+                className="h-9 text-sm font-bold"
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[10px] font-bold uppercase text-muted-foreground">Max Bonus Cap ($)</Label>
+              <Input 
+                type="number" 
+                value={settings.max_bonus_cap} 
+                onChange={e => setSettings({...settings, max_bonus_cap: Number(e.target.value)})}
+                className="h-9 text-sm font-bold"
+              />
+            </div>
+            <Button 
+              onClick={handleSaveSettings} 
+              disabled={isSaving}
+              className="w-full mt-2 h-10 font-bold"
+            >
+              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+              Save Changes
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="bg-secondary/20 border-b border-border/50">
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Referrer</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Referred User</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date Joined</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Bonus</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-border/30">
+              {referrals.map((r: any) => (
+                <tr key={r.id} className="hover:bg-secondary/10 transition-colors group">
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold">
+                        {r.referrer?.full_name?.charAt(0) ?? "U"}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground">{r.referrer?.full_name}</p>
+                        <p className="text-[10px] text-muted-foreground">{r.referrer?.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div className="flex items-center gap-3">
+                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
+                        {r.referred?.full_name?.charAt(0) ?? "U"}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-foreground">{r.referred?.full_name}</p>
+                        <p className="text-[10px] text-muted-foreground">{r.referred?.email}</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <Badge variant={r.status === 'invested' ? 'default' : 'secondary'} className={`text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md ${r.status === 'registered' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : ''}`}>
+                      {r.status}
+                    </Badge>
+                  </td>
+                  <td className="px-6 py-4 text-[11px] text-muted-foreground font-medium">
+                    {new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </td>
+                  <td className="px-6 py-4 text-sm font-bold text-right text-primary">
+                    {formatMoney(r.bonus_earned)}
+                  </td>
+                </tr>
+              ))}
+              {referrals.length === 0 && !isLoading && (
+                <tr>
+                  <td colSpan={5} className="px-6 py-20 text-center text-muted-foreground italic bg-secondary/5">
+                    <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                    <p className="text-sm">No referral data found.</p>
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+}

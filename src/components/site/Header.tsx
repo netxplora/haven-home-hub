@@ -18,6 +18,8 @@ const nav = [
   { to: "/properties?type=land", label: "Land" },
   { to: "/invest", label: "Invest" },
   { to: "/agents", label: "Agents" },
+  { to: "/blog", label: "Blog" },
+  { to: "/about", label: "About" },
 ];
 
 export function Header() {
@@ -25,20 +27,24 @@ export function Header() {
   const navigate = useNavigate();
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/85 backdrop-blur">
-      <div className="container-wide flex h-16 items-center justify-between gap-4">
-        <Link to="/" className="flex items-center" aria-label="Verdant Estate home">
-          <img src={logo} alt="Verdant Estate" width={144} height={48} className="h-9 w-auto" />
+    <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-md">
+      <div className="container-wide flex h-[68px] items-center justify-between gap-6">
+        {/* Logo */}
+        <Link to="/" className="flex items-center shrink-0" aria-label="Verdant Estate home">
+          <img src={logo} alt="Verdant Estate" width={144} height={48} className="h-8 w-auto" />
         </Link>
 
-        <nav className="hidden items-center gap-7 md:flex">
+        {/* Desktop Nav */}
+        <nav className="hidden items-center gap-1 md:flex">
           {nav.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               className={({ isActive }) =>
-                `text-sm font-medium transition-colors hover:text-primary ${
-                  isActive ? "text-primary" : "text-muted-foreground"
+                `px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  isActive
+                    ? "text-primary bg-primary/5"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 }`
               }
             >
@@ -47,19 +53,20 @@ export function Header() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-2 md:flex">
+        {/* Desktop Actions */}
+        <div className="hidden items-center gap-3 md:flex">
           {user ? (
             <>
               <NotificationBell />
               <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2">
+                <Button variant="outline" size="sm" className="gap-2 rounded-lg border-border/60 h-9">
                   <UserIcon className="h-4 w-4" />
                   Account
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate">{user.email}</DropdownMenuLabel>
+                <DropdownMenuLabel className="truncate font-normal text-muted-foreground text-xs">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => navigate("/dashboard")}>
                   <LayoutDashboard className="mr-2 h-4 w-4" /> My dashboard
@@ -75,7 +82,7 @@ export function Header() {
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={signOut}>
+                <DropdownMenuItem onSelect={signOut} className="text-destructive focus:text-destructive">
                   <LogOut className="mr-2 h-4 w-4" /> Sign out
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -83,43 +90,55 @@ export function Header() {
             </>
           ) : (
             <>
-              <Button variant="ghost" size="sm" onClick={() => navigate("/auth")}>
+              <Button variant="ghost" size="sm" className="h-9 text-muted-foreground hover:text-foreground" onClick={() => navigate("/auth")}>
                 Sign in
               </Button>
-              <Button size="sm" className="bg-gradient-warm hover:opacity-95" onClick={() => navigate("/auth?tab=signup")}>
-                Join free
+              <Button size="sm" className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-sm" onClick={() => navigate("/auth?tab=signup")}>
+                Get started
               </Button>
             </>
           )}
         </div>
 
+        {/* Mobile Hamburger */}
         <Sheet>
           <SheetTrigger asChild>
-            <Button variant="outline" size="icon" className="md:hidden" aria-label="Menu">
-              <Menu className="h-4 w-4" />
+            <Button variant="ghost" size="icon" className="md:hidden h-10 w-10 rounded-lg" aria-label="Menu">
+              <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
-          <SheetContent side="right" className="w-[280px]">
-            <div className="mt-8 flex flex-col gap-4">
-              {nav.map((item) => (
-                <Link key={item.to} to={item.to} className="text-base font-medium">
-                  {item.label}
-                </Link>
-              ))}
-              <hr className="border-border" />
-              {user ? (
-                <>
-                  <Link to="/dashboard">My dashboard</Link>
-                  {isAgent && <Link to="/agent">Agent dashboard</Link>}
-                  {isAdmin && <Link to="/admin">Admin</Link>}
-                  <button onClick={signOut} className="text-left text-destructive">Sign out</button>
-                </>
-              ) : (
-                <>
-                  <Link to="/auth">Sign in</Link>
-                  <Link to="/auth?tab=signup" className="font-semibold text-primary">Create account</Link>
-                </>
-              )}
+          <SheetContent side="right" className="w-[300px] p-0">
+            <div className="flex flex-col h-full">
+              {/* Mobile Nav Links */}
+              <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6">
+                <nav className="flex flex-col gap-1">
+                  {nav.map((item) => (
+                    <Link
+                      key={item.to}
+                      to={item.to}
+                      className="text-base font-medium py-3 px-3 rounded-lg hover:bg-accent transition-colors text-foreground"
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </nav>
+              </div>
+              {/* Mobile Footer Actions */}
+              <div className="border-t border-border/50 px-6 py-5 space-y-3">
+                {user ? (
+                  <>
+                    <Link to="/dashboard" className="block py-2 text-sm font-medium text-foreground">My dashboard</Link>
+                    {isAgent && <Link to="/agent" className="block py-2 text-sm font-medium text-foreground">Agent dashboard</Link>}
+                    {isAdmin && <Link to="/admin" className="block py-2 text-sm font-medium text-foreground">Admin</Link>}
+                    <button onClick={signOut} className="block w-full text-left text-sm font-medium py-2 text-destructive">Sign out</button>
+                  </>
+                ) : (
+                  <>
+                    <Button variant="outline" className="w-full rounded-lg" onClick={() => navigate("/auth")}>Sign in</Button>
+                    <Button className="w-full rounded-lg bg-primary text-primary-foreground" onClick={() => navigate("/auth?tab=signup")}>Get started</Button>
+                  </>
+                )}
+              </div>
             </div>
           </SheetContent>
         </Sheet>
