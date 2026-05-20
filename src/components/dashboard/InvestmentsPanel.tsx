@@ -1,0 +1,319 @@
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { TrendingUp, ArrowUpRight, ShieldCheck, Clock, FileText, LayoutGrid, List, ChevronRight } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { InvestmentDetailDialog } from "@/components/dashboard/InvestmentDetailDialog";
+import { formatMoney } from "@/lib/invest";
+import { useAuth } from "@/hooks/useAuth";
+import { cn } from "@/lib/utils";
+
+export function InvestmentsPanel() {
+  const { user } = useAuth();
+  const [selectedInvestment, setSelectedInvestment] = useState<any | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  
+  const { data: investments = [] as any[], isLoading } = useQuery({
+    queryKey: ["my-investments", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_investments")
+        .select(`
+          *,
+          investment_properties(
+            title, 
+            slug, 
+            currency, 
+            projected_return_min, 
+            projected_return_max, 
+            cover_image_url
+          )
+        `)
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+      
+      if (error) {
+        console.error("Error fetching user investments:", error);
+        return [];
+      }
+      return (data || []) as any[];
+    },
+  });
+
+  const { data: returns = [] } = useQuery({
+    queryKey: ["my-returns", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("returns")
+        .select("amount_received, distribution_date, investment_properties(title)")
+        .eq("user_id", user!.id)
+        .order("distribution_date", { ascending: false })
+        .limit(10);
+      return data ?? [];
+    },
+  });
+
+  const activeInvestments = investments.filter((i: any) => ["confirmed", "active", "completed"].includes(i.status));
+  const totalInvested = activeInvestments.reduce((s: number, i: any) => s + Number(i.amount_invested || 0), 0);
+  const totalReturns = returns.reduce((s: number, r: any) => s + Number(r.amount_received || 0), 0);
+  const activeCount = activeInvestments.length;
+
+  const installmentInvestments = activeInvestments.filter((i: any) => i.investment_type === "installment");
+  const totalOutstanding = installmentInvestments.reduce((s: number, i: any) => s + Number(i.remaining_balance ?? 0), 0);
+  const nextDueInvestment = installmentInvestments
+    .filter((i: any) => i.next_payment_due && i.status !== "completed")
+    .sort((a: any, b: any) => new Date(a.next_payment_due).getTime() - new Date(b.next_payment_due).getTime())[0];
+
+  if (isLoading) return (
+    <div className="space-y-6">
+       <div className="grid gap-4 sm:grid-cols-3">
+          {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
+       </div>
+       <Skeleton className="h-96 rounded-xl" />
+    </div>
+  );
+
+  return (
+    <div className="space-y-8 ">
+      <div className="grid gap-4 sm:grid-cols-3">
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Total Invested</p>
+          <p className="font-serif text-2xl font-semibold">{formatMoney(totalInvested)}</p>
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+             <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+             {activeCount} Active Investments
+          </div>
+        </div>
+        <div className="rounded-xl border border-primary/15 bg-card p-5 shadow-soft">
+          <p className="text-xs font-medium uppercase tracking-wider text-primary mb-1">Total Returns</p>
+          <p className="font-serif text-2xl font-semibold text-primary">{formatMoney(totalReturns)}</p>
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-primary/60">
+             <TrendingUp className="h-3.5 w-3.5" />
+             Average Return: +12.4%
+          </div>
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">
+          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Remaining Balance</p>
+          <p className="font-serif text-2xl font-semibold text-amber-600">{formatMoney(totalOutstanding)}</p>
+          <div className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
+             <Clock className="h-3.5 w-3.5" />
+             {installmentInvestments.length} Installment Plans
+          </div>
+        </div>
+      </div>
+
+      {nextDueInvestment && (
+        <div className="rounded-xl border border-amber-200/50 bg-amber-50/50 dark:bg-amber-950/10 p-4 flex flex-wrap items-center justify-between gap-4">
+           <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600">
+                 <Clock className="h-5 w-5" />
+              </div>
+              <div>
+                 <p className="text-xs font-medium uppercase tracking-wider text-amber-700/70 dark:text-amber-400/70">Next Payment</p>
+                 <h4 className="font-serif text-base font-semibold text-foreground">{nextDueInvestment.investment_properties?.title}</h4>
+              </div>
+           </div>
+           <div className="flex items-center gap-4">
+              <div className="text-right">
+                 <p className="text-xs text-muted-foreground mb-0.5">Due {new Date(nextDueInvestment.next_payment_due).toLocaleDateString()}</p>
+                 <p className="font-serif text-lg font-semibold">{formatMoney(Number(nextDueInvestment.monthly_installment_amount))}</p>
+              </div>
+              <Button size="sm" className="rounded-lg px-5 bg-primary hover:bg-primary/90 font-medium" onClick={() => setSelectedInvestment(nextDueInvestment)}>Pay Now</Button>
+           </div>
+        </div>
+      )}
+
+      <div className="space-y-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
+          <h3 className="font-serif text-xl font-semibold">My Investments</h3>
+          <div className="flex items-center gap-2 bg-accent/50 p-1 rounded-xl">
+             <Button 
+               variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
+               size="icon" 
+               className="h-8 w-8 rounded-lg" 
+               onClick={() => setViewMode('grid')}
+             >
+                <LayoutGrid className="h-4 w-4" />
+             </Button>
+             <Button 
+               variant={viewMode === 'list' ? 'secondary' : 'ghost'} 
+               size="icon" 
+               className="h-8 w-8 rounded-lg" 
+               onClick={() => setViewMode('list')}
+             >
+                <List className="h-4 w-4" />
+             </Button>
+          </div>
+        </div>
+
+        {investments.length === 0 ? (
+          <div className="rounded-xl border border-dashed border-border/60 p-16 text-center bg-secondary/5">
+            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/50 mb-4">
+              <TrendingUp className="h-8 w-8 text-muted-foreground/40" />
+            </div>
+            <p className="font-serif text-xl font-medium text-foreground">You have no investments yet</p>
+            <p className="mt-2 text-sm text-muted-foreground max-w-xs mx-auto">Start your investment journey by exploring our verified properties.</p>
+            <Button asChild className="mt-8 rounded-xl px-8" size="lg">
+              <Link to="/invest">Explore Properties</Link>
+            </Button>
+          </div>
+        ) : viewMode === 'grid' ? (
+          <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+             {investments.map((inv: any) => (
+                <InvestmentGridCard key={inv.id} investment={inv} onSelect={() => setSelectedInvestment(inv)} />
+             ))}
+          </div>
+        ) : (
+          <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <thead>
+                  <tr className="bg-accent/50 border-b border-border/40">
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Plan Type</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment Progress</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Total Cost</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {investments.map((inv: any) => {
+                    const total = Number(inv.total_amount ?? inv.amount_invested ?? 0);
+                    const paid = Number(inv.amount_paid ?? inv.amount_invested ?? 0);
+                    const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
+                    const isInstallment = inv.investment_type === "installment";
+
+                    return (
+                      <tr key={inv.id} className="transition-all duration-200 hover:bg-secondary/10 group cursor-pointer" onClick={() => setSelectedInvestment(inv)}>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
+                             <div className="h-10 w-10 rounded-xl overflow-hidden bg-muted group-hover:scale-105 transition-transform">
+                                <img src={inv.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                             </div>
+                             <div>
+                                <p className="font-semibold text-foreground line-clamp-1">{inv.investment_properties?.title ?? "Unknown"}</p>
+                                <p className="text-[10px] text-muted-foreground/60 font-medium">{inv.units ?? 1} Units Owned</p>
+                             </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                          <Badge variant="outline" className={`rounded-md px-2 py-0.5 text-[10px] font-bold capitalize ${isInstallment ? "border-amber-500/30 text-amber-600 bg-amber-500/5" : "border-primary/30 text-primary bg-primary/5"}`}>
+                            {inv.investment_type || "Full Payment"}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-5">
+                           <Badge 
+                             variant="secondary"
+                             className={cn(
+                               "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
+                               inv.status === "awaiting_payment" && "bg-amber-500/10 text-amber-600 border-amber-500/20",
+                               inv.status === "payment_under_review" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
+                               inv.status === "pending" && "bg-secondary/10 text-secondary border-secondary/20",
+                               inv.status === "rejected" && "bg-red-500/10 text-red-600 border-red-500/20",
+                               (inv.status === "active" || inv.status === "confirmed" || (inv.status === "confirmed" && paid >= total)) && "bg-primary text-primary-foreground border-none shadow-sm"
+                             )}
+                           >
+                              {inv.status?.replace('_', ' ')}
+                           </Badge>
+                        </td>
+                        <td className="px-6 py-5 min-w-[140px]">
+                           <div className="space-y-1.5">
+                              <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                                 <span>{pct}% Paid</span>
+                              </div>
+                              <Progress value={pct} className="h-1 bg-accent" />
+                           </div>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                           <p className="font-bold text-foreground">{formatMoney(total)}</p>
+                           <p className="text-[10px] text-muted-foreground/60 font-medium">Earned: {inv.projected_return_min}%+</p>
+                        </td>
+                         <td className="px-6 py-5 text-right">
+                           {inv.status === "awaiting_payment" ? (
+                             <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                               Pay Now
+                             </Button>
+                           ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
+                             <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                               Pay Installment
+                             </Button>
+                           ) : (
+                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
+                                <FileText className="h-4 w-4" />
+                             </Button>
+                           )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <InvestmentDetailDialog 
+        open={!!selectedInvestment} 
+        onOpenChange={(open) => !open && setSelectedInvestment(null)} 
+        investment={selectedInvestment} 
+      />
+    </div>
+  );
+}
+
+function InvestmentGridCard({ investment, onSelect }: { investment: any, onSelect: () => void }) {
+  const total = Number(investment.total_amount ?? investment.amount_invested ?? 0);
+  const paid = Number(investment.amount_paid ?? investment.amount_invested ?? 0);
+  const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
+  
+  return (
+    <div className="group rounded-xl border border-border/40 bg-card overflow-hidden shadow-soft transition-all duration-300 hover:shadow-card hover:border-primary/20" onClick={onSelect}>
+       <div className="relative aspect-[16/9] overflow-hidden">
+          <img src={investment.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+          <div className="absolute top-4 right-4">
+             <Badge className="bg-background/90 backdrop-blur-md text-foreground font-bold rounded-lg border-none">
+                {investment.investment_type === 'installment' ? 'Installment' : 'Full Payment'}
+             </Badge>
+          </div>
+       </div>
+       <div className="p-6 space-y-4">
+          <div>
+             <h4 className="font-serif text-lg font-bold text-foreground line-clamp-1">{investment.investment_properties?.title}</h4>
+             <p className="text-xs text-muted-foreground font-medium mt-1">Status: <span className="text-foreground capitalize">{investment.status}</span></p>
+          </div>
+          
+          <div className="space-y-2">
+             <div className="flex justify-between items-end">
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment Progress</p>
+                <p className="text-xs font-bold text-primary">{pct}%</p>
+             </div>
+             <Progress value={pct} className="h-1.5" />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
+             <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Purchase Price</p>
+                <p className="font-semibold text-sm">{formatMoney(total)}</p>
+             </div>
+             <div>
+                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Expected Return</p>
+                <p className="font-semibold text-sm text-green-600 dark:text-green-400">{investment.investment_properties?.projected_return_min}% p.a.</p>
+             </div>
+          </div>
+
+          <Button variant="outline" className="w-full rounded-xl border-border/40 text-xs font-bold group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
+             View Details
+             <ChevronRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-1" />
+          </Button>
+       </div>
+    </div>
+  );
+}

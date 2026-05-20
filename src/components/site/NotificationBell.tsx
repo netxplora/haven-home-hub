@@ -73,8 +73,8 @@ export function NotificationBell() {
                 );
                 return (
                   <li key={n.id}>
-                    {n.link ? (
-                      <Link to={n.link} onClick={() => !n.read_at && markRead(n.id)}>{Body}</Link>
+                    {n.action_url || n.link ? (
+                      <Link to={(n.action_url || n.link) as string} onClick={() => !n.read_at && markRead(n.id)}>{Body}</Link>
                     ) : (
                       <div onClick={() => !n.read_at && markRead(n.id)}>{Body}</div>
                     )}

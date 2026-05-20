@@ -1,130 +1,351 @@
+# PRODUCT REQUIREMENTS DOCUMENT (PRD)
 
-# Warm & Trustworthy Real Estate Agency Platform
-
-A centralized, agency-curated real estate platform where visitors browse Buy / Rent / Land listings, save favorites, contact assigned agents, and book inspections. Admins manage everything; agents handle their assigned listings, inquiries, and bookings.
-
-> Stack note: built on Lovable's React + Vite + Tailwind frontend with Lovable Cloud (Supabase: Postgres, Auth, Storage) for the backend. Maps are skipped in v1 (address shown as text). Next.js / Vercel / Zustand from the original spec are replaced by the equivalent Lovable defaults (React Router + React Query). Functionality is unchanged.
+Product: Real Estate Agency Platform with Fractional Ownership
 
 ---
 
-## 🎨 Design direction — Warm & Trustworthy
+## 1. PRODUCT OVERVIEW
 
-- **Palette**: warm sand background, deep terracotta primary, forest-green accent, charcoal text, soft cream cards.
-- **Typography**: a friendly serif for headings (e.g. Fraunces / Playfair), clean sans-serif for body (Inter).
-- **Feel**: generous whitespace, large rounded property imagery, subtle shadows, no harsh borders. Mobile-first. Premium but approachable — local, human, trustworthy.
-- All colors defined as HSL design tokens in `index.css` + `tailwind.config.ts` (no hard-coded colors in components).
+### 1.1 Product Vision
 
----
+Build a digital-first real estate agency platform that enables users to:
+- Buy, rent, and explore properties
+- Interact directly with agents
+- Invest in fractional real estate assets
+- Track investments and transactions in a unified dashboard
 
-## 👥 Roles & Permissions
-
-1. **Public visitor** — browse, search, filter, view property detail, contact agent (basic form, no login required).
-2. **Registered user** — everything above + save properties, book inspections, view inquiry history, manage profile.
-3. **Agent** — login, see assigned listings, respond to inquiries, manage their bookings.
-4. **Admin** — full CRUD on properties, agents, locations; assign agents; manage all bookings & inquiries; set property status.
-
-Roles stored in a dedicated `user_roles` table with a `has_role()` security-definer function (never on the profile row) — used by all RLS policies.
+The platform combines:
+- Real estate marketplace (core)
+- Investment platform (fractional ownership layer)
 
 ---
 
-## 🧱 Core pages & flows
+### 1.2 Product Goals
 
-### 1. Homepage
-- Hero with headline + integrated search bar (location, property type, price range).
-- Featured properties strip (admin-curated).
-- Three category tiles: **Buy / Rent / Land**.
-- Popular locations grid.
-- "Why trust us" section (verification, curated listings, real agents).
-- Featured agents row with photo, name, # of listings, contact.
-- Footer with company info & quick links.
-
-### 2. Listings page (`/properties`)
-- Filter sidebar: location, price range slider, property type, bedrooms (when applicable), land size (when type = land), status.
-- Sort: newest, price ↑, price ↓, featured.
-- Responsive property card grid: hero image, price, short title, location, bedrooms/size badge, "View details".
-- URL-synced filters (shareable links), pagination or infinite scroll.
-
-### 3. Property detail page (`/properties/:id`)
-- Image gallery with thumbnails + lightbox.
-- Optional video walkthrough (embedded if URL provided).
-- Title, price, status badge (Available / Reserved / Sold).
-- Full description + specs (size, bedrooms, bathrooms, features list).
-- Address shown as text (maps deferred).
-- **Agent panel**: photo, name, role, Call button, WhatsApp button, "Send inquiry" form, "Book inspection" button.
-- Sticky action bar on mobile: Save, Contact, Book.
-- Related properties at the bottom.
-
-### 4. Auth (`/auth`)
-- Email/password signup + login (Lovable Cloud auth).
-- Auto-create profile row on signup via DB trigger.
-- Reset password flow with `/reset-password` page.
-
-### 5. User dashboard (`/dashboard`)
-- Saved properties grid.
-- My inquiries (status, agent, last reply).
-- My inspection bookings (date, property, agent, status).
-- Profile editor (name, phone, avatar).
-
-### 6. Agent dashboard (`/agent`)
-- KPI tiles: assigned listings, open inquiries, upcoming inspections.
-- Assigned listings table (quick status update).
-- Inquiries inbox (mark replied, add notes).
-- Bookings calendar/list (confirm, reschedule, complete).
-
-### 7. Admin panel (`/admin`)
-- **Properties**: full CRUD, image uploads to Storage, video URL, assign agent, set status, mark featured.
-- **Agents**: invite/create agent accounts, edit profile, view performance (listings, inquiries, conversion).
-- **Locations**: manage the curated location list used by filters & homepage.
-- **Bookings**: all inspection requests, assign/reassign agent, update status.
-- **Inquiries**: all messages, assign to agent, mark resolved.
-- **Users**: list registered users, assign roles.
+- Create a trusted property discovery experience
+- Enable fast inquiry-to-inspection conversion
+- Provide structured real estate investment access
+- Deliver a clean, human-centered interface
+- Support fiat and crypto payment flows
 
 ---
 
-## 🗄️ Data model (Lovable Cloud / Postgres)
+### 1.3 Success Metrics
 
-- `profiles` — id (→ auth.users), full_name, phone, avatar_url
-- `user_roles` — user_id, role (`admin` | `agent` | `user`)
-- `agents` — id, user_id, bio, photo_url, phone, whatsapp, email, featured
-- `locations` — id, name, slug, image_url, featured
-- `properties` — id, title, slug, description, price, currency, location_id, address, property_type (`buy`|`rent`|`land`), status (`available`|`reserved`|`sold`), bedrooms, bathrooms, size_sqm, features (jsonb), video_url, agent_id, featured, created_at
-- `property_images` — id, property_id, url, sort_order, is_cover
-- `saved_properties` — user_id, property_id, created_at
-- `inquiries` — id, property_id, user_id (nullable for guests), name, email, phone, message, status, agent_id, created_at
-- `bookings` — id, property_id, user_id (nullable for guests), name, email, phone, preferred_date, notes, status (`pending`|`confirmed`|`completed`|`cancelled`), agent_id, created_at
-
-Storage bucket `property-media` (public) for images & optional video thumbs.
-
-RLS on every table: public read for `properties`, `property_images`, `agents`, `locations`; owner-scoped read/write for `saved_properties`, user's own `inquiries`/`bookings`; agent access scoped via `agent_id`; admin full access via `has_role(auth.uid(),'admin')`.
+- Property inquiry conversion rate
+- Inspection booking rate
+- Investment participation rate
+- Payment completion rate
+- User retention (dashboard usage)
 
 ---
 
-## 🚀 Build phases (delivered in this build)
+## 2. TARGET USERS
 
-**Phase 1 — Foundation & MVP**
-- Design system (warm palette, typography, tokens)
-- Database schema + RLS + seed locations & sample properties
-- Homepage, Listings, Property Detail
-- Admin: property CRUD with image uploads
+### 2.1 Property Buyers & Renters
+- Looking for verified properties
+- Want clear pricing and fast contact
 
-**Phase 2 — People & engagement**
-- Auth (signup/login/reset) + roles
-- Agents module + assignment
-- Inquiries (guest + logged-in)
-- Inspection bookings
+### 2.2 Property Investors
+- Interested in passive income
+- Want structured, low-friction investment
+
+### 2.3 Property Owners / Partners
+- List properties via agency
+- Earn through commissions
+
+### 2.4 Admin & Agents
+- Manage listings, users, transactions
+- Close deals and handle inquiries
+
+---
+
+## 3. PRODUCT SCOPE
+
+---
+
+### 3.1 CORE MODULES
+
+#### A. Real Estate Marketplace
+- Buy properties
+- Rent properties
+- Land listings
+- Property discovery and filtering
+
+#### B. Fractional Ownership (Investment Module)
+- Investment listings
+- Investment flows
+- Portfolio tracking
+
+#### C. Payment System
+- Fiat payments
+- Crypto payments
+- Transaction tracking
+
+#### D. Dashboard System
 - User dashboard
-- Agent dashboard
-- Admin: agents, bookings, inquiries, users management
+- Investor dashboard
+- Admin dashboard
 
-**Phase 3 — Polish & performance**
-- Lazy-loaded images, skeleton loaders, optimized queries
-- URL-synced filters, shareable searches
-- Inquiry/booking email-style toasts + agent notifications in dashboard
-- Empty states, 404s, loading + error boundaries
-- Responsive QA on mobile/tablet/desktop
+#### E. CMS & Blog
+- Content management
+- Blog publishing
 
 ---
 
-## ✅ What you get at the end
+## 4. FEATURE REQUIREMENTS
 
-A production-ready, agency-managed real estate site with curated Buy/Rent/Land listings, a strong agent-to-user contact layer, full admin control, and a warm, trustworthy visual identity — ready to publish from Lovable.
+---
+
+### 4.1 HOMEPAGE
+Features:
+- Search bar (location, type, price)
+- Featured listings
+- Categories (Buy, Rent, Land)
+- Investment highlights
+- Agent spotlight
+- Trust section
+
+---
+
+### 4.2 LISTINGS PAGE
+Filters:
+- Location
+- Price range
+- Property type
+- Bedrooms / size
+
+Features:
+- Grid layout
+- Map view
+- Save property
+- Sorting
+
+---
+
+### 4.3 PROPERTY DETAIL PAGE
+Sections:
+- Image gallery (slider)
+- Property details
+- Description
+- Features
+- Location map
+
+Agent Section:
+- Name
+- Photo
+- Contact options
+
+Actions:
+- Save property
+- Contact agent
+- Book inspection
+
+---
+
+### 4.4 INVESTMENT MODULE
+
+#### 4.4.1 Invest Landing Page
+- Explanation of fractional ownership
+- Benefits
+- CTA
+
+#### 4.4.2 Investment Listings
+- Grid view
+- Filters
+- Funding progress indicators
+
+#### 4.4.3 Investment Detail Page
+Must Include:
+- Property overview
+- Investment panel:
+  - Total value
+  - Unit price
+  - Units available
+- Returns section (range-based)
+- Income model
+- Risk disclosure
+
+Actions:
+- Invest Now
+- Contact advisor
+
+#### 4.4.4 Investment Flow
+- Enter amount
+- Validate minimum
+- Trigger payment
+- Allocate units
+- Confirm investment
+
+---
+
+### 4.5 PAYMENT SYSTEM
+
+#### 4.5.1 Fiat Payments
+Integrate:
+- Paystack
+- Flutterwave
+
+Features:
+- Card and bank payments
+- Webhook verification
+- Payment status tracking
+
+#### 4.5.2 Crypto Payments
+Flow:
+- Generate wallet address
+- Display QR code
+- Await confirmation
+- Verify via webhook
+
+Status:
+- Pending
+- Confirmed
+- Failed
+
+---
+
+### 4.6 USER DASHBOARD
+Sections:
+- Saved properties
+- Bookings
+- Investments
+- Transactions
+- Withdrawals
+- Notifications
+
+---
+
+### 4.7 ADMIN DASHBOARD
+Features:
+- Property management (CRUD)
+- Investment management
+- User & agent management
+- Payment tracking
+- Withdrawal management
+- Booking & inquiry tracking
+
+---
+
+### 4.8 WITHDRAWAL SYSTEM
+User:
+- Request withdrawal
+- Track status
+
+Admin:
+- Approve/reject
+- Update payout status
+
+---
+
+### 4.9 CMS & BLOG
+CMS:
+- Create/edit posts
+- Draft/publish states
+- Categories and tags
+
+Blog:
+- Listing page
+- Individual posts
+- SEO support
+
+---
+
+## 5. DATA REQUIREMENTS
+
+Core Data:
+- Properties (buy, rent, land)
+- Investment properties
+- Users
+- Agents
+- Transactions
+
+Seed Data:
+- 50+ properties
+- 10–15 investment listings
+- High-quality images
+
+---
+
+## 6. UI/UX REQUIREMENTS
+
+Design Direction:
+- Warm, trustworthy
+- Clean and minimal
+
+Key Elements:
+- Emerald green accent color
+- Image-first layout
+- Smooth animations
+- Responsive design
+
+---
+
+## 7. NON-FUNCTIONAL REQUIREMENTS
+
+Performance:
+- Fast load times
+- Lazy loading images
+
+Security:
+- Role-based access
+- Payment verification
+- Secure file uploads
+
+Scalability:
+- Modular architecture
+- API-driven backend
+
+---
+
+## 8. TECH STACK
+- Frontend: Next.js (Note: Lovable uses React/Vite/Tailwind)
+- Backend: Supabase
+- State: Zustand
+- Maps: Google Maps API
+
+---
+
+## 9. DEPLOYMENT
+- Frontend: Vercel
+- Backend: Supabase
+- SSL enabled
+- Environment variables secured
+
+---
+
+## 10. BUILD PHASES
+
+Phase 1
+- Marketplace (Buy, Rent, Land)
+- Basic admin
+
+Phase 2
+- Agent system
+- Dashboard
+- Booking system
+
+Phase 3
+- Investment module
+- Payment system
+
+Phase 4
+- CMS & Blog
+- Optimization
+
+---
+
+## 11. RISKS & CONSTRAINTS
+- Payment failures
+- Data inconsistency
+- Legal risks (investment claims)
+- Poor listing quality
+
+---
+
+## 12. FINAL PRODUCT DEFINITION
+A fully integrated real estate and investment platform that:
+- Enables property discovery and transactions
+- Supports fractional ownership investments
+- Provides transparent payment and tracking systems
+- Delivers a clean, high-trust, human-centered experience

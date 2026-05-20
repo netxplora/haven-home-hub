@@ -1,10 +1,11 @@
-export function formatPrice(price: number, currency = "USD", type?: string) {
+export function formatPrice(price: number | null | undefined, currency = "USD", type?: string) {
+  const p = Number(price || 0);
   const formatter = new Intl.NumberFormat("en-US", {
     style: "currency",
-    currency,
+    currency: currency || "USD",
     maximumFractionDigits: 0,
   });
-  const base = formatter.format(price);
+  const base = formatter.format(p);
   return type === "rent" ? `${base}/mo` : base;
 }
 

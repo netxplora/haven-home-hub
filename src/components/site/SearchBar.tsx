@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -10,14 +12,22 @@ interface Props { compact?: boolean }
 export function SearchBar({ compact = false }: Props) {
   const navigate = useNavigate();
   const [type, setType] = useState("buy");
-  const [q, setQ] = useState("");
+  const [locationSlug, setLocationSlug] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
+
+  const { data: locations = [] } = useQuery({
+    queryKey: ["locations"],
+    queryFn: async () => {
+      const { data } = await supabase.from("locations").select("id, name, slug").order("name");
+      return data ?? [];
+    },
+  });
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
     if (type) params.set("type", type);
-    if (q) params.set("q", q);
+    if (locationSlug && locationSlug !== "all") params.set("location", locationSlug);
     if (maxPrice) params.set("maxPrice", maxPrice);
     navigate(`/properties?${params.toString()}`);
   };
@@ -25,10 +35,10 @@ export function SearchBar({ compact = false }: Props) {
   return (
     <form
       onSubmit={submit}
-      className={`grid gap-3 rounded-2xl border border-border bg-card/95 p-3 shadow-card backdrop-blur sm:grid-cols-[140px_1fr_140px_auto] ${compact ? "" : ""}`}
+      className="grid gap-2.5 rounded-xl border border-white/15 bg-white/10 p-2.5 shadow-lux backdrop-blur-md sm:grid-cols-[140px_1fr_140px_auto]"
     >
       <Select value={type} onValueChange={setType}>
-        <SelectTrigger className="h-12 border-border bg-background">
+        <SelectTrigger className="h-11 rounded-lg border-0 bg-white text-foreground font-medium text-sm">
           <SelectValue placeholder="Type" />
         </SelectTrigger>
         <SelectContent>
@@ -37,20 +47,27 @@ export function SearchBar({ compact = false }: Props) {
           <SelectItem value="land">Land</SelectItem>
         </SelectContent>
       </Select>
-      <Input
-        placeholder="Location, neighborhood, or keyword"
-        value={q}
-        onChange={(e) => setQ(e.target.value)}
-        className="h-12 bg-background"
-      />
+
+      <Select value={locationSlug || "all"} onValueChange={(v) => setLocationSlug(v)}>
+        <SelectTrigger className="h-11 rounded-lg border-0 bg-white text-foreground font-medium text-sm">
+          <SelectValue placeholder="Select Location" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Any location</SelectItem>
+          {locations.map((l) => (
+            <SelectItem key={l.id} value={l.slug}>{l.name}</SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+
       <Input
         type="number"
         placeholder="Max price"
         value={maxPrice}
         onChange={(e) => setMaxPrice(e.target.value)}
-        className="h-12 bg-background"
+        className="h-11 rounded-lg border-0 bg-white text-foreground font-medium text-sm"
       />
-      <Button type="submit" size="lg" className="h-12 bg-gradient-warm hover:opacity-95">
+      <Button type="submit" size="lg" className="h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm">
         <Search className="mr-2 h-4 w-4" /> Search
       </Button>
     </form>

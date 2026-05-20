@@ -47,11 +47,6 @@ export default {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        gold: {
-          DEFAULT: "hsl(var(--gold))",
-          foreground: "hsl(var(--gold-foreground))",
-          soft: "hsl(var(--gold-soft))",
-        },
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",
@@ -70,38 +65,25 @@ export default {
       },
       fontFamily: {
         sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Fraunces', 'Georgia', 'serif'],
+        serif: ['Poppins', 'Inter', 'sans-serif'],
       },
       backgroundImage: {
-        'gradient-warm': 'var(--gradient-warm)',
         'gradient-hero': 'var(--gradient-hero)',
-        'gradient-soft': 'var(--gradient-soft)',
-        'gradient-gold': 'var(--gradient-gold)',
-        'gradient-invest': 'var(--gradient-invest)',
+        'gradient-hero-emerald': 'var(--gradient-hero-emerald)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
-        'warm': 'var(--shadow-warm)',
         'card': 'var(--shadow-card)',
-        'gold': 'var(--shadow-gold)',
         'lux': 'var(--shadow-lux)',
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
         },
       },
       animation: {

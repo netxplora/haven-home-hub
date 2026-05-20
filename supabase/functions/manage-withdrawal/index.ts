@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const corsHeaders = {
@@ -5,7 +6,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-type Action = "approve" | "reject" | "complete" | "fail";
+type Action = "process" | "reject" | "complete" | "fail";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -37,7 +38,7 @@ Deno.serve(async (req) => {
       rejection_reason?: string;
     };
     if (!withdrawal_id || !action) return json({ error: "Missing fields" }, 400);
-    if (!["approve", "reject", "complete", "fail"].includes(action)) {
+    if (!["process", "reject", "complete", "fail"].includes(action)) {
       return json({ error: "Invalid action" }, 400);
     }
 
@@ -55,20 +56,20 @@ Deno.serve(async (req) => {
     let notifTitle = "";
     let notifBody = "";
 
-    if (action === "approve") {
-      if (w.status !== "pending") return json({ error: `Cannot approve ${w.status}` }, 400);
-      update.status = "approved";
-      notifTitle = "Withdrawal approved";
+    if (action === "process") {
+      if (w.status !== "pending") return json({ error: `Cannot process ${w.status}` }, 400);
+      update.status = "processing";
+      notifTitle = "Withdrawal processing";
       notifBody = `Your ${w.method.replace("_", " ")} withdrawal of ${w.amount} ${w.currency} has been approved and is being processed.`;
     } else if (action === "reject") {
-      if (w.status !== "pending" && w.status !== "approved") return json({ error: `Cannot reject ${w.status}` }, 400);
+      if (w.status !== "pending" && w.status !== "processing") return json({ error: `Cannot reject ${w.status}` }, 400);
       update.status = "rejected";
       update.rejection_reason = rejection_reason ?? "No reason provided";
       notifType = "withdrawal_rejected";
       notifTitle = "Withdrawal rejected";
       notifBody = `Your withdrawal of ${w.amount} ${w.currency} was rejected. Reason: ${update.rejection_reason}`;
     } else if (action === "complete") {
-      if (!["approved", "processing"].includes(w.status)) return json({ error: `Cannot complete ${w.status}` }, 400);
+      if (!["processing"].includes(w.status)) return json({ error: `Cannot complete ${w.status}` }, 400);
       update.status = "completed";
       update.completed_at = now;
       update.transaction_reference = transaction_reference ?? w.transaction_reference;

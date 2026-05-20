@@ -2,104 +2,112 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Warm & Trustworthy Real Estate Design System
-   All colors MUST be HSL.
+/* ── Premium Real Estate Design System ──
+   Clean, calm, spacious, human-centered.
+   All colors are HSL values.
 */
 
 @layer base {
   :root {
-    /* Surfaces */
-    --background: 38 33% 97%;          /* warm sand */
-    --foreground: 24 14% 14%;          /* deep charcoal */
+    /* Surfaces — bright, clean, warm whites */
+    --background: 60 9% 98%;
+    /* Warm White #FAFAF9 */
+    --foreground: 220 20% 18%;
+    /* Deep Charcoal — softer than pure black */
 
-    --card: 36 40% 99%;                /* cream */
-    --card-foreground: 24 14% 14%;
+    --card: 0 0% 100%;
+    /* Pure white cards */
+    --card-foreground: 220 20% 18%;
 
-    --popover: 36 40% 99%;
-    --popover-foreground: 24 14% 14%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 20% 18%;
 
-    /* Brand */
-    --primary: 158 72% 28%;            /* deep emerald */
-    --primary-foreground: 36 50% 98%;
-    --primary-glow: 152 58% 42%;       /* lighter emerald */
+    /* Brand — Emerald Green */
+    --primary: 160 84% 28%;
+    /* Refined Emerald #0B7A55 */
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 160 84% 38%;
 
-    --secondary: 36 30% 92%;           /* light sand */
-    --secondary-foreground: 24 14% 14%;
+    /* Secondary — Navy Slate */
+    --secondary: 220 35% 28%;
+    /* Warm Navy #2B3A52 */
+    --secondary-foreground: 0 0% 100%;
 
-    --accent: 158 72% 28%;             /* emerald accent */
-    --accent-foreground: 36 50% 98%;
+    /* Accent — Subtle cool gray tint for backgrounds */
+    --accent: 220 20% 96%;
+    --accent-foreground: 220 35% 22%;
 
-    /* Gold accent for Invest / premium surfaces */
-    --gold: 38 58% 48%;
-    --gold-foreground: 24 14% 14%;
-    --gold-soft: 42 60% 88%;
+    /* Muted — for labels, descriptions, secondary text */
+    --muted: 220 10% 95.5%;
+    --muted-foreground: 220 10% 46%;
 
-    --muted: 34 25% 93%;
-    --muted-foreground: 24 8% 40%;
+    /* Utility colors */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 45%;
-    --destructive-foreground: 36 50% 98%;
-
-    --border: 30 20% 86%;
-    --input: 30 20% 86%;
-    --ring: 158 72% 28%;
+    --border: 220 13% 91%;
+    --input: 220 13% 91%;
+    --ring: 160 84% 28%;
 
     --radius: 0.75rem;
 
-    /* Gradients */
-    --gradient-warm: linear-gradient(135deg, hsl(158 72% 28%) 0%, hsl(152 58% 42%) 100%);
-    --gradient-hero: linear-gradient(180deg, hsl(24 14% 14% / 0.55) 0%, hsl(24 14% 14% / 0.25) 50%, hsl(24 14% 14% / 0.65) 100%);
-    --gradient-soft: linear-gradient(180deg, hsl(38 33% 97%) 0%, hsl(36 30% 92%) 100%);
-    --gradient-gold: linear-gradient(135deg, hsl(38 58% 48%) 0%, hsl(42 72% 62%) 100%);
-    --gradient-invest: linear-gradient(180deg, hsl(24 14% 12% / 0.75) 0%, hsl(24 14% 14% / 0.35) 50%, hsl(24 14% 14% / 0.8) 100%);
+    /* Hero overlays — balanced readability without heavy drama */
+    --gradient-hero: linear-gradient(180deg,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.15) 50%,
+        rgba(0, 0, 0, 0.65) 100%);
+    --gradient-hero-emerald: linear-gradient(135deg,
+        rgba(11, 122, 85, 0.7) 0%,
+        rgba(43, 58, 82, 0.6) 100%);
 
-    /* Shadows */
-    --shadow-soft: 0 2px 12px -4px hsl(24 14% 14% / 0.08);
-    --shadow-warm: 0 12px 40px -16px hsl(158 72% 28% / 0.30);
-    --shadow-card: 0 4px 20px -8px hsl(24 14% 14% / 0.12);
-    --shadow-gold: 0 12px 40px -16px hsl(38 58% 48% / 0.35);
-    --shadow-lux: 0 20px 60px -24px hsl(24 14% 14% / 0.22);
+    /* Shadows — soft, barely-there, professional */
+    --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.04),
+      0 1px 2px -1px rgba(0, 0, 0, 0.03);
+    --shadow-card: 0 4px 16px -2px rgba(0, 0, 0, 0.05),
+      0 2px 4px -2px rgba(0, 0, 0, 0.03);
+    --shadow-lux: 0 8px 30px -4px rgba(0, 0, 0, 0.07),
+      0 4px 8px -4px rgba(0, 0, 0, 0.04);
 
-    /* Sidebar (admin) */
-    --sidebar-background: 36 40% 99%;
-    --sidebar-foreground: 24 14% 14%;
-    --sidebar-primary: 158 72% 28%;
-    --sidebar-primary-foreground: 36 50% 98%;
-    --sidebar-accent: 36 30% 92%;
-    --sidebar-accent-foreground: 24 14% 14%;
-    --sidebar-border: 30 20% 86%;
-    --sidebar-ring: 158 72% 28%;
+    /* Sidebar (admin/dashboard) */
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 220 20% 18%;
+    --sidebar-primary: 160 84% 28%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 220 20% 96%;
+    --sidebar-accent-foreground: 220 35% 22%;
+    --sidebar-border: 220 13% 93%;
+    --sidebar-ring: 160 84% 28%;
   }
 
   .dark {
-    --background: 24 14% 10%;
-    --foreground: 36 30% 95%;
-    --card: 24 14% 13%;
-    --card-foreground: 36 30% 95%;
-    --popover: 24 14% 13%;
-    --popover-foreground: 36 30% 95%;
-    --primary: 152 58% 48%;
-    --primary-foreground: 24 14% 10%;
-    --primary-glow: 158 72% 38%;
-    --secondary: 24 14% 18%;
-    --secondary-foreground: 36 30% 95%;
-    --accent: 152 58% 48%;
-    --accent-foreground: 36 30% 95%;
-    --muted: 24 14% 18%;
-    --muted-foreground: 30 10% 65%;
+    --background: 222 35% 7%;
+    --foreground: 60 9% 95%;
+    --card: 222 35% 10%;
+    --card-foreground: 60 9% 95%;
+    --popover: 222 35% 10%;
+    --popover-foreground: 60 9% 95%;
+    --primary: 160 84% 36%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 160 84% 45%;
+    --secondary: 220 35% 42%;
+    --secondary-foreground: 0 0% 100%;
+    --accent: 222 35% 14%;
+    --accent-foreground: 220 20% 85%;
+    --muted: 222 35% 14%;
+    --muted-foreground: 220 9% 65%;
     --destructive: 0 70% 50%;
-    --destructive-foreground: 36 30% 95%;
-    --border: 24 14% 22%;
-    --input: 24 14% 22%;
-    --ring: 152 58% 48%;
-    --sidebar-background: 24 14% 13%;
-    --sidebar-foreground: 36 30% 95%;
-    --sidebar-primary: 152 58% 48%;
-    --sidebar-primary-foreground: 24 14% 10%;
-    --sidebar-accent: 24 14% 18%;
-    --sidebar-accent-foreground: 36 30% 95%;
-    --sidebar-border: 24 14% 22%;
-    --sidebar-ring: 152 58% 48%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 35% 18%;
+    --input: 222 35% 18%;
+    --ring: 160 84% 36%;
+    --sidebar-background: 222 35% 10%;
+    --sidebar-foreground: 60 9% 95%;
+    --sidebar-primary: 160 84% 36%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 35% 14%;
+    --sidebar-accent-foreground: 60 9% 95%;
+    --sidebar-border: 222 35% 18%;
+    --sidebar-ring: 160 84% 36%;
   }
 }
 
@@ -107,20 +115,135 @@
   * {
     @apply border-border;
   }
+
   body {
     @apply bg-background text-foreground font-sans antialiased;
     font-feature-settings: "ss01", "cv11";
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
-  h1, h2, h3, h4, h5 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     @apply font-serif tracking-tight;
+  }
+
+  /* ── Improved Typography Scale ── */
+  h1 {
+    @apply text-3xl sm:text-4xl lg:text-5xl leading-tight;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl leading-snug;
+  }
+
+  h3 {
+    @apply text-xl leading-snug;
+  }
+
+  /* Smoother focus rings */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring/40 ring-offset-2 ring-offset-background;
+  }
+
+  /* Better selection color */
+  ::selection {
+    background: hsl(var(--primary) / 0.12);
   }
 }
 
 @layer components {
   .container-tight {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-5xl px-5 sm:px-6 lg:px-8;
   }
+
   .container-wide {
-    @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-6 lg:px-8;
   }
+
+  /* ── Section spacing utility ── */
+  .section-gap {
+    @apply py-16 sm:py-20 lg:py-24;
+  }
+
+  /* ── Section header pattern ── */
+  .section-header {
+    @apply mb-10 lg:mb-14;
+  }
+
+  .section-header .section-label {
+    @apply text-xs font-semibold tracking-widest uppercase text-primary mb-2 block;
+  }
+
+  .section-header h2 {
+    @apply font-serif text-2xl sm:text-3xl font-semibold text-foreground;
+  }
+
+  .section-header p {
+    @apply mt-2 text-muted-foreground text-base max-w-2xl;
+  }
+}
+
+/* ── Subtle Ken Burns for hero images ──────────────── */
+.properties-hero__img {
+  animation: heroKenBurns 20s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+@keyframes heroKenBurns {
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.06);
+  }
+}
+
+/* ── Responsive hero heights ── */
+@media (max-width: 640px) {
+  .properties-hero {
+    min-height: 360px !important;
+  }
+
+  .properties-hero>.container-wide {
+    min-height: 360px !important;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .properties-hero {
+    min-height: 400px !important;
+  }
+
+  .properties-hero>.container-wide {
+    min-height: 400px !important;
+  }
+}
+
+/* ── Smooth scrolling ── */
+html {
+  scroll-behavior: smooth;
+}
+
+/* ── Better scrollbar styling ── */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.3);
 }
