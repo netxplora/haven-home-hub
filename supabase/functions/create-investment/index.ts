@@ -55,9 +55,9 @@ Deno.serve(async (req: Request) => {
     if (!prop) return json({ error: "Property not found" }, 404);
     if (prop.status !== "open") return json({ error: "Not open for investment (current status: " + prop.status + ")" }, 400);
 
-    // For installment investments, validate against total_amount, not initial payment
+    // Validate that at least 1 unit is purchased
     const investmentTotal = investment_type === "installment" ? Number(total_amount ?? amount) : Number(amount);
-    if (investmentTotal < Number(prop.min_investment)) return json({ error: "Below minimum investment" }, 400);
+    if (units < 1) return json({ error: "Must purchase at least 1 unit" }, 400);
 
     const expected = Math.floor(investmentTotal / Number(prop.unit_price));
     if (expected !== Number(units)) return json({ error: "Amount does not match units at unit price" }, 400);

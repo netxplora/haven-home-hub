@@ -42,7 +42,7 @@ export function InvestDialog({
   const minDownPct = Number((property as any).min_down_payment_pct ?? 20);
   const maxMonths = Number((property as any).max_installment_months ?? 24);
 
-  const minUnits = Math.max(1, Math.ceil(Number(property.min_investment) / Number(property.unit_price)));
+  const minUnits = 1;
   const avail = availableUnits(property);
 
   const [units, setUnits] = useState<number>(() => {
