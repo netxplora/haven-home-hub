@@ -2,8 +2,9 @@ import { memo } from "react";
 import { Link } from "react-router-dom";
 import { Bed, Bath, Maximize2, MapPin, Car, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { formatPrice, propertyTypeLabel, resolveImage } from "@/lib/format";
+import { propertyTypeLabel, resolveImage } from "@/lib/format";
 import { useCompare } from "@/hooks/useCompare";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Scale } from "lucide-react";
 
 export interface PropertyCardData {
@@ -25,12 +26,16 @@ export interface PropertyCardData {
   state?: string | null;
   country?: string | null;
   property_category?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   locations?: { name: string } | null;
+  created_at?: string;
 }
 
 export const PropertyCard = memo(function PropertyCard({ property }: { property: PropertyCardData }) {
   const img = resolveImage(property.cover_image_url);
   const { addToCompare, compareList } = useCompare();
+  const formatPrice = useFormatPrice();
   
   const statusConfig = {
     reserved: { label: "Reserved", className: "bg-secondary text-secondary-foreground" },
@@ -40,6 +45,7 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
   }[property.status];
 
   const inCompare = compareList.some(p => p.id === property.id);
+  const isNew = property.created_at ? new Date(property.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) : false;
 
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border/60 bg-card shadow-soft transition-all duration-300 hover:shadow-card hover:border-border">
@@ -63,6 +69,11 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
             {property.featured && (
               <Badge className="bg-primary text-primary-foreground border-none shadow-sm gap-1 text-xs px-2.5 py-1">
                 <Star className="h-3 w-3 fill-current" /> Featured
+              </Badge>
+            )}
+            {isNew && (
+              <Badge className="bg-emerald-500 text-white border-none shadow-sm gap-1 text-xs px-2.5 py-1">
+                New Listing
               </Badge>
             )}
           </div>
@@ -101,15 +112,15 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
       </div>
       
       {/* Content */}
-      <div className="relative z-10 p-5 pointer-events-none">
-        <p className="font-serif text-xl font-semibold text-primary">
+      <div className="relative z-10 p-3 sm:p-5 pointer-events-none flex flex-col h-full">
+        <p className="font-serif text-lg sm:text-xl font-semibold text-primary">
           {formatPrice(property.price, property.currency, property.property_type)}
         </p>
-        <h3 className="mt-1.5 line-clamp-1 text-[15px] font-medium text-foreground">
+        <h3 className="mt-1 sm:mt-1.5 line-clamp-1 text-sm sm:text-[15px] font-medium text-foreground">
           {property.title}
         </h3>
-        <p className="mt-1.5 flex items-center gap-1.5 text-sm text-muted-foreground">
-          <MapPin className="h-3.5 w-3.5 shrink-0" />
+        <p className="mt-1 sm:mt-1.5 flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
+          <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
           <span className="line-clamp-1">
             {property.city && property.country 
               ? `${property.city}${property.state ? `, ${property.state}` : ''}, ${property.country}`
@@ -118,18 +129,15 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
         </p>
         
         {/* Specs */}
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 border-t border-border/50 pt-4 mt-4 text-xs text-muted-foreground">
+        <div className="mt-auto pt-3 sm:pt-4 border-t border-border/50 flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 sm:gap-y-1.5 text-[10px] sm:text-xs text-muted-foreground">
           {property.bedrooms != null && (
-            <span className="flex items-center gap-1"><Bed className="h-3.5 w-3.5" /> {property.bedrooms} Bed</span>
+            <span className="flex items-center gap-1"><Bed className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {property.bedrooms}</span>
           )}
           {property.bathrooms != null && (
-            <span className="flex items-center gap-1"><Bath className="h-3.5 w-3.5" /> {property.bathrooms} Bath</span>
-          )}
-          {property.parking_spaces != null && property.parking_spaces > 0 && (
-            <span className="flex items-center gap-1"><Car className="h-3.5 w-3.5" /> {property.parking_spaces} Park</span>
+            <span className="flex items-center gap-1"><Bath className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {property.bathrooms}</span>
           )}
           {property.size_sqm != null && (
-            <span className="flex items-center gap-1"><Maximize2 className="h-3.5 w-3.5" /> {Number(property.size_sqm).toLocaleString()} sq ft</span>
+            <span className="flex items-center gap-1"><Maximize2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {Number(property.size_sqm).toLocaleString()} sqm</span>
           )}
         </div>
       </div>

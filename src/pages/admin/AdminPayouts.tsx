@@ -96,15 +96,15 @@ export function AdminPayouts() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-accent text-left">
             <tr>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Date</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Property</th>
-              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px]">Amount</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Notes</th>
-              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px]">Actions</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Date</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Property</th>
+              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Amount</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Notes</th>
+              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">

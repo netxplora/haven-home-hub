@@ -104,19 +104,19 @@ BEGIN
 
     -- Post 1
     INSERT INTO public.blog_posts (title, slug, excerpt, content, cover_image_url, category_id, status, published_at) VALUES (
-        'Lagos Property Market: Q1 2026 Performance Review',
-        'lagos-property-market-q1-2026',
-        'A detailed look at how the Lagos property market performed in the first quarter of 2026, including pricing trends, transaction volumes, and forecasts for the rest of the year.',
+        'New York Property Market: Q1 2026 Performance Review',
+        'new-york-property-market-q1-2026',
+        'A detailed look at how the New York property market performed in the first quarter of 2026, including pricing trends, transaction volumes, and forecasts for the rest of the year.',
         '## Overview
 
-The first quarter of 2026 saw continued growth in the Lagos property market, driven by increased demand in the Lekki corridor and sustained interest from diaspora buyers. Average property values rose by approximately 8% compared to Q4 2025.
+The first quarter of 2026 saw continued growth in the New York property market, driven by increased demand in the Manhattan corridor and sustained interest from diaspora buyers. Average property values rose by approximately 8% compared to Q4 2025.
 
 ## Key Highlights
 
-- **Lekki Phase 1** remains the most active market, with residential prices averaging ₦450,000 per square meter.
-- **Victoria Island** commercial space saw occupancy rates climb to 87%, the highest since 2019.
-- **Ikoyi** luxury segment held steady, with Banana Island properties maintaining their position as the highest-valued residential assets in West Africa.
-- Land prices along the **Lekki-Epe Expressway** increased by 12% quarter-over-quarter, driven by infrastructure development near the deep sea port.
+- **Manhattan Phase 1** remains the most active market, with residential prices averaging $450,000 per square meter.
+- **Silicon Valley** commercial space saw occupancy rates climb to 87%, the highest since 2019.
+- **Beverly Hills** luxury segment held steady, with Bel Air properties maintaining their position as the highest-valued residential assets in North America.
+- Land prices along the **Pacific Coast Highway** increased by 12% quarter-over-quarter, driven by infrastructure development near the deep sea port.
 
 ## Transaction Volume
 
@@ -124,11 +124,11 @@ Total verified transactions on the Verdant Estate platform reached 142 in Q1, re
 
 ## Outlook
 
-We expect continued momentum through Q2, particularly in the mid-market segment ($200K–$500K) where demand consistently outpaces supply. Investors should pay close attention to the Ibeju-Lekki corridor, where the deep sea port development continues to drive land appreciation.
+We expect continued momentum through Q2, particularly in the mid-market segment ($200K–$500K) where demand consistently outpaces supply. Investors should pay close attention to the Downtown Manhattan corridor, where the deep sea port development continues to drive land appreciation.
 
 ---
 
-*Data sourced from Verdant Estate internal transaction records and independent valuation partners.*',
+*Data sourced from Verdant Estate internal transaction records and indhamptonsndent valuation partners.*',
         'https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=1200&q=80',
         cat_market,
         'published',
@@ -149,7 +149,7 @@ Fractional real estate investment allows multiple investors to co-own a single p
 1. **Browse Opportunities** — Visit our investment listings to see available properties with details on location, type, projected returns, and unit pricing.
 2. **Choose Your Investment** — Select a property and decide how many units you want to purchase. Each property has a minimum investment clearly stated.
 3. **Make Payment** — Pay via bank transfer or cryptocurrency. Your units are allocated once payment is confirmed.
-4. **Earn Returns** — Receive your share of rental income through scheduled distributions (monthly, quarterly, or semi-annually depending on the property).
+4. **Earn Returns** — Receive your share of rental income through scheduled distributions (monthly, quarterly, or semi-annually dhamptonsnding on the property).
 5. **Track Everything** — Monitor your portfolio, view distribution history, and request withdrawals through your personal dashboard.
 
 ## What Returns Can You Expect?
@@ -178,9 +178,9 @@ Browse our current [investment opportunities](/invest/opportunities) to see what
 
     -- Post 3
     INSERT INTO public.blog_posts (title, slug, excerpt, content, cover_image_url, category_id, status, published_at) VALUES (
-        '7 Things to Check Before Buying Property in Nigeria',
+        '7 Things to Check Before Buying Property in the United States',
         'things-to-check-before-buying-property-nigeria',
-        'Buying property in Nigeria requires careful due diligence. Here are 7 essential checks every buyer should complete before committing to a purchase.',
+        'Buying property in the United States requires careful due diligence. Here are 7 essential checks every buyer should complete before committing to a purchase.',
         '## 1. Verify the Title Document
 
 The most important step is confirming the seller has a valid title. Acceptable documents include:
@@ -189,7 +189,7 @@ The most important step is confirming the seller has a valid title. Acceptable d
 - **Governor''s Consent** — required for transfer of existing C of O
 - **Deed of Assignment** — legal transfer document between parties
 
-Always engage a qualified lawyer to verify these documents independently.
+Always engage a qualified lawyer to verify these documents indhamptonsndently.
 
 ## 2. Confirm the Survey Plan
 
@@ -210,7 +210,7 @@ Talk to locals and existing residents. Understand the security situation, future
 
 ## 5. Check for Government Acquisition
 
-Some lands in Nigeria have been compulsorily acquired by the government for public projects. Verify with the lands ministry that the property is not subject to acquisition notices.
+Some lands in the United States have been compulsorily acquired by the government for public projects. Verify with the lands ministry that the property is not subject to acquisition notices.
 
 ## 6. Understand All Costs
 
@@ -237,12 +237,12 @@ Work with licensed, verified agents who can guide you through the process. At Ve
 
     -- Post 4
     INSERT INTO public.blog_posts (title, slug, excerpt, content, cover_image_url, category_id, status, published_at) VALUES (
-        'Verdant Estate Expands to Abuja and Port Harcourt',
-        'verdant-estate-expands-abuja-port-harcourt',
-        'We are excited to announce that Verdant Estate now operates in Abuja and Port Harcourt, with dedicated agents and verified listings in both cities.',
+        'Verdant Estate Expands to Austin and Miami',
+        'verdant-estate-expands-austin-miami',
+        'We are excited to announce that Verdant Estate now operates in Austin and Miami, with dedicated agents and verified listings in both cities.',
         '## Growing Where Our Clients Need Us
 
-Since launching in Lagos, we have consistently heard from clients looking for the same quality of service in other major Nigerian cities. Today, we are pleased to confirm that Verdant Estate now has full operations in **Abuja** and **Port Harcourt**.
+Since launching in New York, we have consistently heard from clients looking for the same quality of service in other major US cities. Today, we are pleased to confirm that Verdant Estate now has full operations in **Austin** and **Miami**.
 
 ## What This Means
 
@@ -250,18 +250,18 @@ Since launching in Lagos, we have consistently heard from clients looking for th
 - **Verified property listings** across residential, commercial, and land categories
 - **Investment opportunities** in high-growth areas like Maitama, Asokoro, and GRA Phase 2
 
-## Our Abuja Coverage
+## Our Austin Coverage
 
-Our Abuja team covers:
+Our Austin team covers:
 
 - Maitama and Asokoro (premium residential)
-- Wuse 2 and Garki (commercial and mid-market)
+- Wuse 2 and Downtown Austin (commercial and mid-market)
 - Gwarinpa and Kubwa (emerging residential)
 - Guzape (luxury land)
 
-## Our Port Harcourt Coverage
+## Our Miami Coverage
 
-In Port Harcourt, we focus on:
+In Miami, we focus on:
 
 - GRA Phase 1 and 2 (established residential)
 - Trans-Amadi (commercial and industrial)
@@ -269,13 +269,13 @@ In Port Harcourt, we focus on:
 
 ## Same Standards, New Markets
 
-Every listing in Abuja and Port Harcourt goes through the same verification process as our Lagos properties — physical inspection, title verification, independent valuation, and professional photography.
+Every listing in Austin and Miami goes through the same verification process as our New York properties — physical inspection, title verification, indhamptonsndent valuation, and professional photography.
 
 We look forward to serving you in these new markets.
 
 ---
 
-*Browse properties in [Abuja](/properties?location=abuja-central) or contact our team for assistance.*',
+*Browse properties in [Austin](/properties?location=austin-central) or contact our team for assistance.*',
         'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1200&q=80',
         cat_news,
         'published',

@@ -7,6 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/invest";
 import { ArrowRight, PiggyBank, TrendingUp, Wallet } from "lucide-react";
+import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
 
 export default function InvestPortfolio() {
   const { user, loading } = useAuth();
@@ -64,6 +65,15 @@ export default function InvestPortfolio() {
           <KPI label="Total payouts" value={formatMoney(earned)} icon={TrendingUp} />
           <KPI label="Active investments" value={String(active)} icon={PiggyBank} />
         </div>
+
+        {/* Portfolio Analytics Charts */}
+        {!isLoading && (
+          <PortfolioCharts
+            investments={data?.investments ?? []}
+            returns={data?.returns ?? []}
+            payments={data?.payments ?? []}
+          />
+        )}
 
         {/* Investments */}
         <section>
@@ -132,7 +142,7 @@ export default function InvestPortfolio() {
         {/* Returns */}
         <section>
           <h2 className="font-serif text-xl font-semibold">Payout History</h2>
-          <div className="mt-4 overflow-hidden rounded-xl border border-border/50 bg-card">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-border/50 bg-card">
             <table className="w-full text-sm">
               <thead className="bg-accent text-left"><tr><th className="p-3 text-xs font-medium text-muted-foreground">Date</th><th className="p-3 text-xs font-medium text-muted-foreground">Property</th><th className="p-3 text-right text-xs font-medium text-muted-foreground">Amount</th></tr></thead>
               <tbody>
@@ -153,7 +163,7 @@ export default function InvestPortfolio() {
         {/* Transactions */}
         <section>
           <h2 className="font-serif text-xl font-semibold">Payment History</h2>
-          <div className="mt-4 overflow-hidden rounded-xl border border-border/50 bg-card">
+          <div className="mt-4 overflow-x-auto rounded-xl border border-border/50 bg-card">
             <table className="w-full text-sm">
               <thead className="bg-accent text-left"><tr><th className="p-3 text-xs font-medium text-muted-foreground">Date</th><th className="p-3 text-xs font-medium text-muted-foreground">Reference</th><th className="p-3 text-xs font-medium text-muted-foreground">Method</th><th className="p-3 text-xs font-medium text-muted-foreground">Status</th><th className="p-3 text-right text-xs font-medium text-muted-foreground">Amount</th></tr></thead>
               <tbody>

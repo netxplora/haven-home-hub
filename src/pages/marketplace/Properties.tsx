@@ -4,6 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
+import { PropertyMap } from "@/components/site/PropertyMap";
+import { SaveSearchButton } from "@/components/site/SavedSearch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -18,7 +20,9 @@ import {
   Home as HomeIcon, 
   Tag,
   ArrowUpDown,
-  Filter
+  Filter,
+  Map as MapIcon,
+  LayoutGrid
 } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
@@ -69,6 +73,7 @@ const PROPERTY_CATEGORIES = [
 export default function Properties() {
   const [params, setParams] = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "map">("list");
 
   // Filter States from URL
   const type = params.get("type") ?? "all";
@@ -119,13 +124,19 @@ export default function Properties() {
           id, slug, title, price, currency, property_type, status, 
           bedrooms, bathrooms, size_sqm, cover_image_url, address, 
           featured, created_at, property_category, city, state, country,
+          latitude, longitude,
           locations(name, slug)
         `);
 
       // Type & Category
       if (type !== "all") query = query.eq("property_type", type);
       if (category !== "all") query = query.eq("property_category", category);
-      if (status !== "all") query = query.eq("status", status);
+      
+      if (status === "all") {
+        query = query.in("status", ["available", "reserved"]);
+      } else {
+        query = query.eq("status", status);
+      }
 
       // Search
       if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%,address.ilike.%${q}%,city.ilike.%${q}%,state.ilike.%${q}%`);
@@ -326,7 +337,7 @@ export default function Properties() {
                     <div className="space-y-4">
                       <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Property Status</Label>
                       <div className="grid grid-cols-2 gap-2">
-                        {["available", "reserved", "under_offer", "all"].map(s => (
+                        {["available", "reserved", "sold", "all"].map(s => (
                           <Button 
                             key={s}
                             variant={status === s ? "default" : "outline"}
@@ -460,6 +471,24 @@ export default function Properties() {
                 <span className="font-bold text-primary">{properties.length}</span>
                 <span className="text-muted-foreground font-medium">Properties</span>
               </div>
+
+              <div className="flex items-center gap-1 bg-accent/50 p-1 rounded-lg border border-border">
+                <button 
+                  onClick={() => setViewMode("list")}
+                  className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <LayoutGrid className="h-4 w-4" />
+                </button>
+                <button 
+                  onClick={() => setViewMode("map")}
+                  className={`p-1.5 rounded-md transition-all ${viewMode === "map" ? "bg-white shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                >
+                  <MapIcon className="h-4 w-4" />
+                </button>
+              </div>
+
+              <SaveSearchButton currentFilters={Object.fromEntries(params.entries())} />
+
               <div className="flex items-center gap-3">
                 <ArrowUpDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
                 <Select value={sort} onValueChange={(v) => update("sort", v)}>
@@ -486,7 +515,7 @@ export default function Properties() {
       {/* ── Main Grid ─────────────────────────────────────────── */}
       <div className="container-wide py-12 min-h-[60vh]">
         {isLoading ? (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="space-y-4">
                 <Skeleton className="aspect-[4/3] w-full rounded-xl" />
@@ -511,9 +540,13 @@ export default function Properties() {
               Reset all filters
             </Button>
           </div>
+        ) : viewMode === "map" ? (
+          <div className="animate-in fade-in duration-500">
+            <PropertyMap properties={properties} />
+          </div>
         ) : (
           <>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 animate-in fade-in duration-500">
               {properties.map((p) => <PropertyCard key={p.id} property={p} />)}
             </div>
             <div className="mt-16 flex justify-center">

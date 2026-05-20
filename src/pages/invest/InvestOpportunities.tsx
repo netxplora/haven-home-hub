@@ -389,7 +389,7 @@ export default function InvestOpportunities() {
       {/* ── Main Grid ─────────────────────────────────────────── */}
       <div className="container-wide py-12 min-h-[60vh]">
         {isLoading ? (
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="space-y-4">
                 <Skeleton className="aspect-[4/3] w-full rounded-xl" />
@@ -422,7 +422,7 @@ export default function InvestOpportunities() {
           </div>
         ) : (
           <>
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
               {opportunities.map((p) => <InvestmentCard key={p.id} p={p} />)}
             </div>
             <div className="mt-16 flex flex-col items-center gap-4">

@@ -31,7 +31,8 @@ import {
   ExternalLink,
   ShieldCheck,
   FileText,
-  CheckCircle2
+  CheckCircle2,
+  Star
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -41,18 +42,23 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from "@/components/ui/dialog";
 import { InquiryForm } from "@/components/site/InquiryForm";
 import { BookingForm } from "@/components/site/BookingForm";
-import { formatPrice, propertyTypeLabel, statusLabel, resolveImage } from "@/lib/format";
+import { propertyTypeLabel, statusLabel, resolveImage } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
+import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { toast } from "@/hooks/use-toast";
 import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
 import { Reviews } from "@/components/site/Reviews";
+import { AgentReviews } from "@/components/site/AgentReviews";
 import { SEO } from "@/components/site/SEO";
+import { PropertyJsonLd } from "@/components/site/JsonLd";
 import { PropertyGallery } from "@/components/site/PropertyGallery";
 import { Separator } from "@/components/ui/separator";
 import { ReserveDialog } from "@/components/invest/ReserveDialog";
 import { MortgageCalculator } from "@/components/site/MortgageCalculator";
 import { YieldCalculator } from "@/components/site/YieldCalculator";
 import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
+import { VirtualTourButton, VirtualTourEmbed } from "@/components/site/VirtualTour";
+import { MessageAgentButton } from "@/components/site/Messaging";
 
 export default function PropertyDetail() {
   const { slug } = useParams();
@@ -61,7 +67,8 @@ export default function PropertyDetail() {
   const [bookingOpen, setBookingOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<any>("crypto");
+  const [paymentMethod, setPaymentMethod] = useState<any>("digital_currency");
+  const formatPrice = useFormatPrice();
 
   const { data: rawProperty, isLoading } = useQuery({
     queryKey: ["property", slug],
@@ -88,6 +95,7 @@ export default function PropertyDetail() {
         .select("id, slug, title, price, currency, property_type, status, bedrooms, bathrooms, size_sqm, cover_image_url, address, locations(name)")
         .eq("property_type", property!.property_type)
         .neq("id", property!.id)
+        .neq("status", "sold")
         .limit(3);
       return (data ?? []) as PropertyCardData[];
     },
@@ -170,12 +178,14 @@ export default function PropertyDetail() {
     : [resolveImage(property.cover_image_url)];
 
   const agent = property.agents as any;
-  const features: string[] = Array.isArray(property.features) ? property.features as string[] : [];
+  const interior_features: string[] = Array.isArray(property.interior_features) ? property.interior_features as string[] : [];
+  const exterior_features: string[] = Array.isArray(property.exterior_features) ? property.exterior_features as string[] : [];
   const nearbyPois: any[] = Array.isArray(property.nearby_pois) ? property.nearby_pois : [];
 
   return (
     <SiteLayout>
       <SEO title={property.title} description={property.description?.slice(0, 160)} image={resolveImage(property.cover_image_url)} />
+      <PropertyJsonLd property={property} />
       
       <div className="container-wide pt-8 pb-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -238,6 +248,9 @@ export default function PropertyDetail() {
                   >
                     <ExternalLink className="h-4 w-4 mr-2" /> Share
                   </Button>
+                  {property.virtual_tour_url && (
+                    <VirtualTourButton url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
+                  )}
                 </div>
               </div>
             </div>
@@ -280,6 +293,11 @@ export default function PropertyDetail() {
             </div>
           </div>
 
+          {/* 3D Virtual Tour */}
+          {property.virtual_tour_url && (
+            <VirtualTourEmbed url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
+          )}
+
           {/* Key Details Grid */}
           <div className="rounded-xl bg-accent/50 p-8 border border-border/50">
             <h2 className="font-serif text-lg font-semibold mb-5 text-foreground">Property Overview</h2>
@@ -304,172 +322,176 @@ export default function PropertyDetail() {
           </div>
 
           {/* Features & Amenities */}
-          {features.length > 0 && (
+          {(interior_features.length > 0 || exterior_features.length > 0) && (
             <div className="space-y-8">
               <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
                 <CheckCircle2 className="h-5 w-5 text-primary" /> Amenities & Features
               </h2>
               
               <div className="grid gap-10 sm:grid-cols-2">
-                {(() => {
-                  const categories = {
-                    "Interior & Comfort": ["AC", "Air Conditioning", "Heating", "Smart Home", "Chef's Kitchen", "Fitted Kitchen", "Wine Cellar", "Private Cinema", "Home Office", "Marble Floors", "High Ceilings", "Elevator"],
-                    "Exterior & Lifestyle": ["Pool", "Swimming Pool", "Infinity Pool", "Garden", "Balcony", "Terrace", "Rooftop Terrace", "Lagoon View", "Waterfront", "Private Dock", "City Views", "Staff Quarters"],
-                    "Security & Utility": ["Security", "CCTV", "Gated Estate", "Bulletproof Security", "Secure Compound", "Backup Power", "Power Backup", "24/7 Power", "Ample Parking", "Customer Parking"],
-                  };
-
-                  const grouped: Record<string, string[]> = {};
-                  const unmatched: string[] = [];
-
-                  features.forEach(f => {
-                    let found = false;
-                    for (const [cat, keywords] of Object.entries(categories)) {
-                      if (keywords.some(k => f.toLowerCase().includes(k.toLowerCase()))) {
-                        if (!grouped[cat]) grouped[cat] = [];
-                        grouped[cat].push(f);
-                        found = true;
-                        break;
-                      }
-                    }
-                    if (!found) unmatched.push(f);
-                  });
-
-                  return (
-                    <>
-                      {Object.entries(grouped).map(([cat, items]) => (
-                        <div key={cat} className="space-y-4">
-                          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {cat}
-                          </h3>
-                          <div className="grid gap-3">
-                            {items.map(f => (
-                              <div key={f} className="flex items-center gap-3">
-                                <Check className="h-4 w-4 text-primary shrink-0" />
-                                <span className="text-sm font-medium text-foreground/80">{f}</span>
-                              </div>
-                            ))}
-                          </div>
+                {interior_features.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Interior Features
+                    </h3>
+                    <div className="grid gap-3">
+                      {interior_features.map(f => (
+                        <div key={f} className="flex items-center gap-3">
+                          <Check className="h-4 w-4 text-primary shrink-0" />
+                          <span className="text-sm font-medium text-foreground/80">{f}</span>
                         </div>
                       ))}
-                      {unmatched.length > 0 && (
-                        <div className="space-y-4">
-                          <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                            <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Additional Features
-                          </h3>
-                          <div className="grid gap-3">
-                            {unmatched.map(f => (
-                              <div key={f} className="flex items-center gap-3">
-                                <Check className="h-4 w-4 text-primary shrink-0" />
-                                <span className="text-sm font-medium text-foreground/80">{f}</span>
-                              </div>
-                            ))}
-                          </div>
+                    </div>
+                  </div>
+                )}
+                
+                {exterior_features.length > 0 && (
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Exterior Features
+                    </h3>
+                    <div className="grid gap-3">
+                      {exterior_features.map(f => (
+                        <div key={f} className="flex items-center gap-3">
+                          <Check className="h-4 w-4 text-primary shrink-0" />
+                          <span className="text-sm font-medium text-foreground/80">{f}</span>
                         </div>
-                      )}
-                    </>
-                  );
-                })()}
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* Location & Neighborhood */}
-          <div className="space-y-8">
-            <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
-              <MapIcon className="h-5 w-5 text-primary" /> Neighborhood & Location
-            </h2>
+          <div className="space-y-8 mt-16 pt-12 border-t border-gray-200">
+            <div className="flex flex-col gap-2">
+              <h2 className="font-serif text-3xl font-bold text-gray-900">
+                Neighborhood & Location
+              </h2>
+              <p className="text-gray-600 max-w-2xl text-lg">
+                Explore the surrounding area, local amenities, and the unique characteristics that make this location desirable.
+              </p>
+            </div>
             
-            <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
+            <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
               <div className="space-y-6">
-                <div className="aspect-[21/9] w-full rounded-xl overflow-hidden border border-border bg-muted relative group z-0">
+                {/* Map Container */}
+                <div className="aspect-[21/9] lg:aspect-auto lg:h-[480px] w-full rounded-xl overflow-hidden border border-gray-200 relative z-0">
                   {property.latitude && property.longitude ? (
                     <MapContainer 
                       center={[property.latitude, property.longitude]} 
-                      zoom={14} 
+                      zoom={15} 
                       scrollWheelZoom={false}
                       className="h-full w-full z-0"
                     >
                       <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                       />
                       <Marker position={[property.latitude, property.longitude]} />
                     </MapContainer>
                   ) : (
-                    <div className="h-full w-full flex items-center justify-center bg-secondary/20">
-                      <p className="text-muted-foreground font-medium flex items-center gap-2">
-                        <MapPin className="h-5 w-5" /> Location coordinates not available
-                      </p>
+                    <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50">
+                      <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm border border-gray-100">
+                        <MapPin className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <p className="text-gray-500 font-medium">Location coordinates pending</p>
                     </div>
                   )}
-                  <div className="absolute inset-0 pointer-events-none bg-primary/5 group-hover:bg-transparent transition-colors z-10" />
-                  <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-background/90 backdrop-blur-md border border-border shadow-lg flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Exact Address</p>
-                      <p className="text-sm font-bold truncate">{property.address}</p>
+                  
+                  <div className="absolute bottom-6 left-6 right-6 p-4 rounded-lg bg-white border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20">
+                    <div className="flex items-start gap-4">
+                      <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
+                        <MapPin className="h-5 w-5 text-gray-600" />
+                      </div>
+                      <div>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Registered Address</p>
+                        <p className="text-base sm:text-lg font-bold leading-tight text-gray-900">{property.address}</p>
+                      </div>
                     </div>
-                    <Button variant="ghost" size="sm" className="rounded-xl text-primary font-bold hover:bg-primary/5" asChild>
+                    <Button variant="outline" className="rounded-lg font-bold border-gray-300 text-gray-700 hover:bg-gray-50" asChild>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.title)}`} target="_blank" rel="noreferrer">
-                        Open Maps <ExternalLink className="ml-2 h-3 w-3" />
+                        Get Directions <ExternalLink className="ml-2 h-4 w-4" />
                       </a>
                     </Button>
                   </div>
                 </div>
 
+                {/* Location Quick Stats */}
                 <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="p-6 rounded-xl bg-primary/5 border border-primary/10 flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                  <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0 mb-3">
                       <Clock className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Viewing Schedule</p>
-                      <p className="text-sm font-medium leading-relaxed italic text-foreground/80">
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Viewing Schedule</p>
+                      <p className="text-sm font-medium leading-relaxed text-gray-900">
                         {property.inspection_availability || "Available for viewing Monday to Saturday, 9AM - 5PM."}
                       </p>
                     </div>
                   </div>
-                  <div className="p-6 rounded-xl bg-accent/50 border border-border flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-xl bg-background flex items-center justify-center text-muted-foreground shrink-0">
+                  
+                  <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between">
+                    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0 mb-3">
                       <Building2 className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1">Neighborhood Type</p>
-                      <p className="text-sm font-bold text-foreground/80">Prime {property.property_type === 'commercial' ? 'Business' : 'Residential'} District</p>
+                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">District Profile</p>
+                      <p className="text-sm font-medium leading-relaxed text-gray-900">
+                        Premium {property.property_type === 'commercial' ? 'Business' : 'Residential'} District
+                      </p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="space-y-6">
-                <h3 className="font-serif text-lg font-bold text-foreground flex items-center justify-between">
-                  Nearby Essentials
-                  <Badge variant="outline" className="rounded-md border-primary/20 text-primary font-bold text-[9px] uppercase tracking-wider">{nearbyPois.length} Found</Badge>
-                </h3>
-                <div className="space-y-3">
+              {/* Nearby POIs */}
+              <div className="space-y-4 flex flex-col">
+                <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                  <h3 className="font-serif text-xl font-bold text-gray-900">
+                    Local Amenities
+                  </h3>
+                  <span className="text-sm font-medium text-gray-500">
+                    {nearbyPois.length} Found
+                  </span>
+                </div>
+                
+                <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar max-h-[600px]">
                   {nearbyPois.length > 0 ? nearbyPois.map((poi, idx) => (
-                    <div key={idx} className="flex items-center justify-between p-4 rounded-xl border border-border bg-card hover:border-primary/20 hover:shadow-sm transition-all group">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                          {poi.type.toLowerCase().includes('school') ? <Building2 className="h-5 w-5" /> : 
-                           poi.type.toLowerCase().includes('hospital') ? <ShieldCheck className="h-5 w-5" /> : 
-                           <MapPin className="h-5 w-5" />}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold leading-none">{poi.name}</p>
-                          <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-widest font-bold">{poi.type}</p>
-                        </div>
+                    <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:border-gray-200 transition-colors">
+                      <div className="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 shrink-0">
+                        {poi.type.toLowerCase().includes('school') ? <Building2 className="h-4 w-4" /> : 
+                         poi.type.toLowerCase().includes('hospital') ? <ShieldCheck className="h-4 w-4" /> : 
+                         poi.type.toLowerCase().includes('shopping') ? <MapPin className="h-4 w-4" /> :
+                         <MapPin className="h-4 w-4" />}
                       </div>
-                      <span className="text-[10px] font-bold px-2 py-1 rounded-md bg-accent text-muted-foreground group-hover:text-primary transition-colors">{poi.distance}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-bold text-gray-900 truncate">{poi.name}</p>
+                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">{poi.type}</p>
+                      </div>
+                      {poi.distance_km && (
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-bold text-gray-900">{poi.distance_km} km</p>
+                          <p className="text-[10px] text-gray-500 font-medium uppercase">Distance</p>
+                        </div>
+                      )}
                     </div>
                   )) : (
-                    <div className="p-8 text-center rounded-xl border border-dashed border-border bg-secondary/5">
-                      <p className="text-xs text-muted-foreground italic">No nearby points of interest listed.</p>
+                    <div className="h-full min-h-[200px] flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
+                      <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm border border-gray-100">
+                        <MapPin className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <p className="font-serif text-base font-bold text-gray-900">No specific amenities listed</p>
+                      <p className="mt-1 text-sm text-gray-500">Check the map view for a general overview.</p>
                     </div>
                   )}
                 </div>
               </div>
             </div>
           </div>
+
 
           {property.video_url && (
             <div className="mt-8">
@@ -499,6 +521,15 @@ export default function PropertyDetail() {
           <div className="mt-12">
             <Reviews target={{ propertyId: property.id }} />
           </div>
+
+          {agent && (
+            <div className="mt-12">
+              <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground mb-6">
+                <Star className="h-5 w-5 text-amber-400" /> Agent Reviews
+              </h2>
+              <AgentReviews agentId={agent.id} agentName={agent.full_name} propertyId={property.id} />
+            </div>
+          )}
         </div>
 
         {/* Sidebar */}
@@ -507,7 +538,7 @@ export default function PropertyDetail() {
             <div className="rounded-xl border border-border bg-card p-6 shadow-card overflow-hidden">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <img src={resolveImage(agent.photo_url)} alt={agent.full_name}
+                  <img src={resolveImage(agent.photo_url)} alt={agent.full_name} loading="lazy"
                     className="h-20 w-20 rounded-xl object-cover border border-border shadow-sm" />
                   <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-emerald-500 rounded-full border-4 border-card flex items-center justify-center">
                     <ShieldCheck className="h-3 w-3 text-white" />
@@ -519,7 +550,7 @@ export default function PropertyDetail() {
                 </div>
               </div>
               
-              <div className="mt-6 grid grid-cols-2 gap-3">
+              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {agent.phone && (
                   <Button asChild variant="outline" className="rounded-xl h-11 border-border hover:bg-secondary font-bold text-xs shadow-sm">
                     <a href={`tel:${agent.phone}`}><Phone className="mr-2 h-4 w-4" /> Call Agent</a>
@@ -530,6 +561,14 @@ export default function PropertyDetail() {
                     <a href={`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
                       <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp</a>
                   </Button>
+                )}
+                {agent.user_id && (
+                  <MessageAgentButton
+                    agentUserId={agent.user_id}
+                    agentName={agent.full_name}
+                    propertyId={property.id}
+                    propertyTitle={property.title}
+                  />
                 )}
               </div>
 
@@ -562,18 +601,28 @@ export default function PropertyDetail() {
           {/* Reservation Card */}
           <div className="rounded-xl border border-primary/15 bg-card p-6 shadow-soft">
             <h3 className="font-serif text-lg font-semibold text-foreground">
-              {userReservation?.status === 'confirmed' ? 'Complete Purchase' : property.status === 'reserved' ? 'Property Reserved' : property.status === 'under_offer' ? 'Reservation Pending' : 'Reserve Property'}
+              {userReservation?.status === 'confirmed' 
+                ? 'Complete Purchase' 
+                : ['reserved', 'sold', 'rented', 'unavailable', 'payment_under_review'].includes(property.status) 
+                  ? `Property ${property.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`
+                  : 'Reserve Property'}
             </h3>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
               {userReservation?.status === 'confirmed'
                 ? 'Your reservation is approved. You can now complete the final purchase of this property.'
                 : property.status === 'reserved' 
                 ? 'This property has been officially reserved and is currently off the market.' 
-                : property.status === 'under_offer'
-                ? 'Someone has submitted a reservation for this property. It is currently under offer.'
+                : property.status === 'sold'
+                ? 'This property has been sold and is no longer available.'
+                : property.status === 'rented'
+                ? 'This property is currently rented out.'
+                : property.status === 'payment_under_review'
+                ? 'A payment for this property is currently being reviewed.'
+                : property.status === 'unavailable'
+                ? 'This property is currently not available for purchase.'
                 : 'Hold this property for 7 days to finalize your purchase.'}
             </p>
-            {userReservation?.status !== 'confirmed' && (
+            {(!userReservation || userReservation.status !== 'confirmed') && property.status === 'available' && (
               <div className="mt-5 flex items-center justify-between p-3.5 rounded-lg bg-accent/50 border border-border/50">
                 <span className="text-xs font-medium text-muted-foreground">Reservation Fee</span>
                 <span className="text-lg font-semibold text-primary font-serif">500.00 USD</span>
@@ -607,7 +656,17 @@ export default function PropertyDetail() {
                   setReserveOpen(true);
                 }}
               >
-                {property.status === 'available' ? 'Reserve Now' : property.status === 'reserved' ? 'Already Reserved' : 'Under Offer'}
+                {property.status === 'available' 
+                  ? 'Reserve Now' 
+                  : property.status === 'reserved' 
+                  ? 'Already Reserved' 
+                  : property.status === 'sold'
+                  ? 'Sold'
+                  : property.status === 'rented'
+                  ? 'Rented'
+                  : property.status === 'payment_under_review'
+                  ? 'Payment Under Review'
+                  : 'Unavailable'}
               </Button>
             )}
             
@@ -648,7 +707,7 @@ export default function PropertyDetail() {
               <Link to="/properties">View all <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></Link>
             </Button>
           </div>
-          <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {related.map((p) => <PropertyCard key={p.id} property={p} />)}
           </div>
         </section>

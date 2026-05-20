@@ -17,11 +17,11 @@ export function AdminOverview() {
         supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
         supabase.from("bookings").select("id", { count: "exact", head: true }).in("status", ["pending", "confirmed"]),
         supabase.from("locations").select("id", { count: "exact", head: true }),
-        supabase.from("payments").select("id", { count: "exact", head: true }).in("payment_type", ["reservation", "investment"]).in("status", ["pending", "processing", "submitted", "under_review"]),
+        supabase.from("reservations").select("id", { count: "exact", head: true }),
         supabase.from("profiles").select("id", { count: "exact", head: true }).eq("kyc_status", "pending"),
         supabase.from("withdrawal_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
         supabase.from("payments").select("id", { count: "exact", head: true }).in("status", ["pending", "processing", "submitted", "under_review"]),
-        (supabase as any).from("user_investments").select("id", { count: "exact", head: true }).in("status", ["pending_verification", "pending_review"]),
+        (supabase as any).from("user_investments").select("id", { count: "exact", head: true }).eq("status", "pending"),
         (supabase as any).from("investment_certificates").select("id", { count: "exact", head: true }),
       ]);
       return {

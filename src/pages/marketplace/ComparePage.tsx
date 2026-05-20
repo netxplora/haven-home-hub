@@ -138,9 +138,47 @@ export default function ComparePage() {
                         {p.bedrooms != null && <div className="flex items-center gap-2"><Bed className="h-4 w-4 text-muted-foreground" /> {p.bedrooms} Bedrooms</div>}
                         {p.bathrooms != null && <div className="flex items-center gap-2"><Bath className="h-4 w-4 text-muted-foreground" /> {p.bathrooms} Bathrooms</div>}
                         {p.parking_spaces != null && <div className="flex items-center gap-2"><Car className="h-4 w-4 text-muted-foreground" /> {p.parking_spaces} Parking</div>}
-                        {p.size_sqm != null && <div className="flex items-center gap-2"><Maximize2 className="h-4 w-4 text-muted-foreground" /> {p.size_sqm} sq ft</div>}
+                        {p.size_sqm != null && <div className="flex items-center gap-2"><Maximize2 className="h-4 w-4 text-muted-foreground" /> {p.size_sqm} SQM</div>}
                         {!p.bedrooms && !p.size_sqm && <span className="text-muted-foreground italic">N/A</span>}
                       </div>
+                    </td>
+                  ))}
+                </tr>
+                {/* Amenities */}
+                <tr className="hover:bg-secondary/5 transition-colors border-t border-border/40">
+                  <td className="p-6 sticky left-0 bg-background z-10 font-medium text-sm text-muted-foreground">Amenities</td>
+                  {orderedProperties.map((p: any) => {
+                    const interior = Array.isArray(p.interior_features) ? p.interior_features : [];
+                    const exterior = Array.isArray(p.exterior_features) ? p.exterior_features : [];
+                    const allFeatures = [...interior, ...exterior];
+                    
+                    return (
+                      <td key={p.id} className="p-6 align-top">
+                        {allFeatures.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {allFeatures.map((f: string, i: number) => (
+                              <Badge key={i} variant="secondary" className="font-normal">{f}</Badge>
+                            ))}
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground italic text-sm">Not specified</span>
+                        )}
+                      </td>
+                    );
+                  })}
+                </tr>
+                {/* Description */}
+                <tr className="hover:bg-secondary/5 transition-colors border-t border-border/40">
+                  <td className="p-6 sticky left-0 bg-background z-10 font-medium text-sm text-muted-foreground">Description</td>
+                  {orderedProperties.map((p: any) => (
+                    <td key={p.id} className="p-6 align-top">
+                      {p.description ? (
+                        <p className="text-sm text-muted-foreground line-clamp-4">
+                          {p.description}
+                        </p>
+                      ) : (
+                        <span className="text-muted-foreground italic text-sm">Not specified</span>
+                      )}
                     </td>
                   ))}
                 </tr>

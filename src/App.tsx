@@ -46,6 +46,7 @@ const BlogPost = lazy(() => import("./pages/cms/BlogPost"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 import { CompareProvider } from "./hooks/useCompare";
+import { CurrencyProvider } from "./hooks/useCurrency";
 import { CompareWidget } from "./components/site/CompareWidget";
 
 const queryClient = new QueryClient();
@@ -68,12 +69,13 @@ const App = () => (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
     <CompareProvider>
+      <CurrencyProvider>
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <CompareWidget />
-        <RealtimeGlobal />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <CompareWidget />
+          <RealtimeGlobal />
           <AuthProvider>
             <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -119,6 +121,7 @@ const App = () => (
           </AuthProvider>
         </BrowserRouter>
         </TooltipProvider>
+      </CurrencyProvider>
     </CompareProvider>
   </QueryClientProvider>
   </HelmetProvider>

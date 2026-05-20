@@ -166,11 +166,11 @@ export function AdminReferrals() {
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-secondary/20 border-b border-border/50">
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Referrer</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Referred User</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date Joined</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Bonus</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Referrer</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Referred User</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Status</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Date Joined</th>
+                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right whitespace-nowrap">Bonus</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/30">

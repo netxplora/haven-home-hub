@@ -37,7 +37,7 @@ const values = [
 export default function About() {
   return (
     <SiteLayout>
-      <SEO title="About Us" description="Learn about Verdant Estate — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across Nigeria." />
+      <SEO title="About Us" description="Learn about Verdant Estate — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States." />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[550px] flex items-center bg-black">
         <img 

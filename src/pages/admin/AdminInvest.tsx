@@ -47,13 +47,13 @@ export function AdminInvest() {
         <table className="w-full text-sm">
           <thead className="bg-accent text-left">
             <tr>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Title</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Location</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Status</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Units</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Min.</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Plan</th>
-              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px]">Actions</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Title</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Location</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Status</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Units</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Min.</th>
+              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Plan</th>
+              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border">

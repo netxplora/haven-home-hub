@@ -8,6 +8,7 @@ import {
   History, 
   TrendingUp, 
   ClipboardList, 
+  FileText,
   Users, 
   Bell, 
   User, 
@@ -23,9 +24,11 @@ import { WithdrawalsPanel } from "@/components/dashboard/WithdrawalsPanel";
 import { TransactionsPanel } from "@/components/dashboard/TransactionsPanel";
 import { InvestmentsPanel } from "@/components/dashboard/InvestmentsPanel";
 import { ReservationsPanel } from "@/components/dashboard/ReservationsPanel";
+import { PurchasesPanel } from "@/components/dashboard/PurchasesPanel";
 import { ReferralsPanel } from "@/components/dashboard/ReferralsPanel";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
 import { ProfilePanel } from "@/components/dashboard/ProfilePanel";
+import { DocumentsPanel } from "@/components/dashboard/DocumentsPanel";
 import { SavedPanel } from "@/components/dashboard/SavedPanel";
 import { BookingsPanel } from "@/components/dashboard/BookingsPanel";
 import { InquiriesPanel } from "@/components/dashboard/InquiriesPanel";
@@ -63,9 +66,11 @@ export default function UserDashboard() {
   const menuItems = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
     { id: "investments", label: "Investments", icon: TrendingUp },
+    { id: "purchases", label: "Property Purchases", icon: ClipboardList },
     { id: "reservations", label: "Reservations", icon: ClipboardList },
     { id: "withdrawals", label: "Withdrawals", icon: Wallet },
     { id: "transactions", label: "Transactions", icon: History },
+    { id: "documents", label: "Documents", icon: FileText },
     { id: "referrals", label: "Referrals", icon: Users },
     { id: "notifications", label: "Notifications", icon: Bell },
     { id: "saved", label: "Saved Properties", icon: Heart },
@@ -84,12 +89,16 @@ export default function UserDashboard() {
         return <OverviewPanel userId={user.id} onNavigate={handleTabChange} />;
       case "investments":
         return <InvestmentsPanel />;
+      case "purchases":
+        return <PurchasesPanel userId={user.id} />;
       case "reservations":
         return <ReservationsPanel userId={user.id} />;
       case "withdrawals":
         return <WithdrawalsPanel userId={user.id} />;
       case "transactions":
         return <TransactionsPanel userId={user.id} />;
+      case "documents":
+        return <DocumentsPanel userId={user.id} />;
       case "referrals":
         return <ReferralsPanel userId={user.id} />;
       case "notifications":
@@ -120,7 +129,7 @@ export default function UserDashboard() {
       </div>
       
       <div className="mt-20 pt-8 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Haven Home Hub • Version 2.4.0</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Verdant Estate • Version 2.4.0</p>
         <button 
           onClick={() => signOut()} 
           className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-destructive hover:opacity-80 transition-opacity"

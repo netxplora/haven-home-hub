@@ -6,19 +6,19 @@
 
 DO $$
 DECLARE
-    lekki_id uuid;
-    vi_id uuid;
-    ikoyi_id uuid;
-    abuja_id uuid;
+    manhattan_id uuid;
+    sv_id uuid;
+    beverly_hills_id uuid;
+    austin_id uuid;
     sarah_id uuid;
     david_id uuid;
     amina_id uuid;
     prop_id uuid;
 BEGIN
-    SELECT id INTO lekki_id FROM public.locations WHERE slug = 'lekki-phase-1' LIMIT 1;
-    SELECT id INTO vi_id FROM public.locations WHERE slug = 'victoria-island' LIMIT 1;
-    SELECT id INTO ikoyi_id FROM public.locations WHERE slug = 'ikoyi' LIMIT 1;
-    SELECT id INTO abuja_id FROM public.locations WHERE slug = 'abuja-central' LIMIT 1;
+    SELECT id INTO manhattan_id FROM public.locations WHERE slug = 'manhattan-phase-1' LIMIT 1;
+    SELECT id INTO sv_id FROM public.locations WHERE slug = 'silicon-valley' LIMIT 1;
+    SELECT id INTO beverly_hills_id FROM public.locations WHERE slug = 'beverly-hills' LIMIT 1;
+    SELECT id INTO austin_id FROM public.locations WHERE slug = 'austin-central' LIMIT 1;
     
     SELECT id INTO sarah_id FROM public.agents WHERE email = 'sarah@assetatlas.com' LIMIT 1;
     SELECT id INTO david_id FROM public.agents WHERE email = 'david@assetatlas.com' LIMIT 1;
@@ -27,18 +27,18 @@ BEGIN
     -- ==========================================
     -- BUY PROPERTIES (5)
     -- ==========================================
-    IF ikoyi_id IS NOT NULL AND sarah_id IS NOT NULL THEN
+    IF beverly_hills_id IS NOT NULL AND sarah_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'The Ikoyi Grand Mansion', 
-            'ikoyi-grand-mansion', 
-            'Experience unparalleled luxury in this 6-bedroom architectural masterpiece located in the exclusive enclaves of Ikoyi. Boasting double-height ceilings, a private cinema, a wine cellar, and smart home integration. The lush outdoor area includes an infinity pool overlooking the lagoon.', 
+            'The Beverly Hills Grand Mansion', 
+            'beverly-hills-grand-mansion', 
+            'Experience unparalleled luxury in this 6-bedroom architectural masterpiece located in the exclusive enclaves of Beverly Hills. Boasting double-height ceilings, a private cinema, a wine cellar, and smart home integration. The lush outdoor area includes an infinity pool overlooking the lagoon.', 
             3500000, 
             'USD', 
             'buy', 
             'available', 
-            ikoyi_id, 
-            'Bourdillon Road, Ikoyi', 
+            beverly_hills_id, 
+            'Bourdillon Road, Beverly Hills', 
             6, 7, 1200.00, 
             '["Infinity Pool", "Private Cinema", "Wine Cellar", "Smart Home", "Lagoon View", "Staff Quarters"]'::jsonb, 
             sarah_id, 
@@ -49,14 +49,14 @@ BEGIN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
             'Luxury Waterfront Villa', 
-            'luxury-waterfront-villa-ikoyi', 
+            'luxury-waterfront-villa-beverly-hills', 
             'A spectacular 5-bedroom waterfront villa featuring contemporary design and state-of-the-art finishes. Offers direct water access, a private dock, and stunning sunset views. Includes a modern chef''s kitchen and expansive terrace.', 
             2800000, 
             'USD', 
             'buy', 
             'available', 
-            ikoyi_id, 
-            'Banana Island, Ikoyi', 
+            beverly_hills_id, 
+            'Bel Air, Beverly Hills', 
             5, 6, 950.00, 
             '["Private Dock", "Waterfront", "Chef''s Kitchen", "Elevator", "Rooftop Terrace"]'::jsonb, 
             sarah_id, 
@@ -65,18 +65,18 @@ BEGIN
         ) ON CONFLICT (slug) DO NOTHING;
     END IF;
 
-    IF lekki_id IS NOT NULL AND david_id IS NOT NULL THEN
+    IF manhattan_id IS NOT NULL AND david_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
             'Modern Smart Duplex', 
-            'modern-smart-duplex-lekki', 
+            'modern-smart-duplex-manhattan', 
             'A beautifully finished 4-bedroom fully detached duplex in a secure gated estate. Designed with modern families in mind, it features spacious living areas, a fully fitted kitchen, and integrated security systems.', 
             450000, 
             'USD', 
             'buy', 
             'available', 
-            lekki_id, 
-            'Chevron Drive, Lekki Phase 1', 
+            manhattan_id, 
+            'Chevron Drive, Manhattan Phase 1', 
             4, 5, 400.00, 
             '["Gated Estate", "Fitted Kitchen", "CCTV", "Ample Parking"]'::jsonb, 
             david_id, 
@@ -85,7 +85,7 @@ BEGIN
         ) ON CONFLICT (slug) DO NOTHING;
     END IF;
 
-    IF abuja_id IS NOT NULL AND amina_id IS NOT NULL THEN
+    IF austin_id IS NOT NULL AND amina_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
             'Maitama Diplomatic Residence', 
@@ -95,8 +95,8 @@ BEGIN
             'USD', 
             'buy', 
             'available', 
-            abuja_id, 
-            'Maitama District, Abuja', 
+            austin_id, 
+            'Maitama District, Austin', 
             7, 8, 1500.00, 
             '["Bulletproof Security", "Marble Floors", "Expansive Gardens", "Diplomatic Zone"]'::jsonb, 
             amina_id, 
@@ -113,8 +113,8 @@ BEGIN
             'USD', 
             'buy', 
             'available', 
-            abuja_id, 
-            'Asokoro, Abuja', 
+            austin_id, 
+            'Asokoro, Austin', 
             5, 6, 850.00, 
             '["Home Office", "City Views", "High Ceilings", "Secure Compound"]'::jsonb, 
             amina_id, 
@@ -126,18 +126,18 @@ BEGIN
     -- ==========================================
     -- RENT PROPERTIES (5)
     -- ==========================================
-    IF vi_id IS NOT NULL AND david_id IS NOT NULL THEN
+    IF sv_id IS NOT NULL AND david_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
             'Corporate HQ Tower Floor', 
             'corporate-hq-tower-floor', 
-            'Lease an entire floor of this premium Grade A commercial building in Victoria Island. Offers panoramic ocean views, high-speed elevators, and a flexible open-plan layout ready for custom fit-out.', 
+            'Lease an entire floor of this premium Grade A commercial building in Silicon Valley. Offers panoramic ocean views, high-speed elevators, and a flexible open-plan layout ready for custom fit-out.', 
             150000, 
             'USD', 
             'rent', 
             'available', 
-            vi_id, 
-            'Ahmadu Bello Way, Victoria Island', 
+            sv_id, 
+            'Ahmadu Bello Way, Silicon Valley', 
             0, 6, 1200.00, 
             '["Grade A Commercial", "Ocean View", "High-speed Elevators", "24/7 Power"]'::jsonb, 
             david_id, 
@@ -154,8 +154,8 @@ BEGIN
             'USD', 
             'rent', 
             'available', 
-            vi_id, 
-            'Adeola Odeku, Victoria Island', 
+            sv_id, 
+            'University Ave, Silicon Valley', 
             0, 2, 250.00, 
             '["Glass Frontage", "High Traffic", "Customer Parking", "Premium Retail"]'::jsonb, 
             david_id, 
@@ -164,18 +164,18 @@ BEGIN
         ) ON CONFLICT (slug) DO NOTHING;
     END IF;
 
-    IF lekki_id IS NOT NULL AND sarah_id IS NOT NULL THEN
+    IF manhattan_id IS NOT NULL AND sarah_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Lekki Luxury Apartment', 
-            'lekki-luxury-apartment', 
+            'Manhattan Luxury Apartment', 
+            'manhattan-luxury-apartment', 
             'A fully serviced 3-bedroom luxury apartment with modern contemporary furnishings. Residents enjoy access to a communal pool, fitness center, and 24-hour concierge service.', 
             35000, 
             'USD', 
             'rent', 
             'available', 
-            lekki_id, 
-            'Admiralty Way, Lekki Phase 1', 
+            manhattan_id, 
+            'Admiralty Way, Manhattan Phase 1', 
             3, 3, 200.00, 
             '["Serviced Apartment", "Communal Pool", "Fitness Center", "Concierge"]'::jsonb, 
             sarah_id, 
@@ -184,7 +184,7 @@ BEGIN
         ) ON CONFLICT (slug) DO NOTHING;
     END IF;
 
-    IF abuja_id IS NOT NULL AND amina_id IS NOT NULL THEN
+    IF austin_id IS NOT NULL AND amina_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
             'Wuse 2 Co-Working Hub', 
@@ -194,8 +194,8 @@ BEGIN
             'USD', 
             'rent', 
             'available', 
-            abuja_id, 
-            'Wuse 2, Abuja', 
+            austin_id, 
+            'Wuse 2, Austin', 
             0, 4, 300.00, 
             '["Furnished Offices", "High-speed Internet", "Conference Rooms", "Cafeteria"]'::jsonb, 
             amina_id, 
@@ -205,15 +205,15 @@ BEGIN
 
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Garki Residential Flat', 
-            'garki-residential-flat', 
-            'Comfortable 2-bedroom flat in a quiet residential area of Garki. Features a fitted kitchen, backup power generator, and close proximity to central business areas.', 
+            'Downtown Austin Residential Flat', 
+            'downtown-austin-residential-flat', 
+            'Comfortable 2-bedroom flat in a quiet residential area of Downtown Austin. Features a fitted kitchen, backup power generator, and close proximity to central business areas.', 
             15000, 
             'USD', 
             'rent', 
             'available', 
-            abuja_id, 
-            'Garki, Abuja', 
+            austin_id, 
+            'Downtown Austin, Austin', 
             2, 2, 120.00, 
             '["Fitted Kitchen", "Backup Power", "Quiet Neighborhood", "Central Location"]'::jsonb, 
             amina_id, 
@@ -225,18 +225,18 @@ BEGIN
     -- ==========================================
     -- LAND PROPERTIES (5)
     -- ==========================================
-    IF lekki_id IS NOT NULL AND david_id IS NOT NULL THEN
+    IF manhattan_id IS NOT NULL AND david_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Ibeju-Lekki Commercial Plot', 
-            'ibeju-lekki-commercial-plot', 
-            'Prime commercial plot located along the major express road in Ibeju-Lekki. Perfect for a shopping mall, hospital, or corporate complex. High ROI potential.', 
+            'Downtown Manhattan Commercial Plot', 
+            'downtown-manhattan-commercial-plot', 
+            'Prime commercial plot located along the major express road in Downtown Manhattan. Perfect for a shopping mall, hospital, or corporate complex. High ROI potential.', 
             500000, 
             'USD', 
             'land', 
             'available', 
-            lekki_id, 
-            'Lekki-Epe Expressway, Ibeju-Lekki', 
+            manhattan_id, 
+            'Pacific Coast Highway, Downtown Manhattan', 
             0, 0, 2000.00, 
             '["Commercial Zoning", "Expressway Facing", "High ROI", "Fenced"]'::jsonb, 
             david_id, 
@@ -247,14 +247,14 @@ BEGIN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
             'Epe Residential Estate Land', 
-            'epe-residential-estate-land', 
+            'hamptons-residential-estate-land', 
             'A full acre of dry land within a developing residential estate in Epe. Comes with global C of O and approved estate layout plans.', 
             150000, 
             'USD', 
             'land', 
             'available', 
-            lekki_id, 
-            'Epe, Lagos', 
+            manhattan_id, 
+            'The Hamptons, NY', 
             0, 0, 4000.00, 
             '["Residential Zoning", "C of O", "Estate Layout", "Dry Land"]'::jsonb, 
             david_id, 
@@ -263,18 +263,18 @@ BEGIN
         ) ON CONFLICT (slug) DO NOTHING;
     END IF;
 
-    IF abuja_id IS NOT NULL AND amina_id IS NOT NULL THEN
+    IF austin_id IS NOT NULL AND amina_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
             'Guzape Hilltop Plot', 
             'guzape-hilltop-plot', 
-            'An exclusive hilltop plot in Guzape offering breathtaking panoramic views of the entire Abuja city. Ideal for building a luxury custom villa.', 
+            'An exclusive hilltop plot in Guzape offering breathtaking panoramic views of the entire Austin city. Ideal for building a luxury custom villa.', 
             850000, 
             'USD', 
             'land', 
             'available', 
-            abuja_id, 
-            'Guzape, Abuja', 
+            austin_id, 
+            'Guzape, Austin', 
             0, 0, 1500.00, 
             '["Hilltop View", "Luxury Zoning", "Exclusive Area", "City Views"]'::jsonb, 
             amina_id, 
@@ -291,8 +291,8 @@ BEGIN
             'USD', 
             'land', 
             'available', 
-            abuja_id, 
-            'Kuje, Abuja', 
+            austin_id, 
+            'Kuje, Austin', 
             0, 0, 50000.00, 
             '["Agricultural Zoning", "Fertile Soil", "Water Access", "Large Acreage"]'::jsonb, 
             amina_id, 
@@ -301,18 +301,18 @@ BEGIN
         ) ON CONFLICT (slug) DO NOTHING;
     END IF;
 
-    IF ikoyi_id IS NOT NULL AND sarah_id IS NOT NULL THEN
+    IF beverly_hills_id IS NOT NULL AND sarah_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Banana Island Waterfront Plot', 
-            'banana-island-waterfront-plot', 
-            'Rare waterfront plot available in the prestigious Banana Island. Complete with structural approvals and sand-filled, ready for immediate development.', 
+            'Bel Air Waterfront Plot', 
+            'bel-air-waterfront-plot', 
+            'Rare waterfront plot available in the prestigious Bel Air. Complete with structural approvals and sand-filled, ready for immediate development.', 
             4000000, 
             'USD', 
             'land', 
             'available', 
-            ikoyi_id, 
-            'Banana Island, Ikoyi', 
+            beverly_hills_id, 
+            'Bel Air, Beverly Hills', 
             0, 0, 1000.00, 
             '["Waterfront", "Prestige Location", "Sand-filled", "Ready to Build"]'::jsonb, 
             sarah_id, 
@@ -332,8 +332,8 @@ BEGIN
     ) VALUES (
         'The Zenith Logistics Hub',
         'zenith-logistics-hub-v2',
-        'Invest in a premium logistics and warehousing facility near the Lekki Deep Sea Port. Backed by long-term corporate leases ensuring consistent quarterly yields.',
-        'Lekki Free Trade Zone, Lagos',
+        'Invest in a premium logistics and warehousing facility near the Manhattan Deep Sea Port. Backed by long-term corporate leases ensuring consistent quarterly yields.',
+        'Financial District, NY',
         'commercial',
         'https://images.unsplash.com/photo-1586528116311-ad8ed7c15694?w=1200&q=80',
         10000000, 10000, 1000, 200, 10000,
@@ -349,8 +349,8 @@ BEGIN
     ) VALUES (
         'Aurora Tech Campus',
         'aurora-tech-campus',
-        'Fractional ownership in a modern tech campus located in Yaba. Designed to house leading African startups with high occupancy rates and premium rental income.',
-        'Yaba, Lagos',
+        'Fractional ownership in a modern tech campus located in Cambridge, MA. Designed to house leading American startups with high occupancy rates and premium rental income.',
+        'Cambridge, MA',
         'commercial',
         'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=1200&q=80',
         4000000, 4000, 1000, 600, 4000,
@@ -364,10 +364,10 @@ BEGIN
         projected_return_min, projected_return_max, estimated_rental_yield,
         distribution_frequency, holding_period_months, status, featured
     ) VALUES (
-        'Abuja Student Housing Project',
-        'abuja-student-housing',
-        'A high-yield development project creating premium student accommodation near major universities in Abuja. Offers substantial capital appreciation upon completion.',
-        'Gwarinpa, Abuja',
+        'Austin Student Housing Project',
+        'austin-student-housing',
+        'A high-yield development project creating premium student accommodation near major universities in Austin. Offers substantial capital appreciation upon completion.',
+        'Gwarinpa, Austin',
         'residential',
         'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
         3000000, 3000, 1000, 850, 3000,
@@ -383,8 +383,8 @@ BEGIN
     ) VALUES (
         'The Azure Hospitality Fund',
         'azure-hospitality-fund',
-        'Invest in a portfolio of luxury short-let apartments across Victoria Island and Ikoyi. Benefit from the booming short-term rental market with monthly dividend distributions.',
-        'Victoria Island & Ikoyi',
+        'Invest in a portfolio of luxury short-let apartments across Silicon Valley and Beverly Hills. Benefit from the booming short-term rental market with monthly dividend distributions.',
+        'Silicon Valley & Beverly Hills',
         'residential',
         'https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1200&q=80',
         5000000, 5000, 1000, 400, 5000,
@@ -398,10 +398,10 @@ BEGIN
         projected_return_min, projected_return_max, estimated_rental_yield,
         distribution_frequency, holding_period_months, status, featured
     ) VALUES (
-        'Victoria Island Mixed-Use Tower',
+        'Silicon Valley Mixed-Use Tower',
         'vi-mixed-use-tower',
         'An ambitious project combining retail, office, and residential spaces in a single iconic high-rise. Early investors benefit from significant discounts to the completed value.',
-        'Victoria Island, Lagos',
+        'Silicon Valley, CA',
         'commercial',
         'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&q=80',
         20000000, 20000, 1000, 100, 20000,

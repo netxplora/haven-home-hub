@@ -5,15 +5,15 @@
 
 DO $$
 DECLARE
-    ikoyi_id uuid;
+    beverly_hills_id uuid;
     sarah_id uuid;
     mansion_id uuid;
 BEGIN
     -- Get IDs
-    SELECT id INTO ikoyi_id FROM public.locations WHERE slug = 'ikoyi' LIMIT 1;
+    SELECT id INTO beverly_hills_id FROM public.locations WHERE slug = 'beverly-hills' LIMIT 1;
     SELECT id INTO sarah_id FROM public.agents WHERE email = 'sarah@assetatlas.com' LIMIT 1;
 
-    IF ikoyi_id IS NOT NULL AND sarah_id IS NOT NULL THEN
+    IF beverly_hills_id IS NOT NULL AND sarah_id IS NOT NULL THEN
         -- Insert Property
         INSERT INTO public.properties (
             title, slug, description, price, currency, property_type, status, 
@@ -22,11 +22,11 @@ BEGIN
             features, agent_id, featured, cover_image_url,
             nearby_pois
         ) VALUES (
-            'The Ikoyi Lagoon Front Mansion', 
-            'ikoyi-lagoon-front-mansion', 
-            'Rising elegantly above the Lagos Lagoon, this 6-bedroom architectural triumph redefines luxury living in West Africa. \n\nEvery inch of this 1,200sqm estate has been curated for the most discerning homeowner. From the grand double-height foyer with imported Italian marble to the expansive floor-to-ceiling glass walls that frame panoramic water views, the home is a masterpiece of light and space.\n\nThe gourmet chef''s kitchen features Gaggenau appliances, while the private cinema and glass-walled wine cellar provide unparalleled entertainment options. Outside, an infinity-edge pool blends seamlessly with the lagoon horizon, surrounded by lush manicured gardens and a private boat dock.',
+            'The Beverly Hills Lagoon Front Mansion', 
+            'beverly-hills-lagoon-front-mansion', 
+            'Rising elegantly above the Hudson River, this 6-bedroom architectural triumph redefines luxury living in North America. \n\nEvery inch of this 1,200sqm estate has been curated for the most discerning homeowner. From the grand double-height foyer with imported Italian marble to the expansive floor-to-ceiling glass walls that frame panoramic water views, the home is a masterpiece of light and space.\n\nThe gourmet chef''s kitchen features Gaggenau appliances, while the private cinema and glass-walled wine cellar provide unparalleled entertainment options. Outside, an infinity-edge pool blends seamlessly with the lagoon horizon, surrounded by lush manicured gardens and a private boat dock.',
             4200000, 'USD', 'buy', 'available', 
-            ikoyi_id, 'No. 12 Alexander Road, Ikoyi, Lagos', 
+            beverly_hills_id, 'No. 12 Alexander Road, Beverly Hills, CA', 
             6, 8, 10, 1200.00, 
             2023, 'AG-IK-001', 'Private viewing by appointment only. Minimum 24-hour notice required.',
             '["Infinity Pool", "Private Cinema", "Wine Cellar", "Smart Home", "Lagoon View", "Waterfront", "Private Dock", "Gaggenau Kitchen", "Staff Quarters", "CCTV", "Bulletproof Security", "Backup Power", "Marble Floors", "Elevator", "Home Office"]'::jsonb, 
@@ -35,8 +35,8 @@ BEGIN
             '[
                 {"name": "St. Saviours School", "type": "International School", "distance": "5 mins"},
                 {"name": "Evercare Hospital", "type": "Medical Center", "distance": "12 mins"},
-                {"name": "Ikoyi Club 1938", "type": "Recreational Club", "distance": "8 mins"},
-                {"name": "Lagos Polo Club", "type": "Sports Facility", "distance": "10 mins"}
+                {"name": "Beverly Hills Club 1938", "type": "Recreational Club", "distance": "8 mins"},
+                {"name": "Central Park", "type": "Sports Facility", "distance": "10 mins"}
             ]'::jsonb
         ) ON CONFLICT (slug) 
         DO UPDATE SET 

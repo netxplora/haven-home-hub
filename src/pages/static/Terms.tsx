@@ -82,15 +82,15 @@ export default function Terms() {
           <h2>6. Payments</h2>
           <h3>6.1 Payment Methods</h3>
           <p>
-            The Platform supports multiple payment methods including bank transfer, card payments, and cryptocurrency. All payment processing is handled through verified third-party providers.
+            The Platform supports multiple payment methods including bank transfer, card payments, and digital currency. All payment processing is handled through verified third-party providers.
           </p>
           <h3>6.2 Refunds</h3>
           <p>
             Refund eligibility depends on the type of transaction. Property booking deposits may be refundable within 48 hours. Investment payments are generally non-refundable once units have been allocated. Please review specific refund terms before completing any transaction.
           </p>
-          <h3>6.3 Cryptocurrency Payments</h3>
+          <h3>6.3 Digital Currency Payments</h3>
           <p>
-            Cryptocurrency payments are subject to network confirmation requirements. Exchange rates are locked at the time of payment initiation and remain valid for a limited period. Verdant Estate is not responsible for losses due to cryptocurrency price fluctuations after a payment is initiated.
+            Digital currency payments are subject to network confirmation requirements. Exchange rates are locked at the time of payment initiation and remain valid for a limited period. Verdant Estate is not responsible for losses due to digital currency price fluctuations after a payment is initiated.
           </p>
 
           <h2>7. Withdrawals</h2>
@@ -121,7 +121,7 @@ export default function Terms() {
 
           <h2>11. Governing Law</h2>
           <p>
-            These Terms shall be governed by and construed in accordance with the laws of the Federal Republic of Nigeria, without regard to its conflict of law provisions.
+            These Terms shall be governed by and construed in accordance with the laws of the United States of America, without regard to its conflict of law provisions.
           </p>
 
           <h2>12. Changes to Terms</h2>

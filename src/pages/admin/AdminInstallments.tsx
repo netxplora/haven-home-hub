@@ -110,18 +110,18 @@ export function AdminInstallments() {
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Investor</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Property</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Total Price</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Initial Payment</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Paid</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Balance</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Monthly</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Duration</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Next Due</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Progress</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center">Status</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Action</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Total Price</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Initial Payment</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Paid</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Balance</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Monthly</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Duration</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Next Due</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Progress</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center whitespace-nowrap">Status</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">

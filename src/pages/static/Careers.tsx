@@ -9,9 +9,9 @@ const openings = [
   {
     title: "Senior Property Agent",
     department: "Sales",
-    location: "Lagos, Nigeria",
+    location: "New York, NY",
     type: "Full-time",
-    description: "Lead client relationships, manage property viewings, and close residential and commercial deals across the Greater Lagos area. Must have at least 3 years of experience in premium real estate sales and strong negotiation skills.",
+    description: "Lead client relationships, manage property viewings, and close residential and commercial deals across the Greater New York area. Must have at least 3 years of experience in premium real estate sales and strong negotiation skills.",
   },
   {
     title: "Investment Analyst",
@@ -23,7 +23,7 @@ const openings = [
   {
     title: "Marketing Coordinator",
     department: "Marketing",
-    location: "Abuja, Nigeria",
+    location: "Austin, TX",
     type: "Full-time",
     description: "Plan and execute property marketing campaigns, manage social media channels, and coordinate listing photography and content. Experience with digital marketing in real estate or luxury brands preferred.",
   },
@@ -44,7 +44,7 @@ const openings = [
   {
     title: "Legal and Compliance Officer",
     department: "Legal",
-    location: "Lagos, Nigeria",
+    location: "San Francisco, CA",
     type: "Full-time",
     description: "Oversee property title verification, manage transaction documentation, and ensure regulatory compliance across all listing and investment operations. Must be a qualified legal practitioner with real estate experience.",
   },
@@ -65,7 +65,7 @@ const perks = [
 export default function Careers() {
   return (
     <SiteLayout>
-      <SEO title="Careers" description="Join the Verdant Estate team. We are looking for driven professionals to help us build the most trusted real estate platform in Nigeria." />
+      <SEO title="Careers" description="Join the Verdant Estate team. We are looking for driven professionals to help us build the most trusted real estate platform in the United States." />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[550px] flex items-center bg-black">
         <img
@@ -123,7 +123,7 @@ export default function Careers() {
                 We invest heavily in our people through structured training programs, industry certifications, and regular mentorship sessions. Whether you are an experienced real estate professional or making a career transition, we provide the tools and support you need to grow.
               </p>
               <p>
-                Our work environment balances accountability with flexibility. Remote work is standard for engineering and support roles, while field agents benefit from office access in our Lagos and Abuja locations. All team members participate in quarterly reviews focused on growth, not just targets.
+                Our work environment balances accountability with flexibility. Remote work is standard for engineering and support roles, while field agents benefit from office access in our New York and Austin locations. All team members participate in quarterly reviews focused on growth, not just targets.
               </p>
             </div>
           </div>

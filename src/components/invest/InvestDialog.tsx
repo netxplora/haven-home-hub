@@ -12,10 +12,11 @@ import { availableUnits, formatMoney, unitsForAmount, type InvestmentProperty } 
 import { PaymentMethodPicker, type PaymentMethod } from "@/components/payments/PaymentMethodPicker";
 import { Loader2, Calendar, CreditCard, Layers, AlertCircle } from "lucide-react";
 import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
+import { SignaturePad } from "@/components/invest/SignaturePad";
 import { cn } from "@/lib/utils";
 
 type InvestMode = "full" | "installment";
-type Step = "amount" | "mode" | "installment_config" | "submitting" | "success";
+type Step = "amount" | "mode" | "installment_config" | "signature" | "payment_method" | "submitting" | "success";
 
 export function InvestDialog({
   open, onClose, property, initialAmount,
@@ -27,9 +28,10 @@ export function InvestDialog({
 }) {
   const nav = useNavigate();
   const [step, setStep] = useState<Step>("amount");
-  const [amount, setAmount] = useState<string>(String(initialAmount));
-  const [method, setMethod] = useState<PaymentMethod>("crypto");
+  const [method, setMethod] = useState<PaymentMethod>("digital_currency");
   const [cryptoOpen, setCryptoOpen] = useState(false);
+  const [createdInvestmentId, setCreatedInvestmentId] = useState<string | null>(null);
+  const [signatureData, setSignatureData] = useState<string | null>(null);
 
   // Installment config
   const [investMode, setInvestMode] = useState<InvestMode>("full");
@@ -40,30 +42,36 @@ export function InvestDialog({
   const minDownPct = Number((property as any).min_down_payment_pct ?? 20);
   const maxMonths = Number((property as any).max_installment_months ?? 24);
 
-  useEffect(() => {
-    if (open) {
-      setStep("amount");
-      setAmount(String(initialAmount));
-      setInvestMode("full");
-      setDownPaymentPct(minDownPct);
-      setDurationMonths(12);
-    }
-  }, [open, initialAmount, minDownPct]);
-
+  const minUnits = Math.max(1, Math.ceil(Number(property.min_investment) / Number(property.unit_price)));
   const avail = availableUnits(property);
-  const units = useMemo(() => unitsForAmount(Number(amount || 0), Number(property.unit_price)), [amount, property.unit_price]);
-  const minOk = Number(amount || 0) >= Number(property.min_investment);
-  const unitsOk = units > 0 && units <= avail;
-  const canProceed = minOk && unitsOk;
+
+  const [units, setUnits] = useState<number>(() => {
+    const initialUnits = Math.max(1, Math.floor(initialAmount / Number(property.unit_price)));
+    return Math.max(minUnits, Math.min(avail, initialUnits));
+  });
+
+  const totalAmount = units * Number(property.unit_price);
+  const canProceed = units >= minUnits && units <= avail;
 
   // Installment calculations
-  const totalAmount = Number(amount || 0);
   const downPaymentAmount = Math.round((totalAmount * downPaymentPct) / 100);
   const remainingBalance = totalAmount - downPaymentAmount;
   const monthlyInstallment = durationMonths > 0 ? Math.round((remainingBalance / durationMonths) * 100) / 100 : 0;
 
   // Duration options
   const durationOptions = [3, 6, 9, 12, 18, 24].filter(m => m <= maxMonths);
+
+  useEffect(() => {
+    if (open) {
+      setStep("amount");
+      const initialUnits = Math.max(1, Math.floor(initialAmount / Number(property.unit_price)));
+      setUnits(Math.max(minUnits, Math.min(avail, initialUnits)));
+      setInvestMode("full");
+      setDownPaymentPct(minDownPct);
+      setDurationMonths(12);
+      setCreatedInvestmentId(null);
+    }
+  }, [open, initialAmount, minDownPct, minUnits, avail, property.unit_price]);
 
   const { data: balance = 0 } = useQuery({
     queryKey: ["user-balance"],
@@ -82,9 +90,8 @@ export function InvestDialog({
         property_id: property.id,
         amount: investMode === "installment" ? downPaymentAmount : totalAmount,
         units,
-        provider: "paystack", // Placeholder as it's not used yet
+        provider: "paystack",
         investment_type: investMode,
-        status: "pending_review", // Explicitly request pending_review
       };
 
       if (investMode === "installment") {
@@ -93,16 +100,55 @@ export function InvestDialog({
         body.duration_months = durationMonths;
         body.monthly_installment_amount = monthlyInstallment;
       }
+      
+      // Pass signature
+      if (signatureData) {
+        body.signature_data = signatureData;
+      }
 
-      const { data, error } = await supabase.functions.invoke("create-investment", { body });
-      if (error) throw error;
+      // Use direct fetch instead of supabase.functions.invoke to properly extract error details
+      const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData?.session?.access_token;
+
+      if (!accessToken) {
+        throw new Error("You must be logged in to invest. Please sign in and try again.");
+      }
+
+      const response = await fetch(`${supabaseUrl}/functions/v1/create-investment`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+          "apikey": import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify(body),
+      });
+
+      const result = await response.json().catch(() => ({ error: "Unknown error" }));
+
+      if (!response.ok) {
+        const detail = result?.error || `Server returned ${response.status}`;
+        throw new Error(detail);
+      }
+
+      if (result?.error) {
+        throw new Error(result.error);
+      }
+      
+      if (result?.investment_id) {
+        setCreatedInvestmentId(result.investment_id);
+      }
       
       toast({
-        title: "Investment Request Submitted",
-        description: "Your application is under review. You will be notified once approved to proceed with payment.",
+        title: "Investment Reserved",
+        description: "Please complete your payment to activate this investment.",
       });
-      setStep("success");
+      // Launch payment modal directly
+      setCryptoOpen(true);
+      setStep("amount"); // Reset the background step
     } catch (e: any) {
+      console.error("Investment submission error:", e);
       toast({ title: "Could not submit request", description: e.message ?? "Please try again", variant: "destructive" });
       setStep("amount");
     }
@@ -113,21 +159,35 @@ export function InvestDialog({
       if (installmentEnabled) {
         setStep("mode");
       } else {
-        confirm();
+        setStep("payment_method");
       }
     } else if (step === "mode") {
       if (investMode === "installment") {
         setStep("installment_config");
       } else {
-        confirm();
+        setStep("signature");
       }
     } else if (step === "installment_config") {
+      setStep("signature");
+    } else if (step === "signature") {
+      setStep("payment_method");
+    } else if (step === "payment_method") {
       confirm();
     }
   }
 
   function handleBack() {
-    if (step === "installment_config") {
+    if (step === "payment_method") {
+      setStep("signature");
+    } else if (step === "signature") {
+      if (investMode === "installment") {
+        setStep("installment_config");
+      } else if (installmentEnabled) {
+        setStep("mode");
+      } else {
+        setStep("amount");
+      }
+    } else if (step === "installment_config") {
       setStep("mode");
     } else if (step === "mode") {
       setStep("amount");
@@ -145,25 +205,46 @@ export function InvestDialog({
           {/* Step: Amount */}
           {step === "amount" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-top-1">
-              <div className="space-y-2">
-                <Label htmlFor="amt2" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Amount ({property.currency})</Label>
-                <Input
-                  id="amt2" type="number" min={Number(property.min_investment)} step={Number(property.unit_price)}
-                  value={amount} onChange={(e) => setAmount(e.target.value)}
-                  className="h-12 rounded-xl bg-accent/50 focus:bg-background transition-all font-bold text-lg"
-                />
-                <p className="text-[10px] text-muted-foreground ml-1 italic">
-                  Minimum {formatMoney(Number(property.min_investment), property.currency)} · Unit price {formatMoney(Number(property.unit_price), property.currency)}
-                </p>
+              <div className="space-y-4">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Number of Units</Label>
+                
+                <div className="flex items-center justify-between p-2 rounded-xl bg-accent/50 border border-border/40">
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="icon" 
+                    className="h-10 w-10 shrink-0 rounded-lg text-lg font-bold"
+                    disabled={units <= minUnits}
+                    onClick={() => setUnits(u => Math.max(minUnits, u - 1))}
+                  >-</Button>
+                  <div className="flex-1 text-center font-bold text-2xl px-4 select-none">
+                    {units}
+                  </div>
+                  <Button 
+                    type="button"
+                    variant="outline" 
+                    size="icon" 
+                    className="h-10 w-10 shrink-0 rounded-lg text-lg font-bold"
+                    disabled={units >= avail}
+                    onClick={() => setUnits(u => Math.min(avail, u + 1))}
+                  >+</Button>
+                </div>
+                
+                <div className="flex justify-between items-center text-[10px] text-muted-foreground ml-1 italic px-1">
+                  <span>Minimum {minUnits} unit{minUnits > 1 ? 's' : ''}</span>
+                  <span className={avail < 10 ? "text-amber-600 font-bold" : ""}>{avail} available</span>
+                </div>
               </div>
               <div className="rounded-xl bg-accent/40 border border-border/40 p-6 shadow-inner space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-semibold text-secondary uppercase tracking-wider">Units</span>
-                  <span className="font-bold text-foreground text-lg">{units}</span>
+                  <span className="text-[10px] font-semibold text-secondary uppercase tracking-wider">Estimated ROI</span>
+                  <span className="font-bold text-green-600 text-lg">
+                    {formatMoney(totalAmount * (Number(property.expected_return_pct_min || 5) / 100), property.currency)} / yr
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[10px] font-semibold text-secondary uppercase tracking-wider">Total Amount</span>
-                  <span className="font-serif font-semibold text-primary text-2xl tracking-tight">{formatMoney(Number(amount || 0), property.currency)}</span>
+                  <span className="text-[10px] font-semibold text-secondary uppercase tracking-wider">Total Investment Amount</span>
+                  <span className="font-serif font-semibold text-primary text-2xl tracking-tight">{formatMoney(totalAmount, property.currency)}</span>
                 </div>
               </div>
             </div>
@@ -315,6 +396,33 @@ export function InvestDialog({
             </div>
           )}
 
+          {/* Step: Signature */}
+          {step === "signature" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-1">
+              <SignaturePad 
+                onSign={(data) => {
+                  setSignatureData(data);
+                  setStep("payment_method");
+                }} 
+                onCancel={handleBack} 
+              />
+            </div>
+          )}
+
+          {/* Step: Payment Method */}
+          {step === "payment_method" && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-top-1">
+              <div>
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Select Payment Method</Label>
+                <p className="text-[10px] text-muted-foreground ml-1 mt-1">Choose how you want to pay for this investment.</p>
+              </div>
+              <PaymentMethodPicker
+                value={method}
+                onChange={setMethod}
+              />
+            </div>
+          )}
+
 
           {/* Step: Success */}
           {step === "success" && (
@@ -364,7 +472,19 @@ export function InvestDialog({
                 className="flex-[2] h-14 bg-secondary text-secondary-foreground hover:opacity-90 rounded-xl font-bold shadow-sm transition-all active:scale-[0.98]"
                 onClick={handleNext}
               >
-                Confirm Investment Plan
+                Sign Agreement
+              </Button>
+            </div>
+          )}
+          {step === "signature" && null /* Footer is handled inside SignaturePad */}
+          {step === "payment_method" && (
+            <div className="flex gap-4 w-full">
+              <Button variant="outline" className="flex-1 h-14 rounded-xl font-bold border-border/60 hover:bg-accent/50" onClick={handleBack}>Back</Button>
+              <Button
+                className="flex-[2] h-14 bg-primary text-primary-foreground hover:opacity-90 rounded-xl font-bold shadow-sm transition-all active:scale-[0.98]"
+                onClick={handleNext}
+              >
+                Confirm Investment
               </Button>
             </div>
           )}
@@ -386,10 +506,10 @@ export function InvestDialog({
           setCryptoOpen(false);
           onClose();
         }}
-        amount={investMode === "installment" ? downPaymentAmount : Number(amount)}
+        amount={investMode === "installment" ? downPaymentAmount : totalAmount}
         currency={property.currency}
         paymentType="investment"
-        targetId={property.id}
+        targetId={createdInvestmentId || property.id}
         metadata={{
           units,
           investment_type: investMode,

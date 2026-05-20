@@ -17,7 +17,7 @@ BEGIN
             year_built = 2022,
             internal_id = 'PROP-8812',
             nearby_pois = '[
-                {"name": "Victoria Island Business District", "type": "Office", "distance": "0.5km"},
+                {"name": "Silicon Valley Business District", "type": "Office", "distance": "0.5km"},
                 {"name": "Eko Hotel & Suites", "type": "Hotel", "distance": "0.7km"},
                 {"name": "Red Door Gallery", "type": "Art", "distance": "0.3km"}
             ]'::jsonb,

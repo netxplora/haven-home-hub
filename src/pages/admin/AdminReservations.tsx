@@ -256,13 +256,13 @@ export function AdminReservations() {
         <table className="w-full text-sm text-left">
           <thead className="bg-secondary/40 border-b border-border/50">
             <tr>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Date</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Type</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">User</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Property</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Amount</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Status</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Actions</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Type</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Status</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">

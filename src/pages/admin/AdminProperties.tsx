@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ChipInput } from "@/components/ui/chip-input";
 import { ImageUploader } from "@/components/site/ImageUploader";
 import { Separator } from "@/components/ui/separator";
 
@@ -171,7 +172,8 @@ function PropertyForm({ initial, locations, agents, onClose }: any) {
     year_built: initial?.year_built ?? new Date().getFullYear(),
     internal_id: initial?.internal_id ?? "",
     inspection_availability: initial?.inspection_availability ?? "Available for viewing Monday to Saturday, 9AM - 5PM.",
-    features: Array.isArray(initial?.features) ? initial.features.join(", ") : "",
+    interior_features: Array.isArray(initial?.interior_features) ? initial.interior_features : [],
+    exterior_features: Array.isArray(initial?.exterior_features) ? initial.exterior_features : [],
     nearby_pois: initial?.nearby_pois ? JSON.stringify(initial.nearby_pois, null, 2) : "[]",
     cover_image_url: initial?.cover_image_url ?? "",
     video_url: initial?.video_url ?? "",
@@ -213,7 +215,8 @@ function PropertyForm({ initial, locations, agents, onClose }: any) {
       internal_id: form.internal_id || null,
       inspection_availability: form.inspection_availability,
       nearby_pois: pois,
-      features: form.features ? form.features.split(",").map((s: string) => s.trim()).filter(Boolean) : [],
+      interior_features: Array.isArray(form.interior_features) ? form.interior_features : [],
+      exterior_features: Array.isArray(form.exterior_features) ? form.exterior_features : [],
       cover_image_url: form.cover_image_url || null,
       video_url: form.video_url || null,
       agent_id: form.agent_id || null,
@@ -311,9 +314,15 @@ function PropertyForm({ initial, locations, agents, onClose }: any) {
           <div className="space-y-2"><Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Year</Label><Input type="number" value={form.year_built} onChange={(e) => setForm({ ...form, year_built: e.target.value })} className="h-12 rounded-xl bg-accent/50 focus:bg-background transition-all" /></div>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Key Features (comma-separated)</Label>
-          <Input value={form.features} onChange={(e) => setForm({ ...form, features: e.target.value })} placeholder="Swimming Pool, Smart Home, Gated, Ocean View" className="h-12 rounded-xl bg-accent/50 focus:bg-background transition-all" />
+        <div className="grid gap-6 sm:grid-cols-2">
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Interior Features</Label>
+            <ChipInput value={form.interior_features} onChange={(val) => setForm({ ...form, interior_features: val })} placeholder="Smart Home, Hardwood Floors..." className="rounded-xl bg-accent/50 focus:bg-background transition-all" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Exterior Features</Label>
+            <ChipInput value={form.exterior_features} onChange={(val) => setForm({ ...form, exterior_features: val })} placeholder="Swimming Pool, Balcony..." className="rounded-xl bg-accent/50 focus:bg-background transition-all" />
+          </div>
         </div>
         
         <div className="space-y-2">

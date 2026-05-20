@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { AlertTriangle, ArrowLeft, Building2, CalendarClock, ChartLine, Coins, Layers, MapPin, ShieldAlert, ShieldCheck, Wallet } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Building2, CalendarClock, ChartLine, Coins, Layers, MapPin, ShieldAlert, ShieldCheck, Wallet, Minus, Plus } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,8 +19,8 @@ import { FileText, Map as MapIcon, Star, Info, CheckCircle2 } from "lucide-react
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { InvestmentProperty, formatMoney, fundingPercent, availableUnits } from "@/lib/invest";
-import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
-import { PaymentMethodPicker, type PaymentMethod } from "@/components/payments/PaymentMethodPicker";
+import { FractionalPaymentDialog } from "@/components/invest/FractionalPaymentDialog";
+import { InvestmentCalculator } from "@/components/invest/InvestmentCalculator";
 
 export default function InvestDetail() {
   const { slug } = useParams();
@@ -34,9 +34,6 @@ export default function InvestDetail() {
   const [riskAck, setRiskAck] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
   const [payModalOpen, setPayModalOpen] = useState(false);
-  const [createdInvestmentId, setCreatedInvestmentId] = useState<string | null>(null);
-  const [method, setMethod] = useState<PaymentMethod>("crypto");
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["invest-detail", slug],
@@ -50,6 +47,16 @@ export default function InvestDetail() {
     },
     enabled: !!slug,
   });
+
+  useEffect(() => {
+    if (data) {
+      const minUnits = Math.ceil(Number(data.min_investment || data.unit_price) / Number(data.unit_price));
+      setUnits(minUnits);
+      if ((data as any).installment_available) {
+        setDownPaymentPct(Number((data as any).min_down_payment_pct ?? 20));
+      }
+    }
+  }, [data]);
 
   // Check KYC status
   const { data: kycStatus } = useQuery({
@@ -76,10 +83,11 @@ export default function InvestDetail() {
   const pct = fundingPercent(data);
   const avail = availableUnits(data);
   
-  // Enforce max 3 units or available units, whichever is smaller.
-  const maxAllowedUnits = Math.min(3, avail);
+  // Allow up to all available units
+  const maxAllowedUnits = avail;
+  const currentMinUnits = Math.ceil(Number(data.min_investment || data.unit_price) / Number(data.unit_price));
   
-  const minOk = units >= 1 && units <= maxAllowedUnits;
+  const minOk = units >= currentMinUnits && units <= maxAllowedUnits && Number.isInteger(units);
   const canInvest = minOk && riskAck && avail > 0 && data.status === "open";
   
   const totalAmount = units * Number(data.unit_price);
@@ -97,35 +105,7 @@ export default function InvestDetail() {
       toast({ title: "Sign in required", description: "Please sign in to invest." });
       return;
     }
-    
-    setIsSubmitting(true);
-    try {
-      const body: Record<string, any> = {
-        property_id: data.id,
-        amount: investMode === "installment" ? downPaymentAmount : totalAmount,
-        units,
-        provider: method,
-        investment_type: investMode,
-        status: "pending_verification", 
-      };
-
-      if (investMode === "installment") {
-        body.total_amount = totalAmount;
-        body.down_payment_amount = downPaymentAmount;
-        body.duration_months = durationMonths;
-        body.monthly_installment_amount = monthlyInstallment;
-      }
-
-      const res = await supabase.functions.invoke("create-investment", { body });
-      if (res.error) throw res.error;
-      
-      setCreatedInvestmentId(res.data.investment_id);
-      setPayModalOpen(true);
-    } catch (e: any) {
-      toast({ title: "Could not submit request", description: e.message ?? "Please try again", variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
+    setPayModalOpen(true);
   }
 
   const gallery = [
@@ -194,6 +174,14 @@ export default function InvestDetail() {
               Returns are estimates based on property performance and are not guaranteed.
             </p>
           </div>
+
+          <InvestmentCalculator
+            minInvestment={Number(data.min_investment)}
+            maxInvestment={Number(data.total_value)}
+            projectedReturnMin={data.projected_return_min}
+            projectedReturnMax={data.projected_return_max}
+            currency={data.currency || 'USD'}
+          />
 
           {/* Income model */}
           <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-soft">
@@ -372,20 +360,46 @@ export default function InvestDetail() {
 
             <div className="space-y-4">
               <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Select Units (Max 3)</Label>
-                <Select value={String(units)} onValueChange={(val) => setUnits(Number(val))} disabled={avail === 0 || data.status !== "open"}>
-                  <SelectTrigger className="h-12 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-lg">
-                    <SelectValue placeholder="Select units" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {avail >= 1 && <SelectItem value="1">1 Unit</SelectItem>}
-                    {avail >= 2 && <SelectItem value="2">2 Units</SelectItem>}
-                    {avail >= 3 && <SelectItem value="3">3 Units</SelectItem>}
-                  </SelectContent>
-                </Select>
-                <p className="text-[10px] text-muted-foreground italic">
-                  Unit price: {formatMoney(Number(data.unit_price), data.currency)}
-                </p>
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Number of Units</Label>
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setUnits(Math.max(currentMinUnits, units - 1))}
+                    disabled={units <= currentMinUnits || avail === 0 || data.status !== "open"}
+                    className="h-12 w-12 shrink-0 rounded-xl"
+                  >
+                    <Minus className="h-4 w-4" />
+                  </Button>
+                  <Input
+                    type="number"
+                    min={currentMinUnits}
+                    max={maxAllowedUnits}
+                    value={units}
+                    onChange={(e) => {
+                      const val = parseInt(e.target.value, 10);
+                      if (isNaN(val)) setUnits(currentMinUnits);
+                      else if (val > maxAllowedUnits) setUnits(maxAllowedUnits);
+                      else setUnits(val);
+                    }}
+                    disabled={avail === 0 || data.status !== "open"}
+                    className="h-12 flex-1 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-lg text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                  />
+                  <button
+                    type="button"
+                    className="h-12 w-12 rounded-xl border border-border bg-accent/50 hover:bg-accent flex items-center justify-center text-lg font-bold transition-colors disabled:opacity-40"
+                    disabled={units >= maxAllowedUnits || avail === 0 || data.status !== "open"}
+                    onClick={() => setUnits(Math.min(maxAllowedUnits, units + 1))}
+                  >+</button>
+                </div>
+                <div className="flex items-center justify-between">
+                  <p className="text-[10px] text-muted-foreground italic">
+                    Unit price: {formatMoney(Number(data.unit_price), data.currency)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">
+                    {avail.toLocaleString()} units available
+                  </p>
+                </div>
               </div>
 
               <div className="space-y-2">
@@ -474,17 +488,13 @@ export default function InvestDetail() {
               )}
             </div>
 
-            <div className="mt-6">
-              <PaymentMethodPicker value={method} onChange={setMethod} />
-            </div>
-
             <Button
               className="mt-6 w-full bg-primary text-primary-foreground  hover:bg-primary/90 shadow-sm h-14 font-bold text-lg rounded-xl"
               size="lg"
-              disabled={!canInvest || !user || isSubmitting}
+              disabled={!canInvest || !user}
               onClick={handleInvest}
             >
-              <Wallet className="mr-2 h-5 w-5" /> {isSubmitting ? "Processing..." : "Proceed to Payment"}
+              <Wallet className="mr-2 h-5 w-5" /> Proceed to Payment
             </Button>
             <label className="mt-4 flex items-start gap-2 text-xs text-foreground/85">
               <Checkbox
@@ -521,20 +531,21 @@ export default function InvestDetail() {
         </aside>
       </div>
 
-      {payModalOpen && createdInvestmentId && (
-        <ManualPaymentModal
+      {payModalOpen && (
+        <FractionalPaymentDialog
           open={payModalOpen}
-          onClose={() => {
+          onClose={() => setPayModalOpen(false)}
+          property={data}
+          units={units}
+          investMode={investMode}
+          totalAmount={totalAmount}
+          downPaymentAmount={downPaymentAmount}
+          durationMonths={durationMonths}
+          monthlyInstallment={monthlyInstallment}
+          onSuccess={() => {
             setPayModalOpen(false);
             window.location.href = "/dashboard?tab=investments";
           }}
-          method={method as any}
-          amount={investMode === "installment" ? downPaymentAmount : totalAmount}
-          currency={data.currency}
-          paymentType="investment"
-          targetId={data.id}
-          bookingId={createdInvestmentId}
-          isInvestmentProperty={true}
         />
       )}
     </SiteLayout>

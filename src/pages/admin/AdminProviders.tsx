@@ -76,8 +76,8 @@ export function AdminProviders() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="font-serif text-2xl font-bold text-foreground">Purchase Providers</h2>
-          <p className="text-sm text-muted-foreground">Configure third-party services for "Buy Crypto with Card" flow.</p>
+          <h2 className="font-serif text-2xl font-bold text-foreground">Digital Currency Providers</h2>
+          <p className="text-sm text-muted-foreground">Configure third-party services for "Buy Digital Currency" flow.</p>
         </div>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
           <DialogTrigger asChild>
@@ -218,7 +218,7 @@ export function AdminProviders() {
           <Settings className="h-16 w-16 text-muted-foreground mx-auto mb-6 opacity-20" />
           <p className="font-serif text-2xl font-bold text-muted-foreground">No providers found.</p>
           <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto leading-relaxed">
-            Configure third-party crypto purchase services to enable card payments for your users.
+            Configure third-party digital currency purchase services to enable external payments for your users.
           </p>
           <Button variant="outline" className="mt-8 rounded-xl" onClick={() => setOpen(true)}>
             <Plus className="mr-2 h-4 w-4" /> Create First Provider

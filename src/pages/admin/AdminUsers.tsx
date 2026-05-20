@@ -84,15 +84,15 @@ export function AdminUsers() {
       </div>
 
       {/* Users table */}
-      <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+      <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
         <table className="w-full text-sm text-left">
           <thead className="border-b border-border/50 bg-secondary/40">
             <tr>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">User</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Verification</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Roles</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Joined</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Assign Role</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Verification</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Roles</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Joined</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Assign Role</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">

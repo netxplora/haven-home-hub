@@ -20,6 +20,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
           investment_properties(title, slug, cover_image_url)
         `)
         .eq("user_id", userId)
+        .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested"])
         .order("created_at", { ascending: false });
         
       if (error) {
@@ -146,7 +147,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                      Property Details <ExternalLink className="ml-1.5 h-3 w-3" />
                                   </Link>
                                </Button>
-                                {r.status === 'pending_review' && (
+                                {r.status === 'pending' && (
                                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1">
                                      Under Review
                                    </Badge>

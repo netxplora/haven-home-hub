@@ -10,22 +10,27 @@
 @layer base {
   :root {
     /* Surfaces — bright, clean, warm whites */
-    --background: 60 9% 98%;       /* Warm White #FAFAF9 */
-    --foreground: 220 20% 18%;     /* Deep Charcoal — softer than pure black */
+    --background: 60 9% 98%;
+    /* Warm White #FAFAF9 */
+    --foreground: 220 20% 18%;
+    /* Deep Charcoal — softer than pure black */
 
-    --card: 0 0% 100%;             /* Pure white cards */
+    --card: 0 0% 100%;
+    /* Pure white cards */
     --card-foreground: 220 20% 18%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 220 20% 18%;
 
     /* Brand — Emerald Green */
-    --primary: 160 84% 28%;        /* Refined Emerald #0B7A55 */
+    --primary: 160 84% 28%;
+    /* Refined Emerald #0B7A55 */
     --primary-foreground: 0 0% 100%;
     --primary-glow: 160 84% 38%;
 
     /* Secondary — Navy Slate */
-    --secondary: 220 35% 28%;      /* Warm Navy #2B3A52 */
+    --secondary: 220 35% 28%;
+    /* Warm Navy #2B3A52 */
     --secondary-foreground: 0 0% 100%;
 
     /* Accent — Subtle cool gray tint for backgrounds */
@@ -47,25 +52,21 @@
     --radius: 0.75rem;
 
     /* Hero overlays — balanced readability without heavy drama */
-    --gradient-hero: linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.45) 0%,
-      rgba(0, 0, 0, 0.15) 50%,
-      rgba(0, 0, 0, 0.65) 100%
-    );
-    --gradient-hero-emerald: linear-gradient(
-      135deg,
-      rgba(11, 122, 85, 0.7) 0%,
-      rgba(43, 58, 82, 0.6) 100%
-    );
+    --gradient-hero: linear-gradient(180deg,
+        rgba(0, 0, 0, 0.45) 0%,
+        rgba(0, 0, 0, 0.15) 50%,
+        rgba(0, 0, 0, 0.65) 100%);
+    --gradient-hero-emerald: linear-gradient(135deg,
+        rgba(11, 122, 85, 0.7) 0%,
+        rgba(43, 58, 82, 0.6) 100%);
 
     /* Shadows — soft, barely-there, professional */
     --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.04),
-                   0 1px 2px -1px rgba(0, 0, 0, 0.03);
+      0 1px 2px -1px rgba(0, 0, 0, 0.03);
     --shadow-card: 0 4px 16px -2px rgba(0, 0, 0, 0.05),
-                   0 2px 4px -2px rgba(0, 0, 0, 0.03);
-    --shadow-lux:  0 8px 30px -4px rgba(0, 0, 0, 0.07),
-                   0 4px 8px -4px rgba(0, 0, 0, 0.04);
+      0 2px 4px -2px rgba(0, 0, 0, 0.03);
+    --shadow-lux: 0 8px 30px -4px rgba(0, 0, 0, 0.07),
+      0 4px 8px -4px rgba(0, 0, 0, 0.04);
 
     /* Sidebar (admin/dashboard) */
     --sidebar-background: 0 0% 100%;
@@ -122,14 +123,26 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  h1, h2, h3, h4, h5 {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5 {
     @apply font-serif tracking-tight;
   }
 
   /* ── Improved Typography Scale ── */
-  h1 { @apply text-3xl sm:text-4xl lg:text-5xl leading-tight; }
-  h2 { @apply text-2xl sm:text-3xl leading-snug; }
-  h3 { @apply text-xl leading-snug; }
+  h1 {
+    @apply text-3xl sm:text-4xl lg:text-5xl leading-tight;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl leading-snug;
+  }
+
+  h3 {
+    @apply text-xl leading-snug;
+  }
 
   /* Smoother focus rings */
   :focus-visible {
@@ -181,19 +194,34 @@
 }
 
 @keyframes heroKenBurns {
-  0%   { transform: scale(1); }
-  100% { transform: scale(1.06); }
+  0% {
+    transform: scale(1);
+  }
+
+  100% {
+    transform: scale(1.06);
+  }
 }
 
 /* ── Responsive hero heights ── */
 @media (max-width: 640px) {
-  .properties-hero { min-height: 360px !important; }
-  .properties-hero > .container-wide { min-height: 360px !important; }
+  .properties-hero {
+    min-height: 360px !important;
+  }
+
+  .properties-hero>.container-wide {
+    min-height: 360px !important;
+  }
 }
 
 @media (min-width: 641px) and (max-width: 1024px) {
-  .properties-hero { min-height: 400px !important; }
-  .properties-hero > .container-wide { min-height: 400px !important; }
+  .properties-hero {
+    min-height: 400px !important;
+  }
+
+  .properties-hero>.container-wide {
+    min-height: 400px !important;
+  }
 }
 
 /* ── Smooth scrolling ── */

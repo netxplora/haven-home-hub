@@ -7,12 +7,12 @@ const releases = [
   {
     date: "April 2026",
     title: "Verdant Estate launches fractional property investment platform",
-    summary: "Investors can now co-own income-generating properties with transparent unit pricing and scheduled distributions. The platform supports both traditional bank transfers and cryptocurrency deposits.",
+    summary: "Investors can now co-own income-generating properties with transparent unit pricing and scheduled distributions. The platform supports both traditional bank transfers and digital currency deposits.",
   },
   {
     date: "March 2026",
     title: "Verdant Estate expands operations to three new cities",
-    summary: "The agency now covers Abuja, Port Harcourt, and Ibadan, with dedicated full-time agents embedded in each region to provide localized market expertise.",
+    summary: "The agency now covers Austin, Miami, and Ibadan, with dedicated full-time agents embedded in each region to provide localized market expertise.",
   },
   {
     date: "February 2026",
@@ -26,7 +26,7 @@ const releases = [
   },
   {
     date: "October 2025",
-    title: "Verdant Estate introduces crypto payments for property investments",
+    title: "Verdant Estate introduces digital currency payments for property investments",
     summary: "Buyers and investors can now pay with Bitcoin, Ethereum, and USDT alongside traditional banking methods, broadening access for international investors.",
   },
   {
@@ -37,12 +37,12 @@ const releases = [
 ];
 
 const coverage = [
-  { outlet: "Business Daily", title: "How agency-led platforms are reshaping property search in West Africa" },
+  { outlet: "Business Daily", title: "How agency-led platforms are reshaping property search in North America" },
   { outlet: "Property Insider", title: "Verdant Estate: The case for curated listings over marketplace volume" },
-  { outlet: "Tech in Africa", title: "Fractional real estate investing gains traction with Verdant Estate launch" },
-  { outlet: "Financial Times Africa", title: "Nigeria's property tech sector matures with verified listing standards" },
-  { outlet: "Bloomberg Africa", title: "Verdant Estate raises the bar for real estate transparency in Lagos" },
-  { outlet: "The Guardian Nigeria", title: "From renting to owning: How fractional models are changing the market" },
+  { outlet: "TechCrunch", title: "Fractional real estate investing gains traction with Verdant Estate launch" },
+  { outlet: "Financial Times", title: "US property tech sector matures with verified listing standards" },
+  { outlet: "Bloomberg", title: "Verdant Estate raises the bar for real estate transparency in New York" },
+  { outlet: "The Wall Street Journal", title: "From renting to owning: How fractional models are changing the market" },
 ];
 
 export default function Press() {

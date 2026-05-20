@@ -227,23 +227,23 @@ export function AdminKYC() {
           </p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
           <table className="w-full text-sm text-left">
             <thead className="border-b border-border/50 bg-secondary/40">
               <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">
                   User
                 </th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">
                   Status
                 </th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">
                   Documents
                 </th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">
                   Updated
                 </th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">
                   Actions
                 </th>
               </tr>

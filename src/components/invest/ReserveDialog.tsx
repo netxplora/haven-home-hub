@@ -45,7 +45,7 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
   const { user } = useAuth();
   const nav = useNavigate();
   const [step, setStep] = useState<"confirm" | "submitting" | "success">("confirm");
-  const [method, setMethod] = useState<PaymentMethod>("crypto");
+  const [method, setMethod] = useState<PaymentMethod>("digital_currency");
   const [cryptoOpen, setCryptoOpen] = useState(false);
   const reservationFee = 500; 
 
@@ -200,7 +200,7 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
 
                 <div className="space-y-4">
                   <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment Method</Label>
-                  <PaymentMethodPicker value={method} onChange={setMethod} availableBalance={balance} />
+                  <PaymentMethodPicker value={method} onChange={setMethod} />
                 </div>
               </div>
             )}

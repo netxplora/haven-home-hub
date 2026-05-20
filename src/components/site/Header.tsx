@@ -10,21 +10,27 @@ import {
   Sheet, SheetContent, SheetTrigger,
 } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/site/NotificationBell";
+import { CurrencyToggle } from "@/components/site/CurrencyToggle";
+import { LanguageToggle } from "@/components/site/LanguageToggle";
+import { useTranslation } from "react-i18next";
 import logo from "@/assets/logo-emerald.png";
 
-const nav = [
-  { to: "/properties?type=buy", label: "Buy" },
-  { to: "/properties?type=rent", label: "Rent" },
-  { to: "/properties?type=land", label: "Land" },
-  { to: "/invest", label: "Invest" },
-  { to: "/agents", label: "Agents" },
-  { to: "/blog", label: "Blog" },
-  { to: "/about", label: "About" },
-];
+// We'll generate this inside the component to use the t() hook
 
 export function Header() {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation();
+
+  const nav = [
+    { to: "/properties?type=buy", label: t('nav.buy', 'Buy') },
+    { to: "/properties?type=rent", label: t('nav.rent', 'Rent') },
+    { to: "/properties?type=land", label: t('nav.land', 'Land') },
+    { to: "/invest", label: t('nav.invest', 'Invest') },
+    { to: "/agents", label: t('nav.agents', 'Agents') },
+    { to: "/blog", label: t('nav.blog', 'Blog') },
+    { to: "/about", label: t('nav.about', 'About') },
+  ];
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-md">
@@ -54,7 +60,9 @@ export function Header() {
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2 md:flex">
+          <LanguageToggle />
+          <CurrencyToggle />
           {user ? (
             <>
               <NotificationBell />
@@ -125,6 +133,13 @@ export function Header() {
               </div>
               {/* Mobile Footer Actions */}
               <div className="border-t border-border/50 px-6 py-5 space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-border/30 mb-2 gap-2">
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Settings</span>
+                  <div className="flex gap-2">
+                    <LanguageToggle />
+                    <CurrencyToggle />
+                  </div>
+                </div>
                 {user ? (
                   <>
                     <Link to="/dashboard" className="block py-2 text-sm font-medium text-foreground">My dashboard</Link>

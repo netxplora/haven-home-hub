@@ -110,7 +110,7 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
                             setGridOpen(false);
                           }}
                         >
-                          <img src={img} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
+                          <img src={img} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30">
                               <Maximize2 className="h-8 w-8 text-white" />
@@ -143,7 +143,7 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
                 : "border-transparent opacity-50 hover:opacity-100 grayscale hover:grayscale-0"
             }`}
           >
-            <img src={img} alt="" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
+            <img src={img} alt="" loading="lazy" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
             {currentIndex === i && (
               <div className="absolute inset-0 bg-primary/10" />
             )}

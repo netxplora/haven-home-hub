@@ -72,7 +72,7 @@ export function AdminWallets() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-serif text-2xl font-bold">Global Wallets</h2>
-          <p className="text-sm text-muted-foreground">Manage addresses where users send crypto payments.</p>
+          <p className="text-sm text-muted-foreground">Manage addresses where users send digital currency payments.</p>
         </div>
         <Dialog open={open} onOpenChange={(o) => { setOpen(o); if (!o) setEditing(null); }}>
           <DialogTrigger asChild>
@@ -158,7 +158,7 @@ export function AdminWallets() {
         <div className="p-12 text-center rounded-xl border border-dashed border-border/50 bg-secondary/10">
           <ShieldCheck className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
           <p className="font-serif text-lg text-muted-foreground">No global wallets configured.</p>
-          <p className="text-sm text-muted-foreground mt-1">Users will not be able to pay with crypto until you add a wallet.</p>
+          <p className="text-sm text-muted-foreground mt-1">Users will not be able to pay with digital currency until you add a wallet.</p>
         </div>
       )}
     </div>

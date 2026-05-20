@@ -20,7 +20,7 @@ export function WithdrawalDialog({
   available: number;
 }) {
   const qc = useQueryClient();
-  const [method, setMethod] = useState<"bank_transfer" | "crypto">("bank_transfer");
+  const [method, setMethod] = useState<"bank_transfer" | "digital_currency">("bank_transfer");
   const [amount, setAmount] = useState("");
   const [bank, setBank] = useState({ bank_name: "", bank_account_name: "", bank_account_number: "" });
   const [crypto, setCrypto] = useState({ crypto_currency: "USDT", crypto_address: "" });
@@ -54,7 +54,7 @@ export function WithdrawalDialog({
       method === "bank_transfer"
         ? { user_id: user.id, amount: amt, method, ...bank }
         : { user_id: user.id, amount: amt, method, ...crypto };
-    const { error } = await supabase.from("withdrawal_requests").insert(payload);
+    const { error } = await supabase.from("withdrawal_requests").insert(payload as any);
     setSubmitting(false);
     if (error) {
       toast({ title: "Could not submit", description: error.message, variant: "destructive" });
@@ -102,10 +102,10 @@ export function WithdrawalDialog({
             {amt > available && <p className="text-xs text-destructive mt-1 ml-1">Amount exceeds your available balance.</p>}
           </div>
 
-          <Tabs value={method} onValueChange={(v) => setMethod(v as "bank_transfer" | "crypto")} className="w-full">
+          <Tabs value={method} onValueChange={(v) => setMethod(v as "bank_transfer" | "digital_currency")} className="w-full">
             <TabsList className="grid w-full grid-cols-2 p-1 bg-accent rounded-xl mb-4">
               <TabsTrigger value="bank_transfer" className="rounded-lg data-[state=active]:bg-background">Bank transfer</TabsTrigger>
-              <TabsTrigger value="crypto" className="rounded-lg data-[state=active]:bg-background">Digital Currency</TabsTrigger>
+              <TabsTrigger value="digital_currency" className="rounded-lg data-[state=active]:bg-background">Digital Currency</TabsTrigger>
             </TabsList>
             <TabsContent value="bank_transfer" className="space-y-5 animate-in fade-in slide-in-from-top-1">
               <div className="space-y-2">
@@ -121,7 +121,7 @@ export function WithdrawalDialog({
                 <Input value={bank.bank_account_number} onChange={(e) => setBank({ ...bank, bank_account_number: e.target.value })} maxLength={64} className="h-11 rounded-xl" />
               </div>
             </TabsContent>
-            <TabsContent value="crypto" className="space-y-5 animate-in fade-in slide-in-from-top-1">
+            <TabsContent value="digital_currency" className="space-y-5 animate-in fade-in slide-in-from-top-1">
               <div className="space-y-2">
                 <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Currency / network</Label>
                 <Input value={crypto.crypto_currency} onChange={(e) => setCrypto({ ...crypto, crypto_currency: e.target.value })} placeholder="USDT-TRC20, BTC, ETH..." maxLength={32} className="h-11 rounded-xl" />

@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { resolveImage } from "@/lib/format";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from "@/components/ui/dialog";
 import { Reviews } from "@/components/site/Reviews";
+import { AgentReviews, AgentRatingBadge } from "@/components/site/AgentReviews";
 import { SEO } from "@/components/site/SEO";
 
 export default function Agents() {
@@ -60,16 +61,20 @@ export default function Agents() {
           const r = (ratings as any)[a.id];
           return (
             <div key={a.id} className="flex flex-col rounded-xl border border-border bg-card p-6 shadow-soft">
-              <img src={resolveImage(a.photo_url)} alt={a.full_name} className="h-24 w-24 rounded-full object-cover" />
+              <img src={resolveImage(a.photo_url)} alt={a.full_name} loading="lazy" className="h-24 w-24 rounded-full object-cover" />
               <h3 className="mt-4 font-serif text-xl font-semibold">{a.full_name}</h3>
               <p className="text-sm text-muted-foreground">{a.role_title}</p>
-              {r && (
+              {r ? (
                 <p className="mt-2 flex items-center gap-1 text-sm">
-                  <Star className="h-4 w-4 fill-accent text-accent" />
+                  <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
                   <strong>{r.avg.toFixed(1)}</strong>
                   <span className="text-muted-foreground">({r.count})</span>
                 </p>
-              )}
+              ) : a.avg_rating > 0 ? (
+                <div className="mt-2">
+                  <AgentRatingBadge avgRating={a.avg_rating} reviewCount={a.review_count} />
+                </div>
+              ) : null}
               <p className="mt-3 text-sm text-foreground/85">{a.bio}</p>
               <div className="mt-4 flex flex-wrap gap-2">
                 {a.phone && <Button asChild size="sm" variant="outline"><a href={`tel:${a.phone}`}><Phone className="mr-1 h-4 w-4" />Call</a></Button>}
@@ -80,10 +85,14 @@ export default function Agents() {
                 <DialogTrigger asChild>
                   <Button variant="ghost" size="sm" className="mt-3 self-start text-primary">View reviews</Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-lg">
-                  <DialogHeader><DialogTitle>{a.full_name}</DialogTitle></DialogHeader>
+                <DialogContent className="max-w-lg max-h-[80vh] overflow-y-auto">
+                  <DialogHeader><DialogTitle className="font-serif">{a.full_name} — Reviews</DialogTitle></DialogHeader>
                   <DialogBody>
-                    <Reviews target={{ agentId: a.id }} />
+                    <AgentReviews agentId={a.id} agentName={a.full_name} />
+                    <div className="mt-8 pt-6 border-t border-border">
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-4">Property Reviews</p>
+                      <Reviews target={{ agentId: a.id }} />
+                    </div>
                   </DialogBody>
                 </DialogContent>
               </Dialog>

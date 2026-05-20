@@ -69,11 +69,11 @@ export function AdminCMS() {
             <table className="w-full text-sm">
               <thead className="bg-accent text-left">
                 <tr>
-                  <th className="p-3">Title</th>
-                  <th className="p-3">Category</th>
-                  <th className="p-3">Status</th>
-                  <th className="p-3">Published</th>
-                  <th className="p-3 text-right">Actions</th>
+                  <th className="p-3 whitespace-nowrap">Title</th>
+                  <th className="p-3 whitespace-nowrap">Category</th>
+                  <th className="p-3 whitespace-nowrap">Status</th>
+                  <th className="p-3 whitespace-nowrap">Published</th>
+                  <th className="p-3 text-right whitespace-nowrap">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,10 +188,10 @@ function CategoriesTab({ categories, qc }: any) {
           <table className="w-full text-sm">
             <thead className="bg-accent text-left">
               <tr>
-                <th className="p-3">Name</th>
-                <th className="p-3">Slug</th>
-                <th className="p-3">Description</th>
-                <th className="p-3 text-right">Actions</th>
+                <th className="p-3 whitespace-nowrap">Name</th>
+                <th className="p-3 whitespace-nowrap">Slug</th>
+                <th className="p-3 whitespace-nowrap">Description</th>
+                <th className="p-3 text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody>

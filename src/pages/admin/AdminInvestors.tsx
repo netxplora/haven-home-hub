@@ -205,13 +205,13 @@ export function AdminInvestors() {
           <SelectTrigger className="w-full md:w-48 bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
+            <SelectItem value="payment_under_review">Payment Under Review</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
             <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="pending_verification">Pending Verification</SelectItem>
-            <SelectItem value="pending_review">Pending Review</SelectItem>
             <SelectItem value="confirmed">Confirmed</SelectItem>
-            <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
-            <SelectItem value="defaulted">Defaulted</SelectItem>
+            <SelectItem value="refunded">Refunded</SelectItem>
           </SelectContent>
         </Select>
         <Select value={typeFilter} onValueChange={setTypeFilter}>
@@ -228,18 +228,18 @@ export function AdminInvestors() {
       {isLoading ? (
         <div className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Investor</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Property & Type</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Total Amount</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Amount Paid</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Balance</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Duration & Next Due</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center">Status</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Actions</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property & Type</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Total Amount</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount Paid</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Balance</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Duration & Next Due</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center whitespace-nowrap">Status</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -269,13 +269,13 @@ export function AdminInvestors() {
                     )}
                   </td>
                   <td className="p-4 text-center">
-                    <Badge className="rounded-md px-2 py-0 text-[10px] uppercase font-bold" variant={i.status === "active" ? "default" : i.status === "pending_verification" || i.status === "pending_review" ? "secondary" : "outline"}>
+                    <Badge className="rounded-md px-2 py-0 text-[10px] uppercase font-bold" variant={(i.status === "active" || i.status === "confirmed") ? "default" : (i.status === "pending" || i.status === "payment_under_review" || i.status === "awaiting_payment") ? "secondary" : "outline"}>
                       {i.status?.replace(/_/g, ' ')}
                     </Badge>
                   </td>
                   <td className="p-4 text-right">
                     <div className="flex justify-end gap-1">
-                      {i.status === "pending_verification" || i.status === "pending_review" ? (
+                      {(i.status === "pending" || i.status === "payment_under_review") ? (
                       <Button variant="default" size="sm" className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
                         Verify & Issue Cert
                       </Button>
@@ -344,11 +344,13 @@ export function AdminInvestors() {
                 <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
+                    <SelectItem value="awaiting_payment">Awaiting Payment</SelectItem>
+                    <SelectItem value="payment_under_review">Payment Under Review</SelectItem>
+                    <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="active">Active</SelectItem>
                     <SelectItem value="confirmed">Confirmed</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                    <SelectItem value="overdue">Overdue</SelectItem>
-                    <SelectItem value="defaulted">Defaulted</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
+                    <SelectItem value="refunded">Refunded</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -403,8 +405,8 @@ export function AdminInvestors() {
                     <DialogTitle className="text-2xl font-serif">{viewItem.profiles?.full_name}'s Investment</DialogTitle>
                     <DialogDescription>Property: {viewItem.investment_properties?.title}</DialogDescription>
                   </div>
-                  <Badge variant={viewItem.status === 'active' || viewItem.status === 'confirmed' ? 'default' : 'destructive'} className="uppercase">
-                    {viewItem.status}
+                  <Badge variant={(viewItem.status === 'confirmed' || viewItem.status === 'active') ? 'default' : (viewItem.status === 'pending' || viewItem.status === 'awaiting_payment' || viewItem.status === 'payment_under_review') ? 'secondary' : 'destructive'} className="uppercase">
+                    {viewItem.status?.replace(/_/g, ' ')}
                   </Badge>
                 </div>
               </DialogHeader>

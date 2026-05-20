@@ -69,15 +69,15 @@ export function AdminReceipts() {
           <Skeleton className="h-20 rounded-xl" />
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border/50 bg-card shadow-sm">
+        <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Receipt ID & Date</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Customer</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Type & Method</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Amount</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Action</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Receipt ID & Date</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Customer</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Type & Method</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">

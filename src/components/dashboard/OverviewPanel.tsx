@@ -37,11 +37,12 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-overview-stats", userId],
     queryFn: async () => {
-      const [investmentsResponse, returnsResponse, balanceResponse, reservationsResponse] = await Promise.all([
+      const [investmentsResponse, returnsResponse, balanceResponse, reservationsResponse, purchasesResponse] = await Promise.all([
         supabase.from("user_investments").select("amount_invested, total_amount, amount_paid").eq("user_id", userId),
         supabase.from("returns").select("amount_received, distribution_date").eq("user_id", userId).order("distribution_date", { ascending: true }),
         supabase.rpc("user_available_balance"),
-        supabase.from("payments").select("id").eq("user_id", userId).in("payment_type", ["reservation", "investment"]).in("status", ["pending", "processing", "success", "confirmed"])
+        supabase.from("reservations").select("id").eq("user_id", userId).in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested"]),
+        supabase.from("reservations").select("id").eq("user_id", userId).in("status", ["confirmed", "completed"])
       ]);
       
       const totalInvested = (investmentsResponse.data ?? []).reduce((acc, curr: any) => acc + Number(curr.total_amount ?? curr.amount_invested ?? 0), 0);
@@ -68,8 +69,9 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
       }
 
       const activeReservationsCount = (reservationsResponse.data ?? []).length;
+      const propertiesOwnedCount = (purchasesResponse.data ?? []).length;
 
-      return { totalInvested, totalReturns, availableBalance, chartData, activeReservationsCount };
+      return { totalInvested, totalReturns, availableBalance, chartData, activeReservationsCount, propertiesOwnedCount };
     }
   });
 
@@ -87,7 +89,20 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
   return (
     <div className="space-y-8">
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Properties Owned</p>
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600">
+              <Heart className="h-4 w-4" />
+            </span>
+          </div>
+          <p className="font-serif text-2xl font-semibold text-foreground">{stats?.propertiesOwnedCount ?? 0}</p>
+          <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
+            <Heart className="h-3 w-3 text-emerald-600" /> Successfully acquired
+          </p>
+        </div>
+
         <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Invested</p>

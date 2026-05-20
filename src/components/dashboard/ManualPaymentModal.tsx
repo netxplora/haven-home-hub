@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { CheckCircle2, Copy, Loader2, AlertCircle, ChevronRight, Wallet, Clock, Upload, ShieldCheck, Building2, ChevronLeft } from "lucide-react";
+import { CheckCircle2, Copy, Loader2, AlertCircle, ChevronRight, Wallet, Clock, Upload, ShieldCheck, Building2, ChevronLeft, Globe, ExternalLink } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 interface ManualPaymentModalProps {
   open: boolean;
   onClose: () => void;
-  method?: "crypto" | "manual_bank";
+  method?: "digital_currency" | "bank_transfer" | "third_party_provider" | string;
   amount: number;
   currency: string;
   paymentType: "investment" | "booking" | "reservation" | "installment" | "property";
@@ -33,16 +33,15 @@ interface CryptoAsset {
   wallet_address: string;
 }
 
-type Step = "asset" | "pay_manual" | "pay_bank" | "proof" | "confirm";
+type Step = "asset" | "buy_crypto" | "pay_manual" | "pay_bank" | "proof" | "confirm";
 
 export function ManualPaymentModal({ 
-  open, onClose, method = "crypto", amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess
+  open, onClose, method = "digital_currency", amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess
 }: ManualPaymentModalProps) {
   const { user } = useAuth();
   
   // Start step depends on method. 
-  // If crypto -> "asset", if bank -> "pay_bank"
-  const [step, setStep] = useState<Step>(method === "crypto" ? "asset" : "pay_bank");
+  const [step, setStep] = useState<Step>(method === "digital_currency" || method === "third_party_provider" ? "asset" : "pay_bank");
 
   const [selectedAsset, setSelectedAsset] = useState<CryptoAsset | null>(null);
   const [paymentData, setPaymentData] = useState<{
@@ -58,27 +57,36 @@ export function ManualPaymentModal({
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch configs for bank
-  const { data: configs } = useQuery({
-    queryKey: ["payment-configs"],
+  // Fetch unified payment methods
+  const { data: methods = [] } = useQuery({
+    queryKey: ["all-payment-methods"],
     queryFn: async () => {
-      const { data } = await supabase.from("system_configs").select("key, value");
-      if (!data) return {};
-      return data.reduce((acc: any, curr) => ({ ...acc, [curr.key]: curr.value }), {});
+      const { data } = await (supabase as any).from("payment_methods").select("*").eq("is_active", true).order("display_order", { ascending: true });
+      return data || [];
     }
   });
 
-  const { data: assets = [] } = useQuery({
-    queryKey: ["crypto-assets"],
-    queryFn: async () => {
-      const { data } = await supabase.from("crypto_assets" as any).select("*").eq("is_active", true);
-      return (data as any) as CryptoAsset[] || [];
-    }
-  });
+  const assets: CryptoAsset[] = methods.filter((m: any) => m.payment_category === "digital_currency").map((m: any) => ({
+    symbol: m.configuration.supported_currency || m.configuration.wallet_label,
+    name: m.method_name,
+    network: m.configuration.wallet_network,
+    wallet_address: m.configuration.wallet_address
+  }));
+
+  const providers = methods.filter((m: any) => m.payment_category === "third_party_provider").map((m: any) => ({
+    id: m.id,
+    name: m.method_name,
+    description: m.description,
+    url_template: m.configuration.provider_url,
+    supported_assets: m.configuration.supported_methods ? m.configuration.supported_methods.split(",").map((s: string) => s.trim()) : []
+  }));
+
+  const bankMethod = methods.find((m: any) => m.payment_category === "bank_transfer" && m.is_default) || methods.find((m: any) => m.payment_category === "bank_transfer");
+  const configs = bankMethod?.configuration || {};
 
   useEffect(() => {
     if (open) {
-      setStep(method === "crypto" ? "asset" : "pay_bank");
+      setStep(method === "digital_currency" || method === "third_party_provider" ? "asset" : "pay_bank");
       setSelectedAsset(null);
       setPaymentData(null);
       setHash("");
@@ -86,7 +94,7 @@ export function ManualPaymentModal({
       setUploadingProof(false);
       
       // If it's a bank transfer, we can just generate a reference immediately
-      if (method === "manual_bank") {
+      if (method === "bank_transfer") {
         initBankPayment();
       }
     }
@@ -123,8 +131,9 @@ export function ManualPaymentModal({
       provider,
       reference,
       status: "pending",
-      property_id: !isInvestmentProperty && paymentType !== 'investment' ? targetId : null,
-      investment_property_id: isInvestmentProperty || paymentType === 'investment' ? targetId : null,
+      property_id: !isInvestmentProperty && paymentType !== 'investment' && paymentType !== 'booking' ? targetId : null,
+      investment_property_id: isInvestmentProperty && paymentType !== 'investment' ? targetId : null,
+      investment_id: paymentType === 'investment' ? targetId : null,
       booking_id: paymentType === 'booking' ? bookingId : null,
       reservation_id: paymentType === 'reservation' ? bookingId : null,
       hold_hours: holdHours || (paymentType === 'reservation' ? 168 : null),
@@ -151,7 +160,7 @@ export function ManualPaymentModal({
       if (asset.symbol === 'BTC') rate = 0.00002;
       else if (asset.symbol === 'ETH') rate = 0.0004;
       const cryptoAmount = amount * rate;
-      const ref = await insertPaymentRecord("crypto", { symbol: asset.symbol, address: asset.wallet_address, amount: cryptoAmount });
+      const ref = await insertPaymentRecord("digital_currency", { symbol: asset.symbol, address: asset.wallet_address, amount: cryptoAmount });
       setPaymentData({ address: asset.wallet_address, cryptoAmount, reference: ref });
       setStep("pay_manual");
     } catch (err: any) {
@@ -162,8 +171,8 @@ export function ManualPaymentModal({
   };
 
   const handleSubmitProof = async () => {
-    if (!hash && !proofUrl) {
-      toast({ title: "Verification required", description: "Please enter a transaction hash or upload a confirmation screenshot." });
+    if (!hash || !proofUrl) {
+      toast({ title: "Verification required", description: "Please enter a transaction hash/reference and upload a confirmation screenshot." });
       return;
     }
     setLoading(true);
@@ -218,7 +227,8 @@ export function ManualPaymentModal({
 
   const goBack = () => {
     if (step === "pay_manual") setStep("asset");
-    else if (step === "proof") setStep(method === "crypto" ? "pay_manual" : "pay_bank");
+    else if (step === "buy_crypto") setStep("asset");
+    else if (step === "proof") setStep(method === "digital_currency" ? "pay_manual" : "pay_bank");
   };
 
   return (
@@ -228,16 +238,16 @@ export function ManualPaymentModal({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                {method === "manual_bank" ? <Building2 className="h-6 w-6" /> : <Wallet className="h-6 w-6" />}
+                {method === "bank_transfer" ? <Building2 className="h-6 w-6" /> : <Wallet className="h-6 w-6" />}
               </div>
               <div>
                 <DialogTitle className="font-serif text-2xl font-bold">
-                  {method === "manual_bank" ? "Bank Transfer" : "Digital Currency"}
+                  {method === "bank_transfer" ? "Bank Transfer" : "Digital Currency"}
                 </DialogTitle>
                 <DialogDescription>Secure payment for {paymentType}</DialogDescription>
               </div>
             </div>
-            {step !== "asset" && step !== "pay_bank" && step !== "confirm" && (
+            {step !== "asset" && step !== "pay_bank" && step !== "confirm" && step !== "buy_crypto" && (
               <Button variant="ghost" size="icon" className="rounded-full" onClick={goBack}><ChevronLeft className="h-5 w-5" /></Button>
             )}
           </div>
@@ -249,21 +259,75 @@ export function ManualPaymentModal({
 
         <DialogBody className="py-8">
           {step === "asset" && (
-            <div className="space-y-4">
-              <p className="text-sm font-medium text-muted-foreground mb-3">Select Digital Currency</p>
-              <div className="grid gap-3">
-                {assets.map((asset) => (
-                  <button key={`${asset.symbol}-${asset.network}`} onClick={() => handleSelectAsset(asset)} disabled={loading} className="flex items-center justify-between p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all group text-left">
-                    <div className="flex items-center gap-4">
-                      <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center font-bold text-sm">{asset.symbol.charAt(0)}</div>
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <p className="text-sm font-medium text-muted-foreground mb-3">Select Digital Currency</p>
+                <div className="grid gap-3">
+                  {assets.map((asset) => (
+                    <button key={`${asset.symbol}-${asset.network}`} onClick={() => handleSelectAsset(asset)} disabled={loading} className="flex items-center justify-between p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all group text-left">
+                      <div className="flex items-center gap-4">
+                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center font-bold text-sm">{asset.symbol.charAt(0)}</div>
+                        <div>
+                          <p className="font-semibold text-foreground">{asset.name}</p>
+                          <p className="text-xs text-muted-foreground uppercase tracking-tight">{asset.network}</p>
+                        </div>
+                      </div>
+                      {loading && selectedAsset?.symbol === asset.symbol ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {providers.length > 0 && (
+                <div className="pt-4 border-t border-border/50">
+                  <div className="bg-secondary/20 rounded-xl p-5 border border-border/50 text-center space-y-3">
+                    <p className="text-sm font-medium text-foreground">Don't have digital currency?</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed">
+                      You can purchase digital currency externally using one of our approved third-party providers, then return here to complete your payment.
+                    </p>
+                    <Button variant="outline" className="w-full bg-background mt-2 shadow-sm font-semibold text-primary border-primary/20 hover:bg-primary/5" onClick={() => setStep("buy_crypto")}>
+                      Buy Digital Currency
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {step === "buy_crypto" && (
+            <div className="space-y-6">
+              <div className="space-y-2 text-center mb-6">
+                <h3 className="font-serif text-xl font-semibold">Buy Digital Currency</h3>
+                <p className="text-sm text-muted-foreground">Select an approved provider below to purchase externally. Please note, we do not directly sell digital currency.</p>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                {providers.map((p: any) => (
+                  <div key={p.id} className="rounded-xl border border-border/50 p-5 bg-card hover:border-primary/30 transition-all flex flex-col h-full shadow-sm hover:shadow-md">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
+                        <Globe className="h-5 w-5" />
+                      </div>
                       <div>
-                        <p className="font-semibold text-foreground">{asset.name}</p>
-                        <p className="text-xs text-muted-foreground uppercase tracking-tight">{asset.network}</p>
+                        <h4 className="font-bold text-foreground text-sm">{p.name}</h4>
+                        <p className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mt-1">{(p.supported_assets || []).join(', ')}</p>
                       </div>
                     </div>
-                    {loading && selectedAsset?.symbol === asset.symbol ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />}
-                  </button>
+                    <p className="text-xs text-muted-foreground flex-1 mb-4 leading-relaxed">{p.description}</p>
+                    <Button 
+                      className="w-full bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-colors font-medium mt-auto" 
+                      onClick={() => window.open(p.url_template, '_blank')}
+                    >
+                      Visit Provider <ExternalLink className="ml-2 h-4 w-4" />
+                    </Button>
+                  </div>
                 ))}
+              </div>
+
+              <div className="pt-4 border-t border-border/50">
+                <Button variant="ghost" className="w-full text-muted-foreground hover:text-foreground" onClick={() => setStep("asset")}>
+                  Return to Payment Selection
+                </Button>
               </div>
             </div>
           )}
@@ -306,7 +370,7 @@ export function ManualPaymentModal({
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Account Name</p>
-                  <p className="font-semibold">{configs?.bank_account_name || "Haven Home Hub LLC"}</p>
+                  <p className="font-semibold">{configs?.bank_account_name || "Verdant Estate LLC"}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Account Number</p>

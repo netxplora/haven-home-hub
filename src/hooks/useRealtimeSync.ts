@@ -119,6 +119,21 @@ export function useRealtimeSync() {
               qc.invalidateQueries({ queryKey: ["admin-properties"] });
               qc.invalidateQueries({ queryKey: ["agent-listings"] });
               qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
+              qc.invalidateQueries({ queryKey: ["properties"] });
+              qc.invalidateQueries({ queryKey: ["property"] });
+              qc.invalidateQueries({ queryKey: ["my-purchases"] });
+              qc.invalidateQueries({ queryKey: ["my-reservations"] });
+            }
+
+            // --- Reservations ---
+            if (table === "reservations") {
+              qc.invalidateQueries({ queryKey: ["my-reservations"] });
+              qc.invalidateQueries({ queryKey: ["my-purchases"] });
+              qc.invalidateQueries({ queryKey: ["admin-reservations"] });
+              qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
+              qc.invalidateQueries({ queryKey: ["user-reservation"] });
+              qc.invalidateQueries({ queryKey: ["property"] });
+              qc.invalidateQueries({ queryKey: ["properties"] });
             }
 
             // --- Users, Roles, Agents ---
@@ -148,12 +163,11 @@ export function useRealtimeSync() {
               qc.invalidateQueries({ queryKey: ["notifications"] });
             }
 
-            // --- Reservations ---
+            // --- Reservations (additional cross-invalidation) ---
             if (table === "reservations") {
-              qc.invalidateQueries({ queryKey: ["admin-reservations"] });
-              qc.invalidateQueries({ queryKey: ["my-reservations"] });
+              qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
               qc.invalidateQueries({ queryKey: ["agent-reservations"] });
-              qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
+              qc.invalidateQueries({ queryKey: ["related"] });
             }
           }
         )

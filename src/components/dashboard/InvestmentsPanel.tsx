@@ -59,11 +59,12 @@ export function InvestmentsPanel() {
     },
   });
 
-  const totalInvested = investments.reduce((s: number, i: any) => s + Number(i.amount_invested || 0), 0);
+  const activeInvestments = investments.filter((i: any) => ["confirmed", "active", "completed"].includes(i.status));
+  const totalInvested = activeInvestments.reduce((s: number, i: any) => s + Number(i.amount_invested || 0), 0);
   const totalReturns = returns.reduce((s: number, r: any) => s + Number(r.amount_received || 0), 0);
-  const activeCount = investments.filter((i: any) => i.status === "confirmed" || i.status === "active").length;
+  const activeCount = activeInvestments.length;
 
-  const installmentInvestments = investments.filter((i: any) => i.investment_type === "installment");
+  const installmentInvestments = activeInvestments.filter((i: any) => i.investment_type === "installment");
   const totalOutstanding = installmentInvestments.reduce((s: number, i: any) => s + Number(i.remaining_balance ?? 0), 0);
   const nextDueInvestment = installmentInvestments
     .filter((i: any) => i.next_payment_due && i.status !== "completed")
@@ -212,10 +213,11 @@ export function InvestmentsPanel() {
                              variant="secondary"
                              className={cn(
                                "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
-                               inv.status === "confirmed" && "bg-primary text-primary-foreground border-none shadow-sm",
-                               inv.status === "pending_review" && "bg-secondary/10 text-secondary border-secondary/20",
+                               inv.status === "awaiting_payment" && "bg-amber-500/10 text-amber-600 border-amber-500/20",
+                               inv.status === "payment_under_review" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
+                               inv.status === "pending" && "bg-secondary/10 text-secondary border-secondary/20",
                                inv.status === "rejected" && "bg-red-500/10 text-red-600 border-red-500/20",
-                               (inv.status === "active" || (inv.status === "confirmed" && paid >= total)) && "bg-primary text-primary-foreground border-none shadow-sm"
+                               (inv.status === "active" || inv.status === "confirmed" || (inv.status === "confirmed" && paid >= total)) && "bg-primary text-primary-foreground border-none shadow-sm"
                              )}
                            >
                               {inv.status?.replace('_', ' ')}
@@ -234,15 +236,19 @@ export function InvestmentsPanel() {
                            <p className="text-[10px] text-muted-foreground/60 font-medium">Earned: {inv.projected_return_min}%+</p>
                         </td>
                          <td className="px-6 py-5 text-right">
-                          {inv.status === "confirmed" && paid < total ? (
-                            <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
-                              Pay Now
-                            </Button>
-                          ) : (
-                            <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
-                               <FileText className="h-4 w-4" />
-                            </Button>
-                          )}
+                           {inv.status === "awaiting_payment" ? (
+                             <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                               Pay Now
+                             </Button>
+                           ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
+                             <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                               Pay Installment
+                             </Button>
+                           ) : (
+                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
+                                <FileText className="h-4 w-4" />
+                             </Button>
+                           )}
                         </td>
                       </tr>
                     );

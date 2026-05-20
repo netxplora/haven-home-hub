@@ -37,11 +37,12 @@ Deno.serve(async (req: Request) => {
       down_payment_amount,
       duration_months,
       monthly_installment_amount,
+      signature_data,
     } = body;
 
     if (!property_id || !amount || !units || !provider) return json({ error: "Missing fields" }, 400);
     if (amount <= 0 || units <= 0) return json({ error: "Invalid amount" }, 400);
-    const allowedProviders = ["paystack", "flutterwave", "crypto", "manual_bank", "wallet"];
+    const allowedProviders = ["paystack", "flutterwave", "crypto", "manual_bank", "wallet", "digital_currency", "bank_transfer", "third_party_provider"];
     if (!allowedProviders.includes(provider)) return json({ error: "Invalid provider" }, 400);
 
     // Load property
@@ -50,8 +51,9 @@ Deno.serve(async (req: Request) => {
       .select("*")
       .eq("id", property_id)
       .maybeSingle();
-    if (pErr || !prop) return json({ error: "Property not found" }, 404);
-    if (prop.status !== "open") return json({ error: "Not open for investment" }, 400);
+    if (pErr) return json({ error: "DB error loading property: " + pErr.message }, 500);
+    if (!prop) return json({ error: "Property not found" }, 404);
+    if (prop.status !== "open") return json({ error: "Not open for investment (current status: " + prop.status + ")" }, 400);
 
     // For installment investments, validate against total_amount, not initial payment
     const investmentTotal = investment_type === "installment" ? Number(total_amount ?? amount) : Number(amount);
@@ -80,7 +82,7 @@ Deno.serve(async (req: Request) => {
       _property_id: property_id,
       _units: units,
     });
-    if (allocErr) return json({ error: allocErr.message }, 500);
+    if (allocErr) return json({ error: "Unit allocation failed: " + allocErr.message }, 500);
     if (!allocOk) return json({ error: "Units were just taken. Try a smaller amount." }, 409);
 
     const reference = `INV-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`.toUpperCase();
@@ -91,7 +93,7 @@ Deno.serve(async (req: Request) => {
       property_id,
       amount_invested: investmentTotal,
       units_owned: units,
-      status: "pending_verification", // Direct transaction starts as pending_verification
+      status: "awaiting_payment",
       investment_type,
     };
 
@@ -106,7 +108,7 @@ Deno.serve(async (req: Request) => {
       investmentRecord.start_date = new Date().toISOString().split("T")[0];
     } else {
       investmentRecord.total_amount = investmentTotal;
-      investmentRecord.amount_paid = 0; // Not paid yet
+      investmentRecord.amount_paid = 0;
       investmentRecord.remaining_balance = investmentTotal;
       investmentRecord.completion_percentage = 0;
     }
@@ -115,7 +117,7 @@ Deno.serve(async (req: Request) => {
     const { data: inv, error: iErr } = await admin.from("user_investments").insert(investmentRecord).select().single();
     if (iErr) {
       await admin.rpc("release_investment_units", { _property_id: property_id, _units: units });
-      return json({ error: iErr.message }, 500);
+      return json({ error: "Failed to create investment record: " + iErr.message }, 500);
     }
 
     // For installment investments, generate the payment schedule
@@ -126,13 +128,12 @@ Deno.serve(async (req: Request) => {
       const monthlyAmt = Number(monthly_installment_amount);
       const downAmt = Number(down_payment_amount);
 
+      // Down payment schedule entry
       schedules.push({
         investment_id: inv.id,
-        installment_number: 0,
         due_date: startDate.toISOString().split("T")[0],
         amount_due: downAmt,
-        status: "pending",
-        is_down_payment: true,
+        status: "awaiting_payment",
       });
 
       for (let i = 1; i <= numMonths; i++) {
@@ -146,32 +147,84 @@ Deno.serve(async (req: Request) => {
         }
         schedules.push({
           investment_id: inv.id,
-          installment_number: i,
           due_date: dueDate.toISOString().split("T")[0],
           amount_due: Math.round(installmentAmt * 100) / 100,
-          status: "pending",
+          status: "awaiting_payment",
         });
       }
-      await admin.from("investment_schedules").insert(schedules);
-      await admin.from("user_investments").update({
+
+      const { error: schedErr } = await admin.from("investment_schedules").insert(schedules);
+      if (schedErr) {
+        console.error("Schedule creation failed:", schedErr.message);
+        // Non-fatal: investment was created, schedules can be regenerated
+      }
+
+      const { error: updateErr } = await admin.from("user_investments").update({
         next_payment_due: startDate.toISOString().split("T")[0],
       }).eq("id", inv.id);
+      if (updateErr) {
+        console.error("Next payment due update failed:", updateErr.message);
+      }
     }
 
-    // Create notification for the user
-    await admin.from("notifications").insert({
-      user_id: user.id,
-      type: "system",
-      title: "Investment Request Received",
-      body: `Your investment application for ${prop.title} has been received and is currently under review. We will notify you once it is approved.`,
-    });
+    // Process E-Signature if provided
+    if (signature_data) {
+      try {
+        // Find active template
+        const { data: template } = await admin
+          .from("document_templates")
+          .select("id, content_html")
+          .eq("document_type", "investment_agreement")
+          .eq("is_active", true)
+          .limit(1)
+          .maybeSingle();
+
+        if (template) {
+          const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown";
+          const userAgent = req.headers.get("user-agent") || "unknown";
+
+          const { error: sigErr } = await admin.from("signed_documents").insert({
+            user_id: user.id,
+            template_id: template.id,
+            document_type: "investment_agreement",
+            reference_id: inv.id,
+            signature_data,
+            ip_address: clientIp,
+            user_agent: userAgent,
+            document_snapshot: template.content_html
+          });
+          
+          if (sigErr) {
+            console.error("Signature insertion failed:", sigErr.message);
+          }
+        }
+      } catch (sigEx) {
+        console.error("Signature processing exception:", sigEx);
+      }
+    }
+
+    // Create notification for the user (non-fatal if it fails)
+    try {
+      const { error: notifErr } = await admin.from("notifications").insert({
+        user_id: user.id,
+        type: "system",
+        title: "Investment Request Received",
+        body: `Your investment application for ${prop.title} has been received and is currently under review. We will notify you once it is approved.`,
+      });
+      if (notifErr) {
+        console.error("Notification insert failed:", notifErr.message);
+      }
+    } catch (notifEx) {
+      console.error("Notification insert exception:", notifEx);
+    }
 
     return json({
       investment_id: inv.id,
-      status: "pending_verification",
-      message: "Investment application submitted and awaiting payment verification"
+      status: "awaiting_payment",
+      message: "Investment application submitted and awaiting payment"
     });
   } catch (e) {
+    console.error("Unhandled error in create-investment:", e);
     return json({ error: (e as Error).message }, 500);
   }
 });

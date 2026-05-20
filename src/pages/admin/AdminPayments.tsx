@@ -45,12 +45,39 @@ export function AdminPayments() {
     if (error) {
       toast({ title: "Operation failed", description: error.message, variant: "destructive" });
     } else {
+      // When confirming a full purchase payment, also complete the linked reservation
+      // This triggers the database sync_property_sold_status trigger to mark property as sold
+      if (action === "confirmed" && selectedPayment) {
+        const reservationId = selectedPayment.reservation_id;
+        const propertyId = selectedPayment.property_id;
+        
+        // If this payment has a linked reservation, mark it completed
+        if (reservationId) {
+          await (supabase.from("reservations") as any)
+            .update({ status: "completed", updated_at: new Date().toISOString() })
+            .eq("id", reservationId);
+        }
+        
+        // If this is a property purchase payment (not just reservation fee), mark property as sold
+        if (propertyId && selectedPayment.payment_type === "purchase") {
+          await (supabase.from("properties") as any)
+            .update({ status: "sold", updated_at: new Date().toISOString() })
+            .eq("id", propertyId);
+        }
+      }
+
       toast({ title: `Transaction marked as ${action.replace("_", " ")}` });
       qc.invalidateQueries({ queryKey: ["admin-payments"] });
       qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
       qc.invalidateQueries({ queryKey: ["admin-reservations"] });
       qc.invalidateQueries({ queryKey: ["admin-investments"] });
       qc.invalidateQueries({ queryKey: ["admin-investors"] });
+      qc.invalidateQueries({ queryKey: ["admin-applications"] });
+      qc.invalidateQueries({ queryKey: ["properties"] });
+      qc.invalidateQueries({ queryKey: ["property"] });
+      qc.invalidateQueries({ queryKey: ["my-purchases"] });
+      qc.invalidateQueries({ queryKey: ["my-reservations"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
       setSelectedPayment(null);
     }
   }
@@ -90,12 +117,12 @@ export function AdminPayments() {
         <table className="w-full text-sm text-left">
           <thead className="bg-secondary/40 border-b border-border/50">
             <tr>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Date</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">User</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Method</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Status</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Amount</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Action</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Method</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Status</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
+              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border/50">

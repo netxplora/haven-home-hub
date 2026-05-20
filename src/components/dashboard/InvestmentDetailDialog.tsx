@@ -25,7 +25,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
   const qc = useQueryClient();
   const [payingSchedule, setPayingSchedule] = useState<any | null>(null);
   const [payingFull, setPayingFull] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("crypto");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("digital_currency");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
 
   // Fetch installment schedules
@@ -72,9 +72,9 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
   const paid = Number(investment.amount_paid ?? investment.amount_invested ?? 0);
   const balance = Number(investment.remaining_balance ?? 0);
   const progressPercent = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
-  const isPendingApproval = investment.status === "pending_review" || investment.status === "pending_verification";
+  const isPendingApproval = investment.status === "pending" || investment.status === "payment_under_review";
   const isRejected = investment.status === "rejected";
-  const isApproved = investment.status === "confirmed" || investment.status === "active";
+  const isApproved = investment.status === "confirmed" || investment.status === "active" || investment.status === "awaiting_payment";
 
   const handlePayFull = async () => {
     if (!isApproved) {
@@ -114,7 +114,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
                 className={cn(
                   "capitalize border font-semibold text-[10px] tracking-widest",
                   (investment.status === "confirmed" || investment.status === "active" || investment.status === "success") && "bg-primary text-primary-foreground border-none shadow-sm",
-                  (investment.status === "pending_review" || investment.status === "pending_verification") && "bg-secondary/10 text-secondary border-secondary/20",
+                  (investment.status === "pending") && "bg-secondary/10 text-secondary border-secondary/20",
                   investment.status === "rejected" && "bg-destructive/10 text-destructive border-destructive/20",
                   investment.status === "completed" && "bg-primary text-primary-foreground border-none shadow-sm"
                 )}
@@ -131,7 +131,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
         <ScrollArea className="max-h-[70vh] px-6 pb-6">
           <div className="space-y-8 mt-6">
             
-            {(investment.status === "pending_review" || investment.status === "pending_verification") && (
+            {(investment.status === "pending" || investment.status === "payment_under_review") && (
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 flex gap-4">
                 <Clock className="h-6 w-6 text-amber-600 shrink-0" />
                 <div>
@@ -218,17 +218,22 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
             </div>
 
             {/* Full Payment Section */}
-            {!isInstallment && investment.status === "confirmed" && paid < total && (
+            {!isInstallment && (investment.status === "confirmed" || investment.status === "awaiting_payment") && paid < total && (
                <div className="space-y-4">
                  <h3 className="font-serif text-lg font-semibold border-b border-border pb-2">Complete Investment</h3>
-                 <div className="flex items-center justify-between p-5 rounded-xl border border-primary/20 bg-primary/5">
-                   <div>
-                     <p className="font-bold text-foreground">Total Due: {formatMoney(total - paid, currency)}</p>
-                     <p className="text-xs text-muted-foreground mt-1">Pay the full amount to activate your investment.</p>
+                 <div className="flex flex-col gap-4 p-5 rounded-xl border border-primary/20 bg-primary/5">
+                   <div className="pt-2">
+                     <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
                    </div>
-                   <Button onClick={() => handlePayFull()} className="rounded-lg px-6 font-bold">
-                     Pay Now
-                   </Button>
+                   <div className="flex items-center justify-between pt-4 border-t border-primary/10">
+                     <div>
+                       <p className="font-bold text-foreground">Total Due: {formatMoney(total - paid, currency)}</p>
+                       <p className="text-xs text-muted-foreground mt-1">Pay the full amount to activate your investment.</p>
+                     </div>
+                     <Button onClick={() => handlePayFull()} className="rounded-lg px-6 font-bold">
+                       Pay Now
+                     </Button>
+                   </div>
                  </div>
                </div>
             )}
@@ -237,6 +242,11 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
             {isInstallment && (
               <div className="space-y-4">
                 <h3 className="font-serif text-lg font-semibold border-b border-border pb-2">Installment Schedule</h3>
+                {schedules.length > 0 && paid < total && (
+                  <div className="bg-secondary/10 p-4 rounded-xl border border-border/50">
+                    <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
+                  </div>
+                )}
                 {isLoading ? (
                   <div className="space-y-3">
                     <Skeleton className="h-16 w-full" />
@@ -275,7 +285,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
                                 size="sm" 
                                 variant={isOverdue ? "destructive" : "default"}
                                 className="h-8 px-3 text-xs"
-                                disabled={!isApproved}
+                                disabled={(!isApproved && investment.status !== 'awaiting_payment') || isPendingApproval}
                                 onClick={() => handlePayInstallment(schedule)}
                               >
                                 Pay Now
@@ -341,8 +351,8 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
         }}
         amount={payingFull ? (total - paid) : payingSchedule ? Number(payingSchedule.amount_due) : 0}
         currency={currency}
-        paymentType="installment"
-        targetId={investment.property_id}
+        paymentType={investment.status === 'awaiting_payment' ? "investment" : "installment"}
+        targetId={investment.status === 'awaiting_payment' ? investment.id : investment.property_id}
         isInvestmentProperty={true}
         metadata={{
           investment_id: investment.id,
