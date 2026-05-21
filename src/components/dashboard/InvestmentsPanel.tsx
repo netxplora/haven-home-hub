@@ -170,91 +170,169 @@ export function InvestmentsPanel() {
              ))}
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
-                <thead>
-                  <tr className="bg-accent/50 border-b border-border/40">
-                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
-                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Plan Type</th>
-                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment Progress</th>
-                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Total Cost</th>
-                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {investments.map((inv: any) => {
-                    const total = Number(inv.total_amount ?? inv.amount_invested ?? 0);
-                    const paid = Number(inv.amount_paid ?? inv.amount_invested ?? 0);
-                    const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
-                    const isInstallment = inv.investment_type === "installment";
+          <div>
+            {/* ── Mobile: Stackable Cards ── */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+              {investments.map((inv: any) => {
+                const total = Number(inv.total_amount ?? inv.amount_invested ?? 0);
+                const paid = Number(inv.amount_paid ?? inv.amount_invested ?? 0);
+                const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
+                const isInstallment = inv.investment_type === "installment";
 
-                    return (
-                      <tr key={inv.id} className="transition-all duration-200 hover:bg-secondary/10 group cursor-pointer" onClick={() => setSelectedInvestment(inv)}>
-                        <td className="px-6 py-5">
-                          <div className="flex items-center gap-3">
-                             <div className="h-10 w-10 rounded-xl overflow-hidden bg-muted group-hover:scale-105 transition-transform">
-                                <img src={inv.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                return (
+                  <div
+                    key={inv.id}
+                    className="rounded-xl border border-border/40 bg-card p-4 shadow-soft space-y-4 active:bg-accent/30 transition-colors"
+                    onClick={() => setSelectedInvestment(inv)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="h-12 w-12 rounded-xl overflow-hidden bg-muted flex-shrink-0">
+                        <img src={inv.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-serif font-semibold text-foreground line-clamp-1">{inv.investment_properties?.title ?? "Unknown"}</p>
+                        <p className="text-xs text-muted-foreground">{inv.units ?? 1} Units Owned</p>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <Badge variant="outline" className={`rounded-md px-2.5 py-1 text-[11px] font-bold capitalize ${isInstallment ? "border-amber-500/30 text-amber-600 bg-amber-500/5" : "border-primary/30 text-primary bg-primary/5"}`}>
+                        {inv.investment_type || "Full Payment"}
+                      </Badge>
+                      <Badge
+                        variant="secondary"
+                        className={cn(
+                          "rounded-md px-2.5 py-1 text-[11px] font-bold capitalize border",
+                          inv.status === "awaiting_payment" && "bg-amber-500/10 text-amber-600 border-amber-500/20",
+                          inv.status === "payment_under_review" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
+                          inv.status === "pending" && "bg-secondary/10 text-secondary border-secondary/20",
+                          inv.status === "rejected" && "bg-red-500/10 text-red-600 border-red-500/20",
+                          (inv.status === "active" || inv.status === "confirmed") && "bg-primary text-primary-foreground border-none shadow-sm"
+                        )}
+                      >
+                        {inv.status?.replace('_', ' ')}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <div className="flex justify-between text-xs font-medium text-muted-foreground">
+                        <span>Payment Progress</span>
+                        <span className="font-bold text-foreground">{pct}%</span>
+                      </div>
+                      <Progress value={pct} className="h-1.5 bg-accent" />
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Total Cost</p>
+                        <p className="font-serif font-bold text-foreground">{formatMoney(total)}</p>
+                      </div>
+                      {inv.status === "awaiting_payment" ? (
+                        <Button size="sm" className="rounded-xl h-11 px-5 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                          Pay Now
+                        </Button>
+                      ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
+                        <Button size="sm" className="rounded-xl h-11 px-5 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                          Pay Installment
+                        </Button>
+                      ) : (
+                        <Button variant="outline" size="sm" className="rounded-xl h-11 px-4 font-bold">
+                          <FileText className="h-4 w-4 mr-1.5" /> Details
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── Desktop: Full Table ── */}
+            <div className="hidden md:block overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left border-collapse">
+                  <thead>
+                    <tr className="bg-accent/50 border-b border-border/40">
+                      <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
+                      <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Plan Type</th>
+                      <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                      <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Payment Progress</th>
+                      <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Total Cost</th>
+                      <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/40">
+                    {investments.map((inv: any) => {
+                      const total = Number(inv.total_amount ?? inv.amount_invested ?? 0);
+                      const paid = Number(inv.amount_paid ?? inv.amount_invested ?? 0);
+                      const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
+                      const isInstallment = inv.investment_type === "installment";
+
+                      return (
+                        <tr key={inv.id} className="transition-all duration-200 hover:bg-secondary/10 group cursor-pointer" onClick={() => setSelectedInvestment(inv)}>
+                          <td className="px-6 py-5">
+                            <div className="flex items-center gap-3">
+                               <div className="h-10 w-10 rounded-xl overflow-hidden bg-muted group-hover:scale-105 transition-transform">
+                                  <img src={inv.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                               </div>
+                               <div>
+                                  <p className="font-semibold text-foreground line-clamp-1">{inv.investment_properties?.title ?? "Unknown"}</p>
+                                  <p className="text-[10px] text-muted-foreground/60 font-medium">{inv.units ?? 1} Units Owned</p>
+                               </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-5">
+                            <Badge variant="outline" className={`rounded-md px-2 py-0.5 text-[10px] font-bold capitalize ${isInstallment ? "border-amber-500/30 text-amber-600 bg-amber-500/5" : "border-primary/30 text-primary bg-primary/5"}`}>
+                              {inv.investment_type || "Full Payment"}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-5">
+                             <Badge 
+                               variant="secondary"
+                               className={cn(
+                                 "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
+                                 inv.status === "awaiting_payment" && "bg-amber-500/10 text-amber-600 border-amber-500/20",
+                                 inv.status === "payment_under_review" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
+                                 inv.status === "pending" && "bg-secondary/10 text-secondary border-secondary/20",
+                                 inv.status === "rejected" && "bg-red-500/10 text-red-600 border-red-500/20",
+                                 (inv.status === "active" || inv.status === "confirmed" || (inv.status === "confirmed" && paid >= total)) && "bg-primary text-primary-foreground border-none shadow-sm"
+                               )}
+                             >
+                                {inv.status?.replace('_', ' ')}
+                             </Badge>
+                          </td>
+                          <td className="px-6 py-5 min-w-[140px]">
+                             <div className="space-y-1.5">
+                                <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
+                                   <span>{pct}% Paid</span>
+                                </div>
+                                <Progress value={pct} className="h-1 bg-accent" />
                              </div>
-                             <div>
-                                <p className="font-semibold text-foreground line-clamp-1">{inv.investment_properties?.title ?? "Unknown"}</p>
-                                <p className="text-[10px] text-muted-foreground/60 font-medium">{inv.units ?? 1} Units Owned</p>
-                             </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-5">
-                          <Badge variant="outline" className={`rounded-md px-2 py-0.5 text-[10px] font-bold capitalize ${isInstallment ? "border-amber-500/30 text-amber-600 bg-amber-500/5" : "border-primary/30 text-primary bg-primary/5"}`}>
-                            {inv.investment_type || "Full Payment"}
-                          </Badge>
-                        </td>
-                        <td className="px-6 py-5">
-                           <Badge 
-                             variant="secondary"
-                             className={cn(
-                               "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
-                               inv.status === "awaiting_payment" && "bg-amber-500/10 text-amber-600 border-amber-500/20",
-                               inv.status === "payment_under_review" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
-                               inv.status === "pending" && "bg-secondary/10 text-secondary border-secondary/20",
-                               inv.status === "rejected" && "bg-red-500/10 text-red-600 border-red-500/20",
-                               (inv.status === "active" || inv.status === "confirmed" || (inv.status === "confirmed" && paid >= total)) && "bg-primary text-primary-foreground border-none shadow-sm"
+                          </td>
+                          <td className="px-6 py-5 text-right">
+                             <p className="font-bold text-foreground">{formatMoney(total)}</p>
+                             <p className="text-[10px] text-muted-foreground/60 font-medium">Earned: {inv.projected_return_min}%+</p>
+                          </td>
+                           <td className="px-6 py-5 text-right">
+                             {inv.status === "awaiting_payment" ? (
+                               <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                                 Pay Now
+                               </Button>
+                             ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
+                               <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                                 Pay Installment
+                               </Button>
+                             ) : (
+                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
+                                  <FileText className="h-4 w-4" />
+                               </Button>
                              )}
-                           >
-                              {inv.status?.replace('_', ' ')}
-                           </Badge>
-                        </td>
-                        <td className="px-6 py-5 min-w-[140px]">
-                           <div className="space-y-1.5">
-                              <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase">
-                                 <span>{pct}% Paid</span>
-                              </div>
-                              <Progress value={pct} className="h-1 bg-accent" />
-                           </div>
-                        </td>
-                        <td className="px-6 py-5 text-right">
-                           <p className="font-bold text-foreground">{formatMoney(total)}</p>
-                           <p className="text-[10px] text-muted-foreground/60 font-medium">Earned: {inv.projected_return_min}%+</p>
-                        </td>
-                         <td className="px-6 py-5 text-right">
-                           {inv.status === "awaiting_payment" ? (
-                             <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
-                               Pay Now
-                             </Button>
-                           ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
-                             <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
-                               Pay Installment
-                             </Button>
-                           ) : (
-                             <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
-                                <FileText className="h-4 w-4" />
-                             </Button>
-                           )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )}

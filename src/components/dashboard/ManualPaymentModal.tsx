@@ -233,7 +233,7 @@ export function ManualPaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden rounded-xl border-none shadow-2xl">
+      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto p-0 rounded-xl border-none shadow-2xl">
         <DialogHeader className="bg-gradient-to-br from-secondary/50 to-background border-b border-border/50">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
