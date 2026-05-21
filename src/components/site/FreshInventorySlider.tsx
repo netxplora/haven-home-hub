@@ -149,6 +149,10 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
   // ── Pointer / Touch Drag ──
   const handlePointerDown = (e: React.PointerEvent) => {
     // Don't start drag if interacting with inner gallery
+    const target = e.target as HTMLElement;
+    if (target.closest('[data-gallery="true"]')) {
+      return;
+    }
     if (innerGalleryActiveRef.current) return;
     
     isDraggingRef.current = true;
@@ -376,6 +380,7 @@ function SliderCard({ property, isDragging, onGallerySwipe }: SliderCardProps) {
     >
       {/* ── Image Gallery ── */}
       <div
+        data-gallery={images.length > 1 ? "true" : "false"}
         className="relative aspect-[4/3] overflow-hidden bg-muted"
         onTouchStart={handleGalleryTouchStart}
         onTouchMove={handleGalleryTouchMove}
