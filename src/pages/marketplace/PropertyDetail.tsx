@@ -32,7 +32,8 @@ import {
   ShieldCheck,
   FileText,
   CheckCircle2,
-  Star
+  Star,
+  Scale
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -46,6 +47,7 @@ import { propertyTypeLabel, statusLabel, resolveImage } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { toast } from "@/hooks/use-toast";
+import { useCompare } from "@/hooks/useCompare";
 import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
 import { Reviews } from "@/components/site/Reviews";
 import { AgentReviews } from "@/components/site/AgentReviews";
@@ -70,6 +72,7 @@ export default function PropertyDetail() {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<any>("digital_currency");
   const formatPrice = useFormatPrice();
+  const { compareList, addToCompare, removeFromCompare } = useCompare();
 
   const { data: rawProperty, isLoading } = useQuery({
     queryKey: ["property", slug],
@@ -144,6 +147,40 @@ export default function PropertyDetail() {
     }
     qc.invalidateQueries({ queryKey: ["saved", property.id, user.id] });
   }
+
+  const inCompare = property ? compareList.some((p) => p.id === property.id) : false;
+
+  const handleCompareToggle = () => {
+    if (!property) return;
+    if (inCompare) {
+      removeFromCompare(property.id);
+      toast({
+        title: "Removed from comparison",
+        description: `"${property.title}" has been removed from your comparison list.`,
+      });
+    } else {
+      if (compareList.length >= 4) {
+        toast({
+          title: "Comparison list full",
+          description: "You can compare up to 4 properties. Remove one to add this property.",
+          variant: "destructive",
+        });
+        return;
+      }
+      addToCompare({
+        id: property.id,
+        title: property.title,
+        price: property.price,
+        currency: property.currency,
+        property_type: property.property_type,
+        cover_image_url: property.cover_image_url || null
+      });
+      toast({
+        title: "Added to comparison",
+        description: `"${property.title}" has been added to your comparison list.`,
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -237,6 +274,15 @@ export default function PropertyDetail() {
                   >
                     <Heart className={`h-4 w-4 mr-2 ${saved ? "fill-primary" : ""}`} />
                     {saved ? "Saved" : "Save Property"}
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={handleCompareToggle} 
+                    className={`rounded-lg font-medium ${inCompare ? "text-primary border-primary bg-primary/5" : ""}`}
+                  >
+                    <Scale className="h-4 w-4 mr-2" />
+                    {inCompare ? "Compared" : "Compare"}
                   </Button>
                   <Button 
                     variant="outline" 
