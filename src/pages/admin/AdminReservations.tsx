@@ -252,66 +252,119 @@ export function AdminReservations() {
       </div>
 
       {/* Table */}
-      <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-secondary/40 border-b border-border/50">
-            <tr>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Type</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Status</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {applications.length === 0 ? (
-              <tr>
-                <td colSpan={7} className="p-16 text-center">
-                  <div className="max-w-xs mx-auto space-y-4">
-                    <Calendar className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
-                    <p className="font-serif text-lg text-muted-foreground italic">No applications found.</p>
+      <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
+        {/* ── Mobile Card Layout ── */}
+        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          {applications.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground">
+              <Calendar className="h-8 w-8 mx-auto mb-3 opacity-20" />
+              No applications found.
+            </div>
+          ) : (
+            applications.map((app: any) => (
+              <div key={app.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <h4 className="font-semibold text-foreground text-sm line-clamp-1">{app.display_title}</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {app.profiles?.full_name || "Unknown"}
+                    </p>
                   </div>
-                </td>
-              </tr>
-            ) : applications.map((app: any) => (
-              <tr key={app.id} className="transition-colors hover:bg-secondary/20">
-                <td className="p-4 text-muted-foreground whitespace-nowrap">
-                  {new Date(app.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
-                </td>
-                <td className="p-4">
-                  <Badge variant="outline" className="text-[10px] font-bold capitalize gap-1.5">
-                    {app.app_type === "investment" ? <TrendingUp className="h-3 w-3" /> : <Landmark className="h-3 w-3" />}
-                    {app.app_type}
-                  </Badge>
-                </td>
-                <td className="p-4">
-                  <p className="font-medium">{app.profiles?.full_name || "Unknown"}</p>
-                </td>
-                <td className="p-4 font-medium">{app.display_title}</td>
-                <td className="p-4 text-right font-bold">{formatMoney(app.display_amount, app.display_currency)}</td>
-                <td className="p-4">
-                  <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize"
+                  <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize shrink-0"
                     variant={app.status === "approved" || app.status === "confirmed" || app.status === "pending" ? "default" : app.status === "rejected" ? "destructive" : "secondary"}>
                     {app.status === "rejected" ? "Declined" : app.status?.replace(/_/g, ' ')}
                   </Badge>
-                </td>
-                <td className="p-4 text-right">
-                  <Button size="sm" variant="ghost" className="h-8 rounded-lg gap-1.5" onClick={() => setSelected(app)}>
-                    <Eye className="h-3.5 w-3.5" /> Review
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                  <div>
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Type</span>
+                    <Badge variant="outline" className="text-[10px] font-bold capitalize gap-1 py-0 px-1.5">
+                      {app.app_type === "investment" ? <TrendingUp className="h-3 w-3" /> : <Landmark className="h-3 w-3" />}
+                      {app.app_type}
+                    </Badge>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Value</span>
+                    <span className="font-bold text-foreground">{formatMoney(app.display_amount, app.display_currency)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-3 border-t border-border/30 items-center justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(app.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </div>
+                  <Button size="sm" variant="outline" className="h-11 px-4 rounded-lg font-bold gap-1.5" onClick={() => setSelected(app)}>
+                    <Eye className="h-4 w-4" /> Review
                   </Button>
-                </td>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* ── Desktop Table Layout ── */}
+        <div className="overflow-x-auto hidden md:block">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-secondary/40 border-b border-border/50">
+              <tr>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Type</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Status</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {applications.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-16 text-center">
+                    <div className="max-w-xs mx-auto space-y-4">
+                      <Calendar className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
+                      <p className="font-serif text-lg text-muted-foreground italic">No applications found.</p>
+                    </div>
+                  </td>
+                </tr>
+              ) : applications.map((app: any) => (
+                <tr key={app.id} className="transition-colors hover:bg-secondary/20">
+                  <td className="p-4 text-muted-foreground whitespace-nowrap">
+                    {new Date(app.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
+                  </td>
+                  <td className="p-4">
+                    <Badge variant="outline" className="text-[10px] font-bold capitalize gap-1.5">
+                      {app.app_type === "investment" ? <TrendingUp className="h-3 w-3" /> : <Landmark className="h-3 w-3" />}
+                      {app.app_type}
+                    </Badge>
+                  </td>
+                  <td className="p-4">
+                    <p className="font-medium">{app.profiles?.full_name || "Unknown"}</p>
+                  </td>
+                  <td className="p-4 font-medium">{app.display_title}</td>
+                  <td className="p-4 text-right font-bold">{formatMoney(app.display_amount, app.display_currency)}</td>
+                  <td className="p-4">
+                    <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize"
+                      variant={app.status === "approved" || app.status === "confirmed" || app.status === "pending" ? "default" : app.status === "rejected" ? "destructive" : "secondary"}>
+                      {app.status === "rejected" ? "Declined" : app.status?.replace(/_/g, ' ')}
+                    </Badge>
+                  </td>
+                  <td className="p-4 text-right">
+                    <Button size="sm" variant="ghost" className="h-8 rounded-lg gap-1.5" onClick={() => setSelected(app)}>
+                      <Eye className="h-3.5 w-3.5" /> Review
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Review Dialog */}
       <Dialog open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
         {selected && (
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader className="bg-secondary/40 pb-6 border-b border-border/50">
               <DialogTitle className="font-serif text-2xl">Request Review</DialogTitle>
             </DialogHeader>

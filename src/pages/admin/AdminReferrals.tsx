@@ -161,7 +161,67 @@ export function AdminReferrals() {
         </Card>
       </div>
 
-      <div className="rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
+      {/* Mobile Card View (md:hidden) */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {referrals.length === 0 && !isLoading ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
+            <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
+            <p className="text-sm">No referral data found.</p>
+          </div>
+        ) : (
+          referrals.map((r: any) => (
+            <div key={r.id} className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
+              <div className="flex justify-between items-start">
+                <span className="text-xs text-muted-foreground block text-[10px] uppercase font-medium">Referral Details</span>
+                <Badge variant={r.status === 'invested' ? 'default' : 'secondary'} className={`text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md ${r.status === 'registered' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : ''}`}>
+                  {r.status}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <span className="text-[10px] text-muted-foreground uppercase font-medium block">Referrer</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="h-7 w-7 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold shrink-0">
+                      {r.referrer?.full_name?.charAt(0) ?? "U"}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-foreground truncate">{r.referrer?.full_name}</p>
+                      <p className="text-[9px] text-muted-foreground truncate">{r.referrer?.email}</p>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <span className="text-[10px] text-muted-foreground uppercase font-medium block">Referred</span>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0">
+                      {r.referred?.full_name?.charAt(0) ?? "U"}
+                    </div>
+                    <div className="overflow-hidden">
+                      <p className="text-xs font-bold text-foreground truncate">{r.referred?.full_name}</p>
+                      <p className="text-[9px] text-muted-foreground truncate">{r.referred?.email}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Joined Date</span>
+                  <span className="text-foreground block mt-0.5">{new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Bonus Earned</span>
+                  <span className="font-bold text-primary block mt-0.5">{formatMoney(r.bonus_earned)}</span>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>

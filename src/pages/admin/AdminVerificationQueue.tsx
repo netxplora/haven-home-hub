@@ -81,7 +81,23 @@ export function AdminVerificationQueue() {
         
         // Handle specific types attached to payments
         if (item.type === "reservation") {
-          await (supabase.from("reservations") as any).update({ status: "confirmed" }).eq("id", item.raw.target_id);
+          const reservationId = item.raw.reservation_id || item.raw.target_id;
+          if (reservationId) {
+            await (supabase.from("reservations") as any).update({ status: "confirmed" }).eq("id", reservationId);
+          }
+        } else if (item.type === "property") {
+          const propertyId = item.raw.property_id;
+          if (propertyId) {
+            // Update property status to sold (or rented if rental)
+            const { data: prop } = await supabase.from("properties").select("property_type").eq("id", propertyId).single();
+            const newStatus = prop?.property_type === "rent" ? "rented" : "sold";
+            await supabase.from("properties").update({ status: newStatus }).eq("id", propertyId);
+            
+            // Sync user's reservation to completed
+            if (item.raw.user_id) {
+              await supabase.from("reservations").update({ status: "completed" as any }).eq("related_id", propertyId).eq("user_id", item.raw.user_id);
+            }
+          }
         } else if (item.type === "installment") {
           // Assume installment table updates if needed
         }
@@ -109,7 +125,10 @@ export function AdminVerificationQueue() {
         if (error) throw error;
         
         if (item.type === "reservation") {
-          await (supabase.from("reservations") as any).update({ status: "cancelled" }).eq("id", item.raw.target_id);
+          const reservationId = item.raw.reservation_id || item.raw.target_id;
+          if (reservationId) {
+            await (supabase.from("reservations") as any).update({ status: "cancelled" }).eq("id", reservationId);
+          }
         }
       }
       toast({ title: "Rejected", description: "The transaction has been rejected/cancelled." });
@@ -157,7 +176,67 @@ export function AdminVerificationQueue() {
       </div>
 
       <div className="rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
+        {/* ── Mobile Card Layout ── */}
+        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          {isLoading ? (
+            Array.from({ length: 3 }).map((_, i) => (
+              <Skeleton key={i} className="h-48 rounded-xl" />
+            ))
+          ) : filtered.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground">
+              <CheckCircle className="h-8 w-8 mx-auto mb-3 opacity-20" />
+              No pending verifications. Queue is clear!
+            </div>
+          ) : (
+            filtered.map((item) => (
+              <div key={item.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">{item.user}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {new Date(item.date).toLocaleString()}
+                    </p>
+                  </div>
+                  <Badge variant="outline" className="capitalize text-[10px] bg-background shrink-0">
+                    {item.label}
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                  <div>
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Context</span>
+                    <span className="font-semibold text-foreground">{item.context || "N/A"}</span>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Amount</span>
+                    <span className="font-mono font-bold text-primary">{formatMoney(Number(item.amount), item.currency)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-3 border-t border-border/30">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="flex-1 h-11 rounded-lg text-destructive border-destructive/20 hover:bg-destructive/10 font-bold"
+                    onClick={() => handleReject(item)}
+                  >
+                    <XCircle className="h-4 w-4 mr-1.5" /> Reject
+                  </Button>
+                  <Button
+                    size="sm"
+                    className="flex-1 h-11 rounded-lg bg-green-600 hover:bg-green-700 text-white font-bold"
+                    onClick={() => handleVerify(item)}
+                  >
+                    <CheckCircle className="h-4 w-4 mr-1.5" /> Verify
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* ── Desktop Table Layout ── */}
+        <div className="overflow-x-auto hidden md:block">
           <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>

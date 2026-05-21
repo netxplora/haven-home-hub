@@ -107,7 +107,7 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
   }
 
   async function handlePayment() {
-    if (method === "crypto" || method === "manual_bank") {
+    if (method === "digital_currency" || method === "bank_transfer" || method === "third_party_provider") {
       setCryptoOpen(true);
       return;
     }
@@ -122,18 +122,18 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-none bg-background shadow-2xl">
-          <DialogHeader className="p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/10">
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none bg-background shadow-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="p-6 sm:p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/10">
             <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
               <CalendarClock className="h-6 w-6 text-primary" />
             </div>
-            <DialogTitle className="font-serif text-3xl font-bold text-foreground">Property Reservation</DialogTitle>
+            <DialogTitle className="font-serif text-2xl sm:text-3xl font-bold text-foreground">Property Reservation</DialogTitle>
             <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
               Place a hold on <span className="font-semibold text-foreground">{property.title}</span>.
             </p>
           </DialogHeader>
 
-          <DialogBody className="p-8 space-y-6">
+          <DialogBody className="p-6 sm:p-8 space-y-6">
             {step === "confirm" && !existingReservation && (
               <div className="space-y-6 ">
                 <div className="rounded-xl bg-secondary/10 border border-secondary/20 p-6 shadow-inner">
@@ -255,7 +255,7 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
             </div>
           </DialogBody>
 
-          <DialogFooter className="p-10 bg-accent/30 border-t border-border/40">
+          <DialogFooter className="p-6 sm:p-10 bg-accent/30 border-t border-border/40">
             {step === "confirm" && !existingReservation && (
               <Button
                 className="w-full h-14 bg-primary text-primary-foreground hover:opacity-90 rounded-xl font-bold shadow-sm transition-all active:scale-[0.98]"

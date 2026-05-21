@@ -228,76 +228,150 @@ export function AdminInvestors() {
       {isLoading ? (
         <div className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-secondary/40 border-b border-border/50">
-              <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property & Type</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Total Amount</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount Paid</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Balance</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Duration & Next Due</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center whitespace-nowrap">Status</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {filtered.length === 0 ? (
-                <tr><td colSpan={8} className="p-12 text-center text-muted-foreground">No investments found matching criteria.</td></tr>
-              ) : filtered.map((i: any) => (
-                <tr key={i.id} className="transition-colors hover:bg-secondary/20">
-                  <td className="p-4">
-                    <p className="font-semibold text-foreground">{i.profiles?.full_name || 'Unknown'}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">Created: {new Date(i.created_at).toLocaleDateString()}</p>
-                  </td>
-                  <td className="p-4">
-                    <p className="font-medium text-primary">{i.investment_properties?.title}</p>
-                    <Badge variant="outline" className="mt-1 text-[9px] uppercase tracking-wider">{getInvestmentType(i)}</Badge>
-                  </td>
-                  <td className="p-4 text-right font-mono text-sm">{formatMoney(getTotalAmount(i), i.investment_properties?.currency || "USD")}</td>
-                  <td className="p-4 text-right font-mono text-sm text-green-600">{formatMoney(getAmountPaid(i), i.investment_properties?.currency || "USD")}</td>
-                  <td className="p-4 text-right font-mono text-sm text-amber-600 font-bold">{formatMoney(getRemainingBalance(i), i.investment_properties?.currency || "USD")}</td>
-                  <td className="p-4 text-xs">
-                    {getInvestmentType(i) === 'installment' ? (
-                      <>
-                        <p>{i.duration_months ? `${i.duration_months} Months` : 'N/A'}</p>
-                        {i.next_payment_due && <p className="text-[10px] text-muted-foreground mt-0.5">Due: {new Date(i.next_payment_due).toLocaleDateString()}</p>}
-                      </>
-                    ) : (
-                      <span className="text-muted-foreground">—</span>
-                    )}
-                  </td>
-                  <td className="p-4 text-center">
-                    <Badge className="rounded-md px-2 py-0 text-[10px] uppercase font-bold" variant={(i.status === "active" || i.status === "confirmed") ? "default" : (i.status === "pending" || i.status === "payment_under_review" || i.status === "awaiting_payment") ? "secondary" : "outline"}>
+        <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
+          {/* ── Mobile Card Layout ── */}
+          <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+            {filtered.length === 0 ? (
+              <div className="p-12 text-center text-muted-foreground">No investments found matching criteria.</div>
+            ) : (
+              filtered.map((i: any) => (
+                <div key={i.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">{i.profiles?.full_name || 'Unknown'}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Created: {new Date(i.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <Badge className="rounded-md px-2 py-0.5 text-[10px] uppercase font-bold shrink-0" variant={(i.status === "active" || i.status === "confirmed") ? "default" : (i.status === "pending" || i.status === "payment_under_review" || i.status === "awaiting_payment") ? "secondary" : "outline"}>
                       {i.status?.replace(/_/g, ' ')}
                     </Badge>
-                  </td>
-                  <td className="p-4 text-right">
-                    <div className="flex justify-end gap-1">
-                      {(i.status === "pending" || i.status === "payment_under_review") ? (
-                      <Button variant="default" size="sm" className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
-                        Verify & Issue Cert
+                  </div>
+
+                  <div>
+                    <p className="font-semibold text-primary text-sm">{i.investment_properties?.title}</p>
+                    <div className="flex gap-2 items-center mt-1">
+                      <Badge variant="outline" className="text-[9px] uppercase tracking-wider py-0 px-1.5">{getInvestmentType(i)}</Badge>
+                      {getInvestmentType(i) === 'installment' && i.duration_months && (
+                        <span className="text-xs text-muted-foreground">{i.duration_months} Months</span>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-2 text-xs pt-3 border-t border-border/30">
+                    <div>
+                      <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[9px] mb-0.5">Total</span>
+                      <span className="font-mono font-semibold text-foreground">{formatMoney(getTotalAmount(i), i.investment_properties?.currency || "USD")}</span>
+                    </div>
+                    <div>
+                      <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[9px] mb-0.5">Paid</span>
+                      <span className="font-mono font-semibold text-green-600">{formatMoney(getAmountPaid(i), i.investment_properties?.currency || "USD")}</span>
+                    </div>
+                    <div className="text-right">
+                      <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[9px] mb-0.5">Balance</span>
+                      <span className="font-mono font-bold text-amber-600">{formatMoney(getRemainingBalance(i), i.investment_properties?.currency || "USD")}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 pt-3 border-t border-border/30 justify-end items-center flex-wrap">
+                    {getInvestmentType(i) === 'installment' && i.next_payment_due && (
+                      <span className="text-[10px] text-muted-foreground mr-auto">
+                        Due: {new Date(i.next_payment_due).toLocaleDateString()}
+                      </span>
+                    )}
+                    
+                    {(i.status === "pending" || i.status === "payment_under_review") ? (
+                      <Button variant="default" size="sm" className="h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
+                        Verify & Cert
                       </Button>
                     ) : (
-                      <Button variant="ghost" size="sm" className="h-8 rounded-lg" onClick={() => setViewItem(i)}>
-                        <Eye className="h-4 w-4" />
+                      <Button variant="outline" size="sm" className="h-11 px-4 rounded-lg font-bold gap-1" onClick={() => setViewItem(i)}>
+                        <Eye className="h-4 w-4" /> View
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 8 text-muted-foreground hover:text-foreground" onClick={() => openEdit(i)}><Pencil className="h-4 w-4" /></Button>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(i.id)}><Trash2 className="h-4 w-4" /></Button>
-                    </div>
-                  </td>
+                    
+                    <Button variant="outline" size="sm" className="h-11 px-3 rounded-lg text-muted-foreground hover:text-foreground" onClick={() => openEdit(i)}>
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button variant="outline" size="sm" className="h-11 px-3 rounded-lg text-destructive hover:bg-destructive/10 border-destructive/20" onClick={() => setDeleteId(i.id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* ── Desktop Table Layout ── */}
+          <div className="overflow-x-auto hidden md:block">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-secondary/40 border-b border-border/50">
+                <tr>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property & Type</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Total Amount</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount Paid</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Balance</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Duration & Next Due</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center whitespace-nowrap">Status</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={8} className="p-12 text-center text-muted-foreground">No investments found matching criteria.</td></tr>
+                ) : filtered.map((i: any) => (
+                  <tr key={i.id} className="transition-colors hover:bg-secondary/20">
+                    <td className="p-4">
+                      <p className="font-semibold text-foreground">{i.profiles?.full_name || 'Unknown'}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">Created: {new Date(i.created_at).toLocaleDateString()}</p>
+                    </td>
+                    <td className="p-4">
+                      <p className="font-medium text-primary">{i.investment_properties?.title}</p>
+                      <Badge variant="outline" className="mt-1 text-[9px] uppercase tracking-wider">{getInvestmentType(i)}</Badge>
+                    </td>
+                    <td className="p-4 text-right font-mono text-sm">{formatMoney(getTotalAmount(i), i.investment_properties?.currency || "USD")}</td>
+                    <td className="p-4 text-right font-mono text-sm text-green-600">{formatMoney(getAmountPaid(i), i.investment_properties?.currency || "USD")}</td>
+                    <td className="p-4 text-right font-mono text-sm text-amber-600 font-bold">{formatMoney(getRemainingBalance(i), i.investment_properties?.currency || "USD")}</td>
+                    <td className="p-4 text-xs">
+                      {getInvestmentType(i) === 'installment' ? (
+                        <>
+                          <p>{i.duration_months ? `${i.duration_months} Months` : 'N/A'}</p>
+                          {i.next_payment_due && <p className="text-[10px] text-muted-foreground mt-0.5">Due: {new Date(i.next_payment_due).toLocaleDateString()}</p>}
+                        </>
+                      ) : (
+                        <span className="text-muted-foreground">—</span>
+                      )}
+                    </td>
+                    <td className="p-4 text-center">
+                      <Badge className="rounded-md px-2 py-0 text-[10px] uppercase font-bold" variant={(i.status === "active" || i.status === "confirmed") ? "default" : (i.status === "pending" || i.status === "payment_under_review" || i.status === "awaiting_payment") ? "secondary" : "outline"}>
+                        {i.status?.replace(/_/g, ' ')}
+                      </Badge>
+                    </td>
+                    <td className="p-4 text-right">
+                      <div className="flex justify-end gap-1">
+                        {(i.status === "pending" || i.status === "payment_under_review") ? (
+                        <Button variant="default" size="sm" className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
+                          Verify & Issue Cert
+                        </Button>
+                      ) : (
+                        <Button variant="ghost" size="sm" className="h-8 rounded-lg" onClick={() => setViewItem(i)}>
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      )}
+                      <Button variant="ghost" size="icon" className="h-8 8 text-muted-foreground hover:text-foreground" onClick={() => openEdit(i)}><Pencil className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => setDeleteId(i.id)}><Trash2 className="h-4 w-4" /></Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
-        <DialogContent>
+        <DialogContent className="max-h-[90vh] overflow-y-auto">
           <DialogHeader><DialogTitle>Delete Investment</DialogTitle><DialogDescription>Are you sure you want to permanently delete this investment record? This action cannot be undone.</DialogDescription></DialogHeader>
           <div className="flex justify-end gap-3 mt-4">
             <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>

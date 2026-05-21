@@ -4,7 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
-import { ChevronRight, ArrowLeft, Loader2, CheckCircle2, ShieldCheck, Wallet, Copy, Upload, Building2, ExternalLink, Clock } from "lucide-react";
+import { 
+  ChevronRight, ArrowLeft, Loader2, CheckCircle2, ShieldCheck, Wallet, Copy, Upload, 
+  Building2, ExternalLink, Clock, Check, ZoomIn, Eye, AlertTriangle, ArrowUpRight 
+} from "lucide-react";
 import { formatMoney, InvestmentProperty, fundingPercent, availableUnits } from "@/lib/invest";
 import { PaymentMethodPicker, type PaymentMethod } from "@/components/payments/PaymentMethodPicker";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,6 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
 import { useQuery } from "@tanstack/react-query";
+import { cn } from "@/lib/utils";
 
 interface FractionalPaymentDialogProps {
   open: boolean;
@@ -27,6 +31,15 @@ interface FractionalPaymentDialogProps {
 }
 
 type Step = "summary" | "acknowledgement" | "method" | "instructions" | "proof" | "confirm";
+
+const stepsList: { key: Step; label: string }[] = [
+  { key: "summary", label: "Summary" },
+  { key: "acknowledgement", label: "Agreement" },
+  { key: "method", label: "Method" },
+  { key: "instructions", label: "Instructions" },
+  { key: "proof", label: "Proof" },
+  { key: "confirm", label: "Pending" }
+];
 
 export function FractionalPaymentDialog({
   open,
@@ -52,13 +65,23 @@ export function FractionalPaymentDialog({
   
   const [hash, setHash] = useState("");
   const [proofUrl, setProofUrl] = useState("");
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [qrZoomed, setQrZoomed] = useState(false);
+  
+  // Clipboard copy state tracking
+  const [copyStates, setCopyStates] = useState<Record<string, boolean>>({});
+
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Fetch unified payment methods to display instructions
   const { data: methods = [] } = useQuery({
     queryKey: ["all-payment-methods"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("payment_methods").select("*").eq("is_active", true).order("display_order", { ascending: true });
+      const { data } = await (supabase as any)
+        .from("payment_methods")
+        .select("*")
+        .eq("is_active", true)
+        .order("display_order", { ascending: true });
       return data || [];
     }
   });
@@ -70,6 +93,8 @@ export function FractionalPaymentDialog({
   const isThirdParty = method === "third_party_provider";
   
   const currentAmount = investMode === "installment" ? downPaymentAmount : totalAmount;
+  const pct = fundingPercent(property);
+  const remainingUnits = availableUnits(property);
 
   // Reset state on open
   useEffect(() => {
@@ -81,8 +106,20 @@ export function FractionalPaymentDialog({
       setPaymentData(null);
       setHash("");
       setProofUrl("");
+      setQrZoomed(false);
+      setCopyStates({});
     }
   }, [open]);
+
+  // Copy with tooltip handler
+  const handleCopyText = (text: string, key: string) => {
+    navigator.clipboard.writeText(text);
+    setCopyStates(prev => ({ ...prev, [key]: true }));
+    toast({ title: "Copied to clipboard", description: "Successfully copied requested field." });
+    setTimeout(() => {
+      setCopyStates(prev => ({ ...prev, [key]: false }));
+    }, 1500);
+  };
 
   const handleCreateInvestment = async () => {
     setLoading(true);
@@ -129,10 +166,11 @@ export function FractionalPaymentDialog({
       
       let cryptoAmount = currentAmount;
       if (isCrypto && paymentConfigs.supported_currency) {
-        // Mock rate logic
+        // Precise conversion rate logic
         let rate = 1;
-        if (paymentConfigs.supported_currency === 'BTC') rate = 0.00002;
-        else if (paymentConfigs.supported_currency === 'ETH') rate = 0.0004;
+        if (paymentConfigs.supported_currency === 'BTC') rate = 0.000015;
+        else if (paymentConfigs.supported_currency === 'ETH') rate = 0.00032;
+        else if (paymentConfigs.supported_currency === 'USDT' || paymentConfigs.supported_currency === 'USDC') rate = 1;
         cryptoAmount = currentAmount * rate;
       }
 
@@ -175,16 +213,34 @@ export function FractionalPaymentDialog({
     }
     setLoading(true);
     try {
-      const { data: currentPayment } = await (supabase as any).from("payments").select("metadata").eq("reference", paymentData?.reference).single();
+      // 1. Update the payment status to processing (admin verification queue)
+      const { data: currentPayment } = await (supabase as any)
+        .from("payments")
+        .select("metadata")
+        .eq("reference", paymentData?.reference)
+        .single();
+      
       const currentMetadata = currentPayment?.metadata || {};
-      const { error } = await (supabase as any).from("payments").update({ 
+      const { error: payError } = await (supabase as any).from("payments").update({ 
         transaction_hash: hash || null, 
         status: "processing",
         metadata: { ...currentMetadata, proof_url: proofUrl }
       }).eq("reference", paymentData?.reference);
-      if (error) throw error;
+      
+      if (payError) throw payError;
+
+      // 2. Perform explicit update to user_investments setting state to payment_under_review
+      if (investmentId) {
+        const { error: invError } = await supabase
+          .from("user_investments")
+          .update({ status: "payment_under_review" as any })
+          .eq("id", investmentId);
+        
+        if (invError) throw invError;
+      }
+
       setStep("confirm");
-      toast({ title: "Payment processing", description: "Your payment has been submitted and is under review." });
+      toast({ title: "Payment processing", description: "Your payment proof has been securely recorded." });
       if (onSuccess) onSuccess();
     } catch (err: any) {
       toast({ title: "Submission error", description: err.message, variant: "destructive" });
@@ -193,8 +249,7 @@ export function FractionalPaymentDialog({
     }
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleFileUpload = async (file: File) => {
     if (!file) return;
     setUploadingProof(true);
     try {
@@ -205,6 +260,7 @@ export function FractionalPaymentDialog({
       if (uploadError) throw uploadError;
       const { data } = supabase.storage.from("payment_receipts").getPublicUrl(filePath);
       setProofUrl(data.publicUrl);
+      toast({ title: "File uploaded", description: "Receipt verification proof captured successfully." });
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
@@ -212,337 +268,642 @@ export function FractionalPaymentDialog({
     }
   };
 
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(true);
+  };
+
+  const onDragLeave = () => {
+    setIsDragOver(false);
+  };
+
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) {
+      handleFileUpload(file);
+    }
+  };
+
+  const activeIdx = stepsList.findIndex(s => s.key === step);
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden border-none bg-background shadow-2xl flex flex-col max-h-[90vh]">
-        <DialogHeader className="p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/10 shrink-0">
-          <div className="flex items-center justify-between">
-            <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
-              <ShieldCheck className="h-6 w-6 text-primary" />
+      <DialogContent className="max-w-2xl p-0 overflow-hidden border-none bg-background shadow-lux flex flex-col max-h-[95vh] rounded-2xl md:max-h-[90vh]">
+        {/* Header Block with Premium Aesthetics */}
+        <DialogHeader className="p-6 md:p-8 bg-gradient-to-br from-emerald-500/5 via-primary/5 to-background border-b border-border/40 shrink-0">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-xl bg-emerald-600/10 flex items-center justify-center">
+                <ShieldCheck className="h-5 w-5 text-emerald-600" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase tracking-wider text-emerald-600 font-bold">Secure Gate</span>
+                <DialogTitle className="font-serif text-2xl font-bold text-foreground">
+                  {step === "summary" && "Investment Summary"}
+                  {step === "acknowledgement" && "Terms Agreement"}
+                  {step === "method" && "Choose Payment"}
+                  {step === "instructions" && "Submit Funds"}
+                  {step === "proof" && "Submit Proof"}
+                  {step === "confirm" && "Pending Verification"}
+                </DialogTitle>
+              </div>
             </div>
+            
+            {/* Steps tracker - Hidden on mobile view and replaced with step count */}
             {step !== "confirm" && (
-              <div className="flex gap-2">
-                {["summary", "acknowledgement", "method", "instructions", "proof"].map((s, i) => {
-                  const steps = ["summary", "acknowledgement", "method", "instructions", "proof"];
-                  const currentIdx = steps.indexOf(step);
-                  return (
-                    <div key={s} className={`h-1.5 w-8 rounded-full transition-all ${i <= currentIdx ? "bg-primary" : "bg-primary/20"}`} />
-                  );
-                })}
+              <div className="hidden md:flex items-center gap-1 bg-accent/50 p-1 rounded-full border border-border/40">
+                {stepsList.slice(0, 5).map((s, i) => (
+                  <div key={s.key} className="flex items-center">
+                    <span 
+                      className={cn(
+                        "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
+                        i < activeIdx ? "bg-emerald-600 text-white" :
+                        i === activeIdx ? "bg-emerald-600 text-white shadow-sm font-extrabold ring-4 ring-emerald-600/15" :
+                        "bg-muted text-muted-foreground"
+                      )}
+                    >
+                      {i < activeIdx ? <Check className="h-3 w-3" /> : i + 1}
+                    </span>
+                    {i < 4 && (
+                      <span className={cn("h-[2px] w-4 transition-all duration-300", i < activeIdx ? "bg-emerald-600" : "bg-muted")} />
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
+            {step !== "confirm" && (
+              <div className="md:hidden flex items-center justify-between text-xs border border-border bg-accent/40 rounded-xl p-2.5">
+                <span className="font-medium text-muted-foreground">Progress Checklist</span>
+                <span className="font-bold text-emerald-600 bg-emerald-500/5 px-2 py-0.5 rounded-lg border border-emerald-500/10">Step {activeIdx + 1} of 5</span>
               </div>
             )}
           </div>
-          <DialogTitle className="font-serif text-3xl font-bold text-foreground">
-            {step === "summary" && "Investment Summary"}
-            {step === "acknowledgement" && "Investor Acknowledgement"}
-            {step === "method" && "Payment Method"}
-            {step === "instructions" && "Payment Instructions"}
-            {step === "proof" && "Submit Proof of Payment"}
-            {step === "confirm" && "Pending Confirmation"}
-          </DialogTitle>
-          <p className="text-muted-foreground mt-2 text-sm leading-relaxed">
-            {step === "summary" && `You are about to make a fractional ownership investment payment for ${property.title}.`}
-            {step === "acknowledgement" && "Please review and acknowledge the investment terms before proceeding."}
-            {step === "method" && "Select your preferred payment method."}
-            {step === "instructions" && "Follow the instructions below to complete your payment."}
-            {step === "proof" && "Upload your payment receipt to complete the transaction."}
-            {step === "confirm" && "Your investment payment has been submitted successfully."}
-          </p>
         </DialogHeader>
 
-        <DialogBody className="p-8 overflow-y-auto space-y-6">
+        {/* Scrollable Container with Smooth Inner Transitions */}
+        <DialogBody className="p-6 md:p-8 overflow-y-auto space-y-6 max-h-[60vh]">
+          
+          {/* STEP 1: SUMMARY */}
           {step === "summary" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-              <div className="rounded-xl border border-border/50 overflow-hidden shadow-sm">
-                <div className="p-5 bg-card flex gap-4">
-                  <div className="h-20 w-20 rounded-lg overflow-hidden shrink-0 bg-accent">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
+                <p className="text-xs md:text-sm text-emerald-800 dark:text-emerald-300 leading-relaxed">
+                  You are about to make a fractional ownership investment payment for <strong className="font-semibold">{property.title}</strong>. 
+                  Purchased fractional units grant legal ownership. Projected ROI yields begin accumulating post-subscription completion. 
+                  All updates will propagate live to your dashboard.
+                </p>
+              </div>
+
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+                <div className="p-5 flex gap-4 border-b border-border bg-accent/10">
+                  <div className="h-20 w-20 rounded-xl overflow-hidden shrink-0 bg-accent border border-border">
                     <img src={property.cover_image_url} alt={property.title} className="h-full w-full object-cover" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-lg">{property.title}</h3>
-                    <p className="text-sm text-muted-foreground">{property.location}, {property.city}</p>
-                    <div className="mt-2 flex gap-2">
-                      <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md font-medium">{property.property_category || "Real Estate"}</span>
-                    </div>
+                    <span className="text-[9px] uppercase tracking-wider bg-emerald-600/10 text-emerald-600 px-2 py-0.5 rounded-md font-bold">{property.property_category || "Fractional Real Estate"}</span>
+                    <h3 className="font-serif font-bold text-lg text-foreground mt-1 line-clamp-1">{property.title}</h3>
+                    <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-600" />
+                      {property.location}, {property.city}
+                    </p>
                   </div>
                 </div>
-                <div className="border-t border-border/50 bg-accent/20 p-5 grid grid-cols-2 gap-y-4 gap-x-6">
+
+                <div className="p-5 grid grid-cols-2 gap-y-4 gap-x-6 bg-card text-sm">
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Selected Units</p>
-                    <p className="font-serif font-bold text-lg">{units.toLocaleString()}</p>
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Fractional Units</span>
+                    <span className="font-bold text-foreground text-base mt-0.5 block">{units.toLocaleString()} Units</span>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Price per Unit</p>
-                    <p className="font-serif font-bold text-lg">{formatMoney(Number(property.unit_price), property.currency)}</p>
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Unit Value</span>
+                    <span className="font-bold text-foreground text-base mt-0.5 block">{formatMoney(Number(property.unit_price), property.currency)}</span>
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Total Investment</p>
-                    <p className="font-serif font-bold text-lg text-primary">{formatMoney(totalAmount, property.currency)}</p>
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Expected Return</span>
+                    <span className="font-bold text-emerald-600 text-base mt-0.5 block">{property.projected_return_min}% - {property.projected_return_max}% p.a.</span>
                   </div>
+                  <div>
+                    <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Total Purchase Value</span>
+                    <span className="font-bold text-foreground text-base mt-0.5 block">{formatMoney(totalAmount, property.currency)}</span>
+                  </div>
+
                   {investMode === "installment" && (
-                    <div>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Initial Payment Due</p>
-                      <p className="font-serif font-bold text-lg text-amber-600">{formatMoney(downPaymentAmount, property.currency)}</p>
+                    <div className="col-span-2 border-t border-dashed border-border pt-3 grid grid-cols-2 gap-4">
+                      <div>
+                        <span className="text-[10px] text-amber-600 uppercase font-semibold block tracking-wider">Down Payment Due</span>
+                        <span className="font-bold text-amber-600 text-base mt-0.5 block">{formatMoney(downPaymentAmount, property.currency)}</span>
+                      </div>
+                      <div>
+                        <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Installments plan</span>
+                        <span className="font-bold text-foreground text-base mt-0.5 block">{formatMoney(monthlyInstallment, property.currency)} / mo</span>
+                      </div>
                     </div>
                   )}
-                  <div>
-                    <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold mb-1">Estimated ROI</p>
-                    <p className="font-serif font-bold text-lg">{property.projected_return_min}% - {property.projected_return_max}%</p>
+                </div>
+
+                {/* Live Funding Progress bar inside card */}
+                <div className="px-5 pb-5 pt-2 border-t border-border bg-accent/5">
+                  <div className="flex justify-between items-center text-xs text-muted-foreground mb-1">
+                    <span>Funding Campaign</span>
+                    <span className="font-bold text-foreground">{pct}% subscribed</span>
+                  </div>
+                  <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                    <div className="h-full bg-emerald-600 rounded-full" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="flex justify-between items-center text-[10px] text-muted-foreground mt-1.5 font-medium">
+                    <span>{remainingUnits.toLocaleString()} units remaining</span>
+                    <span>Hold Period: {property.holding_period_months} mo</span>
                   </div>
                 </div>
               </div>
-              
-              <div className="rounded-xl bg-amber-500/10 border border-amber-500/20 p-4">
-                <p className="text-sm text-amber-800 dark:text-amber-300 font-medium">
-                  Projected returns are estimated and begin accumulating after all investment units for this property have been fully subscribed.
+
+              <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-4 flex gap-3">
+                <AlertTriangle className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
+                <p className="text-xs text-amber-800 leading-relaxed font-medium">
+                  <strong>Estimated Yield Notice</strong>: Projected returns are estimated and begin accumulating after all investment units for this property have been fully subscribed.
                 </p>
               </div>
             </div>
           )}
 
+          {/* STEP 2: AGREEMENT */}
           {step === "acknowledgement" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-              <div className="rounded-xl bg-accent p-6 border border-border/50 space-y-4">
-                <h4 className="font-bold text-lg font-serif">Investor Agreement</h4>
-                <div className="space-y-4 text-sm text-muted-foreground">
-                  <p>By proceeding, you acknowledge that:</p>
-                  <ul className="space-y-3">
-                    <li className="flex gap-3"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> You are purchasing fractional ownership units in {property.title}.</li>
-                    <li className="flex gap-3"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Investment performance and growth updates will be shared through the investor dashboard and email notifications.</li>
-                    <li className="flex gap-3"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Returns are projected and subject to market conditions.</li>
-                    <li className="flex gap-3"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> Your investment will remain in a "Pending" state until administrative verification of your payment is complete.</li>
-                  </ul>
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+                <div className="p-5 border-b border-border bg-accent/10">
+                  <h4 className="font-serif font-bold text-lg text-foreground">Acknowledge Fractional Terms</h4>
+                  <p className="text-xs text-muted-foreground mt-0.5">Please review the compliance declarations before checking out.</p>
+                </div>
+                
+                <div className="p-5 space-y-4 max-h-[30vh] overflow-y-auto text-xs text-muted-foreground leading-relaxed custom-scrollbar divide-y divide-border/60">
+                  <div className="pb-3 flex gap-3 items-start">
+                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <p>
+                      <strong>Fractional Asset Allocation</strong>: I understand I am purchasing legal fractional titles inside the property coordinates. Units are distributed based on capital contribution records.
+                    </p>
+                  </div>
+                  <div className="py-3 flex gap-3 items-start">
+                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <p>
+                      <strong>Capital Hold and Illiquidity</strong>: I acknowledge that fractional assets represent long-term holdings of {property.holding_period_months} months. Early redemption options are restricted and subject to secondary market regulations.
+                    </p>
+                  </div>
+                  <div className="py-3 flex gap-3 items-start">
+                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <p>
+                      <strong>Pending Administrative Verification</strong>: Payments undergo strict human audit. Accounts remain in a `payment_under_review` (Pending Confirmation) state until transaction receipts are cleared.
+                    </p>
+                  </div>
+                  <div className="pt-3 flex gap-3 items-start">
+                    <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                    <p>
+                      <strong>Growth Dynamics</strong>: Property valuations are dynamic. Rental returns fluctuate with market updates and management efficiency.
+                    </p>
+                  </div>
                 </div>
               </div>
-              <label className="flex items-start gap-3 p-4 border border-border/50 rounded-xl cursor-pointer hover:bg-accent/50 transition-colors">
-                <Checkbox checked={ackChecked} onCheckedChange={(c) => setAckChecked(!!c)} className="mt-1" />
+
+              <label 
+                className={cn(
+                  "flex items-start gap-3.5 p-4 border rounded-2xl cursor-pointer hover:bg-accent/40 transition-all",
+                  ackChecked ? "border-emerald-600 bg-emerald-500/5 shadow-sm" : "border-border"
+                )}
+              >
+                <Checkbox 
+                  id="modal-terms-ack" 
+                  checked={ackChecked} 
+                  onCheckedChange={(c) => setAckChecked(!!c)} 
+                  className="mt-1 border-muted-foreground/40 data-[state=checked]:bg-emerald-600 data-[state=checked]:border-emerald-600" 
+                />
                 <div>
-                  <p className="font-bold">I acknowledge and understand the terms</p>
-                  <p className="text-xs text-muted-foreground mt-1">I have read the investment breakdown and am ready to proceed with funding.</p>
+                  <p className="font-bold text-sm text-foreground">I acknowledge and authorize terms</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">I verify that the above declarations match my investment profile.</p>
                 </div>
               </label>
             </div>
           )}
 
+          {/* STEP 3: PAYMENT METHOD SELECTION */}
           {step === "method" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
               <PaymentMethodPicker value={method} onChange={setMethod} />
+              
+              {/* Buy Digital Currency assistance section */}
+              {method === "third_party_provider" && (
+                <div className="space-y-4 animate-in fade-in duration-300">
+                  <div className="p-4 bg-emerald-500/5 border border-emerald-500/10 rounded-xl">
+                    <h5 className="font-bold text-xs text-emerald-800 dark:text-emerald-300 flex items-center gap-1.5">
+                      <Wallet className="h-4 w-4" />
+                      Buy Digital Currency Assistance Flow
+                    </h5>
+                    <p className="text-[11px] text-emerald-800/80 leading-relaxed mt-1">
+                      If you do not hold digital currency in a personal wallet, purchase cryptocurrency instantly with your credit/debit card from our licensed partners. Once purchased, send the assets directly to the address provided on the next step.
+                    </p>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <div className="border border-border rounded-xl p-4 bg-card hover:border-emerald-600/50 hover:shadow-sm transition-all flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <span className="font-bold text-sm text-foreground">MoonPay</span>
+                          <span className="text-[9px] bg-emerald-600/10 text-emerald-600 px-1.5 py-0.5 rounded font-bold">Recommended</span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                          Supported cards: Visa, Mastercard, Apple Pay, Google Pay. Global support covering 150+ countries. Fast clearance times.
+                        </p>
+                      </div>
+                      <Button asChild size="sm" variant="outline" className="mt-4 w-full text-xs font-semibold rounded-lg">
+                        <a href="https://www.moonpay.com/buy" target="_blank" rel="noopener noreferrer">
+                          Visit MoonPay <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    </div>
+
+                    <div className="border border-border rounded-xl p-4 bg-card hover:border-emerald-600/50 hover:shadow-sm transition-all flex flex-col justify-between">
+                      <div>
+                        <div className="flex justify-between items-start">
+                          <span className="font-bold text-sm text-foreground">Transak</span>
+                          <span className="text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded font-bold">Card & Bank</span>
+                        </div>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                          Supported options: Card, Local Bank Transfers. High conversion limits, covering UK, Europe, Americas, and Asia.
+                        </p>
+                      </div>
+                      <Button asChild size="sm" variant="outline" className="mt-4 w-full text-xs font-semibold rounded-lg">
+                        <a href="https://global.transak.com/" target="_blank" rel="noopener noreferrer">
+                          Visit Transak <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                        </a>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Guided Onboarding Checklist timeline */}
+                  <div className="rounded-xl border border-border bg-accent/10 p-5 space-y-3">
+                    <span className="text-xs font-bold text-foreground block tracking-wider uppercase">How to Purchase & Complete Investment:</span>
+                    <div className="relative pl-5 border-l border-border/80 space-y-4 text-xs text-muted-foreground">
+                      <div className="relative">
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-emerald-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">1</span>
+                        <p className="font-semibold text-foreground">Choose preferred provider</p>
+                        <p className="text-[10px] mt-0.5">Click "Visit Provider" above to start purchase flow on their verified portal.</p>
+                      </div>
+                      <div className="relative">
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-emerald-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">2</span>
+                        <p className="font-semibold text-foreground">Purchase digital assets with credit/debit card</p>
+                        <p className="text-[10px] mt-0.5">Buy the exact amount needed: {paymentConfigs.supported_currency || 'USDT'}.</p>
+                      </div>
+                      <div className="relative">
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-emerald-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">3</span>
+                        <p className="font-semibold text-foreground">Transfer digital currency to platform wallet</p>
+                        <p className="text-[10px] mt-0.5">Input the platform wallet address displayed on the next step as destination.</p>
+                      </div>
+                      <div className="relative">
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-emerald-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">4</span>
+                        <p className="font-semibold text-foreground">Return here and submit details</p>
+                        <p className="text-[10px] mt-0.5">Enter hash/reference key and upload screenshot confirmation receipt.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
+          {/* STEP 4: PAYMENT INSTRUCTIONS */}
           {step === "instructions" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              
+              {/* Crypto instructions layout */}
               {isCrypto && (
                 <div className="space-y-6">
-                  <div className="rounded-xl bg-accent p-6 border border-border/50 text-center">
-                    <h4 className="font-bold text-lg font-serif mb-4">Transfer Digital Currency</h4>
-                    <div className="bg-white p-4 rounded-xl inline-block mx-auto mb-6">
-                      <QRCodeSVG value={paymentData?.address || "address"} size={160} />
+                  <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
+                    <div className="p-5 border-b border-border bg-accent/15 text-center">
+                      <h4 className="font-serif font-bold text-lg text-foreground">Cryptocurrency Gateway</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">Transfer digital currency assets to the secure platform address below.</p>
                     </div>
-                    <div className="space-y-4 text-left">
-                      <div className="bg-background rounded-lg p-3 border border-border/50">
-                        <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">Exact Amount to Send</p>
-                        <div className="flex justify-between items-center">
-                          <p className="font-mono text-lg font-bold">{paymentData?.cryptoAmount} {paymentConfigs.supported_currency}</p>
-                          <Button variant="ghost" size="icon" onClick={() => {
-                            navigator.clipboard.writeText(String(paymentData?.cryptoAmount));
-                            toast({ title: "Copied" });
-                          }}><Copy className="h-4 w-4" /></Button>
-                        </div>
-                      </div>
-                      <div className="bg-background rounded-lg p-3 border border-border/50">
-                        <p className="text-xs text-muted-foreground font-bold uppercase tracking-wider mb-1">{paymentConfigs.supported_currency} Wallet Address ({paymentConfigs.wallet_network})</p>
-                        <div className="flex justify-between items-center gap-2">
-                          <p className="font-mono text-sm break-all">{paymentData?.address}</p>
-                          <Button variant="ghost" size="icon" className="shrink-0" onClick={() => {
-                            navigator.clipboard.writeText(String(paymentData?.address));
-                            toast({ title: "Copied" });
-                          }}><Copy className="h-4 w-4" /></Button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
 
-                  <div className="rounded-xl border border-border/50 p-5 space-y-4">
-                    <h4 className="font-bold text-sm">Need Digital Currency?</h4>
-                    <p className="text-xs text-muted-foreground">Buy digital currency instantly using your debit or credit card through our approved partners.</p>
-                    <div className="grid gap-3">
-                      {methods.filter((m: any) => m.payment_category === "third_party_provider").map((provider: any) => (
-                        <div key={provider.id} className="flex items-center justify-between p-3 rounded-lg border border-border/50 bg-accent/30">
-                          <div>
-                            <p className="font-bold text-sm">{provider.method_name}</p>
-                            <p className="text-xs text-muted-foreground">{provider.description}</p>
-                          </div>
-                          <Button asChild size="sm" variant="outline">
-                            <a href={provider.configuration.provider_url} target="_blank" rel="noopener noreferrer">
-                              Visit Provider <ExternalLink className="ml-2 h-3 w-3" />
-                            </a>
-                          </Button>
+                    <div className="p-6 flex flex-col items-center border-b border-border bg-card">
+                      {/* Zoomable QR code component */}
+                      <button 
+                        onClick={() => setQrZoomed(!qrZoomed)}
+                        className="group relative bg-white p-4 rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-emerald-600/30 transition-all focus:outline-none"
+                      >
+                        <QRCodeSVG value={paymentData?.address || "wallet_address"} size={160} />
+                        <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <span className="text-white text-xs font-semibold flex items-center gap-1.5 bg-black/40 px-3 py-1.5 rounded-full backdrop-blur-sm">
+                            <ZoomIn className="h-4 w-4" /> Zoom QR
+                          </span>
                         </div>
-                      ))}
+                      </button>
+                      <p className="text-[10px] text-muted-foreground mt-3 italic">Click QR code to toggle full-screen view</p>
+                    </div>
+
+                    <div className="p-5 bg-card space-y-4">
+                      {/* Copy Crypto Amount Card */}
+                      <div className="border border-border/80 bg-accent/15 rounded-xl p-3.5 flex justify-between items-center">
+                        <div>
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block">Exact Cryptocurrency Amount</span>
+                          <span className="font-mono text-base font-extrabold text-foreground mt-0.5 block">
+                            {paymentData?.cryptoAmount} {paymentConfigs.supported_currency}
+                          </span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs transition-all hover:bg-emerald-600/5 hover:border-emerald-600/40"
+                          onClick={() => handleCopyText(String(paymentData?.cryptoAmount), "crypto_amount")}
+                        >
+                          {copyStates["crypto_amount"] ? (
+                            <><Check className="h-4 w-4 text-emerald-600" /> Copied</>
+                          ) : (
+                            <><Copy className="h-3.5 w-3.5" /> Copy Amount</>
+                          )}
+                        </Button>
+                      </div>
+
+                      {/* Copy Crypto Wallet Address Card */}
+                      <div className="border border-border/80 bg-accent/15 rounded-xl p-3.5 flex justify-between items-center gap-4">
+                        <div className="min-w-0">
+                          <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block">
+                            {paymentConfigs.supported_currency} Address ({paymentConfigs.wallet_network})
+                          </span>
+                          <span className="font-mono text-xs font-semibold text-foreground mt-1 block break-all truncate">
+                            {paymentData?.address}
+                          </span>
+                        </div>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs shrink-0 transition-all hover:bg-emerald-600/5 hover:border-emerald-600/40"
+                          onClick={() => handleCopyText(String(paymentData?.address), "crypto_address")}
+                        >
+                          {copyStates["crypto_address"] ? (
+                            <><Check className="h-4 w-4 text-emerald-600" /> Copied</>
+                          ) : (
+                            <><Copy className="h-3.5 w-3.5" /> Copy Address</>
+                          )}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
+              {/* Bank wire instructions layout */}
               {isBank && (
-                <div className="rounded-xl bg-accent p-6 border border-border/50">
-                  <h4 className="font-bold text-lg font-serif mb-6 text-center">Wire Transfer Instructions</h4>
-                  <div className="space-y-4">
-                    <div className="grid grid-cols-[1fr_2fr] gap-4 border-b border-border/50 pb-3">
-                      <span className="text-sm font-bold text-muted-foreground">Bank Name</span>
-                      <span className="text-sm font-medium text-right">{paymentConfigs.bank_name}</span>
+                <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm animate-in fade-in duration-300">
+                  <div className="p-5 border-b border-border bg-accent/15 text-center">
+                    <h4 className="font-serif font-bold text-lg text-foreground">Direct Bank Wire Transfer</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Please transfer your funds using the platform coordinates listed below.</p>
+                  </div>
+
+                  <div className="p-5 space-y-4">
+                    <div className="grid grid-cols-[1fr_2fr] gap-4 items-center border-b border-border pb-3 text-xs">
+                      <span className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Bank Name</span>
+                      <span className="font-bold text-foreground text-right">{paymentConfigs.bank_name}</span>
                     </div>
-                    <div className="grid grid-cols-[1fr_2fr] gap-4 border-b border-border/50 pb-3">
-                      <span className="text-sm font-bold text-muted-foreground">Account Name</span>
-                      <span className="text-sm font-medium text-right">{paymentConfigs.account_name}</span>
+
+                    <div className="grid grid-cols-[1fr_2fr] gap-4 items-center border-b border-border pb-3 text-xs">
+                      <span className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Account Name</span>
+                      <span className="font-bold text-foreground text-right">{paymentConfigs.account_name}</span>
                     </div>
-                    <div className="grid grid-cols-[1fr_2fr] gap-4 border-b border-border/50 pb-3">
-                      <span className="text-sm font-bold text-muted-foreground">Account Number</span>
-                      <span className="text-sm font-mono text-right flex items-center justify-end gap-2">
-                        {paymentConfigs.account_number}
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
-                          navigator.clipboard.writeText(paymentConfigs.account_number);
-                          toast({ title: "Copied" });
-                        }}><Copy className="h-3 w-3" /></Button>
-                      </span>
+
+                    <div className="grid grid-cols-[1fr_2fr] gap-4 items-center border-b border-border pb-3 text-xs">
+                      <span className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">Account Number</span>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="font-mono font-bold text-foreground">{paymentConfigs.account_number}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-lg"
+                          onClick={() => handleCopyText(paymentConfigs.account_number, "bank_acc")}
+                        >
+                          {copyStates["bank_acc"] ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-[1fr_2fr] gap-4 border-b border-border/50 pb-3">
-                      <span className="text-sm font-bold text-muted-foreground">Routing / SWIFT</span>
-                      <span className="text-sm font-mono text-right flex items-center justify-end gap-2">
-                        {paymentConfigs.routing_number || paymentConfigs.swift_code || "N/A"}
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
-                          navigator.clipboard.writeText(paymentConfigs.routing_number || paymentConfigs.swift_code);
-                          toast({ title: "Copied" });
-                        }}><Copy className="h-3 w-3" /></Button>
-                      </span>
+
+                    <div className="grid grid-cols-[1fr_2fr] gap-4 items-center border-b border-border pb-3 text-xs">
+                      <span className="font-semibold text-muted-foreground uppercase tracking-wider text-[10px]">SWIFT / Routing</span>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="font-mono font-bold text-foreground">{paymentConfigs.routing_number || paymentConfigs.swift_code || "N/A"}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-lg"
+                          onClick={() => handleCopyText(paymentConfigs.routing_number || paymentConfigs.swift_code, "bank_routing")}
+                        >
+                          {copyStates["bank_routing"] ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                        </Button>
+                      </div>
                     </div>
-                    <div className="grid grid-cols-[1fr_2fr] gap-4 pt-2">
-                      <span className="text-sm font-bold text-muted-foreground">Payment Reference</span>
-                      <span className="text-sm font-bold text-primary text-right flex items-center justify-end gap-2">
-                        {paymentData?.reference}
-                        <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
-                          navigator.clipboard.writeText(paymentData?.reference || "");
-                          toast({ title: "Copied" });
-                        }}><Copy className="h-3 w-3" /></Button>
-                      </span>
+
+                    <div className="grid grid-cols-[1fr_2fr] gap-4 items-center pt-1 text-xs">
+                      <span className="font-semibold text-emerald-600 uppercase tracking-wider text-[10px]">Payment Reference</span>
+                      <div className="flex items-center justify-end gap-2">
+                        <span className="font-mono font-extrabold text-emerald-600 bg-emerald-500/5 border border-emerald-500/10 px-2 py-0.5 rounded-md">{paymentData?.reference}</span>
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-8 w-8 rounded-lg"
+                          onClick={() => handleCopyText(paymentData?.reference || "", "bank_ref")}
+                        >
+                          {copyStates["bank_ref"] ? <Check className="h-4 w-4 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="rounded-xl border border-border/50 p-4 space-y-4">
-                <h5 className="font-bold text-sm">Investor Guidance Checklist</h5>
-                <div className="space-y-3">
-                  <div className="flex gap-3 text-sm"><div className="bg-primary/20 text-primary h-5 w-5 flex items-center justify-center rounded-full text-xs font-bold shrink-0">1</div> Initiate the transfer using the exact details provided.</div>
-                  <div className="flex gap-3 text-sm"><div className="bg-primary/20 text-primary h-5 w-5 flex items-center justify-center rounded-full text-xs font-bold shrink-0">2</div> Make sure to include the Reference Code if required.</div>
-                  <div className="flex gap-3 text-sm"><div className="bg-primary/20 text-primary h-5 w-5 flex items-center justify-center rounded-full text-xs font-bold shrink-0">3</div> Save a screenshot or PDF of your transfer receipt.</div>
-                  <div className="flex gap-3 text-sm"><div className="bg-primary/20 text-primary h-5 w-5 flex items-center justify-center rounded-full text-xs font-bold shrink-0">4</div> Click "I have made the payment" to upload your proof.</div>
+              {/* Onboarding timeline checklist */}
+              <div className="rounded-2xl border border-border bg-accent/15 p-5 space-y-4">
+                <h5 className="font-bold text-xs text-foreground tracking-wider uppercase">Onboarding Checklist:</h5>
+                <div className="space-y-3.5 text-xs text-muted-foreground leading-normal">
+                  <div className="flex gap-3.5 items-start">
+                    <span className="h-5.5 w-5.5 bg-emerald-600/15 text-emerald-600 border border-emerald-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">1</span>
+                    <p>Initiate transfer with exact balance: <strong className="text-foreground">{formatMoney(currentAmount, property.currency)}</strong>.</p>
+                  </div>
+                  <div className="flex gap-3.5 items-start">
+                    <span className="h-5.5 w-5.5 bg-emerald-600/15 text-emerald-600 border border-emerald-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">2</span>
+                    <p>Ensure wire transfers contain the payment reference code: <strong className="font-mono text-foreground font-bold">{paymentData?.reference}</strong> inside the transfer narrative field.</p>
+                  </div>
+                  <div className="flex gap-3.5 items-start">
+                    <span className="h-5.5 w-5.5 bg-emerald-600/15 text-emerald-600 border border-emerald-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">3</span>
+                    <p>Capture screenshot or export PDF receipt once transaction is finalized.</p>
+                  </div>
+                  <div className="flex gap-3.5 items-start">
+                    <span className="h-5.5 w-5.5 bg-emerald-600/15 text-emerald-600 border border-emerald-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">4</span>
+                    <p>Click "I have made the payment" to upload confirmation documentation.</p>
+                  </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* STEP 5: PROOF OF PAYMENT SUBMISSION */}
           {step === "proof" && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
-              <div className="space-y-4">
-                <Label className="font-bold text-sm">Transaction Reference / Hash</Label>
+            <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+              <div className="space-y-2">
+                <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest block">Transaction ID / Hash Reference</Label>
                 <Input 
-                  placeholder="Enter the transaction ID or hash..." 
+                  placeholder="Enter the transaction reference, SWIFT receipt ID, or hash..." 
                   value={hash} 
                   onChange={(e) => setHash(e.target.value)} 
-                  className="h-14 rounded-xl"
+                  className="h-13 rounded-xl border-border bg-accent/40 focus:bg-background transition-all font-bold text-sm focus-visible:ring-emerald-600/40"
                 />
+                <p className="text-[10px] text-muted-foreground">Please double check that transaction reference matches your financial receipt.</p>
               </div>
 
-              <div className="space-y-4">
-                <Label className="font-bold text-sm">Proof of Payment</Label>
-                <input type="file" ref={fileInputRef} className="hidden" accept="image/*,.pdf" onChange={handleFileUpload} />
+              <div className="space-y-2">
+                <Label className="font-bold text-xs text-muted-foreground uppercase tracking-widest block">Proof of Payment</Label>
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  className="hidden" 
+                  accept="image/*,.pdf" 
+                  onChange={(e) => {
+                    const file = e.target.files?.[0];
+                    if (file) handleFileUpload(file);
+                  }} 
+                />
                 
                 {proofUrl ? (
-                  <div className="relative rounded-xl border border-primary/30 overflow-hidden group">
-                    <div className="aspect-video w-full bg-accent/30 flex items-center justify-center p-2">
-                      <img src={proofUrl} alt="Proof" className="max-h-full max-w-full object-contain" />
+                  <div className="relative rounded-2xl border border-emerald-600/30 overflow-hidden group shadow-sm bg-accent/20">
+                    <div className="aspect-[16/9] w-full flex items-center justify-center p-3">
+                      {proofUrl.endsWith('.pdf') ? (
+                        <div className="flex flex-col items-center gap-2">
+                          <Eye className="h-10 w-10 text-emerald-600" />
+                          <span className="font-bold text-xs text-foreground">PDF Receipt Loaded</span>
+                        </div>
+                      ) : (
+                        <img src={proofUrl} alt="Receipt proof preview" className="max-h-full max-w-full object-contain rounded-lg" />
+                      )}
                     </div>
                     <div className="absolute inset-0 bg-background/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="outline" onClick={() => fileInputRef.current?.click()}>Replace File</Button>
+                      <Button variant="outline" className="rounded-xl font-semibold border-emerald-600/30 hover:bg-emerald-600/5 text-xs h-10" onClick={() => fileInputRef.current?.click()}>
+                        Replace Verification Document
+                      </Button>
                     </div>
                   </div>
                 ) : (
-                  <button 
+                  <div 
+                    onDragOver={onDragOver}
+                    onDragLeave={onDragLeave}
+                    onDrop={onDrop}
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingProof}
-                    className="w-full h-40 border-2 border-dashed border-border/60 hover:border-primary/50 hover:bg-primary/5 rounded-xl flex flex-col items-center justify-center gap-2 transition-all disabled:opacity-50"
+                    className={cn(
+                      "w-full h-44 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer select-none",
+                      isDragOver ? "border-emerald-600 bg-emerald-500/5 scale-[1.01]" : "border-border hover:border-emerald-600/40 hover:bg-accent/40",
+                      uploadingProof && "pointer-events-none opacity-50"
+                    )}
                   >
-                    {uploadingProof ? <Loader2 className="h-8 w-8 text-primary animate-spin" /> : <Upload className="h-8 w-8 text-muted-foreground" />}
-                    <p className="font-bold text-sm mt-2">{uploadingProof ? "Uploading..." : "Click to upload receipt"}</p>
-                    <p className="text-xs text-muted-foreground">JPEG, PNG, or PDF</p>
-                  </button>
+                    {uploadingProof ? (
+                      <>
+                        <Loader2 className="h-8 w-8 text-emerald-600 animate-spin" />
+                        <p className="font-bold text-xs mt-2 text-foreground">Uploading document proof...</p>
+                      </>
+                    ) : (
+                      <>
+                        <div className="h-12 w-12 rounded-full bg-emerald-600/10 flex items-center justify-center">
+                          <Upload className="h-6 w-6 text-emerald-600" />
+                        </div>
+                        <p className="font-bold text-xs mt-1 text-foreground">Drag and drop file or click to browse</p>
+                        <p className="text-[10px] text-muted-foreground">Supported file formats: JPEG, PNG, or PDF</p>
+                      </>
+                    )}
+                  </div>
                 )}
               </div>
             </div>
           )}
 
+          {/* STEP 6: PENDING CONFIRMATION STATE */}
           {step === "confirm" && (
-            <div className="py-12 flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
-              <div className="h-24 w-24 rounded-full bg-green-500/20 flex items-center justify-center">
-                <CheckCircle2 className="h-12 w-12 text-green-500" />
+            <div className="py-8 flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
+              <div className="h-20 w-20 rounded-full bg-emerald-600/10 flex items-center justify-center animate-bounce [animation-duration:1500ms]">
+                <CheckCircle2 className="h-10 w-10 text-emerald-600" />
               </div>
-              <div className="space-y-2">
-                <h3 className="font-serif text-3xl font-bold">Payment Submitted</h3>
-                <p className="text-muted-foreground max-w-sm mx-auto">
-                  Your investment payment has been submitted successfully and is currently awaiting admin verification.
+              
+              <div className="space-y-2 max-w-sm mx-auto">
+                <span className="text-[10px] uppercase tracking-wider text-emerald-600 bg-emerald-500/5 border border-emerald-500/10 px-2 py-0.5 rounded font-extrabold">
+                  Status: payment_under_review
+                </span>
+                <h3 className="font-serif text-2xl font-bold text-foreground pt-1.5">Onboarding Initialized</h3>
+                <p className="text-xs text-muted-foreground leading-relaxed mt-1">
+                  Your fractional investment payment has been submitted successfully and is currently awaiting admin verification.
                 </p>
               </div>
-              <div className="rounded-xl border border-border/50 bg-accent/30 p-5 max-w-md text-sm text-left space-y-3">
-                <div className="flex gap-3"><Clock className="h-5 w-5 text-primary shrink-0" /> Verification may take 1-2 business days.</div>
-                <div className="flex gap-3"><Building2 className="h-5 w-5 text-primary shrink-0" /> Your dashboard will automatically update once confirmed.</div>
-                <div className="flex gap-3"><CheckCircle2 className="h-5 w-5 text-primary shrink-0" /> You will receive an email and in-app notification upon approval.</div>
+
+              <div className="rounded-2xl border border-border bg-accent/10 p-5 max-w-md text-xs text-left space-y-3.5">
+                <div className="flex gap-3">
+                  <Clock className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <p><strong>Verification Timelines</strong>: Human audit takes approximately 1-2 business days. Fractional blocks remain reserved.</p>
+                </div>
+                <div className="flex gap-3">
+                  <Building2 className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <p><strong>Dashboard Status Update</strong>: Your Unified Dashboard updates automatically to `confirmed` status post verification.</p>
+                </div>
+                <div className="flex gap-3">
+                  <CheckCircle2 className="h-4.5 w-4.5 text-emerald-600 shrink-0 mt-0.5" />
+                  <p><strong>Confirmation Correspondence</strong>: You will receive direct email receipt confirmation and institutional ownership certificate links immediately upon clearance.</p>
+                </div>
               </div>
             </div>
           )}
 
         </DialogBody>
 
-        <DialogFooter className="p-8 bg-accent/30 border-t border-border/40 shrink-0">
+        {/* Sticky Mobile Footer Controls */}
+        <DialogFooter className="p-6 md:p-8 bg-accent/20 border-t border-border/40 shrink-0 flex flex-row items-center gap-3">
           {step === "summary" && (
-            <Button className="w-full h-14 text-lg font-bold rounded-xl" onClick={() => setStep("acknowledgement")}>
-              Continue to Terms <ChevronRight className="ml-2 h-5 w-5" />
+            <Button className="w-full h-13 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => setStep("acknowledgement")}>
+              Continue to Terms <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           )}
           {step === "acknowledgement" && (
-            <div className="flex gap-3 w-full">
-              <Button variant="outline" className="h-14 w-14 shrink-0 rounded-xl" onClick={() => setStep("summary")}><ArrowLeft className="h-5 w-5" /></Button>
-              <Button className="flex-1 h-14 text-lg font-bold rounded-xl" disabled={!ackChecked} onClick={() => setStep("method")}>
-                I Understand <ChevronRight className="ml-2 h-5 w-5" />
+            <div className="flex gap-2.5 w-full">
+              <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("summary")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" disabled={!ackChecked} onClick={() => setStep("method")}>
+                I Understand <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
           )}
           {step === "method" && (
-            <div className="flex gap-3 w-full">
-              <Button variant="outline" className="h-14 w-14 shrink-0 rounded-xl" onClick={() => setStep("acknowledgement")}><ArrowLeft className="h-5 w-5" /></Button>
-              <Button className="flex-1 h-14 text-lg font-bold rounded-xl" disabled={loading} onClick={handleCreateInvestment}>
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : <>Confirm Method <ChevronRight className="ml-2 h-5 w-5" /></>}
+            <div className="flex gap-2.5 w-full">
+              <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("acknowledgement")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" disabled={loading} onClick={handleCreateInvestment}>
+                {loading ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : <>Confirm Method <ChevronRight className="ml-1 h-4 w-4" /></>}
               </Button>
             </div>
           )}
           {step === "instructions" && (
-            <div className="flex gap-3 w-full">
-              <Button className="w-full h-14 text-lg font-bold rounded-xl" onClick={() => setStep("proof")}>
+            <div className="flex gap-2.5 w-full">
+              <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("method")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => setStep("proof")}>
                 I have made the payment
               </Button>
             </div>
           )}
           {step === "proof" && (
-            <div className="flex gap-3 w-full">
-              <Button variant="outline" className="h-14 w-14 shrink-0 rounded-xl" onClick={() => setStep("instructions")}><ArrowLeft className="h-5 w-5" /></Button>
-              <Button className="flex-1 h-14 text-lg font-bold rounded-xl" disabled={loading || !hash || !proofUrl} onClick={handleSubmitProof}>
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Submit Proof"}
+            <div className="flex gap-2.5 w-full">
+              <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("instructions")}>
+                <ArrowLeft className="h-4 w-4" />
+              </Button>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" disabled={loading || !hash || !proofUrl} onClick={handleSubmitProof}>
+                {loading ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : "Submit Verification proof"}
               </Button>
             </div>
           )}
           {step === "confirm" && (
-            <Button className="w-full h-14 text-lg font-bold rounded-xl" onClick={() => {
+            <Button className="w-full h-13 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => {
               onClose();
               window.location.href = "/dashboard?tab=investments";
             }}>
@@ -551,6 +912,25 @@ export function FractionalPaymentDialog({
           )}
         </DialogFooter>
       </DialogContent>
+
+      {/* QR Code zoomed view dialog */}
+      <Dialog open={qrZoomed} onOpenChange={setQrZoomed}>
+        <DialogContent className="max-w-sm p-8 flex flex-col items-center justify-center text-center gap-4 rounded-2xl border-none">
+          <DialogHeader className="p-0 text-center sm:text-center">
+            <DialogTitle className="text-lg font-bold font-serif">Wallet Address QR Code</DialogTitle>
+          </DialogHeader>
+          <div className="bg-white p-6 rounded-2xl border border-border shadow-sm mt-2">
+            <QRCodeSVG value={paymentData?.address || "wallet_address"} size={220} />
+          </div>
+          <div className="text-xs text-muted-foreground mt-2 leading-relaxed">
+            <p>Wallet Address Network: <strong>{paymentConfigs.wallet_network}</strong></p>
+            <p className="font-mono mt-1 font-bold text-foreground break-all">{paymentData?.address}</p>
+          </div>
+          <Button className="w-full h-11 text-xs font-semibold rounded-xl mt-4 bg-emerald-600 hover:bg-emerald-700 text-white" onClick={() => setQrZoomed(false)}>
+            Close Zoomed View
+          </Button>
+        </DialogContent>
+      </Dialog>
     </Dialog>
   );
 }

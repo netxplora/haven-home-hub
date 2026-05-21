@@ -106,28 +106,15 @@ export function AdminInstallments() {
       {isLoading ? (
         <div className="space-y-4"><Skeleton className="h-16 w-full" /><Skeleton className="h-16 w-full" /></div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-secondary/40 border-b border-border/50">
-              <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Total Price</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Initial Payment</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Paid</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Balance</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Monthly</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Duration</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Next Due</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Progress</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center whitespace-nowrap">Status</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {filtered.length === 0 ? (
-                <tr><td colSpan={12} className="p-12 text-center text-muted-foreground">No installment plans found.</td></tr>
-              ) : filtered.map((i: any) => {
+        <>
+          {/* Mobile Card View (md:hidden) */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {filtered.length === 0 ? (
+              <div className="rounded-xl border border-border/50 bg-card p-8 text-center text-muted-foreground shadow-sm">
+                No installment plans found.
+              </div>
+            ) : (
+              filtered.map((i: any) => {
                 const currency = i.investment_properties?.currency || "USD";
                 const total = Number(i.total_amount ?? i.amount_invested ?? 0);
                 const paid = Number(i.amount_paid ?? 0);
@@ -135,36 +122,12 @@ export function AdminInstallments() {
                 const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
 
                 return (
-                  <tr key={i.id} className="transition-colors hover:bg-secondary/20">
-                    <td className="p-4">
-                      <p className="font-semibold">{i.profiles?.full_name || "Unknown"}</p>
-                      <p className="text-[10px] text-muted-foreground">{new Date(i.created_at).toLocaleDateString()}</p>
-                    </td>
-                    <td className="p-4">
-                      <p className="font-medium text-primary">{i.investment_properties?.title}</p>
-                    </td>
-                    <td className="p-4 text-right font-mono text-sm">{formatMoney(total, currency)}</td>
-                    <td className="p-4 text-right font-mono text-sm">{formatMoney(Number(i.down_payment_amount ?? 0), currency)}</td>
-                    <td className="p-4 text-right font-mono text-sm text-green-600">{formatMoney(paid, currency)}</td>
-                    <td className="p-4 text-right font-mono text-sm text-amber-600 font-bold">{formatMoney(balance, currency)}</td>
-                    <td className="p-4 text-sm font-medium">{formatMoney(Number(i.monthly_installment_amount ?? 0), currency)}</td>
-                    <td className="p-4 text-sm">{i.duration_months ? `${i.duration_months}mo` : "—"}</td>
-                    <td className="p-4 text-xs">
-                      {i.next_payment_due ? (
-                        <span className={new Date(i.next_payment_due) < new Date() ? "text-destructive font-semibold" : "text-muted-foreground"}>
-                          {new Date(i.next_payment_due).toLocaleDateString()}
-                        </span>
-                      ) : "—"}
-                    </td>
-                    <td className="p-4">
-                      <div className="w-20">
-                        <div className="flex justify-between text-[10px] mb-1">
-                          <span>{pct}%</span>
-                        </div>
-                        <Progress value={pct} className="h-1.5" />
+                  <div key={i.id} className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-semibold text-foreground">{i.profiles?.full_name || "Unknown"}</h4>
+                        <p className="text-[10px] text-muted-foreground">{new Date(i.created_at).toLocaleDateString()}</p>
                       </div>
-                    </td>
-                    <td className="p-4 text-center">
                       <Badge
                         className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize"
                         variant={
@@ -175,18 +138,141 @@ export function AdminInstallments() {
                       >
                         {i.status === "defaulted" ? "Overdue" : i.status}
                       </Badge>
-                    </td>
-                    <td className="p-4 text-right">
-                      <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setViewItem(i)}>
-                        <Eye className="h-3.5 w-3.5 mr-1" /> View
+                    </div>
+
+                    <div className="border-t border-border/50 my-2 pt-2">
+                      <p className="text-[10px] uppercase font-medium text-muted-foreground">Property</p>
+                      <p className="font-medium text-primary text-sm">{i.investment_properties?.title}</p>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-medium">Total Price</span>
+                        <span className="font-mono font-semibold text-foreground">{formatMoney(total, currency)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-medium">Monthly</span>
+                        <span className="font-semibold text-foreground">{formatMoney(Number(i.monthly_installment_amount ?? 0), currency)} ({i.duration_months ? `${i.duration_months}mo` : "—"})</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-medium">Paid</span>
+                        <span className="font-mono font-semibold text-green-600">{formatMoney(paid, currency)}</span>
+                      </div>
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-medium">Remaining</span>
+                        <span className="font-mono font-semibold text-amber-600 font-bold">{formatMoney(balance, currency)}</span>
+                      </div>
+                    </div>
+
+                    <div className="space-y-1">
+                      <div className="flex justify-between text-[10px] text-muted-foreground">
+                        <span>Progress ({pct}%)</span>
+                        {i.next_payment_due && (
+                          <span>
+                            Next Due:{" "}
+                            <span className={new Date(i.next_payment_due) < new Date() ? "text-destructive font-semibold" : "text-muted-foreground"}>
+                              {new Date(i.next_payment_due).toLocaleDateString()}
+                            </span>
+                          </span>
+                        )}
+                      </div>
+                      <Progress value={pct} className="h-1.5" />
+                    </div>
+
+                    <div className="pt-2">
+                      <Button variant="outline" size="sm" className="w-full h-11 text-sm font-medium flex items-center justify-center gap-2" onClick={() => setViewItem(i)}>
+                        <Eye className="h-4 w-4" /> View Details
                       </Button>
-                    </td>
-                  </tr>
+                    </div>
+                  </div>
                 );
-              })}
-            </tbody>
-          </table>
-        </div>
+              })
+            )}
+          </div>
+
+          {/* Desktop Table View (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-secondary/40 border-b border-border/50">
+                <tr>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Total Price</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Initial Payment</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Paid</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Balance</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Monthly</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Duration</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Next Due</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Progress</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-center whitespace-nowrap">Status</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {filtered.length === 0 ? (
+                  <tr><td colSpan={12} className="p-12 text-center text-muted-foreground">No installment plans found.</td></tr>
+                ) : filtered.map((i: any) => {
+                  const currency = i.investment_properties?.currency || "USD";
+                  const total = Number(i.total_amount ?? i.amount_invested ?? 0);
+                  const paid = Number(i.amount_paid ?? 0);
+                  const balance = Number(i.remaining_balance ?? 0);
+                  const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 0;
+
+                  return (
+                    <tr key={i.id} className="transition-colors hover:bg-secondary/20">
+                      <td className="p-4">
+                        <p className="font-semibold">{i.profiles?.full_name || "Unknown"}</p>
+                        <p className="text-[10px] text-muted-foreground">{new Date(i.created_at).toLocaleDateString()}</p>
+                      </td>
+                      <td className="p-4">
+                        <p className="font-medium text-primary">{i.investment_properties?.title}</p>
+                      </td>
+                      <td className="p-4 text-right font-mono text-sm">{formatMoney(total, currency)}</td>
+                      <td className="p-4 text-right font-mono text-sm">{formatMoney(Number(i.down_payment_amount ?? 0), currency)}</td>
+                      <td className="p-4 text-right font-mono text-sm text-green-600">{formatMoney(paid, currency)}</td>
+                      <td className="p-4 text-right font-mono text-sm text-amber-600 font-bold">{formatMoney(balance, currency)}</td>
+                      <td className="p-4 text-sm font-medium">{formatMoney(Number(i.monthly_installment_amount ?? 0), currency)}</td>
+                      <td className="p-4 text-sm">{i.duration_months ? `${i.duration_months}mo` : "—"}</td>
+                      <td className="p-4 text-xs">
+                        {i.next_payment_due ? (
+                          <span className={new Date(i.next_payment_due) < new Date() ? "text-destructive font-semibold" : "text-muted-foreground"}>
+                            {new Date(i.next_payment_due).toLocaleDateString()}
+                          </span>
+                        ) : "—"}
+                      </td>
+                      <td className="p-4">
+                        <div className="w-20">
+                          <div className="flex justify-between text-[10px] mb-1">
+                            <span>{pct}%</span>
+                          </div>
+                          <Progress value={pct} className="h-1.5" />
+                        </div>
+                      </td>
+                      <td className="p-4 text-center">
+                        <Badge
+                          className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize"
+                          variant={
+                            i.status === "active" || i.status === "confirmed" ? "default" :
+                            i.status === "overdue" || i.status === "defaulted" ? "destructive" :
+                            i.status === "completed" ? "default" : "secondary"
+                          }
+                        >
+                          {i.status === "defaulted" ? "Overdue" : i.status}
+                        </Badge>
+                      </td>
+                      <td className="p-4 text-right">
+                        <Button variant="ghost" size="sm" className="h-8 text-xs" onClick={() => setViewItem(i)}>
+                          <Eye className="h-3.5 w-3.5 mr-1" /> View
+                        </Button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       {/* Detail Dialog */}

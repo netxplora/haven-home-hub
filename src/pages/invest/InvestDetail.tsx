@@ -12,6 +12,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
 import { resolveImage } from "@/lib/format";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/dialog";
+import { cn } from "@/lib/utils";
+import { Lock, Loader2 } from "lucide-react";
 
 import { SEO } from "@/components/site/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +37,10 @@ export default function InvestDetail() {
   const [riskAck, setRiskAck] = useState(false);
   const [activeImg, setActiveImg] = useState(0);
   const [payModalOpen, setPayModalOpen] = useState(false);
+  const [btnLoading, setBtnLoading] = useState(false);
+  const [authWarningOpen, setAuthWarningOpen] = useState(false);
+  const [kycWarningOpen, setKycWarningOpen] = useState(false);
+  const [showRiskPulse, setShowRiskPulse] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["invest-detail", slug],
@@ -102,10 +109,40 @@ export default function InvestDetail() {
 
   async function handleInvest() {
     if (!user) {
-      toast({ title: "Sign in required", description: "Please sign in to invest." });
+      setAuthWarningOpen(true);
       return;
     }
-    setPayModalOpen(true);
+    if (!kycApproved) {
+      setKycWarningOpen(true);
+      return;
+    }
+    if (!minOk) {
+      toast({ 
+        title: "Invalid Unit Selection", 
+        description: `Please select a valid number of units between ${currentMinUnits} and ${maxAllowedUnits}.`, 
+        variant: "destructive" 
+      });
+      return;
+    }
+    if (!riskAck) {
+      const checkboxEl = document.getElementById("risk-ack-container");
+      if (checkboxEl) {
+        checkboxEl.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+      setShowRiskPulse(true);
+      setTimeout(() => setShowRiskPulse(false), 2000);
+      toast({ 
+        title: "Acknowledgement Required", 
+        description: "Please read and acknowledge the risk disclosure before proceeding." 
+      });
+      return;
+    }
+
+    setBtnLoading(true);
+    setTimeout(() => {
+      setBtnLoading(false);
+      setPayModalOpen(true);
+    }, 600);
   }
 
   const gallery = [
@@ -489,39 +526,59 @@ export default function InvestDetail() {
             </div>
 
             <Button
-              className="mt-6 w-full bg-primary text-primary-foreground  hover:bg-primary/90 shadow-sm h-14 font-bold text-lg rounded-xl"
+              className={cn(
+                "mt-6 w-full text-white shadow-sm h-14 font-semibold text-lg rounded-xl flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]",
+                (avail === 0 || data.status !== "open") 
+                  ? "bg-muted text-muted-foreground cursor-not-allowed" 
+                  : "bg-emerald-600 hover:bg-emerald-700 active:bg-emerald-800"
+              )}
               size="lg"
-              disabled={!canInvest || !user}
+              disabled={btnLoading || avail === 0 || data.status !== "open"}
               onClick={handleInvest}
             >
-              <Wallet className="mr-2 h-5 w-5" /> Proceed to Payment
+              {btnLoading ? (
+                <>
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  Verifying secure gateway...
+                </>
+              ) : (
+                <>
+                  <Lock className="h-5 w-5" />
+                  Proceed to Payment
+                </>
+              )}
             </Button>
-            <label className="mt-4 flex items-start gap-2 text-xs text-foreground/85">
+            
+            <div 
+              id="risk-ack-container" 
+              className={cn(
+                "mt-4 flex items-start gap-3 text-xs text-foreground/85 rounded-xl p-3 border border-transparent transition-all duration-300", 
+                showRiskPulse && "border-amber-500/50 bg-amber-500/10 animate-pulse scale-[1.02]"
+              )}
+            >
               <Checkbox
                 id="risk-ack"
                 checked={riskAck}
                 onCheckedChange={(v) => setRiskAck(v === true)}
                 className="mt-0.5"
               />
-              <span>
+              <label htmlFor="risk-ack" className="cursor-pointer select-none leading-relaxed">
                 I have read and understood the <strong>risk disclosure</strong>, that returns are estimated and not guaranteed,
                 and that this investment is long-term for the stated period.
-              </span>
-            </label>
-            {!user && (
-              <p className="mt-3 text-center text-xs text-muted-foreground">
-                <Link to="/auth" className="font-medium text-primary hover:underline">Sign in</Link> to invest
-              </p>
-            )}
+              </label>
+            </div>
+
             {user && !kycApproved && (
-              <div className="mt-4 flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 p-3 dark:border-amber-800/50 dark:bg-amber-950/20">
-                <ShieldCheck className="h-4 w-4 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
-                <p className="text-xs text-amber-800 dark:text-amber-300">
-                  Identity verification is required before investing. <Link to="/dashboard?tab=profile" className="font-medium underline">Complete verification</Link>
-                </p>
+              <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200/50 bg-amber-500/5 p-4">
+                <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+                <div>
+                  <p className="text-xs font-semibold text-amber-800">Identity verification is required</p>
+                  <p className="text-[10px] text-amber-800/80 mt-0.5">Please complete your verification in your profile before initiating payments.</p>
+                </div>
               </div>
             )}
-            <Button asChild variant="outline" className="mt-3 w-full">
+
+            <Button asChild variant="outline" className="mt-3 w-full h-11 rounded-xl">
               <Link to="/agents">Speak to an advisor</Link>
             </Button>
             <p className="mt-4 text-center text-[10px] leading-relaxed text-muted-foreground">
@@ -548,6 +605,64 @@ export default function InvestDetail() {
           }}
         />
       )}
+
+      {/* Auth Gate Dialog */}
+      <Dialog open={authWarningOpen} onOpenChange={setAuthWarningOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none rounded-2xl bg-background shadow-lux">
+          <DialogHeader className="p-8 pb-4 text-center sm:text-center shrink-0">
+            <div className="h-14 w-14 rounded-full bg-emerald-500/10 flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-6 w-6 text-emerald-600" />
+            </div>
+            <DialogTitle className="text-2xl font-bold font-serif">Investor Access Required</DialogTitle>
+            <DialogDescription className="text-muted-foreground mt-2 text-sm">
+              To secure fractional ownership units and complete investment payments, you need an active investor account.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody className="px-8 py-4 text-center">
+            <p className="text-xs text-muted-foreground">
+              Creating an account takes less than a minute. You can track all investment properties, historical dividends, and fractional certificates directly from your unified dashboard.
+            </p>
+          </DialogBody>
+          <DialogFooter className="p-8 pt-4 bg-accent/20 border-t border-border/40 shrink-0 flex flex-col sm:flex-col gap-3">
+            <Button className="w-full h-12 text-sm font-semibold rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white" asChild>
+              <Link to="/auth">Sign In or Register</Link>
+            </Button>
+            <Button variant="ghost" className="w-full h-12 text-sm font-semibold rounded-xl" onClick={() => setAuthWarningOpen(false)}>
+              Back to Property Overview
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* KYC Gate Dialog */}
+      <Dialog open={kycWarningOpen} onOpenChange={setKycWarningOpen}>
+        <DialogContent className="max-w-md p-0 overflow-hidden border-none rounded-2xl bg-background shadow-lux">
+          <DialogHeader className="p-8 pb-4 text-center sm:text-center shrink-0">
+            <div className="h-14 w-14 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4 animate-pulse">
+              <ShieldCheck className="h-6 w-6 text-amber-600" />
+            </div>
+            <DialogTitle className="text-2xl font-bold font-serif">Identity Verification Required</DialogTitle>
+            <DialogDescription className="text-muted-foreground mt-2 text-sm">
+              To comply with global financial regulations, all fractional investors must complete a quick identity check.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogBody className="px-8 py-4 text-center">
+            <p className="text-xs text-muted-foreground">
+              This verification ensures high compliance and secure funds management. It takes under 2 minutes to upload verification credentials.
+            </p>
+          </DialogBody>
+          <DialogFooter className="p-8 pt-4 bg-accent/20 border-t border-border/40 shrink-0 flex flex-col sm:flex-col gap-3">
+            <Button className="w-full h-12 text-sm font-semibold rounded-xl bg-amber-600 hover:bg-amber-700 text-white" asChild>
+              <Link to="/dashboard?tab=profile" onClick={() => setKycWarningOpen(false)}>
+                Verify Identity Now
+              </Link>
+            </Button>
+            <Button variant="ghost" className="w-full h-12 text-sm font-semibold rounded-xl" onClick={() => setKycWarningOpen(false)}>
+              Complete Later
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SiteLayout>
   );
 }

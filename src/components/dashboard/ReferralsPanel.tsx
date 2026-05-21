@@ -92,48 +92,81 @@ export function ReferralsPanel({ userId }: { userId: string }) {
             </div>
 
             <div className="rounded-xl border border-border/40 bg-card overflow-hidden shadow-sm transition-shadow hover:shadow-md">
-               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
-                    <thead>
-                      <tr className="bg-accent/50 border-b border-border/40">
-                          <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">User</th>
-                          <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-                          <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Joined</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-border/40">
-                      {referrals.length === 0 ? (
-                        <tr>
-                          <td colSpan={3} className="px-6 py-20 text-center text-muted-foreground">
-                             <div className="flex flex-col items-center gap-3">
-                                <Users className="h-10 w-10 opacity-20" />
-                                <p className="font-medium">No referrals yet. Start sharing!</p>
-                             </div>
-                          </td>
-                        </tr>
-                      ) : referrals.map((ref: any) => (
-                        <tr key={ref.id} className="transition-colors hover:bg-secondary/10 group">
-                           <td className="px-6 py-5">
-                              <div className="flex items-center gap-3">
-                                 <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary group-hover:scale-110 transition-transform">
-                                    {(ref.profiles?.full_name || "U")[0]}
-                                 </div>
-                                 <p className="font-medium text-foreground">{ref.profiles?.full_name || "User"}</p>
+               {/* ── Mobile Card Layout ── */}
+               <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+                 {referrals.length === 0 ? (
+                   <div className="p-12 text-center text-muted-foreground">
+                      <Users className="h-8 w-8 mx-auto mb-3 opacity-20" />
+                      <p className="text-sm font-medium">No referrals yet. Start sharing!</p>
+                   </div>
+                 ) : (
+                   referrals.map((ref: any) => (
+                     <div key={ref.id} className="rounded-xl border border-border/40 bg-card p-4 shadow-sm space-y-4">
+                       <div className="flex items-start justify-between gap-3">
+                         <div className="flex items-center gap-3">
+                           <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                             {(ref.profiles?.full_name || "U")[0]}
+                           </div>
+                           <div>
+                             <p className="font-semibold text-foreground text-sm">{ref.profiles?.full_name || "User"}</p>
+                             <p className="text-xs text-muted-foreground mt-0.5">
+                               Joined: {new Date(ref.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                             </p>
+                           </div>
+                         </div>
+                         <Badge variant="secondary" className={`capitalize rounded-md flex w-fit items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold shrink-0 ${getStatusStyle(ref.status)}`}>
+                           {getStatusIcon(ref.status)}
+                           {ref.status ? ref.status.replace("_", " ") : "N/A"}
+                         </Badge>
+                       </div>
+                     </div>
+                   ))
+                 )}
+               </div>
+
+               {/* ── Desktop Table Layout ── */}
+               <div className="overflow-x-auto hidden md:block">
+                 <table className="w-full text-left border-collapse">
+                     <thead>
+                       <tr className="bg-accent/50 border-b border-border/40">
+                           <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">User</th>
+                           <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                           <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Joined</th>
+                       </tr>
+                     </thead>
+                     <tbody className="divide-y divide-border/40">
+                       {referrals.length === 0 ? (
+                         <tr>
+                           <td colSpan={3} className="px-6 py-20 text-center text-muted-foreground">
+                              <div className="flex flex-col items-center gap-3">
+                                 <Users className="h-10 w-10 opacity-20" />
+                                 <p className="font-medium">No referrals yet. Start sharing!</p>
                               </div>
                            </td>
-                           <td className="px-6 py-5">
-                              <Badge variant="secondary" className={`capitalize rounded-md flex w-fit items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold ${getStatusStyle(ref.status)}`}>
-                                 {getStatusIcon(ref.status)}
-                                 {ref.status ? ref.status.replace("_", " ") : "N/A"}
-                              </Badge>
-                           </td>
-                           <td className="px-6 py-5 text-right text-xs text-muted-foreground font-medium">
-                              {new Date(ref.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                           </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                </table>
+                         </tr>
+                       ) : referrals.map((ref: any) => (
+                         <tr key={ref.id} className="transition-colors hover:bg-secondary/10 group">
+                            <td className="px-6 py-5">
+                               <div className="flex items-center gap-3">
+                                  <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary group-hover:scale-110 transition-transform">
+                                     {(ref.profiles?.full_name || "U")[0]}
+                                  </div>
+                                  <p className="font-medium text-foreground">{ref.profiles?.full_name || "User"}</p>
+                               </div>
+                            </td>
+                            <td className="px-6 py-5">
+                               <Badge variant="secondary" className={`capitalize rounded-md flex w-fit items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold ${getStatusStyle(ref.status)}`}>
+                                  {getStatusIcon(ref.status)}
+                                  {ref.status ? ref.status.replace("_", " ") : "N/A"}
+                               </Badge>
+                            </td>
+                            <td className="px-6 py-5 text-right text-xs text-muted-foreground font-medium">
+                               {new Date(ref.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                            </td>
+                         </tr>
+                       ))}
+                     </tbody>
+                 </table>
                </div>
             </div>
          </div>

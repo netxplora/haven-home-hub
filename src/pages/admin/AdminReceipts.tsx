@@ -69,55 +69,98 @@ export function AdminReceipts() {
           <Skeleton className="h-20 rounded-xl" />
         </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-          <table className="w-full text-sm text-left">
-            <thead className="bg-secondary/40 border-b border-border/50">
-              <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Receipt ID & Date</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Customer</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Type & Method</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {filtered.map((r: any) => (
-                <tr key={r.id} className="transition-colors hover:bg-secondary/20">
-                  <td className="p-4">
-                    <p className="font-mono font-bold text-primary">{r.receipt_id}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(r.created_at).toLocaleDateString()}</p>
-                  </td>
-                  <td className="p-4">
-                    <p className="font-medium text-foreground">{r.user_name || "Unknown"}</p>
-                    <p className="text-[10px] text-muted-foreground mt-0.5">{r.user_email}</p>
-                  </td>
-                  <td className="p-4">
-                    <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="capitalize text-[10px]">{r.type}</Badge>
+        <>
+          {/* Mobile Card View (md:hidden) */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {filtered.length === 0 ? (
+              <div className="rounded-xl border border-border/50 bg-card p-8 text-center text-muted-foreground shadow-sm">
+                No receipts found matching your filters.
+              </div>
+            ) : (
+              filtered.map((r: any) => (
+                <div key={r.id} className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-4">
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <p className="font-mono font-bold text-primary text-sm">{r.receipt_id}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(r.created_at).toLocaleDateString()}</p>
+                    </div>
+                    <Badge variant="outline" className="capitalize text-[10px]">{r.type}</Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+                    <div>
+                      <span className="text-muted-foreground block text-[10px] uppercase font-medium">Customer</span>
+                      <p className="font-medium text-foreground mt-0.5">{r.user_name || "Unknown"}</p>
+                      <p className="text-[10px] text-muted-foreground">{r.user_email}</p>
+                    </div>
+                    <div>
+                      <span className="text-muted-foreground block text-[10px] uppercase font-medium">Amount & Method</span>
+                      <p className="font-bold text-foreground mt-0.5">{formatMoney(Number(r.amount_paid), r.currency)}</p>
                       <span className="text-[10px] text-muted-foreground capitalize">{r.payment_method?.replace("_", " ")}</span>
                     </div>
-                  </td>
-                  <td className="p-4 text-right">
-                    <p className="font-bold text-foreground">{formatMoney(Number(r.amount_paid), r.currency)}</p>
-                  </td>
-                  <td className="p-4 text-right">
-                    <Button variant="ghost" size="sm" className="h-8 text-xs text-primary hover:bg-primary/10" onClick={() => setSelectedReceipt(r)}>
-                      <FileText className="mr-1.5 h-3.5 w-3.5" />
-                      View
+                  </div>
+
+                  <div className="pt-2 border-t border-border/50">
+                    <Button variant="outline" size="sm" className="w-full h-11 text-sm font-medium flex items-center justify-center gap-2" onClick={() => setSelectedReceipt(r)}>
+                      <FileText className="h-4 w-4" /> View Receipt
                     </Button>
-                  </td>
-                </tr>
-              ))}
-              {filtered.length === 0 && (
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+
+          {/* Desktop Table View (hidden md:block) */}
+          <div className="hidden md:block overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
+            <table className="w-full text-sm text-left">
+              <thead className="bg-secondary/40 border-b border-border/50">
                 <tr>
-                  <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                    No receipts found matching your filters.
-                  </td>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Receipt ID & Date</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Customer</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Type & Method</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {filtered.map((r: any) => (
+                  <tr key={r.id} className="transition-colors hover:bg-secondary/20">
+                    <td className="p-4">
+                      <p className="font-mono font-bold text-primary">{r.receipt_id}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(r.created_at).toLocaleDateString()}</p>
+                    </td>
+                    <td className="p-4">
+                      <p className="font-medium text-foreground">{r.user_name || "Unknown"}</p>
+                      <p className="text-[10px] text-muted-foreground mt-0.5">{r.user_email}</p>
+                    </td>
+                    <td className="p-4">
+                      <div className="flex items-center gap-2">
+                        <Badge variant="outline" className="capitalize text-[10px]">{r.type}</Badge>
+                        <span className="text-[10px] text-muted-foreground capitalize">{r.payment_method?.replace("_", " ")}</span>
+                      </div>
+                    </td>
+                    <td className="p-4 text-right">
+                      <p className="font-bold text-foreground">{formatMoney(Number(r.amount_paid), r.currency)}</p>
+                    </td>
+                    <td className="p-4 text-right">
+                      <Button variant="ghost" size="sm" className="h-8 text-xs text-primary hover:bg-primary/10" onClick={() => setSelectedReceipt(r)}>
+                        <FileText className="mr-1.5 h-3.5 w-3.5" />
+                        View
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+                {filtered.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
+                      No receipts found matching your filters.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
       )}
 
       <ReceiptDialog open={!!selectedReceipt} onClose={() => setSelectedReceipt(null)} receipt={selectedReceipt} />

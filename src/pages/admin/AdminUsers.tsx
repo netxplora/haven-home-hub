@@ -84,7 +84,91 @@ export function AdminUsers() {
       </div>
 
       {/* Users table */}
-      <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
+      {/* Mobile Card View (md:hidden) */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {filtered.length === 0 ? (
+          <div className="rounded-xl border border-border/50 bg-card p-8 text-center text-muted-foreground shadow-sm">
+            <User className="h-10 w-10 mx-auto opacity-30" />
+            <p className="mt-3 text-sm">No users match your search.</p>
+          </div>
+        ) : (
+          filtered.map((u: any) => (
+            <div key={u.id} className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
+                  {u.full_name ? u.full_name[0] : "U"}
+                </div>
+                <div>
+                  <h4 className="font-semibold text-foreground">{u.full_name || "Unnamed User"}</h4>
+                  <p className="text-[10px] text-muted-foreground font-mono">{u.id.slice(0, 12)}...</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Verification</span>
+                  <Badge variant={kycVariant(u.kyc_status)} className="capitalize text-[10px] gap-1 mt-0.5">
+                    {kycIcon(u.kyc_status)}
+                    {u.kyc_status === "approved" ? "Verified" : 
+                     u.kyc_status === "pending" ? "Reviewing" : 
+                     u.kyc_status === "rejected" ? "Declined" : "Unverified"}
+                  </Badge>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Joined</span>
+                  <span className="text-foreground block mt-0.5">{new Date(u.created_at).toLocaleDateString()}</span>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-muted-foreground block text-[10px] uppercase font-medium">Roles</span>
+                <div className="flex flex-wrap gap-1.5">
+                  {u.roles.length === 0 ? (
+                    <span className="text-xs text-muted-foreground italic">No roles</span>
+                  ) : (
+                    u.roles.map((r: string) => (
+                      <Badge
+                        key={r}
+                        variant="secondary"
+                        className="cursor-pointer hover:bg-destructive hover:text-destructive-foreground transition-colors text-[10px] uppercase font-bold px-2 py-0.5"
+                        onClick={() => {
+                          if (confirm(`Remove ${r} role from this user?`)) removeRole(u.id, r);
+                        }}
+                      >
+                        {r} <span className="ml-1 opacity-50 font-normal">✕</span>
+                      </Badge>
+                    ))
+                  )}
+                </div>
+              </div>
+
+              <div className="pt-2 border-t border-border/50 flex flex-col gap-2">
+                <span className="text-muted-foreground block text-[10px] uppercase font-medium">Assign Role</span>
+                <Select onValueChange={(v) => addRole(u.id, v)}>
+                  <SelectTrigger className="w-full h-11 rounded-lg bg-secondary/20 text-sm font-medium">
+                    <SelectValue placeholder="+ Grant Role" />
+                  </SelectTrigger>
+                  <SelectContent className="rounded-xl">
+                    {["admin", "agent", "user"]
+                      .filter((role) => !u.roles.includes(role))
+                      .map((role) => (
+                        <SelectItem key={role} value={role} className="uppercase text-[10px] font-bold tracking-wider">
+                          {role}
+                        </SelectItem>
+                      ))}
+                    {["admin", "agent", "user"].filter((role) => !u.roles.includes(role)).length === 0 && (
+                      <div className="p-2 text-xs text-center text-muted-foreground">All roles granted</div>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
         <table className="w-full text-sm text-left">
           <thead className="border-b border-border/50 bg-secondary/40">
             <tr>

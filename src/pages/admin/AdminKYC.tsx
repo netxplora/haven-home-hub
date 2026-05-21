@@ -229,7 +229,7 @@ export function AdminKYC() {
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
           <table className="w-full text-sm text-left">
-            <thead className="border-b border-border/50 bg-secondary/40">
+            <thead className="border-b border-border/50 bg-secondary/40 hidden md:table-header-group">
               <tr>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">
                   User
@@ -318,7 +318,7 @@ export function AdminKYC() {
                                 <Button
                                   size="sm"
                                   variant="default"
-                                  className="h-8 gap-1 text-xs"
+                                  className="h-11 md:h-8 gap-1 text-sm md:text-xs px-4 md:px-3"
                                   disabled={processing === profile.id}
                                   onClick={() =>
                                     updateKycStatus(profile.id, "approved")
@@ -329,7 +329,7 @@ export function AdminKYC() {
                                 <Button
                                   size="sm"
                                   variant="destructive"
-                                  className="h-8 gap-1 text-xs"
+                                  className="h-11 md:h-8 gap-1 text-sm md:text-xs px-4 md:px-3"
                                   disabled={processing === profile.id}
                                   onClick={() =>
                                     setExpandedId(
@@ -344,7 +344,7 @@ export function AdminKYC() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-8 w-8 p-0"
+                              className="h-11 w-11 md:h-8 md:w-8 p-0"
                               onClick={() =>
                                 setExpandedId(isExpanded ? null : profile.id)
                               }

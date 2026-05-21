@@ -68,36 +68,29 @@ export function AdminProperties() {
         </Button>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-card shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-accent text-left">
-            <tr>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">System ID / Title</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Type</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Status</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Price</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Features</th>
-              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px]">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {properties.map((p: any) => (
-              <tr key={p.id} className="transition-colors hover:bg-secondary/40 group">
-                <td className="p-4">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-[9px] font-mono font-bold bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">{p.internal_id || "NEW"}</span>
-                    <Link to={`/properties/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors block max-w-[200px] truncate">{p.title}</Link>
+      <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+        {/* ── Mobile Card Layout ── */}
+        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          {properties.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground italic">No properties listed yet.</div>
+          ) : (
+            properties.map((p: any) => (
+              <div key={p.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                      <span className="text-[9px] font-mono font-bold bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">{p.internal_id || "NEW"}</span>
+                      <span className="text-[10px] capitalize text-muted-foreground font-semibold">{p.property_type}</span>
+                    </div>
+                    <Link to={`/properties/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors block text-sm line-clamp-1">{p.title}</Link>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{p.locations?.name ?? "No location"}</p>
                   </div>
-                  <p className="text-[10px] text-muted-foreground">{p.locations?.name ?? "No location"}</p>
-                </td>
-                <td className="p-4 capitalize text-muted-foreground">{p.property_type}</td>
-                <td className="p-4">
                   <Badge variant={
                     p.status === "available" ? "default" : 
                     p.status === "reserved" ? "secondary" : 
                     p.status === "sold" ? "outline" : 
                     p.status === "pending" ? "secondary" : "destructive"
-                  } className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold ${
+                  } className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold shrink-0 ${
                     p.status === 'available' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                     p.status === 'reserved' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                     p.status === 'sold' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
@@ -106,38 +99,108 @@ export function AdminProperties() {
                   }`}>
                     {p.status}
                   </Badge>
-                </td>
-                <td className="p-4 font-semibold text-primary">{Number(p.price).toLocaleString()} {p.currency}</td>
-                <td className="p-4">
-                  <div className="flex gap-3 text-muted-foreground">
-                    <span className="flex items-center gap-1 text-[10px]"><Bed className="h-3 w-3" /> {p.bedrooms || 0}</span>
-                    <span className="flex items-center gap-1 text-[10px]"><Bath className="h-3 w-3" /> {p.bathrooms || 0}</span>
-                    <span className="flex items-center gap-1 text-[10px]"><Car className="h-3 w-3" /> {p.parking_spaces || 0}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                  <div>
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Features</span>
+                    <div className="flex gap-2.5 text-muted-foreground">
+                      <span className="flex items-center gap-1 text-[10px]"><Bed className="h-3 w-3" /> {p.bedrooms || 0}</span>
+                      <span className="flex items-center gap-1 text-[10px]"><Bath className="h-3 w-3" /> {p.bathrooms || 0}</span>
+                      <span className="flex items-center gap-1 text-[10px]"><Car className="h-3 w-3" /> {p.parking_spaces || 0}</span>
+                    </div>
                   </div>
-                </td>
-                <td className="p-4 text-right">
-                  <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }} className="h-8 w-8 rounded-lg">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => remove(p.id)} className="h-8 w-8 rounded-lg hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                  <div className="text-right">
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Price</span>
+                    <span className="font-semibold text-primary">{Number(p.price).toLocaleString()} {p.currency}</span>
                   </div>
-                </td>
-              </tr>
-            ))}
-            {properties.length === 0 && (
+                </div>
+
+                <div className="flex gap-2 pt-3 border-t border-border/30 justify-end">
+                  <Button size="sm" variant="outline" onClick={() => { setEditing(p); setOpen(true); }} className="h-11 px-4 rounded-lg font-bold gap-1">
+                    <Pencil className="h-4 w-4" /> Edit
+                  </Button>
+                  <Button size="sm" variant="outline" onClick={() => remove(p.id)} className="h-11 px-4 rounded-lg font-bold hover:bg-destructive/10 hover:text-destructive text-muted-foreground gap-1 border-destructive/20">
+                    <Trash2 className="h-4 w-4" /> Delete
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* ── Desktop Table Layout ── */}
+        <div className="overflow-x-auto hidden md:block">
+          <table className="w-full text-sm">
+            <thead className="bg-accent text-left">
               <tr>
-                <td colSpan={6} className="p-8 text-center text-muted-foreground italic">No properties listed yet.</td>
+                <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">System ID / Title</th>
+                <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Type</th>
+                <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Status</th>
+                <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Price</th>
+                <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">Features</th>
+                <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px]">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {properties.map((p: any) => (
+                <tr key={p.id} className="transition-colors hover:bg-secondary/40 group">
+                  <td className="p-4">
+                    <div className="flex items-center gap-2 mb-1">
+                      <span className="text-[9px] font-mono font-bold bg-secondary px-1.5 py-0.5 rounded text-muted-foreground">{p.internal_id || "NEW"}</span>
+                      <Link to={`/properties/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors block max-w-[200px] truncate">{p.title}</Link>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground">{p.locations?.name ?? "No location"}</p>
+                  </td>
+                  <td className="p-4 capitalize text-muted-foreground">{p.property_type}</td>
+                  <td className="p-4">
+                    <Badge variant={
+                      p.status === "available" ? "default" : 
+                      p.status === "reserved" ? "secondary" : 
+                      p.status === "sold" ? "outline" : 
+                      p.status === "pending" ? "secondary" : "destructive"
+                    } className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold ${
+                      p.status === 'available' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                      p.status === 'reserved' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                      p.status === 'sold' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                      p.status === 'pending' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
+                      p.status === 'archived' ? 'bg-gray-500/10 text-gray-500 border-gray-500/20' : ''
+                    }`}>
+                      {p.status}
+                    </Badge>
+                  </td>
+                  <td className="p-4 font-semibold text-primary">{Number(p.price).toLocaleString()} {p.currency}</td>
+                  <td className="p-4">
+                    <div className="flex gap-3 text-muted-foreground">
+                      <span className="flex items-center gap-1 text-[10px]"><Bed className="h-3 w-3" /> {p.bedrooms || 0}</span>
+                      <span className="flex items-center gap-1 text-[10px]"><Bath className="h-3 w-3" /> {p.bathrooms || 0}</span>
+                      <span className="flex items-center gap-1 text-[10px]"><Car className="h-3 w-3" /> {p.parking_spaces || 0}</span>
+                    </div>
+                  </td>
+                  <td className="p-4 text-right">
+                    <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }} className="h-8 w-8 rounded-lg">
+                        <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button size="icon" variant="ghost" onClick={() => remove(p.id)} className="h-8 w-8 rounded-lg hover:text-destructive">
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {properties.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground italic">No properties listed yet.</td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="bg-primary pb-6">
             <DialogTitle className="font-serif text-2xl text-white">{editing ? "Edit Property" : "New Property Listing"}</DialogTitle>
           </DialogHeader>

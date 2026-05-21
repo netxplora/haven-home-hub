@@ -113,58 +113,106 @@ export function AdminPayments() {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-secondary/40 border-b border-border/50">
-            <tr>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Method</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Status</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
-              <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border/50">
-            {data.length === 0 ? (
-              <tr><td colSpan={6} className="p-12 text-center text-muted-foreground">No records found.</td></tr>
-            ) : data.map((p: any) => (
-              <tr key={p.id} className="transition-colors hover:bg-secondary/20">
-                <td className="p-4">{new Date(p.created_at).toLocaleDateString()}</td>
-                <td className="p-4">
-                  <p className="font-medium">{p.profiles?.full_name || "Unknown User"}</p>
-                  <p className="text-[10px] text-muted-foreground font-mono">{p.user_id ? p.user_id.slice(0, 8) : "N/A"}</p>
-                </td>
-                <td className="p-4">
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="capitalize text-[10px]">{p.provider}</Badge>
-                    {p.provider === 'crypto' && (
-                      <span className="text-[10px] font-bold text-primary">{p.crypto_currency}</span>
-                    )}
+      <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
+        {/* ── Mobile Card Layout ── */}
+        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          {data.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground">No records found.</div>
+          ) : (
+            data.map((p: any) => (
+              <div key={p.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">{p.profiles?.full_name || "Unknown User"}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{p.user_id ? p.user_id.slice(0, 8) : "N/A"}</p>
                   </div>
-                </td>
-                <td className="p-4">
-                  <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize" 
+                  <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize animate-none" 
                     variant={p.status === "success" || p.status === "confirmed" ? "default" : p.status === "failed" ? "destructive" : "secondary"}>
                     {p.status === "success" ? "confirmed" : (p.status ? p.status.replace("_", " ") : "N/A")}
                   </Badge>
-                </td>
-                <td className="p-4 text-right font-semibold">
-                  {formatMoney(Number(p.amount), p.currency)}
-                </td>
-                <td className="p-4 text-right">
-                  <Button size="sm" variant="ghost" className="h-8 rounded-lg" onClick={() => setSelectedPayment(p)}>View Details</Button>
-                </td>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                  <div>
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Method</span>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="capitalize text-[10px] px-1 py-0">{p.provider}</Badge>
+                      {p.provider === 'crypto' && (
+                        <span className="text-[10px] font-bold text-primary">{p.crypto_currency}</span>
+                      )}
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Amount</span>
+                    <span className="font-semibold text-foreground">{formatMoney(Number(p.amount), p.currency)}</span>
+                  </div>
+                </div>
+
+                <div className="flex gap-2 pt-3 border-t border-border/30 items-center justify-between">
+                  <div className="text-xs text-muted-foreground">
+                    {new Date(p.created_at).toLocaleDateString()}
+                  </div>
+                  <Button size="sm" variant="outline" className="h-11 px-4 rounded-lg font-bold" onClick={() => setSelectedPayment(p)}>View Details</Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
+        {/* ── Desktop Table Layout ── */}
+        <div className="overflow-x-auto hidden md:block">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-secondary/40 border-b border-border/50">
+              <tr>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Method</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Status</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Action</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-border/50">
+              {data.length === 0 ? (
+                <tr><td colSpan={6} className="p-12 text-center text-muted-foreground">No records found.</td></tr>
+              ) : data.map((p: any) => (
+                <tr key={p.id} className="transition-colors hover:bg-secondary/20">
+                  <td className="p-4">{new Date(p.created_at).toLocaleDateString()}</td>
+                  <td className="p-4">
+                    <p className="font-medium">{p.profiles?.full_name || "Unknown User"}</p>
+                    <p className="text-[10px] text-muted-foreground font-mono">{p.user_id ? p.user_id.slice(0, 8) : "N/A"}</p>
+                  </td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-2">
+                      <Badge variant="outline" className="capitalize text-[10px]">{p.provider}</Badge>
+                      {p.provider === 'crypto' && (
+                        <span className="text-[10px] font-bold text-primary">{p.crypto_currency}</span>
+                      )}
+                    </div>
+                  </td>
+                  <td className="p-4">
+                    <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize" 
+                      variant={p.status === "success" || p.status === "confirmed" ? "default" : p.status === "failed" ? "destructive" : "secondary"}>
+                      {p.status === "success" ? "confirmed" : (p.status ? p.status.replace("_", " ") : "N/A")}
+                    </Badge>
+                  </td>
+                  <td className="p-4 text-right font-semibold">
+                    {formatMoney(Number(p.amount), p.currency)}
+                  </td>
+                  <td className="p-4 text-right">
+                    <Button size="sm" variant="ghost" className="h-8 rounded-lg" onClick={() => setSelectedPayment(p)}>View Details</Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Review dialog — rendered ONCE outside the table loop */}
       <Dialog open={!!selectedPayment} onOpenChange={(v) => !v && setSelectedPayment(null)}>
         {selectedPayment && (
-          <DialogContent className="max-w-md">
+          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
             <DialogHeader className="bg-secondary/40 pb-6 border-b border-border/50">
               <DialogTitle className="font-serif text-2xl">Payment Review</DialogTitle>
             </DialogHeader>

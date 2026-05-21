@@ -84,79 +84,147 @@ export function TransactionsPanel({ userId }: { userId: string }) {
            <p className="mt-2 text-sm text-muted-foreground max-w-xs mx-auto">Try adjusting your search or filters to find what you're looking for.</p>
         </div>
       ) : (
-        <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr className="bg-accent/50 border-b border-border/40">
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Type & Description</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Method</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Amount</th>
-                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Action</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-border/40">
-                {filteredItems.map((t: any) => {
-                  const isIncome = ["deposit", "referral_bonus", "investment_return"].includes(t.payment_type);
-                  return (
-                    <tr key={t.id} className="transition-colors hover:bg-secondary/10 group">
-                      <td className="px-6 py-5 text-muted-foreground font-medium">
-                        {new Date(t.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                      </td>
-                      <td className="px-6 py-5">
-                        <div className="flex items-center gap-3">
-                           <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isIncome ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>
-                              {isIncome ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
-                           </div>
-                           <div>
-                              <p className="font-semibold text-foreground capitalize">{t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}</p>
-                              <p className="text-[10px] font-bold text-primary truncate max-w-[150px]">
-                                {t.investment_properties?.title || t.properties?.title || (t.payment_type === 'referral_bonus' ? "Network Reward" : t.payment_type === 'investment_return' ? "Dividend Distribution" : "Account Deposit")}
-                              </p>
-                           </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-5">
-                         <p className="font-medium text-muted-foreground capitalize">{t.payment_method?.replace("_", " ") || "System"}</p>
-                         <p className="text-[10px] text-muted-foreground/50 font-mono">Ref: {t.reference}</p>
-                      </td>
-                      <td className="px-6 py-5">
-                        <Badge 
-                          className={cn(
-                            "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
-                            (t.status === "success" || t.status === "confirmed") ? "bg-primary text-primary-foreground border-none shadow-sm" : 
-                            t.status === "failed" ? "bg-destructive/10 text-destructive border-destructive/20" : 
-                            "bg-secondary/10 text-secondary border-secondary/20"
-                          )}
-                        >
-                          {t.status}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-5 text-right font-bold text-foreground">
-                        <span className={isIncome ? "text-green-600 dark:text-green-400" : ""}>
-                          {isIncome ? "+" : "-"}{formatMoney(Number(t.amount), t.currency)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-5 text-right">
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
-                          onClick={() => setSelectedReceiptPaymentId(t.id)}
-                          title="View Receipt"
-                        >
-                          <FileText className="h-4 w-4" />
-                        </Button>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        <>
+          {/* ── Mobile Card Layout ── */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {filteredItems.map((t: any) => {
+              const isIncome = ["deposit", "referral_bonus", "investment_return"].includes(t.payment_type);
+              return (
+                <div key={t.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isIncome ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>
+                        {isIncome ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground capitalize text-sm">{t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}</p>
+                        <p className="text-xs font-medium text-primary truncate max-w-[180px]">
+                          {t.investment_properties?.title || t.properties?.title || (t.payment_type === 'referral_bonus' ? "Network Reward" : t.payment_type === 'investment_return' ? "Dividend Distribution" : "Account Deposit")}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge 
+                      className={cn(
+                        "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border shrink-0",
+                        (t.status === "success" || t.status === "confirmed") ? "bg-primary text-primary-foreground border-none shadow-sm" : 
+                        t.status === "failed" ? "bg-destructive/10 text-destructive border-destructive/20" : 
+                        "bg-secondary/10 text-secondary border-secondary/20"
+                      )}
+                    >
+                      {t.status}
+                    </Badge>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                    <div>
+                      <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Date</span>
+                      <span className="font-semibold text-foreground">{new Date(t.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                    </div>
+                    <div>
+                      <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Method</span>
+                      <span className="font-semibold text-foreground capitalize">{t.payment_method?.replace("_", " ") || "System"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between pt-3 border-t border-border/30">
+                    <div>
+                      <span className="text-[10px] text-muted-foreground/50 font-mono">Ref: {t.reference}</span>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={cn("text-base font-bold", isIncome ? "text-green-600 dark:text-green-400" : "text-foreground")}>
+                        {isIncome ? "+" : "-"}{formatMoney(Number(t.amount), t.currency)}
+                      </span>
+                      <Button 
+                        variant="ghost" 
+                        size="icon" 
+                        className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"
+                        onClick={() => setSelectedReceiptPaymentId(t.id)}
+                        title="View Receipt"
+                      >
+                        <FileText className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
-        </div>
+
+          {/* ── Desktop Table Layout ── */}
+          <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft hidden md:block">
+            <div className="overflow-x-auto">
+              <table className="w-full text-sm text-left border-collapse">
+                <thead>
+                  <tr className="bg-accent/50 border-b border-border/40">
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Type & Description</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Method</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Amount</th>
+                    <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border/40">
+                  {filteredItems.map((t: any) => {
+                    const isIncome = ["deposit", "referral_bonus", "investment_return"].includes(t.payment_type);
+                    return (
+                      <tr key={t.id} className="transition-colors hover:bg-secondary/10 group">
+                        <td className="px-6 py-5 text-muted-foreground font-medium">
+                          {new Date(t.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                        </td>
+                        <td className="px-6 py-5">
+                          <div className="flex items-center gap-3">
+                             <div className={`flex h-8 w-8 items-center justify-center rounded-lg ${isIncome ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>
+                                {isIncome ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
+                             </div>
+                             <div>
+                                <p className="font-semibold text-foreground capitalize">{t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}</p>
+                                <p className="text-[10px] font-bold text-primary truncate max-w-[150px]">
+                                  {t.investment_properties?.title || t.properties?.title || (t.payment_type === 'referral_bonus' ? "Network Reward" : t.payment_type === 'investment_return' ? "Dividend Distribution" : "Account Deposit")}
+                                </p>
+                             </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-5">
+                           <p className="font-medium text-muted-foreground capitalize">{t.payment_method?.replace("_", " ") || "System"}</p>
+                           <p className="text-[10px] text-muted-foreground/50 font-mono">Ref: {t.reference}</p>
+                        </td>
+                        <td className="px-6 py-5">
+                          <Badge 
+                            className={cn(
+                              "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
+                              (t.status === "success" || t.status === "confirmed") ? "bg-primary text-primary-foreground border-none shadow-sm" : 
+                              t.status === "failed" ? "bg-destructive/10 text-destructive border-destructive/20" : 
+                              "bg-secondary/10 text-secondary border-secondary/20"
+                            )}
+                          >
+                            {t.status}
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-5 text-right font-bold text-foreground">
+                          <span className={isIncome ? "text-green-600 dark:text-green-400" : ""}>
+                            {isIncome ? "+" : "-"}{formatMoney(Number(t.amount), t.currency)}
+                          </span>
+                        </td>
+                        <td className="px-6 py-5 text-right">
+                          <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+                            onClick={() => setSelectedReceiptPaymentId(t.id)}
+                            title="View Receipt"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </>
       )}
       
       <ReceiptDialog 

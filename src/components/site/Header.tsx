@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { Menu, User as UserIcon, LogOut, LayoutDashboard, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -21,6 +22,7 @@ export function Header() {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const nav = [
     { to: "/properties?type=buy", label: t('nav.buy', 'Buy') },
@@ -109,7 +111,7 @@ export function Header() {
         </div>
 
         {/* Mobile Hamburger */}
-        <Sheet>
+        <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="md:hidden h-10 w-10 rounded-lg" aria-label="Menu">
               <Menu className="h-5 w-5" />
@@ -124,6 +126,7 @@ export function Header() {
                     <Link
                       key={item.to}
                       to={item.to}
+                      onClick={() => setMobileOpen(false)}
                       className="text-base font-medium py-3 px-3 rounded-lg hover:bg-accent transition-colors text-foreground"
                     >
                       {item.label}
@@ -142,15 +145,15 @@ export function Header() {
                 </div>
                 {user ? (
                   <>
-                    <Link to="/dashboard" className="block py-2 text-sm font-medium text-foreground">My dashboard</Link>
-                    {isAgent && <Link to="/agent" className="block py-2 text-sm font-medium text-foreground">Agent dashboard</Link>}
-                    {isAdmin && <Link to="/admin" className="block py-2 text-sm font-medium text-foreground">Admin</Link>}
-                    <button onClick={signOut} className="block w-full text-left text-sm font-medium py-2 text-destructive">Sign out</button>
+                    <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">My dashboard</Link>
+                    {isAgent && <Link to="/agent" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">Agent dashboard</Link>}
+                    {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">Admin</Link>}
+                    <button onClick={() => { setMobileOpen(false); signOut(); }} className="block w-full text-left text-sm font-medium py-2 text-destructive">Sign out</button>
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full rounded-lg" onClick={() => navigate("/auth")}>Sign in</Button>
-                    <Button className="w-full rounded-lg bg-primary text-primary-foreground" onClick={() => navigate("/auth?tab=signup")}>Get started</Button>
+                    <Button variant="outline" className="w-full rounded-lg" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>Sign in</Button>
+                    <Button className="w-full rounded-lg bg-primary text-primary-foreground" onClick={() => { setMobileOpen(false); navigate("/auth?tab=signup"); }}>Get started</Button>
                   </>
                 )}
               </div>

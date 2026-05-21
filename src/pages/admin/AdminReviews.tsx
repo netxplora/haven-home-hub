@@ -59,7 +59,79 @@ export function AdminReviews() {
         </div>
       </div>
 
-      <div className="bg-card border border-border rounded-xl overflow-hidden shadow-sm">
+      {/* Mobile Card View (md:hidden) */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {reviews.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
+            No reviews found.
+          </div>
+        ) : (
+          reviews.map((r: any) => (
+            <div key={r.id} className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-semibold text-foreground">{r.profiles?.full_name || "Unknown"}</h4>
+                  <p className="text-xs text-muted-foreground">{r.profiles?.email}</p>
+                </div>
+                <div>
+                  {r.status === "pending" && <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20"><Clock className="w-3 h-3 mr-1"/> Pending</Badge>}
+                  {r.status === "published" && <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20"><CheckCircle2 className="w-3 h-3 mr-1"/> Published</Badge>}
+                  {r.status === "rejected" && <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1"/> Rejected</Badge>}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Target</span>
+                  {r.agent_id && (
+                    <div className="mt-0.5">
+                      <span className="text-[10px] text-muted-foreground uppercase">Agent:</span>
+                      <p className="font-medium text-foreground">{r.agents?.full_name}</p>
+                    </div>
+                  )}
+                  {r.property_id && (
+                    <div className="mt-0.5">
+                      <span className="text-[10px] text-muted-foreground uppercase">Property:</span>
+                      <p className="font-medium text-primary">{r.properties?.title}</p>
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Rating</span>
+                  <div className="flex items-center text-amber-400 mt-1">
+                    {Array.from({ length: 5 }).map((_, i) => (
+                      <Star key={i} className={`h-3.5 w-3.5 ${i < r.rating ? "fill-current" : "fill-transparent text-muted-foreground/30"}`} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-1">
+                <span className="text-muted-foreground block text-[10px] uppercase font-medium">Content</span>
+                <p className="text-sm text-foreground/80 bg-muted/30 p-2.5 rounded-lg border border-border/50" title={r.comment}>{r.comment}</p>
+              </div>
+
+              <div className="pt-2 border-t border-border/50 flex gap-2">
+                {r.status === "pending" && (
+                  <>
+                    <Button size="sm" variant="outline" className="flex-1 h-11 text-sm font-medium" onClick={() => updateReview.mutate({ id: r.id, status: "published" })}>Approve</Button>
+                    <Button size="sm" variant="destructive" className="flex-1 h-11 text-sm font-medium" onClick={() => updateReview.mutate({ id: r.id, status: "rejected" })}>Reject</Button>
+                  </>
+                )}
+                {r.status === "published" && (
+                  <Button size="sm" variant="outline" className="w-full h-11 text-sm font-medium" onClick={() => updateReview.mutate({ id: r.id, status: "rejected" })}>Revoke</Button>
+                )}
+                {r.status === "rejected" && (
+                  <Button size="sm" variant="outline" className="w-full h-11 text-sm font-medium" onClick={() => updateReview.mutate({ id: r.id, status: "published" })}>Approve</Button>
+                )}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
             <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-semibold">

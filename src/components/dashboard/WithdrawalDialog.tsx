@@ -76,16 +76,16 @@ export function WithdrawalDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader className="p-10 bg-accent/40 border-b border-border/40">
-          <DialogTitle className="font-serif text-3xl font-bold text-foreground">Withdraw Funds</DialogTitle>
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+        <DialogHeader className="p-6 sm:p-10 bg-accent/40 border-b border-border/40">
+          <DialogTitle className="font-serif text-2xl sm:text-3xl font-bold text-foreground">Withdraw Funds</DialogTitle>
           <div className="flex items-center gap-2 mt-3">
              <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Available for Payout</p>
              <Badge className="bg-primary text-primary-foreground font-bold rounded-lg border-none">{formatMoney(available)}</Badge>
           </div>
         </DialogHeader>
         
-        <DialogBody className="space-y-6 py-6">
+        <DialogBody className="space-y-6 py-6 px-6 sm:px-10">
           <div className="space-y-2">
             <Label htmlFor="wamt" className="text-xs font-bold uppercase tracking-widest text-muted-foreground ml-1">Amount (USD)</Label>
             <Input

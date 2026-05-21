@@ -55,6 +55,7 @@ import { PropertyGallery } from "@/components/site/PropertyGallery";
 import { Separator } from "@/components/ui/separator";
 import { ReserveDialog } from "@/components/invest/ReserveDialog";
 import { MortgageCalculator } from "@/components/site/MortgageCalculator";
+import { PaymentMethodPicker } from "@/components/payments/PaymentMethodPicker";
 import { YieldCalculator } from "@/components/site/YieldCalculator";
 import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
 import { VirtualTourButton, VirtualTourEmbed } from "@/components/site/VirtualTour";
@@ -630,13 +631,18 @@ export default function PropertyDetail() {
             )}
             
             {userReservation?.status === 'confirmed' ? (
-              <div className="space-y-4 mt-5">
+              <div className="space-y-5 mt-5">
                 <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
                   <span className="text-xs font-medium text-primary">Remaining Balance</span>
                   <span className="text-lg font-semibold text-primary font-serif">
                     {formatPrice(Number(property.price) - 500, property.currency, property.property_type)}
                   </span>
                 </div>
+                
+                <div className="rounded-xl border border-border/50 bg-secondary/5 p-4 space-y-3">
+                  <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
+                </div>
+
                 <Button 
                   className="w-full h-11 bg-primary text-primary-foreground font-medium rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
                   onClick={() => setPaymentModalOpen(true)}
@@ -726,6 +732,7 @@ export default function PropertyDetail() {
           currency={property.currency}
           paymentType="property"
           targetId={property.id}
+          bookingId={userReservation.id}
         />
       )}
     </SiteLayout>

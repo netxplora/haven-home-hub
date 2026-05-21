@@ -96,7 +96,37 @@ export function WithdrawalsPanel({ userId }: { userId: string }) {
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
-            <div className="overflow-x-auto">
+            {/* ── Mobile Card Layout ── */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              {items.map((w: any) => (
+                <div key={w.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div>
+                      <p className="font-semibold text-foreground capitalize text-sm">
+                        {w.method === "crypto" ? "Digital Currency" : (w.method ? w.method.replace("_"," ") : "N/A")}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {new Date(w.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                      </p>
+                    </div>
+                    <Badge className={`capitalize rounded-md flex w-fit items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold shrink-0 ${getStatusStyle(w.status)}`}>
+                      {getStatusIcon(w.status)}
+                      {w.status}
+                    </Badge>
+                  </div>
+
+                  {w.rejection_reason && <p className="text-[10px] text-destructive/80 italic font-medium">Reason: {w.rejection_reason}</p>}
+
+                  <div className="flex items-center justify-between pt-3 border-t border-border/30">
+                    <span className="font-mono text-[10px] text-muted-foreground/60 bg-accent px-2 py-1 rounded-md">{w.transaction_reference ?? "Pending..."}</span>
+                    <span className="text-base font-bold text-foreground">{formatMoney(Number(w.amount), w.currency)}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* ── Desktop Table Layout ── */}
+            <div className="overflow-x-auto hidden md:block">
               <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="bg-accent/50 border-b border-border/40">

@@ -43,7 +43,59 @@ export function AdminInvest() {
           <Plus className="mr-2 h-4 w-4" /> New investment property
         </Button>
       </div>
-      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+      {/* Mobile Card View (md:hidden) */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {data.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
+            No investment properties found.
+          </div>
+        ) : (
+          data.map((p: any) => (
+            <div key={p.id} className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <Link to={`/invest/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors text-base block">{p.title}</Link>
+                  <p className="text-xs text-muted-foreground mt-0.5">{p.location}</p>
+                </div>
+                <Badge variant={p.status === "open" ? "default" : "secondary"} className="rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold">
+                  {p.status}
+                </Badge>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Units Sold</span>
+                  <span className="font-medium text-foreground block mt-0.5">{p.units_sold} <span className="text-[10px] text-muted-foreground/50">/</span> {p.total_units}</span>
+                </div>
+                <div>
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Min. Investment</span>
+                  <span className="font-semibold text-primary block mt-0.5">{formatMoney(Number(p.min_investment), p.currency)}</span>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1.5">
+                {p.installment_available && (
+                  <Badge variant="outline" className="rounded-md text-[9px] tracking-wider px-2 py-0.5 font-bold border-primary/30 text-primary">
+                    <Layers className="h-3 w-3 mr-1" /> Installments
+                  </Badge>
+                )}
+              </div>
+
+              <div className="pt-2 border-t border-border/50 flex gap-2">
+                <Button variant="outline" size="sm" className="flex-1 h-11 text-sm font-medium flex items-center justify-center gap-2" onClick={() => { setEditing(p); setOpen(true); }}>
+                  <Pencil className="h-4 w-4" /> Edit
+                </Button>
+                <Button variant="destructive" size="sm" className="flex-1 h-11 text-sm font-medium flex items-center justify-center gap-2" onClick={() => remove(p.id)}>
+                  <Trash2 className="h-4 w-4" /> Delete
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-accent text-left">
             <tr>
@@ -98,7 +150,7 @@ export function AdminInvest() {
         </table>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader className="bg-primary pb-6">
             <DialogTitle className="font-serif text-2xl text-white">{editing ? "Edit investment property" : "New investment property"}</DialogTitle>
           </DialogHeader>

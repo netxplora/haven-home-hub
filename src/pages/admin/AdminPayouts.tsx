@@ -96,7 +96,44 @@ export function AdminPayouts() {
 
   return (
     <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
-      <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+      {/* Mobile Card View (md:hidden) */}
+      <div className="grid grid-cols-1 gap-4 md:hidden">
+        {payouts.length === 0 ? (
+          <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
+            No payouts recorded yet.
+          </div>
+        ) : (
+          payouts.map((p: any) => (
+            <div key={p.id} className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
+              <div className="flex justify-between items-start">
+                <div>
+                  <h4 className="font-semibold text-foreground">{p.investment_properties?.title}</h4>
+                  <p className="text-[10px] text-muted-foreground mt-0.5">{new Date(p.distribution_date).toLocaleDateString()}</p>
+                </div>
+                <div className="text-right">
+                  <p className="font-bold text-primary">{formatMoney(Number(p.amount), p.investment_properties?.currency ?? "USD")}</p>
+                </div>
+              </div>
+
+              {p.notes && (
+                <div className="space-y-1 bg-muted/30 p-2.5 rounded-lg border border-border/50">
+                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Notes</span>
+                  <p className="text-xs text-foreground/80 leading-relaxed">{p.notes}</p>
+                </div>
+              )}
+
+              <div className="pt-2 border-t border-border/50 flex gap-2">
+                <Button size="sm" variant="destructive" className="w-full h-11 text-sm font-medium flex items-center justify-center gap-2" onClick={() => remove(p.id)}>
+                  <Trash2 className="h-4 w-4" /> Delete Payout
+                </Button>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop Table View (hidden md:block) */}
+      <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
         <table className="w-full text-sm">
           <thead className="bg-accent text-left">
             <tr>

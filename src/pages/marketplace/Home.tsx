@@ -136,12 +136,12 @@ export default function Home() {
           {heroImages.map((img, index) => (
             <div
               key={img}
-              className={`absolute inset-0 transition-opacity duration-[1500ms] ease-in-out ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
+              className={`absolute inset-0 transition-opacity [transition-duration:1500ms] ease-in-out ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
             >
               <img
                 src={img}
                 alt="Real Estate"
-                className={`h-full w-full object-cover transition-transform duration-[7000ms] ease-linear ${index === currentSlide ? "scale-[1.04]" : "scale-100"}`}
+                className={`h-full w-full object-cover transition-transform [transition-duration:7000ms] ease-linear ${index === currentSlide ? "scale-[1.04]" : "scale-100"}`}
               />
             </div>
           ))}

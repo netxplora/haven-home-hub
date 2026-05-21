@@ -65,7 +65,50 @@ export function AdminCMS() {
               <Plus className="mr-2 h-4 w-4" /> New Post
             </Button>
           </div>
-          <div className="overflow-x-auto rounded-xl border border-border">
+          {/* ── Mobile Card Layout ── */}
+          <div className="grid grid-cols-1 gap-4 md:hidden">
+            {posts.map((p: any) => (
+              <div key={p.id} className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+                <div className="flex items-start justify-between gap-3">
+                  <div>
+                    <p className="font-semibold text-foreground text-sm">{p.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      Category: {p.blog_categories?.name ?? "Uncategorized"}
+                    </p>
+                  </div>
+                  <Badge variant={p.status === "published" ? "default" : "secondary"} className="shrink-0">
+                    {p.status}
+                  </Badge>
+                </div>
+
+                <div className="flex items-center justify-between pt-3 border-t border-border/30 text-xs">
+                  <div>
+                    <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Published</span>
+                    <span className="font-semibold text-foreground">
+                      {p.published_at ? new Date(p.published_at).toLocaleDateString() : "—"}
+                    </span>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl hover:bg-accent" onClick={() => { setEditing(p); setOpen(true); }} aria-label="Edit Post">
+                      <Pencil className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl hover:bg-destructive/10" onClick={() => remove(p.id)} aria-label="Delete Post">
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {posts.length === 0 && (
+              <div className="rounded-xl border border-dashed border-border/60 p-12 text-center bg-secondary/5">
+                <FileText className="h-8 w-8 mx-auto mb-3 opacity-20" />
+                <p className="text-sm text-muted-foreground">No blog posts found. Create your first post to get started.</p>
+              </div>
+            )}
+          </div>
+
+          {/* ── Desktop Table Layout ── */}
+          <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm hidden md:block">
             <table className="w-full text-sm">
               <thead className="bg-accent text-left">
                 <tr>
@@ -121,7 +164,7 @@ export function AdminCMS() {
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit Post" : "New Post"}</DialogTitle>
           </DialogHeader>
@@ -184,7 +227,35 @@ function CategoriesTab({ categories, qc }: any) {
       </div>
       
       <div className="md:col-span-2">
-        <div className="overflow-x-auto rounded-xl border border-border">
+        {/* ── Mobile Card Layout ── */}
+        <div className="grid grid-cols-1 gap-4 md:hidden">
+          {categories.map((c: any) => (
+            <div key={c.id} className="rounded-xl border border-border bg-card p-5 shadow-sm space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-foreground text-sm">{c.name}</p>
+                  <p className="text-xs text-muted-foreground font-mono mt-0.5">slug: {c.slug}</p>
+                </div>
+                <Button size="icon" variant="ghost" className="h-10 w-10 rounded-xl hover:bg-destructive/10 shrink-0" onClick={() => removeCat(c.id)} aria-label="Delete Category">
+                  <Trash2 className="h-4 w-4 text-destructive" />
+                </Button>
+              </div>
+              {c.description && (
+                <p className="text-xs text-muted-foreground pt-2 border-t border-border/30 italic">
+                  {c.description}
+                </p>
+              )}
+            </div>
+          ))}
+          {categories.length === 0 && (
+            <div className="rounded-xl border border-dashed border-border/60 p-12 text-center bg-secondary/5">
+              <p className="text-sm text-muted-foreground">No categories found.</p>
+            </div>
+          )}
+        </div>
+
+        {/* ── Desktop Table Layout ── */}
+        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm hidden md:block">
           <table className="w-full text-sm">
             <thead className="bg-accent text-left">
               <tr>
