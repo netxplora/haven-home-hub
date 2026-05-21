@@ -92,6 +92,7 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
   const lastDragXRef = useRef(0);
   const lastDragTimeRef = useRef(0);
   const innerGalleryActiveRef = useRef(false);
+  const hasMovedRef = useRef(false);
   const [, forceRender] = useState(0);
 
   // We duplicate the cards for seamless infinite loop
@@ -155,45 +156,61 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
     }
     if (innerGalleryActiveRef.current) return;
     
-    isDraggingRef.current = true;
     isPausedRef.current = true;
     dragStartXRef.current = e.clientX;
     dragStartScrollRef.current = scrollXRef.current;
     lastDragXRef.current = e.clientX;
     lastDragTimeRef.current = Date.now();
     velocityRef.current = 0;
+    hasMovedRef.current = false;
     
     (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDraggingRef.current) return;
+    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
     
     const deltaX = dragStartXRef.current - e.clientX;
-    scrollXRef.current = dragStartScrollRef.current + deltaX;
-    wrapPosition();
-    applyTransform();
-
-    // Track velocity for momentum
-    const now = Date.now();
-    const dt = now - lastDragTimeRef.current;
-    if (dt > 0) {
-      velocityRef.current = (lastDragXRef.current - e.clientX) / dt;
+    
+    // Distinguish a true drag from a simple tap
+    if (!hasMovedRef.current && Math.abs(deltaX) > 8) {
+      hasMovedRef.current = true;
+      isDraggingRef.current = true;
     }
-    lastDragXRef.current = e.clientX;
-    lastDragTimeRef.current = now;
+    
+    if (hasMovedRef.current) {
+      scrollXRef.current = dragStartScrollRef.current + deltaX;
+      wrapPosition();
+      applyTransform();
+
+      // Track velocity for momentum
+      const now = Date.now();
+      const dt = now - lastDragTimeRef.current;
+      if (dt > 0) {
+        velocityRef.current = (lastDragXRef.current - e.clientX) / dt;
+      }
+      lastDragXRef.current = e.clientX;
+      lastDragTimeRef.current = now;
+    }
   };
 
-  const handlePointerUp = () => {
-    if (!isDraggingRef.current) return;
-    isDraggingRef.current = false;
-
-    // Apply momentum
-    const momentum = velocityRef.current * 150;
-    if (Math.abs(momentum) > 5) {
-      const target = scrollXRef.current + momentum;
-      animateToPosition(target, 500);
+  const handlePointerUp = (e: React.PointerEvent) => {
+    e.currentTarget.releasePointerCapture(e.pointerId);
+    
+    if (hasMovedRef.current) {
+      // Apply momentum
+      const momentum = velocityRef.current * 150;
+      if (Math.abs(momentum) > 5) {
+        const target = scrollXRef.current + momentum;
+        animateToPosition(target, 500);
+      }
     }
+
+    // Micro-delay resetting isDragging to false so click events can see it and prevent navigation
+    setTimeout(() => {
+      isDraggingRef.current = false;
+      hasMovedRef.current = false;
+    }, 50);
 
     // Resume auto-scroll after a brief pause
     setTimeout(() => {
@@ -407,7 +424,7 @@ function SliderCard({ property, isDragging, onGallerySwipe }: SliderCardProps) {
         </div>
 
         {/* Top badges */}
-        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 pointer-events-none">
+        <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 max-w-[calc(100%-115px)] pointer-events-none">
           <Badge className="bg-white/95 text-foreground hover:bg-white border-none shadow-sm text-xs font-medium px-2.5 py-1">
             {propertyTypeLabel(property.property_type)}
           </Badge>
