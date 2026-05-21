@@ -19,6 +19,7 @@ import { SEO } from "@/components/site/SEO";
 import { OrganizationJsonLd } from "@/components/site/JsonLd";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/hooks/use-toast";
+import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 
 const heroImages = [
   heroImg,
@@ -75,20 +76,6 @@ export default function Home() {
       return data as PropertyCardData[];
     },
     refetchInterval: 30000,
-  });
-
-  const { data: recentlyAdded = [], isLoading: recentlyAddedLoading } = useQuery({
-    queryKey: ["recently-added-properties"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("id, slug, title, price, currency, property_type, property_category, status, bedrooms, bathrooms, size_sqm, cover_image_url, address, city, state, country, featured, created_at, locations(name)")
-        .in("status", ["available"])
-        .order("created_at", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return data as PropertyCardData[];
-    },
   });
 
   const { data: recentlySold = [], isLoading: recentlySoldLoading } = useQuery({
@@ -309,7 +296,7 @@ export default function Home() {
       </section>
 
       {/* 5. RECENTLY ADDED PROPERTIES */}
-      <section className="bg-accent/30 border-y border-border/50 section-gap">
+      <section className="bg-accent/30 border-y border-border/50 section-gap overflow-hidden">
         <div className="container-wide">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
             <div>
@@ -320,20 +307,10 @@ export default function Home() {
               <Link to="/properties?sort=newest">View all new listings <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
+        </div>
 
-          {!recentlyAddedLoading && recentlyAdded.length > 0 ? (
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-               {recentlyAdded.map((p) => (
-                 <PropertyCard key={p.id} property={p} />
-               ))}
-             </div>
-          ) : recentlyAddedLoading ? (
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-               {Array.from({ length: 4 }).map((_, i) => (
-                 <div key={i} className="rounded-xl bg-card border border-border/50 h-72 animate-pulse" />
-               ))}
-             </div>
-          ) : null}
+        <div className="w-full">
+          <FreshInventorySlider />
         </div>
       </section>
 
