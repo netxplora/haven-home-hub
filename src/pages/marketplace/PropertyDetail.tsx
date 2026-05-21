@@ -1,16 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { Link, useParams } from "react-router-dom";
-import { MapContainer, TileLayer, Marker, useMap } from "react-leaflet";
-import "leaflet/dist/leaflet.css";
-import L from "leaflet";
-
-// Fix leaflet default marker icon issue in React
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
-  iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-  shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-});
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Bed, 
@@ -62,6 +51,8 @@ import { YieldCalculator } from "@/components/site/YieldCalculator";
 import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
 import { VirtualTourButton, VirtualTourEmbed } from "@/components/site/VirtualTour";
 import { MessageAgentButton } from "@/components/site/Messaging";
+
+const InteractivePropertyMap = lazy(() => import("@/components/site/InteractivePropertyMap").then(mod => ({ default: mod.InteractivePropertyMap })));
 
 export default function PropertyDetail() {
   const { slug } = useParams();
@@ -425,40 +416,36 @@ export default function PropertyDetail() {
             <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
               <div className="space-y-6">
                 {/* Map Container */}
-                <div className="aspect-[21/9] lg:aspect-auto lg:h-[480px] w-full rounded-xl overflow-hidden border border-gray-200 relative z-0">
-                  {property.latitude && property.longitude ? (
-                    <MapContainer 
-                      center={[property.latitude, property.longitude]} 
-                      zoom={15} 
-                      scrollWheelZoom={false}
-                      className="h-full w-full z-0"
-                    >
-                      <TileLayer
-                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                      />
-                      <Marker position={[property.latitude, property.longitude]} />
-                    </MapContainer>
-                  ) : (
-                    <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50">
+                <div className="h-[320px] md:h-[480px] w-full rounded-xl overflow-hidden border border-gray-200 relative z-0 flex flex-col">
+                  <Suspense fallback={
+                    <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 animate-pulse">
                       <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm border border-gray-100">
                         <MapPin className="h-8 w-8 text-gray-400" />
                       </div>
-                      <p className="text-gray-500 font-medium">Location coordinates pending</p>
+                      <p className="text-gray-500 font-medium font-sans">Loading interactive map...</p>
                     </div>
-                  )}
+                  }>
+                    <InteractivePropertyMap 
+                      latitude={property.latitude}
+                      longitude={property.longitude}
+                      address={property.address}
+                      title={property.title}
+                      nearbyPois={nearbyPois}
+                    />
+                  </Suspense>
                   
-                  <div className="absolute bottom-6 left-6 right-6 p-4 rounded-lg bg-white border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20">
+                  {/* Overlay Banner */}
+                  <div className="pointer-events-none absolute bottom-6 left-6 right-6 p-4 rounded-lg bg-white/95 backdrop-blur border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20">
                     <div className="flex items-start gap-4">
                       <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
                         <MapPin className="h-5 w-5 text-gray-600" />
                       </div>
                       <div>
                         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Registered Address</p>
-                        <p className="text-base sm:text-lg font-bold leading-tight text-gray-900">{property.address}</p>
+                        <p className="text-base sm:text-lg font-bold leading-tight text-gray-900 line-clamp-1">{property.address || "Location on request"}</p>
                       </div>
                     </div>
-                    <Button variant="outline" className="rounded-lg font-bold border-gray-300 text-gray-700 hover:bg-gray-50" asChild>
+                    <Button variant="outline" className="pointer-events-auto rounded-lg font-bold border-gray-300 text-gray-700 hover:bg-gray-50 shrink-0" asChild>
                       <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.title)}`} target="_blank" rel="noreferrer">
                         Get Directions <ExternalLink className="ml-2 h-4 w-4" />
                       </a>
