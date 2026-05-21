@@ -34,7 +34,7 @@ export interface PropertyCardData {
 
 export const PropertyCard = memo(function PropertyCard({ property }: { property: PropertyCardData }) {
   const img = resolveImage(property.cover_image_url);
-  const { addToCompare, compareList } = useCompare();
+  const { addToCompare, removeFromCompare, compareList } = useCompare();
   const formatPrice = useFormatPrice();
   
   const statusConfig = {
@@ -89,7 +89,9 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            if (!inCompare) {
+            if (inCompare) {
+              removeFromCompare(property.id);
+            } else {
               addToCompare({
                 id: property.id,
                 title: property.title,
