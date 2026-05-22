@@ -7,9 +7,12 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/lib/invest";
+import { ManualPaymentModal } from "./ManualPaymentModal";
 
 export function ReservationsPanel({ userId }: { userId: string }) {
-  const { data: items = [], isLoading } = useQuery({
+  const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
+
+  const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["my-reservations", userId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -20,7 +23,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
           investment_properties(title, slug, cover_image_url)
         `)
         .eq("user_id", userId)
-        .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested"])
+        .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested", "confirmed", "success", "rejected", "expired", "failed", "cancelled"])
         .order("created_at", { ascending: false });
         
       if (error) {
@@ -43,6 +46,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       case "information_requested":
       case "pending":
       case "processing": return "bg-secondary/10 text-secondary border-secondary/20";
+      case "awaiting_reservation_fee": return "bg-amber-500/10 text-amber-600 border-amber-500/20";
       default: return "bg-accent text-accent-foreground";
     }
   }
@@ -59,8 +63,24 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       case "information_requested":
       case "pending":
       case "processing": return <Clock className="h-3 w-3" />;
+      case "awaiting_reservation_fee": return <AlertCircle className="h-3 w-3" />;
       default: return <AlertCircle className="h-3 w-3" />;
     }
+  }
+
+  function getExpiryCountdown(expiresAt: string) {
+    const expiry = new Date(expiresAt).getTime();
+    const now = new Date().getTime();
+    const diff = expiry - now;
+    if (diff <= 0) return "Expired";
+    const hours = Math.floor(diff / (1000 * 60 * 60));
+    if (hours < 24) {
+      const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      return `${hours}h ${minutes}m remaining`;
+    }
+    const days = Math.floor(hours / 24);
+    const remHours = hours % 24;
+    return `${days}d ${remHours}h remaining`;
   }
 
   return (
@@ -115,7 +135,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                <div className="flex items-center gap-3 mt-1.5">
                                   <Badge className={`capitalize rounded-md flex w-fit items-center gap-1.5 px-2 py-0.5 text-[10px] font-bold ${getStatusStyle(r.status)}`}>
                                      {getStatusIcon(r.status)}
-                                     {r.status}
+                                     {r.status === "awaiting_reservation_fee" ? "Payment Pending" : r.status}
                                   </Badge>
                                   <span className="text-[10px] text-muted-foreground font-mono bg-accent px-2 py-0.5 rounded-md">ID: {r.id.split('-')[0]}</span>
                                </div>
@@ -125,6 +145,21 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                <p className="font-serif text-xl font-bold">{formatMoney(r.fee_paid)}</p>
                             </div>
                          </div>
+                         
+                         {r.status === "awaiting_reservation_fee" && (
+                           <div className="p-3.5 bg-amber-500/5 border border-amber-500/10 rounded-lg flex items-center gap-3">
+                             <AlertCircle className="h-4.5 w-4.5 text-amber-600 shrink-0" />
+                             <div className="flex-1 min-w-0">
+                               <p className="text-xs font-semibold text-amber-800">Action Required: Reservation Fee Submission</p>
+                               <p className="text-[10px] text-amber-700/80 mt-0.5 font-normal">Please submit payment proof before expiry to secure your hold.</p>
+                             </div>
+                             {r.expires_at && (
+                               <Badge variant="outline" className="bg-amber-500/10 text-amber-700 border-amber-500/20 shrink-0 font-mono text-[9px]">
+                                 {getExpiryCountdown(r.expires_at)}
+                               </Badge>
+                             )}
+                           </div>
+                         )}
                          
                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-4 border-t border-border/40">
                             <div className="space-y-1">
@@ -141,7 +176,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                   {r.expires_at ? new Date(r.expires_at).toLocaleDateString() : "No Expiry"}
                                </p>
                             </div>
-                            <div className="sm:col-span-2 flex justify-end gap-2">
+                            <div className="sm:col-span-2 flex justify-end gap-2 items-center">
                                <Button asChild variant="outline" size="sm" className="rounded-xl border-border/40 text-[11px] font-bold h-9">
                                   <Link to={`/${pathPrefix}/${item?.slug}`}>
                                      Property Details <ExternalLink className="ml-1.5 h-3 w-3" />
@@ -164,6 +199,15 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                      </Link>
                                   </Button>
                                 )}
+                                {r.status === 'awaiting_reservation_fee' && (
+                                  <Button 
+                                    size="sm" 
+                                    className="rounded-xl px-5 text-[11px] font-bold h-11 sm:h-9 bg-amber-600 hover:bg-amber-700 text-white shrink-0"
+                                    onClick={() => setSelectedReservation(r)}
+                                  >
+                                    Complete Payment Submission
+                                  </Button>
+                                )}
                                 {r.status === 'rejected' && (
                                   <p className="text-[10px] text-red-500 font-medium max-w-[150px] italic">
                                     {r.rejection_reason || "Declined by admin"}
@@ -177,8 +221,28 @@ export function ReservationsPanel({ userId }: { userId: string }) {
               );
            })}
         </div>
-      )
-}
+      )}
+
+      {selectedReservation && (
+        <ManualPaymentModal
+          open={!!selectedReservation}
+          onClose={() => setSelectedReservation(null)}
+          amount={500}
+          currency="USD"
+          paymentType="reservation"
+          targetId={selectedReservation.property_id || selectedReservation.investment_property_id}
+          bookingId={selectedReservation.id}
+          isInvestmentProperty={!!selectedReservation.investment_property_id}
+          holdHours={48}
+          metadata={{
+            reservation_type: selectedReservation.investment_property_id ? "investment_property" : "property",
+            property_title: selectedReservation.properties?.title || selectedReservation.investment_properties?.title
+          }}
+          onSuccess={async () => {
+            refetch();
+          }}
+        />
+      )}
     </div>
   );
 }

@@ -10,6 +10,7 @@ import { formatMoney } from "@/lib/invest";
 import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
+import { PaymentMethodPicker } from "@/components/payments/PaymentMethodPicker";
 
 interface ManualPaymentModalProps {
   open: boolean;
@@ -33,15 +34,14 @@ interface CryptoAsset {
   wallet_address: string;
 }
 
-type Step = "asset" | "buy_crypto" | "pay_manual" | "pay_bank" | "proof" | "confirm";
+type Step = "method_select" | "asset" | "buy_crypto" | "pay_manual" | "pay_bank" | "proof" | "confirm";
 
 export function ManualPaymentModal({ 
-  open, onClose, method = "digital_currency", amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess
+  open, onClose, method, amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess
 }: ManualPaymentModalProps) {
   const { user } = useAuth();
   
-  // Start step depends on method. 
-  const [step, setStep] = useState<Step>(method === "digital_currency" || method === "third_party_provider" ? "asset" : "pay_bank");
+  const [step, setStep] = useState<Step>("method_select");
 
   const [selectedAsset, setSelectedAsset] = useState<CryptoAsset | null>(null);
   const [paymentData, setPaymentData] = useState<{
@@ -53,6 +53,12 @@ export function ManualPaymentModal({
   const [status, setStatus] = useState<"pending" | "processing" | "success" | "failed" | "refunded">("pending");
   const [hash, setHash] = useState("");
   const [proofUrl, setProofUrl] = useState("");
+  const [senderWallet, setSenderWallet] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
+  const [activeMethod, setActiveMethod] = useState<string>("");
+  const [draftSavedText, setDraftSavedText] = useState("");
+  const [savingDraft, setSavingDraft] = useState(false);
+  
   const [uploadingProof, setUploadingProof] = useState(false);
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -84,21 +90,148 @@ export function ManualPaymentModal({
   const bankMethod = methods.find((m: any) => m.payment_category === "bank_transfer" && m.is_default) || methods.find((m: any) => m.payment_category === "bank_transfer");
   const configs = bankMethod?.configuration || {};
 
+  const checkExistingPayment = async () => {
+    if (!bookingId && !targetId) {
+      if (method) {
+        setActiveMethod(method);
+        setStep(method === "digital_currency" || method === "third_party_provider" ? "asset" : "pay_bank");
+        if (method === "bank_transfer") {
+          await initBankPayment();
+        }
+      } else {
+        setStep("method_select");
+      }
+      return;
+    }
+    
+    setLoading(true);
+    try {
+      let query = supabase.from("payments").select("*").in("status", ["pending", "processing"]);
+      if (paymentType === "reservation") {
+        query = query.eq("reservation_id", bookingId);
+      } else if (paymentType === "booking") {
+        query = query.eq("booking_id", bookingId);
+      } else if (paymentType === "investment") {
+        query = query.eq("investment_id", targetId);
+      } else {
+        query = query.eq("property_id", targetId);
+      }
+      
+      const { data: existingPayment, error } = await query.order("created_at", { ascending: false }).limit(1).maybeSingle();
+      if (error) throw error;
+      
+      if (existingPayment) {
+        const metadataVal = (existingPayment.metadata as any) || {};
+        setPaymentData({
+          address: existingPayment.crypto_address || undefined,
+          cryptoAmount: existingPayment.crypto_amount || undefined,
+          reference: existingPayment.reference
+        });
+        setStatus(existingPayment.status);
+        setHash(existingPayment.transaction_hash || metadataVal.draft_hash || "");
+        setProofUrl(metadataVal.proof_url || "");
+        setSenderWallet(metadataVal.sender_wallet || "");
+        setPaymentNotes(metadataVal.payment_notes || "");
+        
+        if (existingPayment.status === "processing") {
+          setStep("confirm");
+        } else {
+          if (existingPayment.provider === "digital_currency") {
+            if (metadataVal.proof_url || metadataVal.draft_hash || existingPayment.crypto_address) {
+              if (metadataVal.proof_url || metadataVal.draft_hash) {
+                setStep("proof");
+              } else {
+                const matchedAsset = assets.find(a => a.wallet_address === existingPayment.crypto_address && a.symbol === existingPayment.crypto_currency);
+                if (matchedAsset) {
+                  setSelectedAsset(matchedAsset);
+                } else {
+                  setSelectedAsset({
+                    symbol: existingPayment.crypto_currency || "USDT",
+                    name: existingPayment.crypto_currency || "USDT",
+                    network: "TRC20",
+                    wallet_address: existingPayment.crypto_address || ""
+                  });
+                }
+                setStep("pay_manual");
+              }
+            } else {
+              setStep("asset");
+            }
+          } else {
+            setStep("proof");
+          }
+        }
+      } else {
+        if (method) {
+          setActiveMethod(method);
+          setStep(method === "digital_currency" || method === "third_party_provider" ? "asset" : "pay_bank");
+          if (method === "bank_transfer") {
+            await initBankPayment();
+          }
+        } else {
+          setStep("method_select");
+        }
+      }
+    } catch (err: any) {
+      console.error("Error checking existing payment:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const saveDraft = async (currentHash: string, currentWallet: string, currentNotes: string, currentProof: string) => {
+    if (!paymentData?.reference || status !== "pending") return;
+    setSavingDraft(true);
+    setDraftSavedText("Saving draft...");
+    try {
+      const { data: currentPayment } = await supabase
+        .from("payments")
+        .select("metadata")
+        .eq("reference", paymentData.reference)
+        .single();
+      const currentMetadata = (currentPayment?.metadata as any) || {};
+
+      const updatedMetadata = {
+        ...currentMetadata,
+        draft_hash: currentHash,
+        sender_wallet: currentWallet,
+        payment_notes: currentNotes,
+        proof_url: currentProof
+      };
+
+      const { error } = await supabase
+        .from("payments")
+        .update({
+          metadata: updatedMetadata
+        } as any)
+        .eq("reference", paymentData.reference);
+
+      if (error) throw error;
+      setDraftSavedText("Draft saved successfully");
+      setTimeout(() => setDraftSavedText(""), 3000);
+    } catch (err: any) {
+      console.error("Error saving draft:", err);
+      setDraftSavedText("Draft save failed");
+    } finally {
+      setSavingDraft(false);
+    }
+  };
+
   useEffect(() => {
     if (open) {
-      setStep(method === "digital_currency" || method === "third_party_provider" ? "asset" : "pay_bank");
       setSelectedAsset(null);
       setPaymentData(null);
       setHash("");
       setProofUrl("");
+      setSenderWallet("");
+      setPaymentNotes("");
       setUploadingProof(false);
+      setDraftSavedText("");
+      setSavingDraft(false);
       
-      // If it's a bank transfer, we can just generate a reference immediately
-      if (method === "bank_transfer") {
-        initBankPayment();
-      }
+      checkExistingPayment();
     }
-  }, [open, method]);
+  }, [open, method, bookingId, targetId]);
 
   // Real-time status tracking
   useEffect(() => {
@@ -137,7 +270,7 @@ export function ManualPaymentModal({
       booking_id: paymentType === 'booking' ? bookingId : null,
       reservation_id: paymentType === 'reservation' ? bookingId : null,
       hold_hours: holdHours || (paymentType === 'reservation' ? 168 : null),
-      metadata: { manual: true, method, ...metadata }
+      metadata: { manual: true, method: activeMethod || method, ...metadata }
     });
     if (error) throw error;
     return reference;
@@ -182,7 +315,12 @@ export function ManualPaymentModal({
       const { error } = await supabase.from("payments").update({ 
         transaction_hash: hash || null, 
         status: "processing",
-        metadata: { ...currentMetadata, proof_url: proofUrl || currentMetadata.proof_url || null }
+        metadata: { 
+          ...currentMetadata, 
+          proof_url: proofUrl || currentMetadata.proof_url || null,
+          sender_wallet: senderWallet || null,
+          payment_notes: paymentNotes || null
+        }
       } as any).eq("reference", paymentData?.reference);
       if (error) throw error;
       setStatus("processing");
@@ -210,8 +348,10 @@ export function ManualPaymentModal({
       const { error: upErr } = await supabase.storage.from("property-media").upload(path, file, { cacheControl: "3600", upsert: false });
       if (upErr) throw upErr;
       const { data: pub } = supabase.storage.from("property-media").getPublicUrl(path);
-      setProofUrl(pub.publicUrl);
+      const pubUrl = pub.publicUrl;
+      setProofUrl(pubUrl);
       toast({ title: "Screenshot uploaded successfully" });
+      await saveDraft(hash, senderWallet, paymentNotes, pubUrl);
     } catch (err: any) {
       toast({ title: "Upload failed", description: err.message, variant: "destructive" });
     } finally {
@@ -226,9 +366,14 @@ export function ManualPaymentModal({
   };
 
   const goBack = () => {
-    if (step === "pay_manual") setStep("asset");
-    else if (step === "buy_crypto") setStep("asset");
-    else if (step === "proof") setStep(method === "digital_currency" ? "pay_manual" : "pay_bank");
+    if (step === "asset") setStep("method_select");
+    else if (step === "pay_bank") setStep("method_select");
+    else if (step === "buy_crypto") setStep("method_select");
+    else if (step === "pay_manual") setStep("asset");
+    else if (step === "proof") {
+      const currentMethod = activeMethod || method;
+      setStep(currentMethod === "digital_currency" ? "pay_manual" : "pay_bank");
+    }
   };
 
   return (
@@ -238,16 +383,16 @@ export function ManualPaymentModal({
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-                {method === "bank_transfer" ? <Building2 className="h-6 w-6" /> : <Wallet className="h-6 w-6" />}
+                {(activeMethod || method) === "bank_transfer" ? <Building2 className="h-6 w-6" /> : <Wallet className="h-6 w-6" />}
               </div>
               <div>
                 <DialogTitle className="font-serif text-2xl font-bold">
-                  {method === "bank_transfer" ? "Bank Transfer" : "Digital Currency"}
+                  {(activeMethod || method) === "bank_transfer" ? "Bank Transfer" : "Digital Currency"}
                 </DialogTitle>
                 <DialogDescription>Secure payment for {paymentType}</DialogDescription>
               </div>
             </div>
-            {step !== "asset" && step !== "pay_bank" && step !== "confirm" && step !== "buy_crypto" && (
+            {step !== "method_select" && step !== "confirm" && (
               <Button variant="ghost" size="icon" className="rounded-full" onClick={goBack}><ChevronLeft className="h-5 w-5" /></Button>
             )}
           </div>
@@ -258,6 +403,32 @@ export function ManualPaymentModal({
         </DialogHeader>
 
         <DialogBody className="py-8">
+          {step === "method_select" && (
+            <div className="space-y-6">
+              <PaymentMethodPicker value={activeMethod} onChange={setActiveMethod} />
+              <Button 
+                className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium" 
+                disabled={!activeMethod || loading}
+                onClick={async () => {
+                  if (activeMethod === "digital_currency") {
+                    setStep("asset");
+                  } else if (activeMethod === "bank_transfer") {
+                    setStep("pay_bank");
+                    await initBankPayment();
+                  } else if (activeMethod === "third_party_provider") {
+                    setStep("buy_crypto");
+                  }
+                }}
+              >
+                {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : (
+                  <span className="flex items-center justify-center gap-2">
+                    Continue <ChevronRight className="h-4 w-4" />
+                  </span>
+                )}
+              </Button>
+            </div>
+          )}
+
           {step === "asset" && (
             <div className="space-y-6">
               <div className="space-y-4">
@@ -407,7 +578,33 @@ export function ManualPaymentModal({
               <div className="space-y-5">
                 <div className="space-y-2">
                   <Label className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">Transaction Hash / Receipt Number</Label>
-                  <input placeholder="Enter reference ID..." className="flex h-11 w-full rounded-lg border border-input bg-accent/50 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring" value={hash} onChange={(e) => setHash(e.target.value)} />
+                  <input 
+                    placeholder="Enter reference ID or TXID..." 
+                    className="flex h-11 w-full rounded-lg border border-input bg-accent/50 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring" 
+                    value={hash} 
+                    onChange={(e) => setHash(e.target.value)} 
+                    onBlur={() => saveDraft(hash, senderWallet, paymentNotes, proofUrl)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">Sender Wallet Address (Optional)</Label>
+                  <input 
+                    placeholder="e.g. 0x... or BTC address" 
+                    className="flex h-11 w-full rounded-lg border border-input bg-accent/50 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring" 
+                    value={senderWallet} 
+                    onChange={(e) => setSenderWallet(e.target.value)} 
+                    onBlur={() => saveDraft(hash, senderWallet, paymentNotes, proofUrl)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs text-muted-foreground uppercase tracking-wider font-medium px-1">Payment Notes (Optional)</Label>
+                  <textarea 
+                    placeholder="Any additional details about your payment..." 
+                    className="flex min-h-[80px] w-full rounded-lg border border-input bg-accent/50 px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring" 
+                    value={paymentNotes} 
+                    onChange={(e) => setPaymentNotes(e.target.value)} 
+                    onBlur={() => saveDraft(hash, senderWallet, paymentNotes, proofUrl)}
+                  />
                 </div>
                 <div className={`rounded-xl border border-dashed ${proofUrl ? 'border-primary bg-primary/5' : 'border-border bg-secondary/20'} p-8 flex flex-col items-center justify-center gap-4 group hover:border-primary/50 hover:bg-primary/5 transition-all cursor-pointer relative overflow-hidden`} onClick={() => !uploadingProof && fileInputRef.current?.click()}>
                   <input type="file" className="hidden" ref={fileInputRef} accept="image/*,application/pdf" onChange={handleFileUpload} />
@@ -434,9 +631,31 @@ export function ManualPaymentModal({
                   )}
                 </div>
               </div>
-              <Button className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium shadow-sm" onClick={handleSubmitProof} disabled={loading}>
-                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Complete Submission"}
-              </Button>
+              {draftSavedText && (
+                <p className={`text-xs text-center font-medium ${draftSavedText.includes("failed") ? "text-destructive" : "text-emerald-600"}`}>
+                  {draftSavedText}
+                </p>
+              )}
+              <div className="flex gap-3">
+                <Button 
+                  variant="outline" 
+                  className="flex-1 h-11 rounded-lg border-border font-medium" 
+                  disabled={loading || savingDraft}
+                  onClick={async () => {
+                    await saveDraft(hash, senderWallet, paymentNotes, proofUrl);
+                    onClose();
+                  }}
+                >
+                  Save Draft & Close
+                </Button>
+                <Button 
+                  className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground font-medium shadow-sm" 
+                  onClick={handleSubmitProof} 
+                  disabled={loading || uploadingProof || savingDraft}
+                >
+                  {loading ? <Loader2 className="h-5 w-5 animate-spin mx-auto" /> : "Complete Submission"}
+                </Button>
+              </div>
             </div>
           )}
 
