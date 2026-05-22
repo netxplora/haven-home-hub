@@ -6,6 +6,7 @@ import { propertyTypeLabel, resolveImage } from "@/lib/format";
 import { useCompare } from "@/hooks/useCompare";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { Scale } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 export interface PropertyCardData {
   id: string;
@@ -36,11 +37,12 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
   const img = resolveImage(property.cover_image_url);
   const { addToCompare, removeFromCompare, compareList } = useCompare();
   const formatPrice = useFormatPrice();
+  const { t } = useTranslation();
   
   const statusConfig = {
-    reserved: { label: "Reserved", className: "bg-secondary text-secondary-foreground" },
-    sold: { label: "Sold", className: "bg-destructive text-destructive-foreground" },
-    under_offer: { label: "Under Offer", className: "bg-primary text-primary-foreground" },
+    reserved: { label: t("propertyCard.reserved"), className: "bg-secondary text-secondary-foreground" },
+    sold: { label: t("propertyCard.sold"), className: "bg-destructive text-destructive-foreground" },
+    under_offer: { label: t("propertyCard.underOffer"), className: "bg-primary text-primary-foreground" },
     available: null
   }[property.status];
 
@@ -68,12 +70,12 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
             </Badge>
             {property.featured && (
               <Badge className="bg-primary text-primary-foreground border-none shadow-sm gap-1 text-xs px-2.5 py-1">
-                <Star className="h-3 w-3 fill-current" /> Featured
+                <Star className="h-3 w-3 fill-current" /> {t("propertyCard.featured")}
               </Badge>
             )}
             {isNew && (
               <Badge className="bg-emerald-500 text-white border-none shadow-sm gap-1 text-xs px-2.5 py-1">
-                New Listing
+                {t("propertyCard.newListing")}
               </Badge>
             )}
           </div>
@@ -107,7 +109,7 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
               ? 'bg-primary text-primary-foreground shadow-sm' 
               : 'bg-white/90 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-white hover:text-foreground shadow-sm'
           }`}
-          title={inCompare ? "Added to compare" : "Add to compare"}
+          title={inCompare ? t("propertyCard.addedToCompare") : t("propertyCard.addToCompare")}
         >
           <Scale className="h-3.5 w-3.5" />
         </button>
@@ -139,7 +141,7 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
             <span className="flex items-center gap-1"><Bath className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {property.bathrooms}</span>
           )}
           {property.size_sqm != null && (
-            <span className="flex items-center gap-1"><Maximize2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {Number(property.size_sqm).toLocaleString()} sqm</span>
+            <span className="flex items-center gap-1"><Maximize2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {Number(property.size_sqm).toLocaleString()} {t("propertyCard.sqm")}</span>
           )}
         </div>
       </div>

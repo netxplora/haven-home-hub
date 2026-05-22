@@ -1,0 +1,297 @@
+{
+  "nav": {
+    "buy": "Buy",
+    "rent": "Rent",
+    "land": "Land",
+    "invest": "Invest",
+    "agents": "Agents",
+    "blog": "Blog",
+    "about": "About",
+    "account": "Account",
+    "myDashboard": "My dashboard",
+    "agentDashboard": "Agent dashboard",
+    "admin": "Admin",
+    "signOut": "Sign out",
+    "signIn": "Sign in",
+    "getStarted": "Get started",
+    "settings": "Settings",
+    "menu": "Menu",
+    "toggleLanguage": "Toggle language"
+  },
+  "footer": {
+    "brandDesc": "A trusted, agency-led real estate platform. Every property is hand-curated and verified by our professional team.",
+    "browse": "Browse",
+    "forSale": "For sale",
+    "forRent": "For rent",
+    "land": "Land",
+    "invest": "Invest",
+    "agents": "Agents",
+    "blog": "Blog",
+    "company": "Company",
+    "about": "About",
+    "careers": "Careers",
+    "press": "Press",
+    "privacyPolicy": "Privacy policy",
+    "termsOfService": "Terms of service",
+    "contact": "Contact",
+    "copyrightText": "All listings curated and verified by our agency.",
+    "privacy": "Privacy",
+    "terms": "Terms"
+  },
+  "hero": {
+    "title": "Find a home you'll love coming back to.",
+    "subtitle": "Browse curated homes for sale, premium rentals, and land — all hand-picked and managed by trusted agents.",
+    "badge": "Curated by our agency",
+    "search": "Search properties, locations..."
+  },
+  "home": {
+    "activity": {
+      "live": "Live Activity",
+      "feed1": "New fractional investment completed in Miami, FL",
+      "feed2": "Luxury Villa reserved in Los Angeles, CA",
+      "feed3": "Premium Apartment listed in Austin, TX",
+      "feed4": "Investment target reached for Houston property",
+      "feed5": "New property added in Denver, CO"
+    },
+    "featured": {
+      "label": "Premium Selection",
+      "title": "Featured Properties",
+      "subtitle": "Explore our hand-picked selection of high-quality homes and exclusive investment opportunities.",
+      "viewAll": "View all listings",
+      "emptyTitle": "No featured properties",
+      "emptyDesc": "Check back later or browse our full catalog."
+    },
+    "fractional": {
+      "badge": "Fractional Ownership",
+      "title": "Build Wealth Through Premium Real Estate",
+      "desc": "Co-invest in fully-managed, high-yield properties alongside other verified investors. Earn monthly rental income and long-term appreciation with a single intuitive dashboard.",
+      "activeUnits": "Active Units",
+      "avgRoi": "Avg Target ROI",
+      "funded": "Funded",
+      "start": "Start Investing",
+      "view": "View Opportunities"
+    },
+    "categories": {
+      "buy": {
+        "title": "Homes for Sale",
+        "desc": "Find your forever home in premium neighborhoods."
+      },
+      "rent": {
+        "title": "Premium Rentals",
+        "desc": "Flexible living in beautifully managed properties."
+      },
+      "land": {
+        "title": "Land & Plots",
+        "desc": "Build your vision on surveyed, prime locations."
+      },
+      "browse": "Explore"
+    },
+    "freshInventory": {
+      "label": "Fresh Inventory",
+      "title": "Recently Added Properties",
+      "viewAll": "View all new listings"
+    },
+    "whyInvest": {
+      "label": "Platform Trust",
+      "title": "Why Investors Choose Us",
+      "desc": "We provide a transparent, legally compliant ecosystem that prioritizes security and operational excellence for every transaction.",
+      "verifiedListings": "Verified Listings",
+      "verifiedListingsDesc": "Every property undergoes rigorous legal and physical inspection.",
+      "transparentTracking": "Transparent Tracking",
+      "transparentTrackingDesc": "Monitor your property performance and ROI in real-time.",
+      "securePayments": "Secure Payments",
+      "securePaymentsDesc": "Bank-grade security and compliant escrow structures.",
+      "fractionalAccess": "Fractional Access",
+      "fractionalAccessDesc": "Invest with lower capital requirements and diversify easily.",
+      "clearOwnership": "Clear Ownership",
+      "clearOwnershipDesc": "Legally binding digital certificates and standardized contracts."
+    },
+    "stats": {
+      "totalProperties": "Total Properties",
+      "activeInvestments": "Active Investments",
+      "propertiesSold": "Properties Sold",
+      "citiesCovered": "Cities Covered",
+      "activeInvestors": "Active Investors"
+    },
+    "exploreCities": {
+      "label": "Explore Locations",
+      "title": "Find Properties by City",
+      "properties": "Properties"
+    },
+    "recentlySold": {
+      "label": "Market Activity",
+      "title": "Recently Completed Transactions"
+    },
+    "education": {
+      "label": "Education",
+      "title": "How Fractional Ownership Works",
+      "desc": "We simplify real estate investing by dividing premium properties into affordable fractions, allowing you to build a diversified portfolio.",
+      "step1Title": "Browse Offerings",
+      "step1Desc": "Review vetted properties with detailed financials, appraisals, and projected returns.",
+      "step2Title": "Invest Securely",
+      "step2Desc": "Purchase your preferred number of fractions using our secure, compliant payment gateway.",
+      "step3Title": "Receive Certificates",
+      "step3Desc": "Gain legally binding digital ownership certificates directly in your investor dashboard.",
+      "step4Title": "Earn & Track",
+      "step4Desc": "Monitor monthly rental yields and track asset appreciation in real-time."
+    },
+    "testimonials": {
+      "title": "What Our Clients Say",
+      "quote1": "The most transparent real estate investment platform I've used. Returns are consistent and tracking is effortless.",
+      "author1": "James T.",
+      "role1": "Fractional Investor",
+      "quote2": "Found our dream home in a week. The agents are genuine professionals who actually understand the local market.",
+      "author2": "Sarah M.",
+      "role2": "Homebuyer",
+      "quote3": "Managing my portfolio of fractional properties has never been easier. The dashboard is clean and reliable.",
+      "author3": "Robert K.",
+      "role3": "Portfolio Manager"
+    },
+    "blog": {
+      "label": "Market Insights",
+      "title": "Latest News & Guides",
+      "viewAll": "View all articles",
+      "fallbackLabel": "Market Insights"
+    },
+    "newsletter": {
+      "title": "Stay Ahead of the Market",
+      "desc": "Subscribe to our newsletter for exclusive property alerts, investment opportunities, and professional market analysis delivered straight to your inbox.",
+      "placeholder": "Enter your email address",
+      "subscribe": "Subscribe",
+      "subscribing": "Subscribing...",
+      "privacyNote": "We respect your privacy. No spam, ever.",
+      "invalidEmail": "Invalid Email",
+      "invalidEmailDesc": "Please enter a valid email address.",
+      "successTitle": "Subscribed successfully!",
+      "successDesc": "Thank you for subscribing to our market insights."
+    }
+  },
+  "search": {
+    "typePlaceholder": "Type",
+    "forSale": "For sale",
+    "forRent": "For rent",
+    "land": "Land",
+    "locationPlaceholder": "Select Location",
+    "anyLocation": "Any location",
+    "maxPrice": "Max price",
+    "search": "Search"
+  },
+  "propertyCard": {
+    "featured": "Featured",
+    "newListing": "New Listing",
+    "reserved": "Reserved",
+    "sold": "Sold",
+    "underOffer": "Under Offer",
+    "addToCompare": "Add to compare",
+    "addedToCompare": "Added to compare",
+    "sqm": "sqm"
+  },
+  "propertyDetail": {
+    "breadcrumbs": {
+      "home": "Home",
+      "marketplace": "Marketplace"
+    },
+    "notFound": "Listing not found",
+    "backToListings": "Back to listings",
+    "listingPrice": "Listing Price",
+    "saved": "Saved",
+    "saveProperty": "Save Property",
+    "compared": "Compared",
+    "compare": "Compare",
+    "share": "Share",
+    "linkCopied": "Link Copied",
+    "linkCopiedDesc": "Property link copied to clipboard.",
+    "removedFromComparison": "Removed from comparison",
+    "removedFromComparisonDesc": "\"{{title}}\" has been removed from your comparison list.",
+    "addedToComparison": "Added to comparison",
+    "addedToComparisonDesc": "\"{{title}}\" has been added to your comparison list.",
+    "comparisonFull": "Comparison list full",
+    "comparisonFullDesc": "You can compare up to 4 properties. Remove one to add this property.",
+    "pleaseSignIn": "Please sign in",
+    "signInToSave": "Create an account to save properties.",
+    "specs": {
+      "bedrooms": "Bedrooms",
+      "bathrooms": "Bathrooms",
+      "parking": "Parking",
+      "totalArea": "Total Area",
+      "sqft": "sq ft"
+    },
+    "description": "Description",
+    "overview": {
+      "title": "Property Overview",
+      "propertyId": "Property ID",
+      "propertyType": "Property Type",
+      "yearBuilt": "Year Built",
+      "yearBuiltDefault": "Modern",
+      "listingDate": "Listing Date",
+      "na": "N/A"
+    },
+    "amenities": {
+      "title": "Amenities & Features",
+      "interior": "Interior Features",
+      "exterior": "Exterior Features"
+    },
+    "neighborhood": {
+      "badge": "Neighborhood Profile",
+      "title": "Neighborhood & Location",
+      "descResidential": "A well-connected residential district offering convenient access to essential community amenities.",
+      "descCommercial": "A strategic business location with excellent connectivity and established commercial infrastructure.",
+      "localAmenities": "Local Amenities",
+      "found": "Found",
+      "emptyTitle": "Neighborhood information pending",
+      "emptyDesc": "Local amenity data is currently being updated for this listing.",
+      "loadingMap": "Loading interactive map...",
+      "registeredAddress": "Registered Address",
+      "locationOnRequest": "Location on request",
+      "getDirections": "Get Directions",
+      "viewingSchedule": "Viewing Schedule",
+      "viewingScheduleDefault": "Available for viewing Monday to Saturday, 9AM - 5PM.",
+      "zoningStatus": "Zoning Status",
+      "zoningResidential": "Premium Residential Zone",
+      "zoningCommercial": "Premium Business Zone"
+    },
+    "videoTour": "Property Tour",
+    "agentReviews": "Agent Reviews",
+    "agent": {
+      "callAgent": "Call Agent",
+      "whatsapp": "WhatsApp",
+      "scheduleViewing": "Schedule Viewing",
+      "scheduleViewingTitle": "Schedule a Viewing",
+      "addedToSaved": "Added to Saved",
+      "saveListing": "Save Listing"
+    },
+    "reservation": {
+      "completePurchase": "Complete Purchase",
+      "reserveProperty": "Reserve Property",
+      "propertyReserved": "This property has been officially reserved and is currently off the market.",
+      "propertySold": "This property has been sold and is no longer available.",
+      "propertyRented": "This property is currently rented out.",
+      "paymentUnderReview": "A payment for this property is currently being reviewed.",
+      "propertyUnavailable": "This property is currently not available for purchase.",
+      "holdProperty": "Hold this property for 7 days to finalize your purchase.",
+      "reservationApproved": "Your reservation is approved. You can now complete the final purchase of this property.",
+      "reservationFee": "Reservation Fee",
+      "remainingBalance": "Remaining Balance",
+      "reserveNow": "Reserve Now",
+      "alreadyReserved": "Already Reserved",
+      "sold": "Sold",
+      "rented": "Rented",
+      "paymentReview": "Payment Under Review",
+      "unavailable": "Unavailable",
+      "secureEscrow": "Processed securely via escrow",
+      "currentlyUnavailable": "This property is currently unavailable",
+      "signInRequired": "Sign in required",
+      "signInToReserve": "Please sign in to reserve this property."
+    },
+    "inquiry": {
+      "title": "Questions?",
+      "desc": "Inquire about details or flexible payment plans."
+    },
+    "related": {
+      "title": "Similar Properties",
+      "desc": "More listings in {{location}}.",
+      "descFallback": "More listings in the area.",
+      "viewAll": "View all"
+    }
+  }
+}

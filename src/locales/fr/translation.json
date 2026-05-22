@@ -1,0 +1,297 @@
+{
+  "nav": {
+    "buy": "Acheter",
+    "rent": "Louer",
+    "land": "Terrain",
+    "invest": "Investir",
+    "agents": "Agents",
+    "blog": "Blog",
+    "about": "À propos",
+    "account": "Compte",
+    "myDashboard": "Mon tableau de bord",
+    "agentDashboard": "Tableau de bord agent",
+    "admin": "Admin",
+    "signOut": "Se déconnecter",
+    "signIn": "Se connecter",
+    "getStarted": "Commencer",
+    "settings": "Paramètres",
+    "menu": "Menu",
+    "toggleLanguage": "Changer de langue"
+  },
+  "footer": {
+    "brandDesc": "Une plateforme immobilière de confiance. Chaque propriété est sélectionnée et vérifiée par notre équipe.",
+    "browse": "Parcourir",
+    "forSale": "À vendre",
+    "forRent": "À louer",
+    "land": "Terrains",
+    "invest": "Investir",
+    "agents": "Agents",
+    "blog": "Blog",
+    "company": "Entreprise",
+    "about": "À propos",
+    "careers": "Carrières",
+    "press": "Presse",
+    "privacyPolicy": "Politique de confidentialité",
+    "termsOfService": "Conditions d'utilisation",
+    "contact": "Contact",
+    "copyrightText": "Toutes les annonces vérifiées par notre agence.",
+    "privacy": "Confidentialité",
+    "terms": "Conditions"
+  },
+  "hero": {
+    "title": "Trouvez un logement que vous aimerez retrouver.",
+    "subtitle": "Parcourez des maisons à vendre, des locations premium et des terrains — tous sélectionnés et gérés par des agents de confiance.",
+    "badge": "Sélectionné par notre agence",
+    "search": "Rechercher des propriétés, lieux..."
+  },
+  "home": {
+    "activity": {
+      "live": "Activité en direct",
+      "feed1": "Nouvel investissement fractionné complété à Miami, FL",
+      "feed2": "Villa de luxe réservée à Los Angeles, CA",
+      "feed3": "Appartement premium listé à Austin, TX",
+      "feed4": "Objectif d'investissement atteint pour la propriété de Houston",
+      "feed5": "Nouvelle propriété ajoutée à Denver, CO"
+    },
+    "featured": {
+      "label": "Sélection Premium",
+      "title": "Propriétés en vedette",
+      "subtitle": "Explorez notre sélection de logements de haute qualité et d'opportunités d'investissement exclusives.",
+      "viewAll": "Voir toutes les annonces",
+      "emptyTitle": "Aucune propriété en vedette",
+      "emptyDesc": "Revenez plus tard ou parcourez notre catalogue complet."
+    },
+    "fractional": {
+      "badge": "Propriété fractionnée",
+      "title": "Construisez votre patrimoine avec l'immobilier premium",
+      "desc": "Co-investissez dans des propriétés à haut rendement entièrement gérées aux côtés d'autres investisseurs vérifiés. Recevez des revenus locatifs mensuels et une appréciation à long terme avec un tableau de bord intuitif.",
+      "activeUnits": "Unités actives",
+      "avgRoi": "ROI cible moyen",
+      "funded": "Financé",
+      "start": "Commencer à investir",
+      "view": "Voir les opportunités"
+    },
+    "categories": {
+      "buy": {
+        "title": "Maisons à vendre",
+        "desc": "Trouvez votre maison idéale dans des quartiers premium."
+      },
+      "rent": {
+        "title": "Locations premium",
+        "desc": "Un cadre de vie flexible dans des propriétés gérées professionnellement."
+      },
+      "land": {
+        "title": "Terrains et parcelles",
+        "desc": "Réalisez votre projet sur des emplacements stratégiques."
+      },
+      "browse": "Explorer"
+    },
+    "freshInventory": {
+      "label": "Nouvel inventaire",
+      "title": "Propriétés récemment ajoutées",
+      "viewAll": "Voir toutes les nouvelles annonces"
+    },
+    "whyInvest": {
+      "label": "Confiance dans la plateforme",
+      "title": "Pourquoi les investisseurs nous choisissent",
+      "desc": "Nous fournissons un écosystème transparent et juridiquement conforme qui privilégie la sécurité et l'excellence opérationnelle pour chaque transaction.",
+      "verifiedListings": "Annonces vérifiées",
+      "verifiedListingsDesc": "Chaque propriété fait l'objet d'une inspection juridique et physique rigoureuse.",
+      "transparentTracking": "Suivi transparent",
+      "transparentTrackingDesc": "Surveillez la performance de votre propriété et le ROI en temps réel.",
+      "securePayments": "Paiements sécurisés",
+      "securePaymentsDesc": "Sécurité de niveau bancaire et structures de séquestre conformes.",
+      "fractionalAccess": "Accès fractionné",
+      "fractionalAccessDesc": "Investissez avec des exigences de capital réduites et diversifiez facilement.",
+      "clearOwnership": "Propriété claire",
+      "clearOwnershipDesc": "Certificats numériques juridiquement contraignants et contrats standardisés."
+    },
+    "stats": {
+      "totalProperties": "Total des propriétés",
+      "activeInvestments": "Investissements actifs",
+      "propertiesSold": "Propriétés vendues",
+      "citiesCovered": "Villes couvertes",
+      "activeInvestors": "Investisseurs actifs"
+    },
+    "exploreCities": {
+      "label": "Explorer les emplacements",
+      "title": "Trouver des propriétés par ville",
+      "properties": "Propriétés"
+    },
+    "recentlySold": {
+      "label": "Activité du marché",
+      "title": "Transactions récemment complétées"
+    },
+    "education": {
+      "label": "Éducation",
+      "title": "Comment fonctionne la propriété fractionnée",
+      "desc": "Nous simplifions l'investissement immobilier en divisant les propriétés premium en fractions abordables, vous permettant de construire un portefeuille diversifié.",
+      "step1Title": "Parcourir les offres",
+      "step1Desc": "Examinez des propriétés vérifiées avec des données financières détaillées, des évaluations et des rendements projetés.",
+      "step2Title": "Investir en toute sécurité",
+      "step2Desc": "Achetez le nombre de fractions souhaité via notre passerelle de paiement sécurisée et conforme.",
+      "step3Title": "Recevoir les certificats",
+      "step3Desc": "Obtenez des certificats de propriété numériques juridiquement contraignants directement dans votre tableau de bord investisseur.",
+      "step4Title": "Gagner et suivre",
+      "step4Desc": "Surveillez les rendements locatifs mensuels et suivez l'appréciation de l'actif en temps réel."
+    },
+    "testimonials": {
+      "title": "Ce que disent nos clients",
+      "quote1": "La plateforme d'investissement immobilier la plus transparente que j'ai utilisée. Les rendements sont constants et le suivi est simple.",
+      "author1": "James T.",
+      "role1": "Investisseur fractionné",
+      "quote2": "Nous avons trouvé notre maison idéale en une semaine. Les agents sont de véritables professionnels qui comprennent le marché local.",
+      "author2": "Sarah M.",
+      "role2": "Acheteuse de bien immobilier",
+      "quote3": "Gérer mon portefeuille de propriétés fractionnées n'a jamais été aussi simple. Le tableau de bord est clair et fiable.",
+      "author3": "Robert K.",
+      "role3": "Gestionnaire de portefeuille"
+    },
+    "blog": {
+      "label": "Perspectives du marché",
+      "title": "Dernières nouvelles et guides",
+      "viewAll": "Voir tous les articles",
+      "fallbackLabel": "Perspectives du marché"
+    },
+    "newsletter": {
+      "title": "Restez en avance sur le marché",
+      "desc": "Abonnez-vous à notre newsletter pour des alertes exclusives de propriétés, des opportunités d'investissement et des analyses professionnelles du marché directement dans votre boîte mail.",
+      "placeholder": "Entrez votre adresse e-mail",
+      "subscribe": "S'abonner",
+      "subscribing": "Abonnement en cours...",
+      "privacyNote": "Nous respectons votre vie privée. Jamais de spam.",
+      "invalidEmail": "E-mail invalide",
+      "invalidEmailDesc": "Veuillez entrer une adresse e-mail valide.",
+      "successTitle": "Abonnement réussi !",
+      "successDesc": "Merci de vous être abonné à nos perspectives du marché."
+    }
+  },
+  "search": {
+    "typePlaceholder": "Type",
+    "forSale": "À vendre",
+    "forRent": "À louer",
+    "land": "Terrain",
+    "locationPlaceholder": "Sélectionner un lieu",
+    "anyLocation": "Tout lieu",
+    "maxPrice": "Prix maximum",
+    "search": "Rechercher"
+  },
+  "propertyCard": {
+    "featured": "En vedette",
+    "newListing": "Nouvelle annonce",
+    "reserved": "Réservé",
+    "sold": "Vendu",
+    "underOffer": "Sous offre",
+    "addToCompare": "Ajouter à la comparaison",
+    "addedToCompare": "Ajouté à la comparaison",
+    "sqm": "m²"
+  },
+  "propertyDetail": {
+    "breadcrumbs": {
+      "home": "Accueil",
+      "marketplace": "Marché"
+    },
+    "notFound": "Annonce introuvable",
+    "backToListings": "Retour aux annonces",
+    "listingPrice": "Prix de l'annonce",
+    "saved": "Sauvegardé",
+    "saveProperty": "Sauvegarder la propriété",
+    "compared": "Comparé",
+    "compare": "Comparer",
+    "share": "Partager",
+    "linkCopied": "Lien copié",
+    "linkCopiedDesc": "Le lien de la propriété a été copié dans le presse-papiers.",
+    "removedFromComparison": "Retiré de la comparaison",
+    "removedFromComparisonDesc": "\"{{title}}\" a été retiré de votre liste de comparaison.",
+    "addedToComparison": "Ajouté à la comparaison",
+    "addedToComparisonDesc": "\"{{title}}\" a été ajouté à votre liste de comparaison.",
+    "comparisonFull": "Liste de comparaison pleine",
+    "comparisonFullDesc": "Vous pouvez comparer jusqu'à 4 propriétés. Retirez-en une pour ajouter celle-ci.",
+    "pleaseSignIn": "Veuillez vous connecter",
+    "signInToSave": "Créez un compte pour sauvegarder des propriétés.",
+    "specs": {
+      "bedrooms": "Chambres",
+      "bathrooms": "Salles de bain",
+      "parking": "Stationnement",
+      "totalArea": "Surface totale",
+      "sqft": "m²"
+    },
+    "description": "Description",
+    "overview": {
+      "title": "Aperçu de la propriété",
+      "propertyId": "ID de propriété",
+      "propertyType": "Type de propriété",
+      "yearBuilt": "Année de construction",
+      "yearBuiltDefault": "Moderne",
+      "listingDate": "Date de publication",
+      "na": "N/D"
+    },
+    "amenities": {
+      "title": "Équipements et caractéristiques",
+      "interior": "Caractéristiques intérieures",
+      "exterior": "Caractéristiques extérieures"
+    },
+    "neighborhood": {
+      "badge": "Profil du quartier",
+      "title": "Quartier et emplacement",
+      "descResidential": "Un quartier résidentiel bien connecté offrant un accès pratique aux services communautaires essentiels.",
+      "descCommercial": "Un emplacement commercial stratégique avec une excellente connectivité et une infrastructure commerciale établie.",
+      "localAmenities": "Services locaux",
+      "found": "Trouvés",
+      "emptyTitle": "Informations sur le quartier en attente",
+      "emptyDesc": "Les données des services locaux sont en cours de mise à jour pour cette annonce.",
+      "loadingMap": "Chargement de la carte interactive...",
+      "registeredAddress": "Adresse enregistrée",
+      "locationOnRequest": "Emplacement sur demande",
+      "getDirections": "Obtenir l'itinéraire",
+      "viewingSchedule": "Horaire de visite",
+      "viewingScheduleDefault": "Disponible pour visites du lundi au samedi, 9h - 17h.",
+      "zoningStatus": "Statut de zonage",
+      "zoningResidential": "Zone résidentielle premium",
+      "zoningCommercial": "Zone commerciale premium"
+    },
+    "videoTour": "Visite de la propriété",
+    "agentReviews": "Avis sur l'agent",
+    "agent": {
+      "callAgent": "Appeler l'agent",
+      "whatsapp": "WhatsApp",
+      "scheduleViewing": "Planifier une visite",
+      "scheduleViewingTitle": "Planifier une visite",
+      "addedToSaved": "Ajouté aux sauvegardes",
+      "saveListing": "Sauvegarder l'annonce"
+    },
+    "reservation": {
+      "completePurchase": "Finaliser l'achat",
+      "reserveProperty": "Réserver la propriété",
+      "propertyReserved": "Cette propriété a été officiellement réservée et est retirée du marché.",
+      "propertySold": "Cette propriété a été vendue et n'est plus disponible.",
+      "propertyRented": "Cette propriété est actuellement louée.",
+      "paymentUnderReview": "Un paiement pour cette propriété est en cours de vérification.",
+      "propertyUnavailable": "Cette propriété n'est pas disponible à l'achat actuellement.",
+      "holdProperty": "Réservez cette propriété pendant 7 jours pour finaliser votre achat.",
+      "reservationApproved": "Votre réservation est approuvée. Vous pouvez maintenant finaliser l'achat de cette propriété.",
+      "reservationFee": "Frais de réservation",
+      "remainingBalance": "Solde restant",
+      "reserveNow": "Réserver maintenant",
+      "alreadyReserved": "Déjà réservé",
+      "sold": "Vendu",
+      "rented": "Loué",
+      "paymentReview": "Paiement en cours de vérification",
+      "unavailable": "Non disponible",
+      "secureEscrow": "Traité de manière sécurisée via le séquestre",
+      "currentlyUnavailable": "Cette propriété n'est pas disponible actuellement",
+      "signInRequired": "Connexion requise",
+      "signInToReserve": "Veuillez vous connecter pour réserver cette propriété."
+    },
+    "inquiry": {
+      "title": "Des questions ?",
+      "desc": "Renseignez-vous sur les détails ou les plans de paiement flexibles."
+    },
+    "related": {
+      "title": "Propriétés similaires",
+      "desc": "Plus d'annonces à {{location}}.",
+      "descFallback": "Plus d'annonces dans la région.",
+      "viewAll": "Voir tout"
+    }
+  }
+}

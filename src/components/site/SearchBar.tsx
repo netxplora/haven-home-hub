@@ -6,11 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useTranslation } from "react-i18next";
 
 interface Props { compact?: boolean }
 
 export function SearchBar({ compact = false }: Props) {
   const navigate = useNavigate();
+  const { t } = useTranslation();
   const [type, setType] = useState("buy");
   const [locationSlug, setLocationSlug] = useState("");
   const [maxPrice, setMaxPrice] = useState("");
@@ -39,21 +41,21 @@ export function SearchBar({ compact = false }: Props) {
     >
       <Select value={type} onValueChange={setType}>
         <SelectTrigger className="h-11 rounded-lg border-0 bg-white text-foreground font-medium text-sm">
-          <SelectValue placeholder="Type" />
+          <SelectValue placeholder={t("search.typePlaceholder")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="buy">For sale</SelectItem>
-          <SelectItem value="rent">For rent</SelectItem>
-          <SelectItem value="land">Land</SelectItem>
+          <SelectItem value="buy">{t("search.forSale")}</SelectItem>
+          <SelectItem value="rent">{t("search.forRent")}</SelectItem>
+          <SelectItem value="land">{t("search.land")}</SelectItem>
         </SelectContent>
       </Select>
 
       <Select value={locationSlug || "all"} onValueChange={(v) => setLocationSlug(v)}>
         <SelectTrigger className="h-11 rounded-lg border-0 bg-white text-foreground font-medium text-sm">
-          <SelectValue placeholder="Select Location" />
+          <SelectValue placeholder={t("search.locationPlaceholder")} />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="all">Any location</SelectItem>
+          <SelectItem value="all">{t("search.anyLocation")}</SelectItem>
           {locations.map((l) => (
             <SelectItem key={l.id} value={l.slug}>{l.name}</SelectItem>
           ))}
@@ -62,13 +64,13 @@ export function SearchBar({ compact = false }: Props) {
 
       <Input
         type="number"
-        placeholder="Max price"
+        placeholder={t("search.maxPrice")}
         value={maxPrice}
         onChange={(e) => setMaxPrice(e.target.value)}
         className="h-11 rounded-lg border-0 bg-white text-foreground font-medium text-sm"
       />
       <Button type="submit" size="lg" className="h-11 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm">
-        <Search className="mr-2 h-4 w-4" /> Search
+        <Search className="mr-2 h-4 w-4" /> {t("search.search")}
       </Button>
     </form>
   );

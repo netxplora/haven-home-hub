@@ -51,6 +51,7 @@ import { YieldCalculator } from "@/components/site/YieldCalculator";
 import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
 import { VirtualTourButton, VirtualTourEmbed } from "@/components/site/VirtualTour";
 import { MessageAgentButton } from "@/components/site/Messaging";
+import { useTranslation } from "react-i18next";
 
 const InteractivePropertyMap = lazy(() => import("@/components/site/InteractivePropertyMap").then(mod => ({ default: mod.InteractivePropertyMap })));
 
@@ -58,6 +59,7 @@ export default function PropertyDetail() {
   const { slug } = useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
+  const { t } = useTranslation();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -127,7 +129,7 @@ export default function PropertyDetail() {
 
   async function toggleSave() {
     if (!user) {
-      toast({ title: "Please sign in", description: "Create an account to save properties." });
+      toast({ title: t("propertyDetail.pleaseSignIn"), description: t("propertyDetail.signInToSave") });
       return;
     }
     if (!property) return;
@@ -146,14 +148,14 @@ export default function PropertyDetail() {
     if (inCompare) {
       removeFromCompare(property.id);
       toast({
-        title: "Removed from comparison",
-        description: `"${property.title}" has been removed from your comparison list.`,
+        title: t("propertyDetail.removedFromComparison"),
+        description: t("propertyDetail.removedFromComparisonDesc", { title: property.title }),
       });
     } else {
       if (compareList.length >= 4) {
         toast({
-          title: "Comparison list full",
-          description: "You can compare up to 4 properties. Remove one to add this property.",
+          title: t("propertyDetail.comparisonFull"),
+          description: t("propertyDetail.comparisonFullDesc"),
           variant: "destructive",
         });
         return;
@@ -167,8 +169,8 @@ export default function PropertyDetail() {
         cover_image_url: property.cover_image_url || null
       });
       toast({
-        title: "Added to comparison",
-        description: `"${property.title}" has been added to your comparison list.`,
+        title: t("propertyDetail.addedToComparison"),
+        description: t("propertyDetail.addedToComparisonDesc", { title: property.title }),
       });
     }
   };
@@ -195,8 +197,8 @@ export default function PropertyDetail() {
     return (
       <SiteLayout>
         <div className="container-wide py-24 text-center">
-          <h1 className="font-serif text-3xl">Listing not found</h1>
-          <Button asChild className="mt-6"><Link to="/properties">Back to listings</Link></Button>
+          <h1 className="font-serif text-3xl">{t("propertyDetail.notFound")}</h1>
+          <Button asChild className="mt-6"><Link to="/properties">{t("propertyDetail.backToListings")}</Link></Button>
         </div>
       </SiteLayout>
     );
@@ -218,9 +220,9 @@ export default function PropertyDetail() {
       
       <div className="container-wide pt-8 pb-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
+          <Link to="/" className="hover:text-primary transition-colors">{t("propertyDetail.breadcrumbs.home")}</Link>
           <span>/</span>
-          <Link to="/properties" className="hover:text-primary transition-colors">Marketplace</Link>
+          <Link to="/properties" className="hover:text-primary transition-colors">{t("propertyDetail.breadcrumbs.marketplace")}</Link>
           <span>/</span>
           <span className="text-foreground font-medium truncate">{property.title}</span>
         </div>
@@ -252,7 +254,7 @@ export default function PropertyDetail() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">Listing Price</p>
+                <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">{t("propertyDetail.listingPrice")}</p>
                 <p className="font-serif text-3xl font-semibold text-foreground">
                   {formatPrice(Number(property.price), property.currency, property.property_type)}
                 </p>
@@ -264,7 +266,7 @@ export default function PropertyDetail() {
                     className={`rounded-lg font-medium ${saved ? "text-primary border-primary bg-primary/5" : ""}`}
                   >
                     <Heart className={`h-4 w-4 mr-2 ${saved ? "fill-primary" : ""}`} />
-                    {saved ? "Saved" : "Save Property"}
+                    {saved ? t("propertyDetail.saved") : t("propertyDetail.saveProperty")}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -273,7 +275,7 @@ export default function PropertyDetail() {
                     className={`rounded-lg font-medium ${inCompare ? "text-primary border-primary bg-primary/5" : ""}`}
                   >
                     <Scale className="h-4 w-4 mr-2" />
-                    {inCompare ? "Compared" : "Compare"}
+                    {inCompare ? t("propertyDetail.compared") : t("propertyDetail.compare")}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -281,10 +283,10 @@ export default function PropertyDetail() {
                     className="rounded-lg font-medium"
                     onClick={() => {
                       navigator.clipboard.writeText(window.location.href);
-                      toast({ title: "Link Copied", description: "Property link copied to clipboard." });
+                      toast({ title: t("propertyDetail.linkCopied"), description: t("propertyDetail.linkCopiedDesc") });
                     }}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" /> Share
+                    <ExternalLink className="h-4 w-4 mr-2" /> {t("propertyDetail.share")}
                   </Button>
                   {property.virtual_tour_url && (
                     <VirtualTourButton url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
@@ -296,23 +298,23 @@ export default function PropertyDetail() {
             <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
               <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                 <Bed className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Bedrooms</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.bedrooms")}</p>
                 <p className="text-lg font-bold">{property.bedrooms ?? "—"}</p>
               </div>
               <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                 <Bath className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Bathrooms</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.bathrooms")}</p>
                 <p className="text-lg font-bold">{property.bathrooms ?? "—"}</p>
               </div>
               <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                 <Car className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Parking</p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.parking")}</p>
                 <p className="text-lg font-bold">{property.parking_spaces ?? "0"}</p>
               </div>
               <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                 <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">Total Area</p>
-                <p className="text-lg font-bold">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">sq ft</span></p>
+                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.totalArea")}</p>
+                <p className="text-lg font-bold">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{t("propertyDetail.specs.sqft")}</span></p>
               </div>
             </div>
           </div>
@@ -322,7 +324,7 @@ export default function PropertyDetail() {
           {/* Description */}
           <div>
             <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
-              <FileText className="h-5 w-5 text-primary" /> Description
+              <FileText className="h-5 w-5 text-primary" /> {t("propertyDetail.description")}
             </h2>
             <div className="mt-6">
               <p className="whitespace-pre-line leading-relaxed text-foreground/80 text-lg">
@@ -338,22 +340,22 @@ export default function PropertyDetail() {
 
           {/* Key Details Grid */}
           <div className="rounded-xl bg-accent/50 p-8 border border-border/50">
-            <h2 className="font-serif text-lg font-semibold mb-5 text-foreground">Property Overview</h2>
+            <h2 className="font-serif text-lg font-semibold mb-5 text-foreground">{t("propertyDetail.overview.title")}</h2>
             <div className="grid gap-y-6 gap-x-12 sm:grid-cols-2">
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Hash className="h-4 w-4" /> Property ID</span>
-                <span className="text-sm font-bold font-mono">{property.internal_id || "N/A"}</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Hash className="h-4 w-4" /> {t("propertyDetail.overview.propertyId")}</span>
+                <span className="text-sm font-bold font-mono">{property.internal_id || t("propertyDetail.overview.na")}</span>
               </div>
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Building2 className="h-4 w-4" /> Property Type</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Building2 className="h-4 w-4" /> {t("propertyDetail.overview.propertyType")}</span>
                 <span className="text-sm font-bold capitalize">{property.property_type}</span>
               </div>
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Clock className="h-4 w-4" /> Year Built</span>
-                <span className="text-sm font-bold">{property.year_built || "Modern"}</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Clock className="h-4 w-4" /> {t("propertyDetail.overview.yearBuilt")}</span>
+                <span className="text-sm font-bold">{property.year_built || t("propertyDetail.overview.yearBuiltDefault")}</span>
               </div>
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Calendar className="h-4 w-4" /> Listing Date</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Calendar className="h-4 w-4" /> {t("propertyDetail.overview.listingDate")}</span>
                 <span className="text-sm font-bold">{new Date(property.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               </div>
             </div>
@@ -363,14 +365,14 @@ export default function PropertyDetail() {
           {(interior_features.length > 0 || exterior_features.length > 0) && (
             <div className="space-y-8">
               <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
-                <CheckCircle2 className="h-5 w-5 text-primary" /> Amenities & Features
+                <CheckCircle2 className="h-5 w-5 text-primary" /> {t("propertyDetail.amenities.title")}
               </h2>
               
               <div className="grid gap-10 sm:grid-cols-2">
                 {interior_features.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Interior Features
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {t("propertyDetail.amenities.interior")}
                     </h3>
                     <div className="grid gap-3">
                       {interior_features.map(f => (
@@ -386,7 +388,7 @@ export default function PropertyDetail() {
                 {exterior_features.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Exterior Features
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {t("propertyDetail.amenities.exterior")}
                     </h3>
                     <div className="grid gap-3">
                       {exterior_features.map(f => (
@@ -404,123 +406,141 @@ export default function PropertyDetail() {
 
           {/* Location & Neighborhood */}
           <div className="space-y-8 mt-16 pt-12 border-t border-gray-200">
+            {/* 1. Neighborhood Summary Header */}
             <div className="flex flex-col gap-2">
+              <div className="flex items-center gap-3 mb-1">
+                <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-md">
+                  {t("propertyDetail.neighborhood.badge")}
+                </span>
+              </div>
               <h2 className="font-serif text-3xl font-bold text-gray-900">
-                Neighborhood & Location
+                {property.city ? `${property.neighborhood || property.city}, ${property.state || ''}` : t("propertyDetail.neighborhood.title")}
               </h2>
               <p className="text-gray-600 max-w-2xl text-lg">
-                Explore the surrounding area, local amenities, and the unique characteristics that make this location desirable.
+                {property.property_type === 'commercial' 
+                  ? t("propertyDetail.neighborhood.descCommercial") 
+                  : t("propertyDetail.neighborhood.descResidential")}
               </p>
             </div>
             
-            <div className="grid gap-10 lg:grid-cols-[1fr_400px]">
-              <div className="space-y-6">
-                {/* Map Container */}
-                <div className="h-[320px] md:h-[480px] w-full rounded-xl overflow-hidden border border-gray-200 relative z-0 flex flex-col">
-                  <Suspense fallback={
-                    <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 animate-pulse">
-                      <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm border border-gray-100">
-                        <MapPin className="h-8 w-8 text-gray-400" />
-                      </div>
-                      <p className="text-gray-500 font-medium font-sans">Loading interactive map...</p>
-                    </div>
-                  }>
-                    <InteractivePropertyMap 
-                      latitude={property.latitude}
-                      longitude={property.longitude}
-                      address={property.address}
-                      title={property.title}
-                      nearbyPois={nearbyPois}
-                    />
-                  </Suspense>
-                  
-                  {/* Overlay Banner */}
-                  <div className="pointer-events-none absolute bottom-6 left-6 right-6 p-4 rounded-lg bg-white/95 backdrop-blur border border-gray-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 z-20">
-                    <div className="flex items-start gap-4">
-                      <div className="h-10 w-10 rounded-full bg-gray-100 flex items-center justify-center shrink-0">
-                        <MapPin className="h-5 w-5 text-gray-600" />
-                      </div>
-                      <div>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-0.5">Registered Address</p>
-                        <p className="text-base sm:text-lg font-bold leading-tight text-gray-900 line-clamp-1">{property.address || "Location on request"}</p>
-                      </div>
-                    </div>
-                    <Button variant="outline" className="pointer-events-auto rounded-lg font-bold border-gray-300 text-gray-700 hover:bg-gray-50 shrink-0" asChild>
-                      <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.title)}`} target="_blank" rel="noreferrer">
-                        Get Directions <ExternalLink className="ml-2 h-4 w-4" />
-                      </a>
-                    </Button>
-                  </div>
-                </div>
+            {/* 2. Categorized Local Amenities Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-gray-200">
+                <h3 className="font-serif text-xl font-bold text-gray-900">
+                  {t("propertyDetail.neighborhood.localAmenities")}
+                </h3>
+                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  {nearbyPois.length} {t("propertyDetail.neighborhood.found")}
+                </span>
+              </div>
+              
+              {nearbyPois.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  {nearbyPois.map((poi, idx) => {
+                    let Icon = MapPin;
+                    let iconBg = "bg-gray-50";
+                    let iconColor = "text-gray-500";
+                    const typeLower = poi.type.toLowerCase();
+                    
+                    if (typeLower.includes('school')) {
+                      Icon = Building2;
+                      iconBg = "bg-indigo-50";
+                      iconColor = "text-indigo-600";
+                    } else if (typeLower.includes('hospital') || typeLower.includes('medical')) {
+                      Icon = ShieldCheck;
+                      iconBg = "bg-rose-50";
+                      iconColor = "text-rose-600";
+                    } else if (typeLower.includes('shopping') || typeLower.includes('mall') || typeLower.includes('retail')) {
+                      Icon = MapPin;
+                      iconBg = "bg-amber-50";
+                      iconColor = "text-amber-600";
+                    }
 
-                {/* Location Quick Stats */}
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between">
-                    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0 mb-3">
-                      <Clock className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">Viewing Schedule</p>
-                      <p className="text-sm font-medium leading-relaxed text-gray-900">
-                        {property.inspection_availability || "Available for viewing Monday to Saturday, 9AM - 5PM."}
-                      </p>
-                    </div>
+                    return (
+                      <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:border-gray-300 transition-colors">
+                        <div className={`h-10 w-10 rounded-full ${iconBg} flex items-center justify-center ${iconColor} shrink-0`}>
+                          <Icon className="h-5 w-5" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-bold text-gray-900 truncate" title={poi.name}>{poi.name}</p>
+                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">{poi.type}</p>
+                        </div>
+                        {poi.distance_km && (
+                          <div className="text-right shrink-0">
+                            <p className="text-sm font-bold text-gray-900">{poi.distance_km} km</p>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="w-full flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
+                  <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm border border-gray-100">
+                    <MapPin className="h-5 w-5 text-gray-400" />
                   </div>
-                  
-                  <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex flex-col justify-between">
-                    <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0 mb-3">
-                      <Building2 className="h-5 w-5" />
+                  <p className="font-serif text-base font-bold text-gray-900">{t("propertyDetail.neighborhood.emptyTitle")}</p>
+                  <p className="mt-1 text-sm text-gray-500">{t("propertyDetail.neighborhood.emptyDesc")}</p>
+                </div>
+              )}
+            </div>
+
+            {/* 3. Landscape Interactive Map */}
+            <div className="w-full rounded-xl overflow-hidden border border-gray-200 relative z-0 flex flex-col shadow-sm bg-gray-50">
+              <div className="aspect-[16/9] md:aspect-[21/9] max-h-[400px] w-full relative">
+                <Suspense fallback={
+                  <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 animate-pulse absolute inset-0">
+                    <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm border border-gray-100">
+                      <MapPin className="h-8 w-8 text-gray-400" />
                     </div>
-                    <div>
-                      <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">District Profile</p>
-                      <p className="text-sm font-medium leading-relaxed text-gray-900">
-                        Premium {property.property_type === 'commercial' ? 'Business' : 'Residential'} District
-                      </p>
-                    </div>
+                    <p className="text-gray-500 font-medium font-sans">{t("propertyDetail.neighborhood.loadingMap")}</p>
                   </div>
+                }>
+                  <InteractivePropertyMap 
+                    latitude={property.latitude}
+                    longitude={property.longitude}
+                    address={property.address}
+                    title={property.title}
+                    nearbyPois={nearbyPois}
+                  />
+                </Suspense>
+              </div>
+              
+              {/* Context Banner Overlay */}
+              <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-auto md:w-[400px] p-4 rounded-lg bg-white/95 backdrop-blur border border-gray-200 shadow-md flex flex-col gap-2 z-20 pointer-events-none">
+                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t("propertyDetail.neighborhood.registeredAddress")}</p>
+                <p className="text-sm font-bold leading-tight text-gray-900 line-clamp-2">{property.address || t("propertyDetail.neighborhood.locationOnRequest")}</p>
+                <Button variant="outline" size="sm" className="pointer-events-auto mt-2 rounded-md font-bold border-gray-300 text-gray-700 hover:bg-gray-50 w-fit" asChild>
+                  <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.title)}`} target="_blank" rel="noreferrer">
+                    {t("propertyDetail.neighborhood.getDirections")} <ExternalLink className="ml-2 h-3 w-3" />
+                  </a>
+                </Button>
+              </div>
+            </div>
+
+            {/* 4. Surrounding Context Layer */}
+            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex items-start gap-4">
+                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                  <Clock className="h-5 w-5" />
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.viewingSchedule")}</p>
+                  <p className="text-sm font-medium leading-relaxed text-gray-900">
+                    {property.inspection_availability || t("propertyDetail.neighborhood.viewingScheduleDefault")}
+                  </p>
                 </div>
               </div>
-
-              {/* Nearby POIs */}
-              <div className="space-y-4 flex flex-col">
-                <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-                  <h3 className="font-serif text-xl font-bold text-gray-900">
-                    Local Amenities
-                  </h3>
-                  <span className="text-sm font-medium text-gray-500">
-                    {nearbyPois.length} Found
-                  </span>
+              
+              <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex items-start gap-4">
+                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                  <Building2 className="h-5 w-5" />
                 </div>
-                
-                <div className="flex-1 overflow-y-auto pr-2 space-y-3 custom-scrollbar max-h-[600px]">
-                  {nearbyPois.length > 0 ? nearbyPois.map((poi, idx) => (
-                    <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:border-gray-200 transition-colors">
-                      <div className="h-10 w-10 rounded-full bg-gray-50 flex items-center justify-center text-gray-500 shrink-0">
-                        {poi.type.toLowerCase().includes('school') ? <Building2 className="h-4 w-4" /> : 
-                         poi.type.toLowerCase().includes('hospital') ? <ShieldCheck className="h-4 w-4" /> : 
-                         poi.type.toLowerCase().includes('shopping') ? <MapPin className="h-4 w-4" /> :
-                         <MapPin className="h-4 w-4" />}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-gray-900 truncate">{poi.name}</p>
-                        <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">{poi.type}</p>
-                      </div>
-                      {poi.distance_km && (
-                        <div className="text-right shrink-0">
-                          <p className="text-sm font-bold text-gray-900">{poi.distance_km} km</p>
-                          <p className="text-[10px] text-gray-500 font-medium uppercase">Distance</p>
-                        </div>
-                      )}
-                    </div>
-                  )) : (
-                    <div className="h-full min-h-[200px] flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
-                      <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm border border-gray-100">
-                        <MapPin className="h-5 w-5 text-gray-400" />
-                      </div>
-                      <p className="font-serif text-base font-bold text-gray-900">No specific amenities listed</p>
-                      <p className="mt-1 text-sm text-gray-500">Check the map view for a general overview.</p>
-                    </div>
-                  )}
+                <div>
+                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.zoningStatus")}</p>
+                  <p className="text-sm font-medium leading-relaxed text-gray-900">
+                    {property.property_type === 'commercial' ? t("propertyDetail.neighborhood.zoningCommercial") : t("propertyDetail.neighborhood.zoningResidential")}
+                  </p>
                 </div>
               </div>
             </div>
@@ -530,7 +550,7 @@ export default function PropertyDetail() {
           {property.video_url && (
             <div className="mt-8">
               <h2 className="font-serif text-2xl font-bold flex items-center gap-3 text-foreground">
-                <Maximize2 className="h-6 w-6 text-primary" /> Property Tour
+                <Maximize2 className="h-6 w-6 text-primary" /> {t("propertyDetail.videoTour")}
               </h2>
               <div className="mt-6 aspect-video overflow-hidden rounded-xl border-4 border-card shadow-card">
                 <iframe src={property.video_url} className="h-full w-full" allowFullScreen />
@@ -559,7 +579,7 @@ export default function PropertyDetail() {
           {agent && (
             <div className="mt-12">
               <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground mb-6">
-                <Star className="h-5 w-5 text-amber-400" /> Agent Reviews
+                <Star className="h-5 w-5 text-amber-400" /> {t("propertyDetail.agentReviews")}
               </h2>
               <AgentReviews agentId={agent.id} agentName={agent.full_name} propertyId={property.id} />
             </div>
@@ -587,13 +607,13 @@ export default function PropertyDetail() {
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {agent.phone && (
                   <Button asChild variant="outline" className="rounded-xl h-11 border-border hover:bg-secondary font-bold text-xs shadow-sm">
-                    <a href={`tel:${agent.phone}`}><Phone className="mr-2 h-4 w-4" /> Call Agent</a>
+                    <a href={`tel:${agent.phone}`}><Phone className="mr-2 h-4 w-4" /> {t("propertyDetail.agent.callAgent")}</a>
                   </Button>
                 )}
                 {agent.whatsapp && (
                   <Button asChild variant="outline" className="rounded-xl h-11 border-emerald-500/20 text-emerald-600 hover:bg-emerald-50 shadow-sm font-bold text-xs">
                     <a href={`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-                      <MessageSquare className="mr-2 h-4 w-4" /> WhatsApp</a>
+                      <MessageSquare className="mr-2 h-4 w-4" /> {t("propertyDetail.agent.whatsapp")}</a>
                   </Button>
                 )}
                 {agent.user_id && (
@@ -610,12 +630,12 @@ export default function PropertyDetail() {
                 <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
                   <DialogTrigger asChild>
                     <Button className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold shadow-sm text-sm">
-                      <Calendar className="mr-2 h-4 w-4" /> Schedule Viewing
+                      <Calendar className="mr-2 h-4 w-4" /> {t("propertyDetail.agent.scheduleViewing")}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-lg">
                     <DialogHeader className="bg-primary pb-6">
-                      <DialogTitle className="font-serif text-2xl text-white">Schedule a Viewing</DialogTitle>
+                      <DialogTitle className="font-serif text-2xl text-white">{t("propertyDetail.agent.scheduleViewingTitle")}</DialogTitle>
                       <p className="text-sm text-white/80 italic">{property.title}</p>
                     </DialogHeader>
                     <DialogBody className="py-6">
@@ -626,7 +646,7 @@ export default function PropertyDetail() {
 
                 <Button onClick={toggleSave} variant="secondary" className="w-full h-12 rounded-xl font-bold text-sm bg-secondary/80 hover:bg-secondary border border-border/50 transition-all">
                   <Heart className={`mr-2 h-5 w-5 ${saved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-                  {saved ? "Added to Saved" : "Save Listing"}
+                  {saved ? t("propertyDetail.agent.addedToSaved") : t("propertyDetail.agent.saveListing")}
                 </Button>
               </div>
             </div>
@@ -636,29 +656,29 @@ export default function PropertyDetail() {
           <div className="rounded-xl border border-primary/15 bg-card p-6 shadow-soft">
             <h3 className="font-serif text-lg font-semibold text-foreground">
               {userReservation?.status === 'confirmed' 
-                ? 'Complete Purchase' 
+                ? t("propertyDetail.reservation.completePurchase") 
                 : ['reserved', 'sold', 'rented', 'unavailable', 'payment_under_review'].includes(property.status) 
-                  ? `Property ${property.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`
-                  : 'Reserve Property'}
+                  ? `${property.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`
+                  : t("propertyDetail.reservation.reserveProperty")}
             </h3>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
               {userReservation?.status === 'confirmed'
-                ? 'Your reservation is approved. You can now complete the final purchase of this property.'
+                ? t("propertyDetail.reservation.reservationApproved")
                 : property.status === 'reserved' 
-                ? 'This property has been officially reserved and is currently off the market.' 
+                ? t("propertyDetail.reservation.propertyReserved") 
                 : property.status === 'sold'
-                ? 'This property has been sold and is no longer available.'
+                ? t("propertyDetail.reservation.propertySold")
                 : property.status === 'rented'
-                ? 'This property is currently rented out.'
+                ? t("propertyDetail.reservation.propertyRented")
                 : property.status === 'payment_under_review'
-                ? 'A payment for this property is currently being reviewed.'
+                ? t("propertyDetail.reservation.paymentUnderReview")
                 : property.status === 'unavailable'
-                ? 'This property is currently not available for purchase.'
-                : 'Hold this property for 7 days to finalize your purchase.'}
+                ? t("propertyDetail.reservation.propertyUnavailable")
+                : t("propertyDetail.reservation.holdProperty")}
             </p>
             {(!userReservation || userReservation.status !== 'confirmed') && property.status === 'available' && (
               <div className="mt-5 flex items-center justify-between p-3.5 rounded-lg bg-accent/50 border border-border/50">
-                <span className="text-xs font-medium text-muted-foreground">Reservation Fee</span>
+                <span className="text-xs font-medium text-muted-foreground">{t("propertyDetail.reservation.reservationFee")}</span>
                 <span className="text-lg font-semibold text-primary font-serif">500.00 USD</span>
               </div>
             )}
@@ -666,7 +686,7 @@ export default function PropertyDetail() {
             {userReservation?.status === 'confirmed' ? (
               <div className="space-y-5 mt-5">
                 <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
-                  <span className="text-xs font-medium text-primary">Remaining Balance</span>
+                  <span className="text-xs font-medium text-primary">{t("propertyDetail.reservation.remainingBalance")}</span>
                   <span className="text-lg font-semibold text-primary font-serif">
                     {formatPrice(Number(property.price) - 500, property.currency, property.property_type)}
                   </span>
@@ -680,7 +700,7 @@ export default function PropertyDetail() {
                   className="w-full h-11 bg-primary text-primary-foreground font-medium rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
                   onClick={() => setPaymentModalOpen(true)}
                 >
-                  Complete Purchase
+                  {t("propertyDetail.reservation.completePurchase")}
                 </Button>
               </div>
             ) : (
@@ -689,28 +709,28 @@ export default function PropertyDetail() {
                 disabled={property.status !== 'available'}
                 onClick={() => {
                   if (!user) {
-                    toast({ title: "Sign in required", description: "Please sign in to reserve this property." });
+                    toast({ title: t("propertyDetail.reservation.signInRequired"), description: t("propertyDetail.reservation.signInToReserve") });
                     return;
                   }
                   setReserveOpen(true);
                 }}
               >
                 {property.status === 'available' 
-                  ? 'Reserve Now' 
+                  ? t("propertyDetail.reservation.reserveNow") 
                   : property.status === 'reserved' 
-                  ? 'Already Reserved' 
+                  ? t("propertyDetail.reservation.alreadyReserved") 
                   : property.status === 'sold'
-                  ? 'Sold'
+                  ? t("propertyDetail.reservation.sold")
                   : property.status === 'rented'
-                  ? 'Rented'
+                  ? t("propertyDetail.reservation.rented")
                   : property.status === 'payment_under_review'
-                  ? 'Payment Under Review'
-                  : 'Unavailable'}
+                  ? t("propertyDetail.reservation.paymentReview")
+                  : t("propertyDetail.reservation.unavailable")}
               </Button>
             )}
             
             <p className="mt-3 text-[11px] text-center text-muted-foreground">
-              {property.status === 'available' || userReservation?.status === 'confirmed' ? 'Processed securely via escrow' : 'This property is currently unavailable'}
+              {property.status === 'available' || userReservation?.status === 'confirmed' ? t("propertyDetail.reservation.secureEscrow") : t("propertyDetail.reservation.currentlyUnavailable")}
             </p>
             <ReserveDialog
               open={reserveOpen}
@@ -725,8 +745,8 @@ export default function PropertyDetail() {
           </div>
 
           <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-            <h3 className="font-serif text-lg font-semibold text-foreground">Questions?</h3>
-            <p className="mt-1 text-sm text-muted-foreground">Inquire about details or flexible payment plans.</p>
+            <h3 className="font-serif text-lg font-semibold text-foreground">{t("propertyDetail.inquiry.title")}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{t("propertyDetail.inquiry.desc")}</p>
             <div className="mt-6">
               <InquiryForm propertyId={property.id} agentId={agent?.id ?? null} />
             </div>
@@ -739,11 +759,11 @@ export default function PropertyDetail() {
         <section className="container-wide py-16 bg-accent/40">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="font-serif text-2xl font-semibold">Similar Properties</h2>
-              <p className="text-muted-foreground mt-1 text-sm">More listings in {property.locations?.name || "the area"}.</p>
+              <h2 className="font-serif text-2xl font-semibold">{t("propertyDetail.related.title")}</h2>
+              <p className="text-muted-foreground mt-1 text-sm">{property.locations?.name ? t("propertyDetail.related.desc", { location: property.locations.name }) : t("propertyDetail.related.descFallback")}</p>
             </div>
             <Button asChild variant="ghost" className="rounded-lg font-medium text-primary hover:bg-primary/5 group">
-              <Link to="/properties">View all <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></Link>
+              <Link to="/properties">{t("propertyDetail.related.viewAll")} <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">

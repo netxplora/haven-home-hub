@@ -36,20 +36,6 @@ const EXPLORE_CITIES = [
   { name: "New York", image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80", count: 340 },
 ];
 
-const TESTIMONIALS = [
-  { quote: "The most transparent real estate investment platform I've used. Returns are consistent and tracking is effortless.", author: "James T.", role: "Fractional Investor" },
-  { quote: "Found our dream home in a week. The agents are genuine professionals who actually understand the local market.", author: "Sarah M.", role: "Homebuyer" },
-  { quote: "Managing my portfolio of fractional properties has never been easier. The dashboard is clean and reliable.", author: "Robert K.", role: "Portfolio Manager" },
-];
-
-const ACTIVITY_FEED = [
-  "New fractional investment completed in Miami, FL",
-  "Luxury Villa reserved in Los Angeles, CA",
-  "Premium Apartment listed in Austin, TX",
-  "Investment target reached for Houston property",
-  "New property added in Denver, CO"
-];
-
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const { t } = useTranslation();
@@ -107,10 +93,47 @@ export default function Home() {
   }, {});
 
   const hero = contentMap.homepage_hero || {
-    title: t("hero.title", "Find a home you'll love coming back to."),
-    subtitle: t("hero.subtitle", "Browse curated homes for sale, premium rentals, and land — all hand-picked and managed by trusted agents."),
-    badge: "Curated by our agency"
+    title: t("hero.title"),
+    subtitle: t("hero.subtitle"),
+    badge: t("hero.badge")
   };
+
+  const ACTIVITY_FEED = [
+    t("home.activity.feed1"),
+    t("home.activity.feed2"),
+    t("home.activity.feed3"),
+    t("home.activity.feed4"),
+    t("home.activity.feed5")
+  ];
+
+  const TESTIMONIALS = [
+    { quote: t("home.testimonials.quote1"), author: t("home.testimonials.author1"), role: t("home.testimonials.role1") },
+    { quote: t("home.testimonials.quote2"), author: t("home.testimonials.author2"), role: t("home.testimonials.role2") },
+    { quote: t("home.testimonials.quote3"), author: t("home.testimonials.author3"), role: t("home.testimonials.role3") },
+  ];
+
+  const WHY_INVEST = [
+    { icon: ShieldCheck, title: t("home.whyInvest.verifiedListings"), desc: t("home.whyInvest.verifiedListingsDesc") },
+    { icon: LineChart, title: t("home.whyInvest.transparentTracking"), desc: t("home.whyInvest.transparentTrackingDesc") },
+    { icon: Lock, title: t("home.whyInvest.securePayments"), desc: t("home.whyInvest.securePaymentsDesc") },
+    { icon: PieChart, title: t("home.whyInvest.fractionalAccess"), desc: t("home.whyInvest.fractionalAccessDesc") },
+    { icon: CheckCircle, title: t("home.whyInvest.clearOwnership"), desc: t("home.whyInvest.clearOwnershipDesc") }
+  ];
+
+  const STATS = [
+    { label: t("home.stats.totalProperties"), value: "1,240+" },
+    { label: t("home.stats.activeInvestments"), value: "85" },
+    { label: t("home.stats.propertiesSold"), value: "450+" },
+    { label: t("home.stats.citiesCovered"), value: "12" },
+    { label: t("home.stats.activeInvestors"), value: "3,200+" }
+  ];
+
+  const EDUCATION_STEPS = [
+    { step: "1", title: t("home.education.step1Title"), desc: t("home.education.step1Desc") },
+    { step: "2", title: t("home.education.step2Title"), desc: t("home.education.step2Desc") },
+    { step: "3", title: t("home.education.step3Title"), desc: t("home.education.step3Desc") },
+    { step: "4", title: t("home.education.step4Title"), desc: t("home.education.step4Desc") }
+  ];
 
   return (
     <SiteLayout>
@@ -162,10 +185,10 @@ export default function Home() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
               <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
             </span>
-            Live Activity
+            {t("home.activity.live")}
           </div>
           <div className="flex-1 overflow-hidden relative h-6">
-             <ActivityTicker />
+             <ActivityTicker items={ACTIVITY_FEED} />
           </div>
         </div>
       </section>
@@ -174,15 +197,15 @@ export default function Home() {
       <section className="container-wide section-gap pt-20">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
           <div className="max-w-2xl">
-            <span className="section-label">{t("home.featured.label", "Premium Selection")}</span>
-            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{t("home.featured.title", "Featured Properties")}</h2>
+            <span className="section-label">{t("home.featured.label")}</span>
+            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{t("home.featured.title")}</h2>
             <p className="mt-3 text-muted-foreground leading-relaxed">
-              {t("home.featured.subtitle", "Explore our hand-picked selection of high-quality homes and exclusive investment opportunities.")}
+              {t("home.featured.subtitle")}
             </p>
           </div>
           <Button asChild variant="outline" className="shrink-0 group">
             <Link to="/properties">
-              View all listings <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              {t("home.featured.viewAll")} <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
         </div>
@@ -209,8 +232,8 @@ export default function Home() {
         ) : (
           <div className="rounded-2xl border-2 border-dashed border-border bg-accent/30 py-16 px-8 text-center">
             <Building2 className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="font-serif text-lg font-medium text-foreground">No featured properties</h3>
-            <p className="text-sm text-muted-foreground mt-2">Check back later or browse our full catalog.</p>
+            <h3 className="font-serif text-lg font-medium text-foreground">{t("home.featured.emptyTitle")}</h3>
+            <p className="text-sm text-muted-foreground mt-2">{t("home.featured.emptyDesc")}</p>
           </div>
         )}
       </section>
@@ -229,36 +252,36 @@ export default function Home() {
 
           <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-2xl text-left">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-6 border border-emerald-400/30 backdrop-blur-sm">
-              <PieChart className="h-4 w-4" /> Fractional Ownership
+              <PieChart className="h-4 w-4" /> {t("home.fractional.badge")}
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
-              Build Wealth Through Premium Real Estate
+              {t("home.fractional.title")}
             </h2>
             <p className="mt-5 text-base sm:text-lg text-gray-300 leading-relaxed max-w-xl font-light">
-              Co-invest in fully-managed, high-yield properties alongside other verified investors. Earn monthly rental income and long-term appreciation with a single intuitive dashboard.
+              {t("home.fractional.desc")}
             </p>
             
             <div className="mt-8 grid grid-cols-3 gap-4 border-t border-white/10 pt-8 max-w-lg mb-8">
               <div>
                  <div className="text-2xl font-semibold text-white">42+</div>
-                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">Active Units</div>
+                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.activeUnits")}</div>
               </div>
               <div>
                  <div className="text-2xl font-semibold text-white">12%</div>
-                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">Avg Target ROI</div>
+                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.avgRoi")}</div>
               </div>
               <div>
                  <div className="text-2xl font-semibold text-white">$4.2M</div>
-                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">Funded</div>
+                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.funded")}</div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Button asChild size="lg" className="w-full sm:w-auto bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg font-medium text-base h-12 px-8">
-                <Link to="/invest">Start Investing <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/invest">{t("home.fractional.start")} <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-white/5 text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md font-medium text-base h-12 px-8">
-                <Link to="/invest/opportunities">View Opportunities</Link>
+                <Link to="/invest/opportunities">{t("home.fractional.view")}</Link>
               </Button>
             </div>
           </div>
@@ -269,9 +292,9 @@ export default function Home() {
       <section className="container-wide section-gap">
         <div className="grid gap-6 md:grid-cols-3">
           {[
-            { type: "buy", title: t("home.categories.buy.title", "Homes for Sale"), desc: "Find your forever home in premium neighborhoods.", img: "/src/assets/property-1.jpg" },
-            { type: "rent", title: t("home.categories.rent.title", "Premium Rentals"), desc: "Flexible living in beautifully managed properties.", img: "/src/assets/property-2.jpg" },
-            { type: "land", title: t("home.categories.land.title", "Land & Plots"), desc: "Build your vision on surveyed, prime locations.", img: "/src/assets/property-4.jpg" },
+            { type: "buy", title: t("home.categories.buy.title"), desc: t("home.categories.buy.desc"), img: "/src/assets/property-1.jpg" },
+            { type: "rent", title: t("home.categories.rent.title"), desc: t("home.categories.rent.desc"), img: "/src/assets/property-2.jpg" },
+            { type: "land", title: t("home.categories.land.title"), desc: t("home.categories.land.desc"), img: "/src/assets/property-4.jpg" },
           ].map((c) => (
             <Link
               key={c.type}
@@ -287,7 +310,7 @@ export default function Home() {
                   {c.desc}
                 </p>
                 <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide uppercase text-white/90">
-                  {t("home.categories.browse", "Explore")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1.5" />
+                  {t("home.categories.browse")} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1.5" />
                 </span>
               </div>
             </Link>
@@ -300,11 +323,11 @@ export default function Home() {
         <div className="container-wide">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
             <div>
-              <span className="section-label flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> Fresh Inventory</span>
-              <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Recently Added Properties</h2>
+              <span className="section-label flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {t("home.freshInventory.label")}</span>
+              <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{t("home.freshInventory.title")}</h2>
             </div>
             <Button asChild variant="ghost" className="shrink-0 text-primary hover:bg-primary/5">
-              <Link to="/properties?sort=newest">View all new listings <ArrowRight className="ml-2 h-4 w-4" /></Link>
+              <Link to="/properties?sort=newest">{t("home.freshInventory.viewAll")} <ArrowRight className="ml-2 h-4 w-4" /></Link>
             </Button>
           </div>
         </div>
@@ -317,21 +340,15 @@ export default function Home() {
       {/* 6. WHY INVEST WITH US */}
       <section className="container-wide section-gap">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="section-label mx-auto">Platform Trust</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">Why Investors Choose Us</h2>
+          <span className="section-label mx-auto">{t("home.whyInvest.label")}</span>
+          <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.whyInvest.title")}</h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            We provide a transparent, legally compliant ecosystem that prioritizes security and operational excellence for every transaction.
+            {t("home.whyInvest.desc")}
           </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-3 lg:grid-cols-5">
-          {[
-            { icon: ShieldCheck, title: "Verified Listings", desc: "Every property undergoes rigorous legal and physical inspection." },
-            { icon: LineChart, title: "Transparent Tracking", desc: "Monitor your property performance and ROI in real-time." },
-            { icon: Lock, title: "Secure Payments", desc: "Bank-grade security and compliant escrow structures." },
-            { icon: PieChart, title: "Fractional Access", desc: "Invest with lower capital requirements and diversify easily." },
-            { icon: CheckCircle, title: "Clear Ownership", desc: "Legally binding digital certificates and standardized contracts." }
-          ].map((item, idx) => (
+          {WHY_INVEST.map((item, idx) => (
             <div key={idx} className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md transition-shadow">
               <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 text-emerald-600">
                 <item.icon className="h-6 w-6" />
@@ -346,13 +363,7 @@ export default function Home() {
       {/* 7. MARKET STATISTICS */}
       <section className="bg-gray-900 py-16 my-16 border-y border-gray-800">
         <div className="container-wide grid grid-cols-2 md:grid-cols-5 gap-8 divide-x divide-gray-800">
-          {[
-            { label: "Total Properties", value: "1,240+" },
-            { label: "Active Investments", value: "85" },
-            { label: "Properties Sold", value: "450+" },
-            { label: "Cities Covered", value: "12" },
-            { label: "Active Investors", value: "3,200+" }
-          ].map((stat, idx) => (
+          {STATS.map((stat, idx) => (
              <div key={idx} className={`flex flex-col items-center text-center ${idx % 2 !== 0 && 'border-none md:border-solid'} ${idx === 0 && 'border-none'}`}>
                <div className="text-3xl md:text-4xl font-semibold text-white font-serif mb-2">{stat.value}</div>
                <div className="text-xs uppercase tracking-widest text-gray-400 font-medium">{stat.label}</div>
@@ -364,8 +375,8 @@ export default function Home() {
       {/* 8. EXPLORE BY CITY */}
       <section className="container-wide section-gap">
         <div className="section-header text-center mb-12">
-          <span className="section-label mx-auto">Explore Locations</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">Find Properties by City</h2>
+          <span className="section-label mx-auto">{t("home.exploreCities.label")}</span>
+          <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.exploreCities.title")}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
           {EXPLORE_CITIES.map((city) => (
@@ -379,7 +390,7 @@ export default function Home() {
               <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between">
                 <div>
                   <h3 className="font-serif text-xl font-medium text-white">{city.name}</h3>
-                  <p className="text-sm text-gray-300 mt-1">{city.count} Properties</p>
+                  <p className="text-sm text-gray-300 mt-1">{city.count} {t("home.exploreCities.properties")}</p>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                    <ArrowRight className="h-4 w-4 text-white" />
@@ -395,8 +406,8 @@ export default function Home() {
         <div className="container-wide">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
             <div>
-              <span className="section-label flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5" /> Market Activity</span>
-              <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Recently Completed Transactions</h2>
+              <span className="section-label flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5" /> {t("home.recentlySold.label")}</span>
+              <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{t("home.recentlySold.title")}</h2>
             </div>
           </div>
 
@@ -419,20 +430,15 @@ export default function Home() {
       {/* 10. INVESTMENT EDUCATION */}
       <section className="container-wide section-gap">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <span className="section-label mx-auto">Education</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">How Fractional Ownership Works</h2>
+          <span className="section-label mx-auto">{t("home.education.label")}</span>
+          <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.education.title")}</h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
-            We simplify real estate investing by dividing premium properties into affordable fractions, allowing you to build a diversified portfolio.
+            {t("home.education.desc")}
           </p>
         </div>
 
         <div className="grid gap-8 md:grid-cols-4">
-          {[
-            { step: "1", title: "Browse Offerings", desc: "Review vetted properties with detailed financials, appraisals, and projected returns." },
-            { step: "2", title: "Invest Securely", desc: "Purchase your preferred number of fractions using our secure, compliant payment gateway." },
-            { step: "3", title: "Receive Certificates", desc: "Gain legally binding digital ownership certificates directly in your investor dashboard." },
-            { step: "4", title: "Earn & Track", desc: "Monitor monthly rental yields and track asset appreciation in real-time." }
-          ].map((item, idx) => (
+          {EDUCATION_STEPS.map((item, idx) => (
             <div key={idx} className="relative p-6 rounded-2xl bg-card border border-border/60 shadow-sm">
               <div className="absolute -top-4 -left-4 h-10 w-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-lg border-4 border-background shadow-sm">
                 {item.step}
@@ -448,18 +454,18 @@ export default function Home() {
       <section className="bg-primary/5 border-y border-border/40 py-20">
         <div className="container-wide">
           <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl font-semibold text-foreground">What Our Clients Say</h2>
+            <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.testimonials.title")}</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {TESTIMONIALS.map((t, idx) => (
+            {TESTIMONIALS.map((item, idx) => (
               <div key={idx} className="bg-card p-8 rounded-2xl border border-border/50 shadow-sm">
                 <div className="flex gap-1 text-emerald-500 mb-4">
                   {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
                 </div>
-                <p className="text-muted-foreground italic mb-6 leading-relaxed">"{t.quote}"</p>
+                <p className="text-muted-foreground italic mb-6 leading-relaxed">"{item.quote}"</p>
                 <div>
-                  <h4 className="font-semibold text-foreground">{t.author}</h4>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{t.role}</p>
+                  <h4 className="font-semibold text-foreground">{item.author}</h4>
+                  <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{item.role}</p>
                 </div>
               </div>
             ))}
@@ -471,11 +477,11 @@ export default function Home() {
       <section className="container-wide section-gap">
         <div className="section-header flex items-end justify-between mb-10">
           <div>
-            <span className="section-label">Market Insights</span>
-            <h2 className="font-serif text-3xl font-semibold text-foreground">Latest News & Guides</h2>
+            <span className="section-label">{t("home.blog.label")}</span>
+            <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.blog.title")}</h2>
           </div>
           <Button asChild variant="outline" className="hidden sm:inline-flex">
-            <Link to="/blog">View all articles <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <Link to="/blog">{t("home.blog.viewAll")} <ArrowRight className="ml-2 h-4 w-4" /></Link>
           </Button>
         </div>
         <BlogTeaser />
@@ -489,12 +495,12 @@ export default function Home() {
           
           <div className="relative z-10 max-w-xl mx-auto">
             <Mail className="h-10 w-10 text-primary mx-auto mb-6" />
-            <h2 className="font-serif text-3xl font-semibold text-foreground mb-4">Stay Ahead of the Market</h2>
+            <h2 className="font-serif text-3xl font-semibold text-foreground mb-4">{t("home.newsletter.title")}</h2>
             <p className="text-muted-foreground mb-8 leading-relaxed">
-              Subscribe to our newsletter for exclusive property alerts, investment opportunities, and professional market analysis delivered straight to your inbox.
+              {t("home.newsletter.desc")}
             </p>
             <NewsletterForm />
-            <p className="text-xs text-muted-foreground mt-4">We respect your privacy. No spam, ever.</p>
+            <p className="text-xs text-muted-foreground mt-4">{t("home.newsletter.privacyNote")}</p>
           </div>
         </div>
       </section>
@@ -515,6 +521,7 @@ export default function Home() {
 }
 
 function BlogTeaser() {
+  const { t } = useTranslation();
   const { data: posts = [] } = useQuery({
     queryKey: ["blog-teaser"],
     queryFn: async () => {
@@ -549,7 +556,7 @@ function BlogTeaser() {
             </div>
           ) : (
             <div className="aspect-[16/10] bg-accent flex items-center justify-center">
-              <span className="text-muted-foreground font-serif text-base">Market Insights</span>
+              <span className="text-muted-foreground font-serif text-base">{t("home.blog.fallbackLabel")}</span>
             </div>
           )}
           <div className="flex flex-1 flex-col p-6">
@@ -576,19 +583,19 @@ function BlogTeaser() {
   );
 }
 
-function ActivityTicker() {
+function ActivityTicker({ items }: { items: string[] }) {
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % ACTIVITY_FEED.length);
+      setIndex((prev) => (prev + 1) % items.length);
     }, 4500);
     return () => clearInterval(interval);
-  }, []);
+  }, [items.length]);
 
   return (
     <div className="absolute inset-0 transition-transform duration-700 ease-in-out" style={{ transform: `translateY(-${index * 24}px)` }}>
-      {ACTIVITY_FEED.map((activity, i) => (
+      {items.map((activity, i) => (
         <div key={i} className="h-6 flex items-center text-sm font-medium text-muted-foreground whitespace-nowrap">
           {activity}
         </div>
@@ -600,6 +607,7 @@ function ActivityTicker() {
 function NewsletterForm() {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
+  const { t } = useTranslation();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -608,8 +616,8 @@ function NewsletterForm() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address.",
+        title: t("home.newsletter.invalidEmail"),
+        description: t("home.newsletter.invalidEmailDesc"),
         variant: "destructive",
       });
       return;
@@ -620,8 +628,8 @@ function NewsletterForm() {
       setLoading(false);
       setEmail("");
       toast({
-        title: "Subscribed successfully!",
-        description: "Thank you for subscribing to our market insights.",
+        title: t("home.newsletter.successTitle"),
+        description: t("home.newsletter.successDesc"),
       });
     }, 800);
   };
@@ -630,7 +638,7 @@ function NewsletterForm() {
     <form className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto" onSubmit={handleSubmit}>
       <Input
         type="email"
-        placeholder="Enter your email address"
+        placeholder={t("home.newsletter.placeholder")}
         className="h-12 flex-1 rounded-xl bg-background"
         required
         value={email}
@@ -643,7 +651,7 @@ function NewsletterForm() {
         className="h-12 px-8 rounded-xl bg-primary text-white hover:bg-primary/90 font-medium transition-all"
         disabled={loading}
       >
-        {loading ? "Subscribing..." : "Subscribe"}
+        {loading ? t("home.newsletter.subscribing") : t("home.newsletter.subscribe")}
       </Button>
     </form>
   );

@@ -72,28 +72,28 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 rounded-lg border-border/60 h-9">
                   <UserIcon className="h-4 w-4" />
-                  Account
+                  {t('nav.account', 'Account')}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate font-normal text-muted-foreground text-xs">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => navigate("/dashboard")}>
-                  <LayoutDashboard className="mr-2 h-4 w-4" /> My dashboard
+                  <LayoutDashboard className="mr-2 h-4 w-4" /> {t('nav.myDashboard', 'My dashboard')}
                 </DropdownMenuItem>
                 {isAgent && (
                   <DropdownMenuItem onSelect={() => navigate("/agent")}>
-                    <UserIcon className="mr-2 h-4 w-4" /> Agent dashboard
+                    <UserIcon className="mr-2 h-4 w-4" /> {t('nav.agentDashboard', 'Agent dashboard')}
                   </DropdownMenuItem>
                 )}
                 {isAdmin && (
                   <DropdownMenuItem onSelect={() => navigate("/admin")}>
-                    <Shield className="mr-2 h-4 w-4" /> Admin
+                    <Shield className="mr-2 h-4 w-4" /> {t('nav.admin', 'Admin')}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={signOut} className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" /> Sign out
+                  <LogOut className="mr-2 h-4 w-4" /> {t('nav.signOut', 'Sign out')}
                 </DropdownMenuItem>
               </DropdownMenuContent>
               </DropdownMenu>
@@ -101,10 +101,10 @@ export function Header() {
           ) : (
             <>
               <Button variant="ghost" size="sm" className="h-9 text-muted-foreground hover:text-foreground" onClick={() => navigate("/auth")}>
-                Sign in
+                {t('nav.signIn', 'Sign in')}
               </Button>
               <Button size="sm" className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-sm" onClick={() => navigate("/auth?tab=signup")}>
-                Get started
+                {t('nav.getStarted', 'Get started')}
               </Button>
             </>
           )}
@@ -113,7 +113,7 @@ export function Header() {
         {/* Mobile Hamburger */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden h-10 w-10 rounded-lg" aria-label="Menu">
+            <Button variant="ghost" size="icon" className="md:hidden h-10 w-10 rounded-lg" aria-label={t('nav.menu', 'Menu')}>
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
@@ -137,7 +137,7 @@ export function Header() {
               {/* Mobile Footer Actions */}
               <div className="border-t border-border/50 px-6 py-5 space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-border/30 mb-2 gap-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Settings</span>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('nav.settings', 'Settings')}</span>
                   <div className="flex gap-2">
                     <LanguageToggle />
                     <CurrencyToggle />
@@ -145,15 +145,15 @@ export function Header() {
                 </div>
                 {user ? (
                   <>
-                    <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">My dashboard</Link>
-                    {isAgent && <Link to="/agent" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">Agent dashboard</Link>}
-                    {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">Admin</Link>}
-                    <button onClick={() => { setMobileOpen(false); signOut(); }} className="block w-full text-left text-sm font-medium py-2 text-destructive">Sign out</button>
+                    <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{t('nav.myDashboard', 'My dashboard')}</Link>
+                    {isAgent && <Link to="/agent" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{t('nav.agentDashboard', 'Agent dashboard')}</Link>}
+                    {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{t('nav.admin', 'Admin')}</Link>}
+                    <button onClick={() => { setMobileOpen(false); signOut(); }} className="block w-full text-left text-sm font-medium py-2 text-destructive">{t('nav.signOut', 'Sign out')}</button>
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full rounded-lg" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>Sign in</Button>
-                    <Button className="w-full rounded-lg bg-primary text-primary-foreground" onClick={() => { setMobileOpen(false); navigate("/auth?tab=signup"); }}>Get started</Button>
+                    <Button variant="outline" className="w-full rounded-lg" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>{t('nav.signIn', 'Sign in')}</Button>
+                    <Button className="w-full rounded-lg bg-primary text-primary-foreground" onClick={() => { setMobileOpen(false); navigate("/auth?tab=signup"); }}>{t('nav.getStarted', 'Get started')}</Button>
                   </>
                 )}
               </div>
