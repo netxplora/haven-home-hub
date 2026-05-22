@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { 
   CalendarClock, 
   ShieldCheck, 
@@ -45,7 +45,15 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
   const { user } = useAuth();
   const nav = useNavigate();
   const [step, setStep] = useState<"confirm" | "submitting" | "success">("confirm");
-  const [method, setMethod] = useState<PaymentMethod>("digital_currency");
+  
+  const [method, setMethod] = useState<PaymentMethod>(() => {
+    const saved = localStorage.getItem("reservations_selected_method");
+    return (saved as PaymentMethod) || "digital_currency";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("reservations_selected_method", method);
+  }, [method]);
   const [cryptoOpen, setCryptoOpen] = useState(false);
   const reservationFee = 500; 
 

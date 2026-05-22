@@ -48,11 +48,40 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 import { CompareProvider } from "./hooks/useCompare";
 import { CurrencyProvider } from "./hooks/useCurrency";
 import { CompareWidget } from "./components/site/CompareWidget";
+import { useDeploymentCache } from "./hooks/useDeploymentCache";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 2 * 60 * 1000, // 2 minutes default stale time
+      gcTime: 10 * 60 * 1000,   // 10 minutes cache garbage collection
+      refetchOnWindowFocus: false, // Prevents repetitive network updates when refocusing tab
+      refetchOnReconnect: true,
+      retry: 1,
+    },
+  },
+});
+
+// Configure custom caching defaults for public static data to reduce repeated API requests
+queryClient.setQueryDefaults(["properties"], { staleTime: 5 * 60 * 1000 });
+queryClient.setQueryDefaults(["property"], { staleTime: 5 * 60 * 1000 });
+queryClient.setQueryDefaults(["locations"], { staleTime: 15 * 60 * 1000 });
+queryClient.setQueryDefaults(["admin-locations-list"], { staleTime: 15 * 60 * 1000 });
+queryClient.setQueryDefaults(["filter-metadata"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["all-payment-methods"], { staleTime: 30 * 60 * 1000 });
+
+// Configure custom defaults for real-time/sensitive keys to guarantee live freshness
+queryClient.setQueryDefaults(["profile"], { staleTime: 0, refetchOnMount: true });
+queryClient.setQueryDefaults(["user-roles"], { staleTime: 0, refetchOnMount: true });
+queryClient.setQueryDefaults(["user-balance"], { staleTime: 0, refetchOnMount: true });
+queryClient.setQueryDefaults(["available-balance"], { staleTime: 0, refetchOnMount: true });
+queryClient.setQueryDefaults(["admin-withdrawals"], { staleTime: 0, refetchOnMount: true });
+queryClient.setQueryDefaults(["admin-verification-queue"], { staleTime: 0, refetchOnMount: true });
+queryClient.setQueryDefaults(["kyc"], { staleTime: 0, refetchOnMount: true });
 
 function RealtimeGlobal() {
   useRealtimeSync();
+  useDeploymentCache();
   return null;
 }
 

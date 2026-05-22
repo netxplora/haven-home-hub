@@ -24,16 +24,46 @@ export function ProfilePanel({ userId }: { userId: string }) {
   const [uploadingKyc, setUploadingKyc] = useState(false);
   const [kycStep, setKycStep] = useState(1);
 
+  // Restore values from LocalStorage drafts if they exist
   useEffect(() => {
-    if (profile) setForm({ full_name: profile.full_name ?? "", phone: profile.phone ?? "" });
+    if (profile) {
+      const draftName = localStorage.getItem(`profile_draft_name_${userId}`);
+      const draftPhone = localStorage.getItem(`profile_draft_phone_${userId}`);
+      setForm({
+        full_name: draftName !== null ? draftName : (profile.full_name ?? ""),
+        phone: draftPhone !== null ? draftPhone : (profile.phone ?? "")
+      });
+    }
     
-    // Auto-advance KYC steps based on existing uploads
-    if (profile?.id_document_url && profile?.proof_of_address_url && profile?.kyc_status === 'unverified') {
+    // Auto-advance KYC steps based on existing uploads or offline step draft
+    const draftKycStep = localStorage.getItem(`profile_draft_kyc_step_${userId}`);
+    if (draftKycStep) {
+      setKycStep(Number(draftKycStep));
+    } else if (profile?.id_document_url && profile?.proof_of_address_url && profile?.kyc_status === 'unverified') {
       setKycStep(3);
     } else if (profile?.id_document_url && profile?.kyc_status === 'unverified') {
       setKycStep(2);
     }
-  }, [profile]);
+  }, [profile, userId]);
+
+  // Auto-save form field changes to LocalStorage drafts
+  useEffect(() => {
+    if (!profile) return;
+    const isNameChanged = form.full_name !== (profile.full_name ?? "");
+    const isPhoneChanged = form.phone !== (profile.phone ?? "");
+    
+    if (isNameChanged) {
+      localStorage.setItem(`profile_draft_name_${userId}`, form.full_name);
+    }
+    if (isPhoneChanged) {
+      localStorage.setItem(`profile_draft_phone_${userId}`, form.phone);
+    }
+  }, [form, profile, userId]);
+
+  // Auto-save current KYC step progress to LocalStorage
+  useEffect(() => {
+    localStorage.setItem(`profile_draft_kyc_step_${userId}`, String(kycStep));
+  }, [kycStep, userId]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -41,7 +71,13 @@ export function ProfilePanel({ userId }: { userId: string }) {
     const { error } = await supabase.from("profiles").update(form).eq("id", userId);
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
-    else { toast({ title: "Profile updated" }); qc.invalidateQueries({ queryKey: ["profile", userId] }); }
+    else { 
+      toast({ title: "Profile updated" }); 
+      // Clear offline drafts on successful save
+      localStorage.removeItem(`profile_draft_name_${userId}`);
+      localStorage.removeItem(`profile_draft_phone_${userId}`);
+      qc.invalidateQueries({ queryKey: ["profile", userId] }); 
+    }
   }
 
   async function handleKycUpload(e: React.ChangeEvent<HTMLInputElement>, type: 'id_document' | 'proof_of_address') {
@@ -81,6 +117,8 @@ export function ProfilePanel({ userId }: { userId: string }) {
     if (error) toast({ title: "Submission failed", description: error.message, variant: "destructive" });
     else {
       toast({ title: "KYC Submitted", description: "Your documents are now under review." });
+      // Clear offline step draft on successful final submission
+      localStorage.removeItem(`profile_draft_kyc_step_${userId}`);
       qc.invalidateQueries({ queryKey: ["profile", userId] });
     }
   }
