@@ -23,7 +23,7 @@ export default function BlogList() {
 
   return (
     <SiteLayout>
-      <SEO title="Blog — Insights & News" description="Market analysis, investment guides, property buying tips, and platform updates from the Verdant Estate team." />
+      <SEO title="Blog — Insights & News" description="Market analysis, investment guides, property buying tips, and platform updates from the Haven Home Hub team." />
       
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[340px] sm:min-h-[400px] flex items-center justify-center bg-black">
@@ -42,7 +42,7 @@ export default function BlogList() {
             Insights & News
           </h1>
           <p className="mt-5 text-lg text-white/80 max-w-2xl mx-auto leading-relaxed font-light">
-            Market analysis, investment guides, property buying tips, and platform updates from the Verdant Estate team.
+            Market analysis, investment guides, property buying tips, and platform updates from the Haven Home Hub team.
           </p>
         </div>
       </div>
@@ -106,7 +106,7 @@ export default function BlogList() {
                       />
                     ) : (
                       <div className="h-full w-full bg-accent flex items-center justify-center min-h-[280px]">
-                        <span className="text-muted-foreground font-serif text-2xl">Verdant Estate</span>
+                        <span className="text-muted-foreground font-serif text-2xl">Haven Home Hub</span>
                       </div>
                     )}
                   </div>
@@ -163,7 +163,7 @@ export default function BlogList() {
                       </div>
                     ) : (
                       <div className="aspect-[16/10] bg-accent flex items-center justify-center">
-                        <span className="text-muted-foreground font-serif text-xl">Verdant Estate</span>
+                        <span className="text-muted-foreground font-serif text-xl">Haven Home Hub</span>
                       </div>
                     )}
 

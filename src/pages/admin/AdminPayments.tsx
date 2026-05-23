@@ -19,6 +19,7 @@ export function AdminPayments() {
   const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
+  const [adminNote, setAdminNote] = useState("");
 
   const { data = [], isLoading } = useQuery({
     queryKey: ["admin-payments", status, type],
@@ -28,7 +29,8 @@ export function AdminPayments() {
         profiles(full_name),
         properties(title, slug),
         investment_properties(title, slug),
-        receipts(*)
+        receipts(*),
+        payment_audit_logs(admin_id, previous_status, new_status, notes, created_at)
       `).order("created_at", { ascending: false }).limit(500);
       if (status !== "all") {
         const dbStatus = STATUS_FILTER_MAP[status] ?? status;
@@ -40,8 +42,16 @@ export function AdminPayments() {
   });
 
   async function mark(id: string, action: "confirmed" | "failed" | "processing") {
+    if (!adminNote.trim()) {
+      toast({ title: "Admin note required", description: "Please enter a reason or note for this action.", variant: "destructive" });
+      return;
+    }
     const dbStatus = action === "confirmed" ? "success" : action;
-    const { error } = await (supabase.from("payments") as any).update({ status: dbStatus as any }).eq("id", id);
+    const { error } = await supabase.rpc("admin_verify_payment", {
+      p_payment_id: id,
+      p_new_status: dbStatus,
+      p_notes: adminNote.trim()
+    });
     if (error) {
       toast({ title: "Operation failed", description: error.message, variant: "destructive" });
     } else {
@@ -79,6 +89,7 @@ export function AdminPayments() {
       qc.invalidateQueries({ queryKey: ["my-reservations"] });
       qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
       setSelectedPayment(null);
+      setAdminNote("");
     }
   }
 
@@ -210,10 +221,10 @@ export function AdminPayments() {
       </div>
 
       {/* Review dialog — rendered ONCE outside the table loop */}
-      <Dialog open={!!selectedPayment} onOpenChange={(v) => !v && setSelectedPayment(null)}>
+      <Dialog open={!!selectedPayment} onOpenChange={(v) => { if (!v) { setSelectedPayment(null); setAdminNote(""); } }}>
         {selectedPayment && (
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="bg-secondary/40 pb-6 border-b border-border/50">
+          <DialogContent className="max-w-md p-0 border border-border">
+            <DialogHeader className="bg-secondary/40 p-6 border-b border-border/50 shrink-0">
               <DialogTitle className="font-serif text-2xl">Payment Review</DialogTitle>
             </DialogHeader>
             <DialogBody className="space-y-6 py-6">
@@ -280,6 +291,35 @@ export function AdminPayments() {
                   )}
                 </div>
               </div>
+              
+              {selectedPayment.payment_audit_logs && selectedPayment.payment_audit_logs.length > 0 && (
+                <div className="pt-4 border-t border-border/50">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground px-1 tracking-widest mb-3">Verification History</p>
+                  <div className="space-y-3">
+                    {(selectedPayment.payment_audit_logs as any[]).sort((a,b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()).map((log, i) => (
+                      <div key={i} className="p-3 rounded-lg border border-border/50 bg-secondary/20 text-xs">
+                        <div className="flex justify-between items-center mb-1">
+                          <span className="font-bold text-foreground">Status changed: {log.previous_status || 'N/A'} → {log.new_status}</span>
+                          <span className="text-[9px] text-muted-foreground">{new Date(log.created_at).toLocaleString()}</span>
+                        </div>
+                        <p className="text-muted-foreground italic">&ldquo;{log.notes}&rdquo;</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {(selectedPayment.status === 'processing' || selectedPayment.status === 'pending') && (
+                <div className="space-y-2 pt-2 border-t border-border/50">
+                  <p className="text-[10px] uppercase font-bold text-muted-foreground px-1 tracking-widest">Admin Note (Required)</p>
+                  <textarea 
+                    className="w-full min-h-[80px] p-3 text-sm rounded-xl border border-border/50 bg-accent/50 focus-visible:ring-1 focus-visible:ring-primary"
+                    placeholder="Provide a reason for approval or rejection..."
+                    value={adminNote}
+                    onChange={e => setAdminNote(e.target.value)}
+                  />
+                </div>
+              )}
 
               <div className="flex flex-col gap-3 pt-2">
                 {(selectedPayment.status === 'processing' || selectedPayment.status === 'pending') && (

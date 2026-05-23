@@ -21,8 +21,8 @@ export function PurchasesPanel({ userId }: { userId: string }) {
         .from("reservations")
         .select(`
           *,
-          properties(title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm, features),
-          investment_properties(title, slug, cover_image_url, location, property_type)
+          properties:property_id(title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm, features),
+          investment_properties:investment_property_id(title, slug, cover_image_url, location, property_type)
         `)
         .eq("user_id", userId)
         .in("status", ["confirmed", "completed"])
@@ -116,7 +116,9 @@ export function PurchasesPanel({ userId }: { userId: string }) {
       ) : (
         <div className="grid gap-6">
            {items.map((r: any) => {
-              const item = r.properties || r.investment_properties;
+              const prop = Array.isArray(r.properties) ? r.properties[0] : r.properties;
+              const invProp = Array.isArray(r.investment_properties) ? r.investment_properties[0] : r.investment_properties;
+              const item = prop || invProp;
               const isInvestment = !!r.investment_property_id;
               const pathPrefix = isInvestment ? "invest" : "properties";
               

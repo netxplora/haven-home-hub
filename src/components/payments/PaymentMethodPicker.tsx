@@ -107,25 +107,7 @@ export function PaymentMethodPicker({
                     <p className="text-xs text-muted-foreground mt-0.5">{opt.desc}</p>
                   </div>
                 </button>
-                
-                {active && category === "digital_currency" && (
-                  <div className="pl-12 pr-3 pb-2 animate-in fade-in zoom-in-95 duration-200">
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onChange("third_party_provider");
-                      }}
-                      className="flex items-center justify-between w-full p-3 rounded-lg border border-primary/20 bg-primary/5 hover:bg-primary/10 transition-colors"
-                    >
-                      <div className="text-left">
-                        <p className="text-xs font-semibold text-primary">Buy Digital Currency With Card</p>
-                        <p className="text-[10px] text-muted-foreground mt-0.5">Need digital currency? Buy instantly via our partners.</p>
-                      </div>
-                      <Globe className="h-4 w-4 text-primary opacity-70" />
-                    </button>
-                  </div>
-                )}
+                {/* Removed the inline Buy Digital Currency With Card option as requested */}
               </div>
             );
           })}

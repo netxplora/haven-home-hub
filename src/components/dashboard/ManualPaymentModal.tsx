@@ -32,6 +32,7 @@ interface CryptoAsset {
   name: string;
   network: string;
   wallet_address: string;
+  icon_url?: string;
 }
 
 type Step = "method_select" | "asset" | "buy_crypto" | "pay_manual" | "pay_bank" | "proof" | "confirm";
@@ -76,13 +77,15 @@ export function ManualPaymentModal({
     symbol: m.configuration.supported_currency || m.configuration.wallet_label,
     name: m.method_name,
     network: m.configuration.wallet_network,
-    wallet_address: m.configuration.wallet_address
+    wallet_address: m.configuration.wallet_address,
+    icon_url: m.icon_url
   }));
 
   const providers = methods.filter((m: any) => m.payment_category === "third_party_provider").map((m: any) => ({
     id: m.id,
     name: m.method_name,
     description: m.description,
+    icon_url: m.icon_url,
     url_template: m.configuration.provider_url,
     supported_assets: m.configuration.supported_methods ? m.configuration.supported_methods.split(",").map((s: string) => s.trim()) : []
   }));
@@ -308,6 +311,17 @@ export function ManualPaymentModal({
       toast({ title: "Verification required", description: "Please enter a transaction hash/reference and upload a confirmation screenshot." });
       return;
     }
+
+    // Strict regex validation for crypto TX hashes
+    if (selectedAsset) {
+      const cryptoHashRegex = /^(0x)?[a-fA-F0-9]{64}$/;
+      // Note: BTC/TRX is 64 hex. ETH is 0x + 64 hex.
+      const cleanHash = hash.trim().replace(/^0x/, '');
+      if (!/^[a-fA-F0-9]{64}$/.test(cleanHash)) {
+        toast({ title: "Invalid Transaction Hash", description: "Digital currency TXID must be a valid 64-character hexadecimal string.", variant: "destructive" });
+        return;
+      }
+    }
     setLoading(true);
     try {
       const { data: currentPayment } = await supabase.from("payments").select("metadata").eq("reference", paymentData?.reference).single();
@@ -339,6 +353,12 @@ export function ManualPaymentModal({
     if (!file) return;
     if (file.size > 10 * 1024 * 1024) {
       toast({ title: "File too large", description: "Image exceeds 10MB limit.", variant: "destructive" });
+      return;
+    }
+
+    const validMimes = ['image/jpeg', 'image/png', 'application/pdf'];
+    if (!validMimes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Only JPG, PNG, and PDF files are permitted.", variant: "destructive" });
       return;
     }
     setUploadingProof(true);
@@ -378,8 +398,8 @@ export function ManualPaymentModal({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="sm:max-w-[480px] max-h-[90vh] overflow-y-auto p-0 rounded-xl border-none shadow-2xl">
-        <DialogHeader className="bg-gradient-to-br from-secondary/50 to-background border-b border-border/50">
+      <DialogContent className="sm:max-w-[520px] p-0 border border-border">
+        <DialogHeader className="bg-gradient-to-br from-secondary/50 to-background border-b border-border/50 shrink-0">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -434,10 +454,17 @@ export function ManualPaymentModal({
               <div className="space-y-4">
                 <p className="text-sm font-medium text-muted-foreground mb-3">Select Digital Currency</p>
                 <div className="grid gap-3">
-                  {assets.map((asset) => (
+                  {assets.map((asset) => {
+                    return (
                     <button key={`${asset.symbol}-${asset.network}`} onClick={() => handleSelectAsset(asset)} disabled={loading} className="flex items-center justify-between p-4 rounded-xl border border-border bg-background hover:border-primary/50 hover:bg-primary/5 transition-all group text-left">
                       <div className="flex items-center gap-4">
-                        <div className="h-10 w-10 rounded-full bg-secondary flex items-center justify-center font-bold text-sm">{asset.symbol.charAt(0)}</div>
+                        <div className="h-10 w-10 rounded-full bg-white border border-border/20 flex items-center justify-center font-bold text-sm overflow-hidden shrink-0 shadow-sm">
+                          {asset.icon_url ? (
+                            <img src={asset.icon_url} alt={asset.symbol} className="h-full w-full object-cover p-1.5" />
+                          ) : (
+                            <span className="text-foreground">{asset.symbol.charAt(0)}</span>
+                          )}
+                        </div>
                         <div>
                           <p className="font-semibold text-foreground">{asset.name}</p>
                           <p className="text-xs text-muted-foreground uppercase tracking-tight">{asset.network}</p>
@@ -445,7 +472,8 @@ export function ManualPaymentModal({
                       </div>
                       {loading && selectedAsset?.symbol === asset.symbol ? <Loader2 className="h-5 w-5 animate-spin text-primary" /> : <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />}
                     </button>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
 
@@ -476,8 +504,12 @@ export function ManualPaymentModal({
                 {providers.map((p: any) => (
                   <div key={p.id} className="rounded-xl border border-border/50 p-5 bg-card hover:border-primary/30 transition-all flex flex-col h-full shadow-sm hover:shadow-md">
                     <div className="flex items-center gap-3 mb-3">
-                      <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary shrink-0">
-                        <Globe className="h-5 w-5" />
+                      <div className="h-10 w-10 rounded-full bg-white border border-border/20 flex items-center justify-center text-primary shrink-0 overflow-hidden shadow-sm">
+                        {p.icon_url ? (
+                          <img src={p.icon_url} alt={p.name} className="h-full w-full object-cover p-1.5" />
+                        ) : (
+                          <Globe className="h-5 w-5" />
+                        )}
                       </div>
                       <div>
                         <h4 className="font-bold text-foreground text-sm">{p.name}</h4>
@@ -541,7 +573,7 @@ export function ManualPaymentModal({
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Account Name</p>
-                  <p className="font-semibold">{configs?.bank_account_name || "Verdant Estate LLC"}</p>
+                  <p className="font-semibold">{configs?.bank_account_name || "Haven Home Hub LLC"}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Account Number</p>

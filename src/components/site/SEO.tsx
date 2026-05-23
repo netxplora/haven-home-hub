@@ -8,7 +8,7 @@ interface SEOProps {
   type?: string;
 }
 
-const SITE_NAME = "Verdant Estate";
+const SITE_NAME = "Haven Home Hub";
 const DEFAULT_DESCRIPTION = "A trusted, agency-led real estate platform. Browse verified properties for sale, rent, and land. Invest in fractional real estate with transparent returns.";
 
 export function SEO({ title, description, image, url, type = "website" }: SEOProps) {

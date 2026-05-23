@@ -48,40 +48,23 @@ export function AdminPayouts() {
       return;
     }
 
-    // Distribute pro-rata to successful investors
-    const { data: invs } = await supabase.from("user_investments")
-      .select("user_id, units_owned")
-      .eq("property_id", f.property_id)
-      .eq("status", "confirmed");
+    // Call the enterprise RPC to distribute funds and notify investors safely
+    const { error: rpcError } = await supabase.rpc("distribute_property_payout", {
+      p_payout_id: payout.id
+    });
 
-    const totalUnits = (invs ?? []).reduce((s: number, r: any) => s + r.units_owned, 0);
-    
-    if (totalUnits > 0) {
-      const rows = (invs ?? []).map((r: any) => ({
-        user_id: r.user_id,
-        property_id: f.property_id,
-        payout_id: (payout as any).id,
-        amount_received: Number(((Number(f.amount) * r.units_owned) / totalUnits).toFixed(2)),
-        distribution_date: f.distribution_date,
-      }));
-      await supabase.from("returns").insert(rows);
-
-      // Create notifications for all recipients
-      const pTitle = props.find((p: any) => p.id === f.property_id)?.title || "your investment";
-      const notifs = rows.map((r: any) => ({
-        user_id: r.user_id,
-        type: "payout_received" as const,
-        title: "Payout Received!",
-        body: `You received ${formatMoney(r.amount_received)} from ${pTitle}.`,
-        link: "/dashboard",
-      }));
-      await supabase.from("notifications").insert(notifs);
+    if (rpcError) {
+      toast({ title: "Distribution Failed", description: rpcError.message, variant: "destructive" });
+      // Depending on requirements, we might want to delete the payout if distribution fails
+      // await supabase.from("payouts").delete().eq("id", payout.id);
+      setSaving(false);
+      return;
     }
 
     setSaving(false);
     setF({ property_id: "", amount: "", distribution_date: new Date().toISOString().slice(0, 10), notes: "" });
     qc.invalidateQueries({ queryKey: ["admin-payouts"] });
-    toast({ title: "Payout recorded and distributed" });
+    toast({ title: "Payout recorded and distributed via backend" });
   }
 
   async function remove(id: string) {

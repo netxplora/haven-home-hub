@@ -78,7 +78,7 @@ export default function CertificateView() {
               <ShieldCheck className="h-10 w-10 text-primary-foreground" />
             </div>
             <h1 className="font-serif text-5xl font-bold tracking-tight mb-4">Official Investment Certificate</h1>
-            <p className="text-lg text-muted-foreground uppercase tracking-widest font-bold">Verdant Estate Real Estate Trust</p>
+            <p className="text-lg text-muted-foreground uppercase tracking-widest font-bold">Haven Home Hub Real Estate Trust</p>
             <div className="mt-6 inline-flex items-center gap-2 bg-background px-4 py-2 rounded-full text-xs font-mono font-bold border border-border shadow-sm">
               CERT ID: {cert.certificate_id}
             </div>
@@ -132,7 +132,7 @@ export default function CertificateView() {
           <div className="bg-muted/50 p-12 flex items-center justify-between border-t border-border">
             <div className="space-y-1">
               <div className="w-48 border-b-2 border-primary/50 pb-2">
-                <span className="font-serif text-xl italic font-bold">Verdant Estate Auth</span>
+                <span className="font-serif text-xl italic font-bold">Haven Home Hub Auth</span>
               </div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mt-2">Authorized Signature</p>
             </div>

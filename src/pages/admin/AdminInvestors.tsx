@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/lib/invest";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/dialog";
 
 // Fallback logic to support new fields even if DB migration is not applied yet
 const getInvestmentType = (i: any) => i.investment_type || "full";
@@ -371,21 +371,21 @@ export function AdminInvestors() {
 
       {/* Delete Confirmation */}
       <Dialog open={!!deleteId} onOpenChange={(v) => !v && setDeleteId(null)}>
-        <DialogContent className="max-h-[90vh] overflow-y-auto">
+        <DialogContent>
           <DialogHeader><DialogTitle>Delete Investment</DialogTitle><DialogDescription>Are you sure you want to permanently delete this investment record? This action cannot be undone.</DialogDescription></DialogHeader>
-          <div className="flex justify-end gap-3 mt-4">
+          <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteId(null)}>Cancel</Button>
             <Button variant="destructive" onClick={handleDelete}>Delete Permanently</Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Create / Edit Form Dialog */}
       <Dialog open={createOpen || !!editItem} onOpenChange={(v) => { if (!v) { setCreateOpen(false); setEditItem(null); } }}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader><DialogTitle>{editItem ? 'Edit Investment' : 'Create Manual Investment'}</DialogTitle></DialogHeader>
-          <div className="grid gap-6 py-4">
-            <div className="grid grid-cols-2 gap-4">
+          <DialogBody className="space-y-6 py-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Investor</Label>
                 <Select value={formData.user_id} onValueChange={(v) => setFormData({...formData, user_id: v})} disabled={!!editItem}>
@@ -402,7 +402,7 @@ export function AdminInvestors() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Investment Type</Label>
                 <Select value={formData.investment_type} onValueChange={(v) => setFormData({...formData, investment_type: v})}>
@@ -430,7 +430,7 @@ export function AdminInvestors() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Total Amount</Label>
                 <Input type="number" value={formData.total_amount} onChange={(e) => setFormData({...formData, total_amount: e.target.value})} placeholder="e.g. 50000" />
@@ -445,7 +445,7 @@ export function AdminInvestors() {
               <div className="space-y-2 p-4 bg-muted/30 rounded-xl border">
                 <Label className="text-primary">Installment Generator</Label>
                 <p className="text-xs text-muted-foreground mb-3">Schedules will be auto-generated based on the remaining balance and duration.</p>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <Label className="text-xs">Duration (Months)</Label>
                     <Input type="number" value={formData.duration_months} onChange={(e) => setFormData({...formData, duration_months: e.target.value})} />
@@ -462,15 +462,16 @@ export function AdminInvestors() {
               <Label>Units Owned</Label>
               <Input type="number" value={formData.units_owned} onChange={(e) => setFormData({...formData, units_owned: e.target.value})} />
             </div>
-
+          </DialogBody>
+          <DialogFooter>
             <Button onClick={handleSave} className="w-full">{editItem ? 'Update Investment' : 'Create Investment'}</Button>
-          </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* View Details Dialog */}
       <Dialog open={!!viewItem} onOpenChange={(v) => !v && setViewItem(null)}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl">
           {viewItem && (
             <>
               <DialogHeader>
@@ -485,22 +486,22 @@ export function AdminInvestors() {
                 </div>
               </DialogHeader>
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
-                <div className="bg-muted/50 p-4 rounded-xl border">
-                  <p className="text-xs text-muted-foreground font-semibold uppercase">Total Amount</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{formatMoney(getTotalAmount(viewItem), viewItem.investment_properties?.currency || "USD")}</p>
+              <DialogBody className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="bg-muted/50 p-4 rounded-xl border">
+                    <p className="text-xs text-muted-foreground font-semibold uppercase">Total Amount</p>
+                    <p className="text-xl font-bold text-foreground mt-1">{formatMoney(getTotalAmount(viewItem), viewItem.investment_properties?.currency || "USD")}</p>
+                  </div>
+                  <div className="bg-muted/50 p-4 rounded-xl border">
+                    <p className="text-xs text-muted-foreground font-semibold uppercase">Amount Paid</p>
+                    <p className="text-xl font-bold text-green-600 mt-1">{formatMoney(getAmountPaid(viewItem), viewItem.investment_properties?.currency || "USD")}</p>
+                  </div>
+                  <div className="bg-muted/50 p-4 rounded-xl border">
+                    <p className="text-xs text-muted-foreground font-semibold uppercase">Remaining Balance</p>
+                    <p className="text-xl font-bold text-amber-600 mt-1">{formatMoney(getRemainingBalance(viewItem), viewItem.investment_properties?.currency || "USD")}</p>
+                  </div>
                 </div>
-                <div className="bg-muted/50 p-4 rounded-xl border">
-                  <p className="text-xs text-muted-foreground font-semibold uppercase">Amount Paid</p>
-                  <p className="text-xl font-bold text-green-600 mt-1">{formatMoney(getAmountPaid(viewItem), viewItem.investment_properties?.currency || "USD")}</p>
-                </div>
-                <div className="bg-muted/50 p-4 rounded-xl border">
-                  <p className="text-xs text-muted-foreground font-semibold uppercase">Remaining Balance</p>
-                  <p className="text-xl font-bold text-amber-600 mt-1">{formatMoney(getRemainingBalance(viewItem), viewItem.investment_properties?.currency || "USD")}</p>
-                </div>
-              </div>
 
-              <div className="space-y-6">
                 <div>
                   <h3 className="font-semibold text-lg flex items-center gap-2 mb-4 border-b pb-2"><Calendar className="h-5 w-5 text-primary" /> Investment Details</h3>
                   <div className="grid grid-cols-2 gap-y-4 text-sm">
@@ -514,7 +515,7 @@ export function AdminInvestors() {
                 {getInvestmentType(viewItem) === 'installment' && (
                   <AdminScheduleList investmentId={viewItem.id} currency={viewItem.investment_properties?.currency || "USD"} />
                 )}
-              </div>
+              </DialogBody>
             </>
           )}
         </DialogContent>

@@ -65,12 +65,12 @@ const perks = [
 export default function Careers() {
   return (
     <SiteLayout>
-      <SEO title="Careers" description="Join the Verdant Estate team. We are looking for driven professionals to help us build the most trusted real estate platform in the United States." />
+      <SEO title="Careers" description="Join the Haven Home Hub team. We are looking for driven professionals to help us build the most trusted real estate platform in the United States." />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[550px] flex items-center bg-black">
         <img
           src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1920&q=80"
-          alt="Verdant Estate team collaboration"
+          alt="Haven Home Hub team collaboration"
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />
@@ -80,7 +80,7 @@ export default function Careers() {
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-3 text-sm font-medium tracking-wider uppercase text-primary">Careers</p>
           <h1 className="max-w-3xl font-serif text-4xl font-semibold sm:text-5xl md:text-6xl text-white leading-tight">
-            Build your career with Verdant Estate.
+            Build your career with Haven Home Hub.
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-white/80 leading-relaxed">
             We are a team of agents, analysts, and operations specialists working together to create a transparent, efficient, and accessible property market. If you share our goals, we want to hear from you.
@@ -117,7 +117,7 @@ export default function Careers() {
             </h2>
             <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                At Verdant Estate, we believe great work happens when people are given autonomy, clear goals, and the resources to succeed. Our team operates with a flat hierarchy where every voice matters — from junior agents providing market feedback to engineers proposing new platform features.
+                At Haven Home Hub, we believe great work happens when people are given autonomy, clear goals, and the resources to succeed. Our team operates with a flat hierarchy where every voice matters — from junior agents providing market feedback to engineers proposing new platform features.
               </p>
               <p>
                 We invest heavily in our people through structured training programs, industry certifications, and regular mentorship sessions. Whether you are an experienced real estate professional or making a career transition, we provide the tools and support you need to grow.
@@ -130,7 +130,7 @@ export default function Careers() {
           <div className="relative aspect-video overflow-hidden rounded-xl shadow-card border border-border">
             <img
               src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"
-              alt="Verdant Estate team collaboration"
+              alt="Haven Home Hub team collaboration"
               className="absolute inset-0 h-full w-full object-cover"
               crossOrigin="anonymous"
             />

@@ -61,7 +61,7 @@ export default function Auth() {
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
             <Building2 className="h-4 w-4" />
           </span>
-          Verdant Estate
+          Haven Home Hub
         </Link>
         <div className="max-w-md">
           <h2 className="font-serif text-3xl font-semibold leading-snug text-white">
@@ -71,7 +71,7 @@ export default function Auth() {
             Save your favorite listings, book inspections, and stay in touch with your agent — all from one place.
           </p>
         </div>
-        <p className="text-xs text-white/30">© {new Date().getFullYear()} Verdant Estate</p>
+        <p className="text-xs text-white/30">© {new Date().getFullYear()} Haven Home Hub</p>
       </div>
 
       {/* Right Panel — Form */}
@@ -82,7 +82,7 @@ export default function Auth() {
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Building2 className="h-4 w-4" />
             </span>
-            Verdant Estate
+            Haven Home Hub
           </Link>
 
           <h1 className="font-serif text-2xl font-semibold text-foreground">Welcome</h1>

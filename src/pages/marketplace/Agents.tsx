@@ -34,12 +34,12 @@ export default function Agents() {
   });
   return (
     <SiteLayout>
-      <SEO title="Our Agents" description="Connect with verified Verdant Estate agents. Real people, ready to help you find the right home." />
+      <SEO title="Our Agents" description="Connect with verified Haven Home Hub agents. Real people, ready to help you find the right home." />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[350px] sm:min-h-[400px] lg:min-h-[450px] flex items-center bg-black">
         <img 
           src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80" 
-          alt="Verdant Estate Agents" 
+          alt="Haven Home Hub Agents" 
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />

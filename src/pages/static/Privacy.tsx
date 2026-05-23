@@ -4,7 +4,7 @@ import { SEO } from "@/components/site/SEO";
 export default function Privacy() {
   return (
     <SiteLayout>
-      <SEO title="Privacy Policy" description="Verdant Estate Privacy Policy. Learn how we collect, use, and protect your information." />
+      <SEO title="Privacy Policy" description="Haven Home Hub Privacy Policy. Learn how we collect, use, and protect your information." />
       {/* Header */}
       <section className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-black">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center" />

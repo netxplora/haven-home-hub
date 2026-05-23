@@ -347,7 +347,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
                      <div>
                          <h4 className="font-semibold">Protocol Confirmation</h4>
                         <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
-                           By submitting these documents, you confirm that all provided information is authentic and represents your legal identity for investment purposes. Verdant Estate reserves the right to request additional documentation for AML/KYC compliance.
+                           By submitting these documents, you confirm that all provided information is authentic and represents your legal identity for investment purposes. Haven Home Hub reserves the right to request additional documentation for AML/KYC compliance.
                         </p>
                      </div>
                      <div className="flex flex-wrap gap-3">

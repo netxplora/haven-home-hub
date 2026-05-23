@@ -38,8 +38,8 @@ export function Header() {
     <header className="sticky top-0 z-40 border-b border-border/50 bg-background/90 backdrop-blur-md">
       <div className="container-wide flex h-[68px] items-center justify-between gap-6">
         {/* Logo */}
-        <Link to="/" className="flex items-center shrink-0" aria-label="Verdant Estate home">
-          <img src={logo} alt="Verdant Estate" width={144} height={48} className="h-8 w-auto" />
+        <Link to="/" className="flex items-center shrink-0" aria-label="Haven Home Hub home">
+          <img src={logo} alt="Haven Home Hub" width={144} height={48} className="h-8 w-auto" />
         </Link>
 
         {/* Desktop Nav */}

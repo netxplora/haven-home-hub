@@ -19,8 +19,8 @@ export function ReservationsPanel({ userId }: { userId: string }) {
         .from("reservations")
         .select(`
           *,
-          properties(title, slug, cover_image_url),
-          investment_properties(title, slug, cover_image_url)
+          properties:property_id(title, slug, cover_image_url),
+          investment_properties:investment_property_id(title, slug, cover_image_url)
         `)
         .eq("user_id", userId)
         .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested", "confirmed", "success", "rejected", "expired", "failed", "cancelled"])
@@ -113,7 +113,9 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       ) : (
         <div className="grid gap-6">
            {items.map((r: any) => {
-              const item = r.properties || r.investment_properties;
+              const prop = Array.isArray(r.properties) ? r.properties[0] : r.properties;
+              const invProp = Array.isArray(r.investment_properties) ? r.investment_properties[0] : r.investment_properties;
+              const item = prop || invProp;
               const isInvestment = !!r.investment_property_id;
               const pathPrefix = isInvestment ? "invest" : "properties";
               

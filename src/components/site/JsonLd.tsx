@@ -1,6 +1,6 @@
 import { Helmet } from "react-helmet-async";
 
-const SITE_NAME = "Verdant Estate";
+const SITE_NAME = "Haven Home Hub";
 const SITE_URL = typeof window !== "undefined" ? window.location.origin : "https://verdantestate.com";
 
 /** Generate JSON-LD for a property listing (RealEstateListing schema) */

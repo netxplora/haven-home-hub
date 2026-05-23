@@ -8,6 +8,7 @@ import { AdminWithdrawals } from "./AdminWithdrawals";
 import { AdminReceipts } from "./AdminReceipts";
 import { AdminReservations } from "./AdminReservations";
 import { AdminVerificationQueue } from "./AdminVerificationQueue";
+import { AdminMarketplace } from "./AdminMarketplace";
 
 export function AdminFinanceCenter() {
   const [activeTab, setActiveTab] = useState("verification");
@@ -28,6 +29,7 @@ export function AdminFinanceCenter() {
             { id: "reservations", label: "Reservations" },
             { id: "payments", label: "Payments" },
             { id: "withdrawals", label: "Withdrawals" },
+            { id: "marketplace", label: "Marketplace" },
             { id: "payouts", label: "Payouts" },
             { id: "wallets", label: "Wallets" },
             { id: "receipts", label: "Receipts" },
@@ -54,6 +56,7 @@ export function AdminFinanceCenter() {
         {activeTab === "reservations" && <AdminReservations />}
         {activeTab === "payments" && <AdminPayments />}
         {activeTab === "withdrawals" && <AdminWithdrawals />}
+        {activeTab === "marketplace" && <AdminMarketplace />}
         {activeTab === "payouts" && <AdminPayouts />}
         {activeTab === "wallets" && <AdminWallets />}
         {activeTab === "receipts" && <AdminReceipts />}

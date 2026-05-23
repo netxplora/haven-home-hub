@@ -17,16 +17,54 @@ export function TransactionsPanel({ userId }: { userId: string }) {
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["transactions", userId],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("payments")
-        .select(`
-          *,
-          properties(title),
-          investment_properties(title)
-        `)
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false });
-      return data ?? [];
+      const [paymentsResponse, secondaryTxResponse] = await Promise.all([
+        supabase
+          .from("payments")
+          .select(`
+            *,
+            properties(title),
+            investment_properties(title)
+          `)
+          .eq("user_id", userId),
+        supabase
+          .from("secondary_market_transactions" as any)
+          .select(`
+            *,
+            secondary_market_listings!secondary_market_transactions_listing_id_fkey(
+              property_id,
+              investment_properties!secondary_market_listings_property_id_fkey(title, currency)
+            )
+          `)
+          .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+      ]);
+
+      const payments = paymentsResponse.data ?? [];
+      const secondaryTx = secondaryTxResponse.data ?? [];
+
+      const mappedSecondaryTx = secondaryTx.map((tx: any) => {
+        const isBuyer = tx.buyer_id === userId;
+        return {
+          id: tx.id,
+          created_at: tx.created_at,
+          payment_type: isBuyer ? "marketplace_buy" : "marketplace_sell",
+          status: "success",
+          amount: Number(tx.units_traded) * Number(tx.price_per_unit),
+          currency: tx.secondary_market_listings?.investment_properties?.currency || "USD",
+          payment_method: tx.payment_method || "wallet_balance",
+          reference: `TX-${tx.id.substring(0, 8).toUpperCase()}`,
+          investment_properties: {
+            title: tx.secondary_market_listings?.investment_properties?.title || "Marketplace Trade"
+          },
+          properties: null,
+          isMarketplace: true,
+          units_traded: tx.units_traded,
+          price_per_unit: tx.price_per_unit
+        };
+      });
+
+      const allItems = [...payments, ...mappedSecondaryTx];
+      allItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      return allItems;
     },
   });
 
@@ -88,7 +126,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
           {/* ── Mobile Card Layout ── */}
           <div className="grid grid-cols-1 gap-4 md:hidden">
             {filteredItems.map((t: any) => {
-              const isIncome = ["deposit", "referral_bonus", "investment_return"].includes(t.payment_type);
+              const isIncome = ["deposit", "referral_bonus", "investment_return", "marketplace_sell"].includes(t.payment_type);
               return (
                 <div key={t.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-4">
                   <div className="flex items-start justify-between gap-3">
@@ -97,9 +135,18 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                         {isIncome ? <TrendingUp className="h-5 w-5" /> : <TrendingDown className="h-5 w-5" />}
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground capitalize text-sm">{t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}</p>
+                        <p className="font-semibold text-foreground capitalize text-sm">
+                          {t.payment_type === "marketplace_buy" ? "Marketplace Purchase" :
+                           t.payment_type === "marketplace_sell" ? "Marketplace Sale" :
+                           t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}
+                        </p>
                         <p className="text-xs font-medium text-primary truncate max-w-[180px]">
-                          {t.investment_properties?.title || t.properties?.title || (t.payment_type === 'referral_bonus' ? "Network Reward" : t.payment_type === 'investment_return' ? "Dividend Distribution" : "Account Deposit")}
+                          {t.investment_properties?.title || t.properties?.title || 
+                           (t.payment_type === 'referral_bonus' ? "Network Reward" : 
+                            t.payment_type === 'investment_return' ? "Dividend Distribution" : 
+                            t.payment_type === 'marketplace_buy' ? "Marketplace Purchase" :
+                            t.payment_type === 'marketplace_sell' ? "Marketplace Sale" :
+                            "Account Deposit")}
                         </p>
                       </div>
                     </div>
@@ -134,15 +181,17 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                       <span className={cn("text-base font-bold", isIncome ? "text-green-600 dark:text-green-400" : "text-foreground")}>
                         {isIncome ? "+" : "-"}{formatMoney(Number(t.amount), t.currency)}
                       </span>
-                      <Button 
-                        variant="ghost" 
-                        size="icon" 
-                        className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"
-                        onClick={() => setSelectedReceiptPaymentId(t.id)}
-                        title="View Receipt"
-                      >
-                        <FileText className="h-4 w-4" />
-                      </Button>
+                      {!t.isMarketplace && (
+                        <Button 
+                          variant="ghost" 
+                          size="icon" 
+                          className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"
+                          onClick={() => setSelectedReceiptPaymentId(t.id)}
+                          title="View Receipt"
+                        >
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -166,7 +215,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                 </thead>
                 <tbody className="divide-y divide-border/40">
                   {filteredItems.map((t: any) => {
-                    const isIncome = ["deposit", "referral_bonus", "investment_return"].includes(t.payment_type);
+                    const isIncome = ["deposit", "referral_bonus", "investment_return", "marketplace_sell"].includes(t.payment_type);
                     return (
                       <tr key={t.id} className="transition-colors hover:bg-secondary/10 group">
                         <td className="px-6 py-5 text-muted-foreground font-medium">
@@ -178,9 +227,18 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                                 {isIncome ? <TrendingUp className="h-4 w-4" /> : <TrendingDown className="h-4 w-4" />}
                              </div>
                              <div>
-                                <p className="font-semibold text-foreground capitalize">{t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}</p>
+                                <p className="font-semibold text-foreground capitalize">
+                                  {t.payment_type === "marketplace_buy" ? "Marketplace Purchase" :
+                                   t.payment_type === "marketplace_sell" ? "Marketplace Sale" :
+                                   t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}
+                                </p>
                                 <p className="text-[10px] font-bold text-primary truncate max-w-[150px]">
-                                  {t.investment_properties?.title || t.properties?.title || (t.payment_type === 'referral_bonus' ? "Network Reward" : t.payment_type === 'investment_return' ? "Dividend Distribution" : "Account Deposit")}
+                                  {t.investment_properties?.title || t.properties?.title || 
+                                   (t.payment_type === 'referral_bonus' ? "Network Reward" : 
+                                    t.payment_type === 'investment_return' ? "Dividend Distribution" : 
+                                    t.payment_type === 'marketplace_buy' ? "Marketplace Purchase" :
+                                    t.payment_type === 'marketplace_sell' ? "Marketplace Sale" :
+                                    "Account Deposit")}
                                 </p>
                              </div>
                           </div>
@@ -207,15 +265,17 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                           </span>
                         </td>
                         <td className="px-6 py-5 text-right">
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
-                            onClick={() => setSelectedReceiptPaymentId(t.id)}
-                            title="View Receipt"
-                          >
-                            <FileText className="h-4 w-4" />
-                          </Button>
+                          {!t.isMarketplace && (
+                            <Button 
+                              variant="ghost" 
+                              size="icon" 
+                              className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+                              onClick={() => setSelectedReceiptPaymentId(t.id)}
+                              title="View Receipt"
+                            >
+                              <FileText className="h-4 w-4" />
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     );

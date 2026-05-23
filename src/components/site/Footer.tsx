@@ -14,7 +14,7 @@ export function Footer() {
             <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
               <Building2 className="h-4 w-4" />
             </span>
-            Verdant Estate
+            Haven Home Hub
           </Link>
           <p className="mt-4 text-sm text-white/50 leading-relaxed max-w-xs">
             {t('footer.brandDesc', 'A trusted, agency-led real estate platform. Every property is hand-curated and verified by our professional team.')}
@@ -65,7 +65,7 @@ export function Footer() {
       <div className="border-t border-white/8">
         <div className="container-wide flex flex-col sm:flex-row items-center justify-between gap-3 py-5">
           <p className="text-xs text-white/35">
-            © {new Date().getFullYear()} Verdant Estate. {t('footer.copyrightText', 'All listings curated and verified by our agency.')}
+            © {new Date().getFullYear()} Haven Home Hub. {t('footer.copyrightText', 'All listings curated and verified by our agency.')}
           </p>
           <div className="flex items-center gap-4 text-xs text-white/35">
             <Link to="/privacy" className="hover:text-white/60 transition-colors">{t('footer.privacy', 'Privacy')}</Link>

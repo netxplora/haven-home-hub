@@ -76,8 +76,8 @@ export function WithdrawalDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="p-6 sm:p-10 bg-accent/40 border-b border-border/40">
+      <DialogContent className="max-w-md p-0 border border-border">
+        <DialogHeader className="p-6 sm:p-10 bg-accent/40 border-b border-border/40 shrink-0">
           <DialogTitle className="font-serif text-2xl sm:text-3xl font-bold text-foreground">Withdraw Funds</DialogTitle>
           <div className="flex items-center gap-2 mt-3">
              <p className="text-[10px] font-semibold uppercase tracking-wider text-secondary">Available for Payout</p>

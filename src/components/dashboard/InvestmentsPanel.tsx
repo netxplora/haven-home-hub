@@ -2,12 +2,13 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, ArrowUpRight, ShieldCheck, Clock, FileText, LayoutGrid, List, ChevronRight } from "lucide-react";
+import { TrendingUp, ArrowUpRight, ShieldCheck, Clock, FileText, LayoutGrid, List, ChevronRight, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { InvestmentDetailDialog } from "@/components/dashboard/InvestmentDetailDialog";
+import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
 import { formatMoney } from "@/lib/invest";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils";
 export function InvestmentsPanel() {
   const { user } = useAuth();
   const [selectedInvestment, setSelectedInvestment] = useState<any | null>(null);
+  const [sellInvestment, setSellInvestment] = useState<any | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
   
   const { data: investments = [] as any[], isLoading } = useQuery({
@@ -51,13 +53,19 @@ export function InvestmentsPanel() {
     queryFn: async () => {
       const { data } = await supabase
         .from("returns")
-        .select("amount_received, distribution_date, investment_properties(title)")
+        .select("amount_received, distribution_date, property_id, investment_properties(title)")
         .eq("user_id", user!.id)
-        .order("distribution_date", { ascending: false })
-        .limit(10);
+        .order("distribution_date", { ascending: false });
       return data ?? [];
     },
   });
+
+  const returnsByProperty = returns.reduce((acc: Record<string, number>, r: any) => {
+    if (r.property_id) {
+      acc[r.property_id] = (acc[r.property_id] || 0) + Number(r.amount_received || 0);
+    }
+    return acc;
+  }, {});
 
   const activeInvestments = investments.filter((i: any) => ["confirmed", "active", "completed"].includes(i.status));
   const totalInvested = activeInvestments.reduce((s: number, i: any) => s + Number(i.amount_invested || 0), 0);
@@ -166,7 +174,12 @@ export function InvestmentsPanel() {
         ) : viewMode === 'grid' ? (
           <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
              {investments.map((inv: any) => (
-                <InvestmentGridCard key={inv.id} investment={inv} onSelect={() => setSelectedInvestment(inv)} />
+                <InvestmentGridCard 
+                  key={inv.id} 
+                  investment={inv} 
+                  dividends={returnsByProperty[inv.property_id]} 
+                  onSelect={() => setSelectedInvestment(inv)} 
+                />
              ))}
           </div>
         ) : (
@@ -223,9 +236,19 @@ export function InvestmentsPanel() {
                     </div>
 
                     <div className="flex items-center justify-between pt-2 border-t border-border/30">
-                      <div>
-                        <p className="text-xs text-muted-foreground">Total Cost</p>
-                        <p className="font-serif font-bold text-foreground">{formatMoney(total)}</p>
+                      <div className="space-y-1">
+                        <div>
+                          <p className="text-[10px] text-muted-foreground uppercase font-medium">Total Cost</p>
+                          <p className="font-serif font-bold text-foreground">{formatMoney(total)}</p>
+                        </div>
+                        {returnsByProperty[inv.property_id] > 0 && (
+                          <div>
+                            <p className="text-[10px] text-muted-foreground uppercase font-medium">Dividends</p>
+                            <p className="font-serif font-bold text-emerald-600">
+                              {formatMoney(returnsByProperty[inv.property_id], inv.investment_properties?.currency ?? "USD")}
+                            </p>
+                          </div>
+                        )}
                       </div>
                       {inv.status === "awaiting_payment" ? (
                         <Button size="sm" className="rounded-xl h-11 px-5 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
@@ -235,6 +258,15 @@ export function InvestmentsPanel() {
                         <Button size="sm" className="rounded-xl h-11 px-5 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
                           Pay Installment
                         </Button>
+                      ) : (inv.status === "active" || inv.status === "confirmed") && paid >= total ? (
+                        <div className="flex items-center gap-2">
+                          <Button variant="outline" size="sm" className="rounded-xl h-11 px-4 font-bold border-primary/30 text-primary hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); setSellInvestment(inv); }}>
+                            <Tag className="h-3.5 w-3.5 mr-1.5" /> Sell Units
+                          </Button>
+                          <Button variant="outline" size="sm" className="rounded-xl h-11 px-4 font-bold">
+                            <FileText className="h-4 w-4 mr-1.5" /> Details
+                          </Button>
+                        </div>
                       ) : (
                         <Button variant="outline" size="sm" className="rounded-xl h-11 px-4 font-bold">
                           <FileText className="h-4 w-4 mr-1.5" /> Details
@@ -310,7 +342,12 @@ export function InvestmentsPanel() {
                           </td>
                           <td className="px-6 py-5 text-right">
                              <p className="font-bold text-foreground">{formatMoney(total)}</p>
-                             <p className="text-[10px] text-muted-foreground/60 font-medium">Earned: {inv.projected_return_min}%+</p>
+                             <p className="text-[10px] text-muted-foreground/60 font-medium">Expected: {inv.investment_properties?.projected_return_min}% p.a.</p>
+                             {returnsByProperty[inv.property_id] > 0 && (
+                               <p className="text-[10px] text-emerald-600 font-bold mt-0.5">
+                                 Dividends: {formatMoney(returnsByProperty[inv.property_id], inv.investment_properties?.currency ?? "USD")}
+                               </p>
+                             )}
                           </td>
                            <td className="px-6 py-5 text-right">
                              {inv.status === "awaiting_payment" ? (
@@ -321,6 +358,15 @@ export function InvestmentsPanel() {
                                <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
                                  Pay Installment
                                </Button>
+                             ) : (inv.status === "active" || inv.status === "confirmed") && paid >= total ? (
+                                <div className="flex items-center gap-2 justify-end">
+                                  <Button size="sm" variant="outline" className="rounded-xl h-9 px-3 text-xs font-bold border-primary/30 text-primary hover:bg-primary/5 transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSellInvestment(inv); }}>
+                                    <Tag className="h-3 w-3 mr-1" /> Sell
+                                  </Button>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
+                                     <FileText className="h-4 w-4" />
+                                  </Button>
+                                </div>
                              ) : (
                                <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
                                   <FileText className="h-4 w-4" />
@@ -343,11 +389,17 @@ export function InvestmentsPanel() {
         onOpenChange={(open) => !open && setSelectedInvestment(null)} 
         investment={selectedInvestment} 
       />
+
+      <SellUnitsDialog
+        open={!!sellInvestment}
+        onOpenChange={(open) => !open && setSellInvestment(null)}
+        investment={sellInvestment}
+      />
     </div>
   );
 }
 
-function InvestmentGridCard({ investment, onSelect }: { investment: any, onSelect: () => void }) {
+function InvestmentGridCard({ investment, dividends = 0, onSelect }: { investment: any, dividends?: number, onSelect: () => void }) {
   const total = Number(investment.total_amount ?? investment.amount_invested ?? 0);
   const paid = Number(investment.amount_paid ?? investment.amount_invested ?? 0);
   const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
@@ -386,6 +438,13 @@ function InvestmentGridCard({ investment, onSelect }: { investment: any, onSelec
                 <p className="font-semibold text-sm text-green-600 dark:text-green-400">{investment.investment_properties?.projected_return_min}% p.a.</p>
              </div>
           </div>
+
+          {dividends > 0 && (
+             <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-3 flex justify-between items-center text-xs">
+                <span className="text-muted-foreground font-medium">Dividends Received</span>
+                <span className="font-bold text-emerald-600">{formatMoney(dividends, investment.investment_properties?.currency ?? "USD")}</span>
+             </div>
+          )}
 
           <Button variant="outline" className="w-full rounded-xl border-border/40 text-xs font-bold group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
              View Details

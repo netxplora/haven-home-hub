@@ -70,7 +70,7 @@ export function DashboardShell({
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
             <Building2 className="h-4 w-4" />
           </span>
-          <span className="hidden lg:block">Verdant Estate</span>
+          <span className="hidden lg:block">Haven Home Hub</span>
         </Link>
       </div>
 
@@ -148,7 +148,7 @@ export function DashboardShell({
             <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
               <Building2 className="h-3.5 w-3.5" />
             </span>
-            Verdant Estate
+            Haven Home Hub
           </Link>
           
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
@@ -206,7 +206,7 @@ export function DashboardShell({
         </main>
 
         <footer className="border-t border-border/50 py-5 text-center text-xs text-muted-foreground bg-background">
-          © {new Date().getFullYear()} Verdant Estate. All rights reserved.
+          © {new Date().getFullYear()} Haven Home Hub. All rights reserved.
         </footer>
       </div>
     </div>

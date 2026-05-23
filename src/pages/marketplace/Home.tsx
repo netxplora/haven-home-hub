@@ -171,39 +171,41 @@ export default function Home() {
               {hero.subtitle}
             </p>
           </div>
-          <div className="mt-10 max-w-4xl animate-fade-in-up" style={{ animationDelay: '150ms' }}>
+          <div className="mt-10 max-w-4xl glass-panel p-4 sm:p-6 rounded-2xl animate-fade-in-up shadow-lux border-white/15 dark:border-white/5" style={{ animationDelay: '150ms' }}>
             <SearchBar />
           </div>
         </div>
       </section>
 
       {/* SUBTLE ACTIVITY FEED */}
-      <section className="border-b border-border/40 bg-accent/20">
-        <div className="container-wide py-3 flex items-center overflow-hidden">
-          <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-widest text-primary shrink-0 mr-6">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-            </span>
-            {t("home.activity.live")}
-          </div>
-          <div className="flex-1 overflow-hidden relative h-6">
-             <ActivityTicker items={ACTIVITY_FEED} />
+      <section className="border-b border-border/30 bg-background py-1">
+        <div className="container-wide">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2.5 px-4 rounded-xl bg-accent/30 border border-border/40">
+            <div className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-primary shrink-0">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              {t("home.activity.live")}
+            </div>
+            <div className="flex-1 overflow-hidden relative h-5 sm:ml-4">
+               <ActivityTicker items={ACTIVITY_FEED} />
+            </div>
           </div>
         </div>
       </section>
 
       {/* 2. FEATURED PROPERTIES */}
-      <section className="container-wide section-gap pt-20">
+      <section className="container-wide section-gap">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
           <div className="max-w-2xl">
-            <span className="section-label">{t("home.featured.label")}</span>
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{t("home.featured.label")}</span>
             <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{t("home.featured.title")}</h2>
             <p className="mt-3 text-muted-foreground leading-relaxed">
               {t("home.featured.subtitle")}
             </p>
           </div>
-          <Button asChild variant="outline" className="shrink-0 group">
+          <Button asChild variant="outline" className="shrink-0 group rounded-xl border-border/60 hover:bg-accent">
             <Link to="/properties">
               {t("home.featured.viewAll")} <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
@@ -261,18 +263,18 @@ export default function Home() {
               {t("home.fractional.desc")}
             </p>
             
-            <div className="mt-8 grid grid-cols-3 gap-4 border-t border-white/10 pt-8 max-w-lg mb-8">
+            <div className="mt-8 grid grid-cols-3 gap-4 p-5 rounded-xl glass-panel border-white/10 backdrop-blur-md max-w-lg mb-8">
               <div>
-                 <div className="text-2xl font-semibold text-white">42+</div>
-                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.activeUnits")}</div>
+                 <div className="text-2xl font-semibold text-foreground dark:text-white">42+</div>
+                 <div className="text-[10px] text-muted-foreground dark:text-gray-300 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.activeUnits")}</div>
               </div>
               <div>
-                 <div className="text-2xl font-semibold text-white">12%</div>
-                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.avgRoi")}</div>
+                 <div className="text-2xl font-semibold text-foreground dark:text-white">12%</div>
+                 <div className="text-[10px] text-muted-foreground dark:text-gray-300 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.avgRoi")}</div>
               </div>
               <div>
-                 <div className="text-2xl font-semibold text-white">$4.2M</div>
-                 <div className="text-xs text-gray-400 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.funded")}</div>
+                 <div className="text-2xl font-semibold text-foreground dark:text-white">$4.2M</div>
+                 <div className="text-[10px] text-muted-foreground dark:text-gray-300 mt-1 uppercase tracking-wider font-medium">{t("home.fractional.funded")}</div>
               </div>
             </div>
 
@@ -299,11 +301,13 @@ export default function Home() {
             <Link
               key={c.type}
               to={`/properties?type=${c.type}`}
-              className="group relative overflow-hidden rounded-2xl shadow-md border border-border/50 bg-card"
+              className="group relative overflow-hidden rounded-2xl shadow-card border border-border/40 bg-card hover-lift"
             >
-              <img src={resolveImage(c.img)} alt={c.title} loading="lazy" width={1280} height={960}
-                className="h-[320px] w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent opacity-80 group-hover:opacity-100 transition-opacity" />
+              <div className="h-[320px] w-full overflow-hidden">
+                <img src={resolveImage(c.img)} alt={c.title} loading="lazy" width={1280} height={960}
+                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              </div>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />
               <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
                 <h3 className="font-serif text-2xl font-semibold mb-2">{c.title}</h3>
                 <p className="text-sm text-gray-200 leading-relaxed max-w-[250px] mb-6 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
@@ -340,33 +344,34 @@ export default function Home() {
       {/* 6. WHY INVEST WITH US */}
       <section className="container-wide section-gap">
         <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="section-label mx-auto">{t("home.whyInvest.label")}</span>
+          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{t("home.whyInvest.label")}</span>
           <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.whyInvest.title")}</h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
             {t("home.whyInvest.desc")}
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-3 lg:grid-cols-5">
+        <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
           {WHY_INVEST.map((item, idx) => (
-            <div key={idx} className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border/50 shadow-sm hover:shadow-md transition-shadow">
-              <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 text-emerald-600">
-                <item.icon className="h-6 w-6" />
+            <div key={idx} className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border/40 shadow-soft hover-lift">
+              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
+                <item.icon className="h-5.5 w-5.5" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* 7. MARKET STATISTICS */}
-      <section className="bg-gray-900 py-16 my-16 border-y border-gray-800">
-        <div className="container-wide grid grid-cols-2 md:grid-cols-5 gap-8 divide-x divide-gray-800">
+      <section className="bg-secondary py-16 my-16 border-y border-secondary-foreground/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(11,122,85,0.12),transparent_50%)]" />
+        <div className="container-wide relative z-10 grid grid-cols-2 md:grid-cols-5 gap-8 md:divide-x md:divide-white/10">
           {STATS.map((stat, idx) => (
-             <div key={idx} className={`flex flex-col items-center text-center ${idx % 2 !== 0 && 'border-none md:border-solid'} ${idx === 0 && 'border-none'}`}>
+             <div key={idx} className="flex flex-col items-center text-center px-4">
                <div className="text-3xl md:text-4xl font-semibold text-white font-serif mb-2">{stat.value}</div>
-               <div className="text-xs uppercase tracking-widest text-gray-400 font-medium">{stat.label}</div>
+               <div className="text-[10px] uppercase tracking-wider text-white/60 font-medium">{stat.label}</div>
              </div>
           ))}
         </div>
@@ -374,8 +379,8 @@ export default function Home() {
 
       {/* 8. EXPLORE BY CITY */}
       <section className="container-wide section-gap">
-        <div className="section-header text-center mb-12">
-          <span className="section-label mx-auto">{t("home.exploreCities.label")}</span>
+        <div className="text-center max-w-2xl mx-auto mb-12">
+          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{t("home.exploreCities.label")}</span>
           <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.exploreCities.title")}</h2>
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
@@ -383,14 +388,14 @@ export default function Home() {
             <Link
               key={city.name}
               to={`/properties?location=${city.name.toLowerCase()}`}
-              className="group relative overflow-hidden rounded-2xl shadow-sm aspect-[4/3]"
+              className="group relative overflow-hidden rounded-2xl shadow-card aspect-[4/3] hover-lift"
             >
               <img src={city.image} alt={city.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-              <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent z-[1]" />
+              <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between z-10">
                 <div>
-                  <h3 className="font-serif text-xl font-medium text-white">{city.name}</h3>
-                  <p className="text-sm text-gray-300 mt-1">{city.count} {t("home.exploreCities.properties")}</p>
+                  <h3 className="font-serif text-lg sm:text-xl font-medium text-white">{city.name}</h3>
+                  <p className="text-xs sm:text-sm text-gray-300 mt-1">{city.count} {t("home.exploreCities.properties")}</p>
                 </div>
                 <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                    <ArrowRight className="h-4 w-4 text-white" />
@@ -430,21 +435,21 @@ export default function Home() {
       {/* 10. INVESTMENT EDUCATION */}
       <section className="container-wide section-gap">
         <div className="max-w-3xl mx-auto text-center mb-16">
-          <span className="section-label mx-auto">{t("home.education.label")}</span>
+          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{t("home.education.label")}</span>
           <h2 className="font-serif text-3xl font-semibold text-foreground">{t("home.education.title")}</h2>
           <p className="mt-4 text-muted-foreground leading-relaxed">
             {t("home.education.desc")}
           </p>
         </div>
 
-        <div className="grid gap-8 md:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-4">
           {EDUCATION_STEPS.map((item, idx) => (
-            <div key={idx} className="relative p-6 rounded-2xl bg-card border border-border/60 shadow-sm">
-              <div className="absolute -top-4 -left-4 h-10 w-10 rounded-full bg-emerald-600 text-white font-bold flex items-center justify-center text-lg border-4 border-background shadow-sm">
+            <div key={idx} className="relative p-6 rounded-2xl bg-card border border-border/40 shadow-soft hover-lift">
+              <div className="absolute -top-3 -left-3 h-9 w-9 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm border-2 border-background shadow-sm">
                 {item.step}
               </div>
-              <h3 className="font-semibold text-foreground mt-4 mb-3">{item.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{item.desc}</p>
+              <h3 className="font-semibold text-foreground mt-4 mb-2">{item.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
             </div>
           ))}
         </div>
@@ -458,14 +463,14 @@ export default function Home() {
           </div>
           <div className="grid md:grid-cols-3 gap-8">
             {TESTIMONIALS.map((item, idx) => (
-              <div key={idx} className="bg-card p-8 rounded-2xl border border-border/50 shadow-sm">
-                <div className="flex gap-1 text-emerald-500 mb-4">
+              <div key={idx} className="bg-card p-8 rounded-2xl border border-border/40 shadow-soft hover-lift">
+                <div className="flex gap-1 text-primary mb-4">
                   {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
                 </div>
-                <p className="text-muted-foreground italic mb-6 leading-relaxed">"{item.quote}"</p>
+                <p className="text-muted-foreground italic mb-6 leading-relaxed text-sm">"{item.quote}"</p>
                 <div>
-                  <h4 className="font-semibold text-foreground">{item.author}</h4>
-                  <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">{item.role}</p>
+                  <h4 className="font-semibold text-foreground text-sm">{item.author}</h4>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">{item.role}</p>
                 </div>
               </div>
             ))}
@@ -489,18 +494,18 @@ export default function Home() {
 
       {/* 13. NEWSLETTER */}
       <section className="container-tight mb-20">
-        <div className="bg-card border border-border/60 rounded-3xl p-10 md:p-14 text-center shadow-sm relative overflow-hidden">
-          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 bg-emerald-500/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-40 w-40 bg-blue-500/10 rounded-full blur-3xl" />
+        <div className="glass-panel border border-border/40 rounded-3xl p-10 md:p-14 text-center shadow-lux relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 -mb-10 -ml-10 h-40 w-40 bg-secondary/10 rounded-full blur-3xl" />
           
           <div className="relative z-10 max-w-xl mx-auto">
             <Mail className="h-10 w-10 text-primary mx-auto mb-6" />
             <h2 className="font-serif text-3xl font-semibold text-foreground mb-4">{t("home.newsletter.title")}</h2>
-            <p className="text-muted-foreground mb-8 leading-relaxed">
+            <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
               {t("home.newsletter.desc")}
             </p>
             <NewsletterForm />
-            <p className="text-xs text-muted-foreground mt-4">{t("home.newsletter.privacyNote")}</p>
+            <p className="text-[11px] text-muted-foreground mt-4">{t("home.newsletter.privacyNote")}</p>
           </div>
         </div>
       </section>

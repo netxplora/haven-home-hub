@@ -68,7 +68,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                   VE
                 </div>
                 <div>
-                  <h1 className="text-3xl font-serif font-bold text-gray-900 tracking-tight leading-none mb-2">Verdant Estate</h1>
+                  <h1 className="text-3xl font-serif font-bold text-gray-900 tracking-tight leading-none mb-2">Haven Home Hub</h1>
                   <p className="text-sm font-medium text-gray-500 uppercase tracking-widest">Official Transaction Receipt</p>
                   <p className="text-xs text-gray-400 mt-1">123 Premium Blvd, Financial District</p>
                 </div>
@@ -317,10 +317,10 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             <div className="border-t border-gray-200 pt-6 mt-12 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 text-gray-400">
                 <ShieldCheck className="h-4 w-4" />
-                <span className="text-xs font-medium">Cryptographically verifiable on Verdant Ledger</span>
+                <span className="text-xs font-medium">Cryptographically verifiable on Haven Ledger</span>
               </div>
               <p className="text-xs font-medium text-gray-500">
-                Issued by Verdant Estate Financial Operations
+                Issued by Haven Home Hub Financial Operations
               </p>
             </div>
             

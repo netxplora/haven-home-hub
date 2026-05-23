@@ -55,7 +55,7 @@ export default function UserDashboard() {
             </div>
           </div>
           <div className="text-center space-y-1">
-            <p className="text-sm font-bold uppercase tracking-wider text-foreground">Verdant Estate</p>
+            <p className="text-sm font-bold uppercase tracking-wider text-foreground">Haven Home Hub</p>
             <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground animate-pulse">Loading Dashboard</p>
           </div>
         </div>
@@ -129,7 +129,7 @@ export default function UserDashboard() {
       </div>
       
       <div className="mt-20 pt-8 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Verdant Estate • Version 2.4.0</p>
+        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Haven Home Hub • Version 2.4.0</p>
         <button 
           onClick={() => signOut()} 
           className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-destructive hover:opacity-80 transition-opacity"

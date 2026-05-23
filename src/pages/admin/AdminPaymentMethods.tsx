@@ -67,7 +67,7 @@ const EMPTY_FORM: Omit<PaymentMethod, "id" | "created_at" | "updated_at"> = {
 const CONFIG_FIELDS: Record<PaymentCategory, { key: string; label: string; placeholder: string; type?: string }[]> = {
   bank_transfer: [
     { key: "bank_name", label: "Bank Name", placeholder: "e.g. First Bank" },
-    { key: "account_name", label: "Account Name", placeholder: "e.g. Verdant Estate Ltd" },
+    { key: "account_name", label: "Account Name", placeholder: "e.g. Haven Home Hub Ltd" },
     { key: "account_number", label: "Account Number", placeholder: "e.g. 0123456789" },
     { key: "swift_code", label: "SWIFT / BIC Code", placeholder: "e.g. FBNINGLA" },
     { key: "routing_number", label: "Routing / Sort Code", placeholder: "Optional" },
@@ -401,8 +401,8 @@ export function AdminPaymentMethods() {
 
       {/* Create/Edit Dialog */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
+        <DialogContent className="max-w-2xl p-0 border border-border">
+          <DialogHeader className="p-6 border-b border-border/40 shrink-0">
             <DialogTitle className="font-serif text-xl">
               {editingId ? "Edit Payment Method" : "Add Payment Method"}
             </DialogTitle>

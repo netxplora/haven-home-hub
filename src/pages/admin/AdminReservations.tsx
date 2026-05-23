@@ -364,8 +364,8 @@ export function AdminReservations() {
       {/* Review Dialog */}
       <Dialog open={!!selected} onOpenChange={(v) => !v && setSelected(null)}>
         {selected && (
-          <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
-            <DialogHeader className="bg-secondary/40 pb-6 border-b border-border/50">
+          <DialogContent className="max-w-md p-0 border border-border">
+            <DialogHeader className="bg-secondary/40 p-6 border-b border-border/50 shrink-0">
               <DialogTitle className="font-serif text-2xl">Request Review</DialogTitle>
             </DialogHeader>
             <DialogBody className="space-y-6 py-6">

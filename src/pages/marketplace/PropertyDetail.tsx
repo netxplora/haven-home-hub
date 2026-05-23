@@ -405,7 +405,7 @@ export default function PropertyDetail() {
           )}
 
           {/* Location & Neighborhood */}
-          <div className="space-y-8 mt-16 pt-12 border-t border-gray-200">
+          <div className="space-y-8 mt-16 pt-12 border-t border-border">
             {/* 1. Neighborhood Summary Header */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3 mb-1">
@@ -413,10 +413,10 @@ export default function PropertyDetail() {
                   {t("propertyDetail.neighborhood.badge")}
                 </span>
               </div>
-              <h2 className="font-serif text-3xl font-bold text-gray-900">
+              <h2 className="font-serif text-3xl font-bold text-foreground">
                 {property.city ? `${property.neighborhood || property.city}, ${property.state || ''}` : t("propertyDetail.neighborhood.title")}
               </h2>
-              <p className="text-gray-600 max-w-2xl text-lg">
+              <p className="text-muted-foreground max-w-2xl text-lg">
                 {property.property_type === 'commercial' 
                   ? t("propertyDetail.neighborhood.descCommercial") 
                   : t("propertyDetail.neighborhood.descResidential")}
@@ -425,11 +425,11 @@ export default function PropertyDetail() {
             
             {/* 2. Categorized Local Amenities Section */}
             <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-gray-200">
-                <h3 className="font-serif text-xl font-bold text-gray-900">
+              <div className="flex items-center justify-between pb-3 border-b border-border">
+                <h3 className="font-serif text-xl font-bold text-foreground">
                   {t("propertyDetail.neighborhood.localAmenities")}
                 </h3>
-                <span className="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                <span className="text-sm font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-full">
                   {nearbyPois.length} {t("propertyDetail.neighborhood.found")}
                 </span>
               </div>
@@ -457,17 +457,17 @@ export default function PropertyDetail() {
                     }
 
                     return (
-                      <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-gray-100 bg-white shadow-sm hover:border-gray-300 transition-colors">
+                      <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card shadow-sm hover:border-border transition-colors">
                         <div className={`h-10 w-10 rounded-full ${iconBg} flex items-center justify-center ${iconColor} shrink-0`}>
                           <Icon className="h-5 w-5" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-gray-900 truncate" title={poi.name}>{poi.name}</p>
-                          <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mt-0.5">{poi.type}</p>
+                          <p className="text-sm font-bold text-foreground truncate" title={poi.name}>{poi.name}</p>
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{poi.type}</p>
                         </div>
                         {poi.distance_km && (
                           <div className="text-right shrink-0">
-                            <p className="text-sm font-bold text-gray-900">{poi.distance_km} km</p>
+                            <p className="text-sm font-bold text-foreground">{poi.distance_km} km</p>
                           </div>
                         )}
                       </div>
@@ -475,25 +475,25 @@ export default function PropertyDetail() {
                   })}
                 </div>
               ) : (
-                <div className="w-full flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-gray-200 bg-gray-50">
-                  <div className="h-12 w-12 rounded-full bg-white flex items-center justify-center mb-3 shadow-sm border border-gray-100">
-                    <MapPin className="h-5 w-5 text-gray-400" />
+                <div className="w-full flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-border bg-secondary/30">
+                  <div className="h-12 w-12 rounded-full bg-card flex items-center justify-center mb-3 shadow-sm border border-border/50">
+                    <MapPin className="h-5 w-5 text-muted-foreground/60" />
                   </div>
-                  <p className="font-serif text-base font-bold text-gray-900">{t("propertyDetail.neighborhood.emptyTitle")}</p>
-                  <p className="mt-1 text-sm text-gray-500">{t("propertyDetail.neighborhood.emptyDesc")}</p>
+                  <p className="font-serif text-base font-bold text-foreground">{t("propertyDetail.neighborhood.emptyTitle")}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{t("propertyDetail.neighborhood.emptyDesc")}</p>
                 </div>
               )}
             </div>
 
             {/* 3. Landscape Interactive Map */}
-            <div className="w-full rounded-xl overflow-hidden border border-gray-200 relative z-0 flex flex-col shadow-sm bg-gray-50">
+            <div className="w-full rounded-xl overflow-hidden border border-border relative z-0 flex flex-col shadow-sm bg-secondary/20">
               <div className="aspect-[16/9] md:aspect-[21/9] max-h-[400px] w-full relative">
                 <Suspense fallback={
-                  <div className="h-full w-full flex flex-col items-center justify-center bg-gray-50 animate-pulse absolute inset-0">
-                    <div className="h-16 w-16 rounded-full bg-white flex items-center justify-center mb-4 shadow-sm border border-gray-100">
-                      <MapPin className="h-8 w-8 text-gray-400" />
+                  <div className="h-full w-full flex flex-col items-center justify-center bg-secondary/30 animate-pulse absolute inset-0">
+                    <div className="h-16 w-16 rounded-full bg-card flex items-center justify-center mb-4 shadow-sm border border-border/50">
+                      <MapPin className="h-8 w-8 text-muted-foreground/60" />
                     </div>
-                    <p className="text-gray-500 font-medium font-sans">{t("propertyDetail.neighborhood.loadingMap")}</p>
+                    <p className="text-muted-foreground font-medium font-sans">{t("propertyDetail.neighborhood.loadingMap")}</p>
                   </div>
                 }>
                   <InteractivePropertyMap 
@@ -507,10 +507,10 @@ export default function PropertyDetail() {
               </div>
               
               {/* Context Banner Overlay */}
-              <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-auto md:w-[400px] p-4 rounded-lg bg-white/95 backdrop-blur border border-gray-200 shadow-md flex flex-col gap-2 z-20 pointer-events-none">
-                <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{t("propertyDetail.neighborhood.registeredAddress")}</p>
-                <p className="text-sm font-bold leading-tight text-gray-900 line-clamp-2">{property.address || t("propertyDetail.neighborhood.locationOnRequest")}</p>
-                <Button variant="outline" size="sm" className="pointer-events-auto mt-2 rounded-md font-bold border-gray-300 text-gray-700 hover:bg-gray-50 w-fit" asChild>
+              <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-auto md:w-[400px] p-4 rounded-lg bg-card/95 backdrop-blur border border-border shadow-md flex flex-col gap-2 z-20 pointer-events-none">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t("propertyDetail.neighborhood.registeredAddress")}</p>
+                <p className="text-sm font-bold leading-tight text-foreground line-clamp-2">{property.address || t("propertyDetail.neighborhood.locationOnRequest")}</p>
+                <Button variant="outline" size="sm" className="pointer-events-auto mt-2 rounded-md font-bold border-border text-foreground hover:bg-secondary w-fit" asChild>
                   <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.title)}`} target="_blank" rel="noreferrer">
                     {t("propertyDetail.neighborhood.getDirections")} <ExternalLink className="ml-2 h-3 w-3" />
                   </a>
@@ -520,25 +520,25 @@ export default function PropertyDetail() {
 
             {/* 4. Surrounding Context Layer */}
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex items-start gap-4">
-                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+              <div className="p-5 rounded-xl bg-card border border-border shadow-sm flex items-start gap-4">
+                <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.viewingSchedule")}</p>
-                  <p className="text-sm font-medium leading-relaxed text-gray-900">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.viewingSchedule")}</p>
+                  <p className="text-sm font-medium leading-relaxed text-foreground">
                     {property.inspection_availability || t("propertyDetail.neighborhood.viewingScheduleDefault")}
                   </p>
                 </div>
               </div>
               
-              <div className="p-5 rounded-xl bg-white border border-gray-200 shadow-sm flex items-start gap-4">
-                <div className="h-10 w-10 rounded-lg bg-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+              <div className="p-5 rounded-xl bg-card border border-border shadow-sm flex items-start gap-4">
+                <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
                   <Building2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.zoningStatus")}</p>
-                  <p className="text-sm font-medium leading-relaxed text-gray-900">
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.zoningStatus")}</p>
+                  <p className="text-sm font-medium leading-relaxed text-foreground">
                     {property.property_type === 'commercial' ? t("propertyDetail.neighborhood.zoningCommercial") : t("propertyDetail.neighborhood.zoningResidential")}
                   </p>
                 </div>

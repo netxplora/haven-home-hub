@@ -41,6 +41,7 @@ import { AdminFinanceCenter } from "./AdminFinanceCenter";
 import { DashboardShell, NavItem } from "@/components/dashboard/DashboardShell";
 import { AdminUsers } from "./AdminUsers";
 import { AdminReferrals } from "./AdminReferrals";
+import { AdminDocuments } from "./AdminDocuments";
 import { Award, CreditCard } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -58,6 +59,7 @@ const navItems: NavItem[] = [
   { id: "reviews", label: "Reviews", icon: Star },
   { id: "users", label: "Users & Roles", icon: ShieldCheck },
   { id: "cms", label: "Website Content", icon: FileText },
+  { id: "documents", label: "Documents", icon: FileText },
   { id: "referrals", label: "Referral Program", icon: Award },
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
   { id: "settings", label: "Settings", icon: Settings },
@@ -95,6 +97,7 @@ export default function Admin() {
         {activeTab === "reviews" && <AdminReviews />}
         {activeTab === "users" && <AdminUsers />}
         {activeTab === "cms" && <AdminCMS />}
+        {activeTab === "documents" && <AdminDocuments />}
         {activeTab === "referrals" && <AdminReferrals />}
         {activeTab === "payment-methods" && <AdminPaymentMethods />}
         {activeTab === "settings" && <AdminSettings />}

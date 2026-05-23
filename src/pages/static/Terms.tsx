@@ -4,7 +4,7 @@ import { SEO } from "@/components/site/SEO";
 export default function Terms() {
   return (
     <SiteLayout>
-      <SEO title="Terms of Service" description="Verdant Estate Terms of Service. Please read these terms carefully before using our platform." />
+      <SEO title="Terms of Service" description="Haven Home Hub Terms of Service. Please read these terms carefully before using our platform." />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-black">
         <img
@@ -38,12 +38,12 @@ export default function Terms() {
 
           <h2>1. Agreement to Terms</h2>
           <p>
-            By accessing or using the Verdant Estate platform ("Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, you must not use the Platform. These Terms apply to all visitors, users, and others who access the Platform.
+            By accessing or using the Haven Home Hub platform ("Platform"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, you must not use the Platform. These Terms apply to all visitors, users, and others who access the Platform.
           </p>
 
           <h2>2. Platform Description</h2>
           <p>
-            Verdant Estate is a real estate agency platform that provides property listings (for sale, rent, and land), fractional investment opportunities, agent directory services, and related financial tools. The Platform connects buyers, tenants, and investors with verified properties and licensed agents.
+            Haven Home Hub is a real estate agency platform that provides property listings (for sale, rent, and land), fractional investment opportunities, agent directory services, and related financial tools. The Platform connects buyers, tenants, and investors with verified properties and licensed agents.
           </p>
 
           <h2>3. User Accounts</h2>
@@ -68,7 +68,7 @@ export default function Terms() {
           <h2>5. Investment Services</h2>
           <h3>5.1 Fractional Ownership</h3>
           <p>
-            Verdant Estate facilitates fractional property ownership through unit-based investment structures. Each investment opportunity is subject to its own terms, including minimum investment amounts, holding periods, distribution schedules, and projected return ranges.
+            Haven Home Hub facilitates fractional property ownership through unit-based investment structures. Each investment opportunity is subject to its own terms, including minimum investment amounts, holding periods, distribution schedules, and projected return ranges.
           </p>
           <h3>5.2 Risk Disclosure</h3>
           <p>
@@ -90,7 +90,7 @@ export default function Terms() {
           </p>
           <h3>6.3 Digital Currency Payments</h3>
           <p>
-            Digital currency payments are subject to network confirmation requirements. Exchange rates are locked at the time of payment initiation and remain valid for a limited period. Verdant Estate is not responsible for losses due to digital currency price fluctuations after a payment is initiated.
+            Digital currency payments are subject to network confirmation requirements. Exchange rates are locked at the time of payment initiation and remain valid for a limited period. Haven Home Hub is not responsible for losses due to digital currency price fluctuations after a payment is initiated.
           </p>
 
           <h2>7. Withdrawals</h2>
@@ -100,7 +100,7 @@ export default function Terms() {
 
           <h2>8. Intellectual Property</h2>
           <p>
-            The Platform and its original content, features, and functionality are owned by Verdant Estate and are protected by international copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, or create derivative works without our express written permission.
+            The Platform and its original content, features, and functionality are owned by Haven Home Hub and are protected by international copyright, trademark, and other intellectual property laws. You may not reproduce, distribute, or create derivative works without our express written permission.
           </p>
 
           <h2>9. Prohibited Activities</h2>
@@ -116,7 +116,7 @@ export default function Terms() {
 
           <h2>10. Limitation of Liability</h2>
           <p>
-            To the maximum extent permitted by law, Verdant Estate shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform, including but not limited to loss of profits, data, or investment returns.
+            To the maximum extent permitted by law, Haven Home Hub shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the Platform, including but not limited to loss of profits, data, or investment returns.
           </p>
 
           <h2>11. Governing Law</h2>

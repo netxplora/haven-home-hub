@@ -259,7 +259,7 @@ export default function BlogPost() {
                       </div>
                     ) : (
                       <div className="aspect-[16/10] bg-accent flex items-center justify-center">
-                        <span className="text-muted-foreground font-serif text-xl">Verdant Estate</span>
+                        <span className="text-muted-foreground font-serif text-xl">Haven Home Hub</span>
                       </div>
                     )}
                     <div className="flex flex-1 flex-col p-6">

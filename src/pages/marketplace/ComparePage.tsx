@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -155,7 +155,7 @@ export default function ComparePage() {
   }, [orderedProperties]);
 
   // Safe Index Reset for Mobile View
-  useMemo(() => {
+  useEffect(() => {
     if (mobileBenchmarkIdx >= orderedProperties.length) {
       setMobileBenchmarkIdx(0);
     }

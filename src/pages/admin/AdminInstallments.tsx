@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
 import { formatMoney } from "@/lib/invest";
 import { Search, Eye, AlertTriangle, CheckCircle2, Clock, Layers, TrendingUp, Banknote, XCircle, Calendar } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
@@ -278,7 +278,7 @@ export function AdminInstallments() {
       {/* Detail Dialog */}
       <Dialog open={!!viewItem} onOpenChange={(v) => !v && setViewItem(null)}>
         {viewItem && (
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-3xl">
             <DialogHeader>
               <div className="flex justify-between items-start">
                 <div>
@@ -291,41 +291,43 @@ export function AdminInstallments() {
               </div>
             </DialogHeader>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 my-6">
-              <MiniStat label="Total Amount" value={formatMoney(Number(viewItem.total_amount ?? 0), viewItem.investment_properties?.currency)} />
-              <MiniStat label="Initial Payment" value={formatMoney(Number(viewItem.down_payment_amount ?? 0), viewItem.investment_properties?.currency)} />
-              <MiniStat label="Amount Paid" value={formatMoney(Number(viewItem.amount_paid ?? 0), viewItem.investment_properties?.currency)} accent />
-              <MiniStat label="Remaining" value={formatMoney(Number(viewItem.remaining_balance ?? 0), viewItem.investment_properties?.currency)} warning />
-            </div>
+            <DialogBody className="space-y-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <MiniStat label="Total Amount" value={formatMoney(Number(viewItem.total_amount ?? 0), viewItem.investment_properties?.currency)} />
+                <MiniStat label="Initial Payment" value={formatMoney(Number(viewItem.down_payment_amount ?? 0), viewItem.investment_properties?.currency)} />
+                <MiniStat label="Amount Paid" value={formatMoney(Number(viewItem.amount_paid ?? 0), viewItem.investment_properties?.currency)} accent />
+                <MiniStat label="Remaining" value={formatMoney(Number(viewItem.remaining_balance ?? 0), viewItem.investment_properties?.currency)} warning />
+              </div>
 
-            <div className="space-y-3 mb-6">
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">Completion</span>
-                <span className="font-bold">{Number(viewItem.completion_percentage ?? 0).toFixed(0)}%</span>
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Completion</span>
+                  <span className="font-bold">{Number(viewItem.completion_percentage ?? 0).toFixed(0)}%</span>
+                </div>
+                <Progress value={Number(viewItem.completion_percentage ?? 0)} className="h-2" />
               </div>
-              <Progress value={Number(viewItem.completion_percentage ?? 0)} className="h-2" />
-            </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm mb-6">
-              <div>
-                <p className="text-xs text-muted-foreground">Monthly Payment</p>
-                <p className="font-semibold mt-0.5">{formatMoney(Number(viewItem.monthly_installment_amount ?? 0), viewItem.investment_properties?.currency)}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                <div>
+                  <p className="text-xs text-muted-foreground">Monthly Payment</p>
+                  <p className="font-semibold mt-0.5">{formatMoney(Number(viewItem.monthly_installment_amount ?? 0), viewItem.investment_properties?.currency)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Duration</p>
+                  <p className="font-semibold mt-0.5">{viewItem.duration_months ?? "—"} months</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Start Date</p>
+                  <p className="font-semibold mt-0.5">{new Date(viewItem.start_date || viewItem.created_at).toLocaleDateString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Next Due</p>
+                  <p className="font-semibold mt-0.5 text-amber-600">{viewItem.next_payment_due ? new Date(viewItem.next_payment_due).toLocaleDateString() : "N/A"}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Duration</p>
-                <p className="font-semibold mt-0.5">{viewItem.duration_months ?? "—"} months</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Start Date</p>
-                <p className="font-semibold mt-0.5">{new Date(viewItem.start_date || viewItem.created_at).toLocaleDateString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">Next Due</p>
-                <p className="font-semibold mt-0.5 text-amber-600">{viewItem.next_payment_due ? new Date(viewItem.next_payment_due).toLocaleDateString() : "N/A"}</p>
-              </div>
-            </div>
 
-            <InstallmentScheduleViewer investmentId={viewItem.id} currency={viewItem.investment_properties?.currency || "USD"} />
+              <InstallmentScheduleViewer investmentId={viewItem.id} currency={viewItem.investment_properties?.currency || "USD"} />
+            </DialogBody>
           </DialogContent>
         )}
       </Dialog>

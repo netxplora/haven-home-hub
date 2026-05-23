@@ -37,12 +37,12 @@ const values = [
 export default function About() {
   return (
     <SiteLayout>
-      <SEO title="About Us" description="Learn about Verdant Estate — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States." />
+      <SEO title="About Us" description="Learn about Haven Home Hub — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States." />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[550px] flex items-center bg-black">
         <img 
           src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80" 
-          alt="Verdant Estate Corporate Office" 
+          alt="Haven Home Hub Corporate Office" 
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />
@@ -80,7 +80,7 @@ export default function About() {
             </h2>
             <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Verdant Estate was founded with a straightforward idea: people deserve a better way to find their next home. Instead of flooding a marketplace with unverified listings, we built an agency model where every property is visited, photographed, and validated by our team before it becomes available.
+                Haven Home Hub was founded with a straightforward idea: people deserve a better way to find their next home. Instead of flooding a marketplace with unverified listings, we built an agency model where every property is visited, photographed, and validated by our team before it becomes available.
               </p>
               <p>
                 Today, we operate across multiple cities with a growing team of specialized agents. Whether you are buying your first apartment, leasing commercial space, or investing in fractional property ownership, our process stays the same — honest, hands-on, and results-focused.

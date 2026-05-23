@@ -59,13 +59,13 @@ export default function ResetPassword() {
       <div className="hidden bg-foreground lg:flex lg:flex-col lg:justify-between lg:p-12 lg:text-primary-foreground">
         <Link to="/" className="flex items-center gap-2.5 font-serif text-xl font-semibold ">
           <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground "><Building2 className="h-4 w-4" /></span>
-          Verdant Estate
+          Haven Home Hub
         </Link>
         <div>
           <h2 className="font-serif text-4xl font-semibold leading-tight">Set a new password.</h2>
           <p className="mt-3 text-primary-foreground/85">Choose a strong password to keep your account secure.</p>
         </div>
-        <p className="text-sm text-primary-foreground/50">© {new Date().getFullYear()} Verdant Estate</p>
+        <p className="text-sm text-primary-foreground/50">© {new Date().getFullYear()} Haven Home Hub</p>
       </div>
 
       <div className="flex flex-col justify-center bg-background px-6 py-12 sm:px-12">

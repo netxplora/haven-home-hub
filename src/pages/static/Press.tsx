@@ -6,49 +6,49 @@ import { SEO } from "@/components/site/SEO";
 const releases = [
   {
     date: "April 2026",
-    title: "Verdant Estate launches fractional property investment platform",
+    title: "Haven Home Hub launches fractional property investment platform",
     summary: "Investors can now co-own income-generating properties with transparent unit pricing and scheduled distributions. The platform supports both traditional bank transfers and digital currency deposits.",
   },
   {
     date: "March 2026",
-    title: "Verdant Estate expands operations to three new cities",
+    title: "Haven Home Hub expands operations to three new cities",
     summary: "The agency now covers Austin, Miami, and Ibadan, with dedicated full-time agents embedded in each region to provide localized market expertise.",
   },
   {
     date: "February 2026",
-    title: "Verdant Estate surpasses $50M in total assets under management",
+    title: "Haven Home Hub surpasses $50M in total assets under management",
     summary: "The fractional investment arm reaches a major milestone, with over 2,000 active investors participating in commercial and residential property portfolios.",
   },
   {
     date: "January 2026",
-    title: "Verdant Estate closes 2025 with 400+ verified property listings",
+    title: "Haven Home Hub closes 2025 with 400+ verified property listings",
     summary: "Year-end results confirm continued growth in curated property inventory and agent network, with a 65% increase in transaction volume over the previous year.",
   },
   {
     date: "October 2025",
-    title: "Verdant Estate introduces digital currency payments for property investments",
+    title: "Haven Home Hub introduces digital currency payments for property investments",
     summary: "Buyers and investors can now pay with Bitcoin, Ethereum, and USDT alongside traditional banking methods, broadening access for international investors.",
   },
   {
     date: "July 2025",
-    title: "Verdant Estate partners with leading valuation firm for property verification",
+    title: "Haven Home Hub partners with leading valuation firm for property verification",
     summary: "All listed properties now include independent valuation data to improve buyer confidence and ensure pricing accuracy across all markets.",
   },
 ];
 
 const coverage = [
   { outlet: "Business Daily", title: "How agency-led platforms are reshaping property search in North America" },
-  { outlet: "Property Insider", title: "Verdant Estate: The case for curated listings over marketplace volume" },
-  { outlet: "TechCrunch", title: "Fractional real estate investing gains traction with Verdant Estate launch" },
+  { outlet: "Property Insider", title: "Haven Home Hub: The case for curated listings over marketplace volume" },
+  { outlet: "TechCrunch", title: "Fractional real estate investing gains traction with Haven Home Hub launch" },
   { outlet: "Financial Times", title: "US property tech sector matures with verified listing standards" },
-  { outlet: "Bloomberg", title: "Verdant Estate raises the bar for real estate transparency in New York" },
+  { outlet: "Bloomberg", title: "Haven Home Hub raises the bar for real estate transparency in New York" },
   { outlet: "The Wall Street Journal", title: "From renting to owning: How fractional models are changing the market" },
 ];
 
 export default function Press() {
   return (
     <SiteLayout>
-      <SEO title="Press & Media" description="Latest news, announcements, and media resources from Verdant Estate." />
+      <SEO title="Press & Media" description="Latest news, announcements, and media resources from Haven Home Hub." />
       {/* Header */}
       <section className="relative overflow-hidden min-h-[350px] sm:min-h-[450px] lg:min-h-[500px] flex items-center bg-black">
         <img 

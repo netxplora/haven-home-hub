@@ -200,7 +200,7 @@ export function AdminProperties() {
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader className="bg-primary pb-6">
             <DialogTitle className="font-serif text-2xl text-white">{editing ? "Edit Property" : "New Property Listing"}</DialogTitle>
           </DialogHeader>

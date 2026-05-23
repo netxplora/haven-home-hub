@@ -164,8 +164,8 @@ export function AdminCMS() {
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl">
-          <DialogHeader>
+        <DialogContent className="max-w-4xl p-0 border border-border">
+          <DialogHeader className="p-6 border-b border-border/40 shrink-0">
             <DialogTitle>{editing ? "Edit Post" : "New Post"}</DialogTitle>
           </DialogHeader>
           <PostForm initial={editing} categories={categories} onClose={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["admin-blog-posts"] }); }} />

@@ -66,6 +66,8 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
         .select("*")
         .eq("user_id", user?.id)
         .eq("related_id", property.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
         .maybeSingle();
       return data;
     },
@@ -90,20 +92,17 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
         user_id: user?.id,
         type: type,
         related_id: property.id,
-        property_id: type === "property" ? property.id : null,
-        investment_property_id: type === "investment" ? property.id : null,
-        status: "awaiting_reservation_fee",
-        reservation_fee_status: "pending"
+        status: "awaiting_reservation_fee"
       } as any).select().single();
 
       if (error) throw error;
 
       await refetchRes();
+      setStep("confirm");
       toast({
         title: "Reservation Requested",
         description: "Please complete your reservation fee payment to proceed.",
       });
-      // Do not change step to success, let existingReservation trigger the payment screen
     } catch (e: any) {
       toast({ 
         title: "Request failed", 
@@ -130,8 +129,8 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
   return (
     <>
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="max-w-md p-0 overflow-hidden border-none bg-background shadow-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="p-6 sm:p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/10">
+        <DialogContent className="max-w-md p-0 border border-border">
+          <DialogHeader className="p-6 sm:p-8 bg-gradient-to-br from-primary/10 via-primary/5 to-background border-b border-primary/10 shrink-0">
             <div className="h-12 w-12 rounded-xl bg-primary/20 flex items-center justify-center mb-4">
               <CalendarClock className="h-6 w-6 text-primary" />
             </div>
@@ -151,7 +150,7 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
                   </div>
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-3xl font-bold font-serif text-secondary-foreground">{formatMoney(reservationFee, "USD")}</p>
+                      <p className="text-3xl font-bold font-serif text-emerald-600">{formatMoney(reservationFee, "USD")}</p>
                       <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Fully refundable if purchase proceeds</p>
                     </div>
                     <div className="text-right">

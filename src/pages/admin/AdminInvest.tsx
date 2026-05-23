@@ -150,8 +150,8 @@ export function AdminInvest() {
         </table>
       </div>
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader className="bg-primary pb-6">
+        <DialogContent className="max-w-2xl p-0 border border-border">
+          <DialogHeader className="bg-primary p-6 shrink-0">
             <DialogTitle className="font-serif text-2xl text-white">{editing ? "Edit investment property" : "New investment property"}</DialogTitle>
           </DialogHeader>
           <InvestPropForm initial={editing} onClose={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }} />

@@ -24,6 +24,7 @@ import { toast } from "@/hooks/use-toast";
 import { InvestmentProperty, formatMoney, fundingPercent, availableUnits } from "@/lib/invest";
 import { FractionalPaymentDialog } from "@/components/invest/FractionalPaymentDialog";
 import { InvestmentCalculator } from "@/components/invest/InvestmentCalculator";
+import { SecondaryListingsSection } from "@/components/invest/SecondaryListingsSection";
 
 export default function InvestDetail() {
   const { slug } = useParams();
@@ -245,6 +246,13 @@ export default function InvestDetail() {
               {data.risk_notes && <li className="whitespace-pre-line text-muted-foreground">{data.risk_notes}</li>}
             </ul>
           </div>
+
+          {/* Secondary Market Listings */}
+          <SecondaryListingsSection
+            propertyId={data.id}
+            propertyTitle={data.title}
+            currency={data.currency || "USD"}
+          />
 
           {/* Installment Calculator */}
           {(data as any).installment_available && (

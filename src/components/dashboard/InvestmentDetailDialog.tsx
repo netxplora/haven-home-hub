@@ -2,13 +2,13 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Progress } from "@/components/ui/progress";
-import { CheckCircle2, Clock, AlertCircle, Receipt, ArrowRight, ShieldCheck, FileText } from "lucide-react";
+import { CheckCircle2, Clock, AlertCircle, Receipt, ArrowRight, ShieldCheck, FileText, Tag, XCircle, Loader2 } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -27,6 +27,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
   const [payingFull, setPayingFull] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("digital_currency");
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
+  const [cancellingListingId, setCancellingListingId] = useState<string | null>(null);
 
   // Fetch installment schedules
   const { data: schedules = [], isLoading } = useQuery({
@@ -62,6 +63,44 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
       }
       return data;
     },
+  });
+
+  // Fetch active secondary market listings for this investment
+  const { data: activeListings = [], isLoading: isListingsLoading } = useQuery({
+    queryKey: ["my-secondary-listings", investment?.id],
+    enabled: !!investment?.id && (investment?.status === "active" || investment?.status === "confirmed"),
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("secondary_market_listings" as any)
+        .select("*")
+        .eq("investment_id", investment.id)
+        .eq("status", "active")
+        .order("created_at", { ascending: false });
+      if (error) {
+        console.error("Error fetching listings:", error);
+        return [];
+      }
+      return (data || []) as any[];
+    },
+  });
+
+  // Fetch returns for this property
+  const { data: propertyReturns = [] } = useQuery({
+    queryKey: ["investment-returns", investment?.id],
+    enabled: !!investment?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("returns")
+        .select("id, amount_received, distribution_date, payouts(notes)")
+        .eq("user_id", investment.user_id)
+        .eq("property_id", investment.property_id)
+        .order("distribution_date", { ascending: false });
+      if (error) {
+        console.error("Error fetching returns:", error);
+        return [];
+      }
+      return (data || []) as any[];
+    }
   });
 
   if (!investment) return null;
@@ -103,11 +142,11 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden bg-card">
-        <div className="p-6 pb-0">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-2xl flex items-center justify-between">
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-lg p-0 border border-border bg-card">
+          <DialogHeader className="p-6 border-b border-border/40 shrink-0">
+            <DialogTitle className="font-serif text-xl flex items-center justify-between">
               <span>{investment.investment_properties?.title ?? "Investment Details"}</span>
               <Badge 
                 variant="secondary"
@@ -126,10 +165,9 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
               {isInstallment ? "Installment Plan Overview" : "Full Payment Investment Overview"}
             </DialogDescription>
           </DialogHeader>
-        </div>
 
-        <ScrollArea className="max-h-[70vh] px-6 pb-6">
-          <div className="space-y-8 mt-6">
+          <DialogBody className="space-y-6 py-6 font-sans">
+            <div className="space-y-8">
             
             {(investment.status === "pending" || investment.status === "payment_under_review") && (
               <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5 flex gap-4">
@@ -328,9 +366,99 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
               </div>
             </div>
 
-          </div>
-        </ScrollArea>
-      </DialogContent>
+            {/* Active Secondary Market Listings */}
+            {activeListings.length > 0 && (
+              <div className="pt-6 border-t border-border/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold flex items-center gap-2">
+                    <Tag className="h-4 w-4 text-primary" /> Your Active Listings
+                  </h4>
+                  <Badge variant="outline" className="text-[10px] font-bold border-primary/30 text-primary bg-primary/5 rounded-md px-2 py-0.5">
+                    {activeListings.length} Active
+                  </Badge>
+                </div>
+                <div className="space-y-2.5">
+                  {activeListings.map((listing: any) => {
+                    const listingTotal = listing.units_to_sell * Number(listing.price_per_unit);
+                    const isCancelling = cancellingListingId === listing.id;
+                    return (
+                      <div key={listing.id} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-accent/20">
+                        <div>
+                          <p className="text-sm font-semibold">
+                            {listing.units_to_sell} unit{listing.units_to_sell > 1 ? "s" : ""} at {formatMoney(Number(listing.price_per_unit), currency)}/unit
+                          </p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            Total: {formatMoney(listingTotal, currency)} · Listed {new Date(listing.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric" })}
+                          </p>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-8 px-3 text-xs font-bold rounded-lg border-red-200/50 text-red-600 hover:bg-red-500/5 hover:text-red-700 transition-colors"
+                          disabled={isCancelling}
+                          onClick={async () => {
+                            setCancellingListingId(listing.id);
+                            try {
+                              const { error } = await (supabase.rpc as any)("cancel_secondary_market_listing", {
+                                p_listing_id: listing.id,
+                              });
+                              if (error) throw error;
+                              toast({ title: "Listing Cancelled", description: "Your listing has been removed from the marketplace." });
+                              qc.invalidateQueries({ queryKey: ["my-secondary-listings"] });
+                              qc.invalidateQueries({ queryKey: ["secondary-listings"] });
+                            } catch (err: any) {
+                              toast({ title: "Cancel Failed", description: err.message || "Could not cancel the listing.", variant: "destructive" });
+                            } finally {
+                              setCancellingListingId(null);
+                            }
+                          }}
+                        >
+                          {isCancelling ? (
+                            <Loader2 className="h-3 w-3 animate-spin" />
+                          ) : (
+                            <><XCircle className="h-3 w-3 mr-1" /> Cancel</>
+                          )}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Dividends & ROI History */}
+            {propertyReturns.length > 0 && (
+              <div className="pt-6 border-t border-border/50 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold">Dividends & ROI</h4>
+                  <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 font-bold">
+                    Total: {formatMoney(propertyReturns.reduce((sum, r) => sum + Number(r.amount_received), 0), currency)}
+                  </Badge>
+                </div>
+                <div className="space-y-2.5">
+                  {propertyReturns.map((r: any) => (
+                    <div key={r.id} className="flex justify-between items-center p-3 rounded-lg border border-border/50 bg-secondary/10">
+                      <div>
+                        <p className="text-xs font-semibold text-foreground">
+                          {r.payouts?.notes || "Rental Income Yield"}
+                        </p>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">
+                          Received on {format(new Date(r.distribution_date), "MMM dd, yyyy")}
+                        </p>
+                      </div>
+                      <p className="font-semibold text-sm text-emerald-600">
+                        +{formatMoney(Number(r.amount_received), currency)}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            </div>
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
 
       <ManualPaymentModal
         open={paymentModalOpen}
@@ -360,6 +488,6 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
           payment_context: payingFull ? "full_payment" : "installment"
         }}
       />
-    </Dialog>
+    </>
   );
 }
