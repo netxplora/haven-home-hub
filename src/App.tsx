@@ -49,6 +49,7 @@ import { CompareProvider } from "./hooks/useCompare";
 import { CurrencyProvider } from "./hooks/useCurrency";
 import { CompareWidget } from "./components/site/CompareWidget";
 import { useDeploymentCache } from "./hooks/useDeploymentCache";
+import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -105,6 +106,7 @@ const App = () => (
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <CompareWidget />
           <RealtimeGlobal />
+          <GlobalErrorBoundary>
           <AuthProvider>
             <Suspense fallback={<PageLoader />}>
               <Routes>
@@ -145,9 +147,10 @@ const App = () => (
               <Route path="/blog/:slug" element={<BlogPost />} />
 
               <Route path="*" element={<NotFound />} />
-            </Routes>
+              </Routes>
             </Suspense>
           </AuthProvider>
+          </GlobalErrorBoundary>
         </BrowserRouter>
         </TooltipProvider>
       </CurrencyProvider>

@@ -20,6 +20,7 @@ import { OrganizationJsonLd } from "@/components/site/JsonLd";
 import { useTranslation } from "react-i18next";
 import { toast } from "@/hooks/use-toast";
 import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
+import { PromoBanner } from "@/components/site/PromoBanner";
 
 const heroImages = [
   heroImg,
@@ -176,6 +177,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <PromoBanner placement="homepage_hero" className="my-6" />
 
       {/* SUBTLE ACTIVITY FEED */}
       <section className="border-b border-border/30 bg-background py-1">
@@ -340,6 +343,8 @@ export default function Home() {
           <FreshInventorySlider />
         </div>
       </section>
+
+      <PromoBanner placement="homepage_mid" className="mt-12 mb-4" />
 
       {/* 6. WHY INVEST WITH US */}
       <section className="container-wide section-gap">

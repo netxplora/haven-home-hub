@@ -13,6 +13,8 @@ import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { AdminBroadcasts } from "./AdminBroadcasts";
+import { AdminAdvertisements } from "./AdminAdvertisements";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -48,15 +50,17 @@ export function AdminCMS() {
       <div className="mb-4 flex justify-between items-center">
         <div>
           <h2 className="text-xl font-serif font-semibold">Content Management System</h2>
-          <p className="text-sm text-muted-foreground">Manage blog posts, articles, and categories.</p>
+          <p className="text-sm text-muted-foreground">Manage blog posts, broadcasts, advertisements, and homepage content.</p>
         </div>
       </div>
 
       <Tabs defaultValue="posts" className="w-full">
-        <TabsList className="mb-6">
+        <TabsList className="mb-6 flex-wrap h-auto gap-1">
           <TabsTrigger value="posts">Blog Posts</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="homepage">Homepage Content</TabsTrigger>
+          <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
+          <TabsTrigger value="advertisements">Advertisements</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts">
@@ -160,6 +164,14 @@ export function AdminCMS() {
 
         <TabsContent value="homepage">
           <HomepageContentTab qc={qc} />
+        </TabsContent>
+
+        <TabsContent value="broadcasts">
+          <AdminBroadcasts />
+        </TabsContent>
+
+        <TabsContent value="advertisements">
+          <AdminAdvertisements />
         </TabsContent>
       </Tabs>
 
