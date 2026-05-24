@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { History, FileText, Download, Filter, Search, TrendingUp, TrendingDown, RefreshCcw } from "lucide-react";
+import { History, FileText, Download, Filter, Search, TrendingUp, TrendingDown, RefreshCcw, XCircle, Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -9,10 +9,12 @@ import { Input } from "@/components/ui/input";
 import { ReceiptDialog } from "@/components/dashboard/ReceiptDialog";
 import { formatMoney } from "@/lib/invest";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 export function TransactionsPanel({ userId }: { userId: string }) {
   const [selectedReceiptPaymentId, setSelectedReceiptPaymentId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["transactions", userId],
@@ -78,6 +80,29 @@ export function TransactionsPanel({ userId }: { userId: string }) {
     enabled: !!selectedReceiptPaymentId,
   });
 
+  const handleCancelPayment = async (paymentId: string) => {
+    setCancellingId(paymentId);
+    try {
+      const { error } = await supabase.rpc("cancel_payment", {
+        p_payment_id: paymentId
+      });
+      if (error) throw error;
+      toast({
+        title: "Transaction Cancelled",
+        description: "Your pending transaction has been successfully cancelled and asset holds released."
+      });
+      refetch();
+    } catch (err: any) {
+      toast({
+        title: "Cancellation Failed",
+        description: err.message || "Failed to cancel transaction.",
+        variant: "destructive"
+      });
+    } finally {
+      setCancellingId(null);
+    }
+  };
+
   const filteredItems = items.filter(t => 
     (t.payment_type || "").toLowerCase().includes(search.toLowerCase()) ||
     (t.reference || "").toLowerCase().includes(search.toLowerCase()) ||
@@ -127,6 +152,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
           <div className="grid grid-cols-1 gap-4 md:hidden">
             {filteredItems.map((t: any) => {
               const isIncome = ["deposit", "referral_bonus", "investment_return", "marketplace_sell"].includes(t.payment_type);
+              const isPending = t.status === "pending";
               return (
                 <div key={t.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-4">
                   <div className="flex items-start justify-between gap-3">
@@ -155,11 +181,13 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                         "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border shrink-0",
                         (t.status === "success" || t.status === "confirmed") ? "bg-primary text-primary-foreground border-none shadow-sm" : 
                         t.status === "failed" ? "bg-destructive/10 text-destructive border-destructive/20" : 
+                        t.status === "cancelled" ? "bg-red-500/10 text-red-600 border-red-500/20" :
                         "bg-secondary/10 text-secondary border-secondary/20"
                       )}
                     >
                       {t.status}
                     </Badge>
+
                   </div>
 
                   <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
@@ -181,7 +209,18 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                       <span className={cn("text-base font-bold", isIncome ? "text-green-600 dark:text-green-400" : "text-foreground")}>
                         {isIncome ? "+" : "-"}{formatMoney(Number(t.amount), t.currency)}
                       </span>
-                      {!t.isMarketplace && (
+                      {isPending && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-8 text-xs font-bold border-red-200 text-red-600 hover:bg-red-50/50"
+                          onClick={() => handleCancelPayment(t.id)}
+                          disabled={cancellingId === t.id}
+                        >
+                          {cancellingId === t.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Cancel"}
+                        </Button>
+                      )}
+                      {!t.isMarketplace && !isPending && (
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -216,6 +255,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                 <tbody className="divide-y divide-border/40">
                   {filteredItems.map((t: any) => {
                     const isIncome = ["deposit", "referral_bonus", "investment_return", "marketplace_sell"].includes(t.payment_type);
+                    const isPending = t.status === "pending";
                     return (
                       <tr key={t.id} className="transition-colors hover:bg-secondary/10 group">
                         <td className="px-6 py-5 text-muted-foreground font-medium">
@@ -253,6 +293,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                               "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
                               (t.status === "success" || t.status === "confirmed") ? "bg-primary text-primary-foreground border-none shadow-sm" : 
                               t.status === "failed" ? "bg-destructive/10 text-destructive border-destructive/20" : 
+                              t.status === "cancelled" ? "bg-red-500/10 text-red-600 border-red-500/20" :
                               "bg-secondary/10 text-secondary border-secondary/20"
                             )}
                           >
@@ -265,17 +306,31 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                           </span>
                         </td>
                         <td className="px-6 py-5 text-right">
-                          {!t.isMarketplace && (
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
-                              onClick={() => setSelectedReceiptPaymentId(t.id)}
-                              title="View Receipt"
-                            >
-                              <FileText className="h-4 w-4" />
-                            </Button>
-                          )}
+                          <div className="flex justify-end gap-2">
+                            {isPending && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-8 text-xs font-bold border-red-200 text-red-600 hover:bg-red-50/50 gap-1.5"
+                                onClick={() => handleCancelPayment(t.id)}
+                                disabled={cancellingId === t.id}
+                              >
+                                {cancellingId === t.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+                                Cancel Transaction
+                              </Button>
+                            )}
+                            {!t.isMarketplace && !isPending && (
+                              <Button 
+                                variant="ghost" 
+                                size="icon" 
+                                className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+                                onClick={() => setSelectedReceiptPaymentId(t.id)}
+                                title="View Receipt"
+                              >
+                                <FileText className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );

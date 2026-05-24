@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/invest";
+import { RefreshCw, Trash2 } from "lucide-react";
 
 // Map UI-friendly filter labels to actual DB values
 const STATUS_FILTER_MAP: Record<string, string> = {
@@ -98,7 +99,7 @@ export function AdminPayments() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-3 items-center">
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Filter Status" /></SelectTrigger>
             <SelectContent>
@@ -107,6 +108,7 @@ export function AdminPayments() {
               <SelectItem value="processing">Processing</SelectItem>
               <SelectItem value="confirmed">Confirmed</SelectItem>
               <SelectItem value="failed">Failed</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
               <SelectItem value="refunded">Refunded</SelectItem>
             </SelectContent>
           </Select>
@@ -121,6 +123,15 @@ export function AdminPayments() {
               <SelectItem value="investment_return">Investment Return</SelectItem>
             </SelectContent>
           </Select>
+          <Button 
+            variant="outline" 
+            size="icon" 
+            className="rounded-xl border-border/50 bg-card h-10 w-10 hover:bg-accent"
+            onClick={() => qc.invalidateQueries({ queryKey: ["admin-payments"] })}
+            title="Refresh List"
+          >
+            <RefreshCw className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
@@ -138,7 +149,7 @@ export function AdminPayments() {
                     <p className="text-[10px] text-muted-foreground font-mono mt-0.5">{p.user_id ? p.user_id.slice(0, 8) : "N/A"}</p>
                   </div>
                   <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize animate-none" 
-                    variant={p.status === "success" || p.status === "confirmed" ? "default" : p.status === "failed" ? "destructive" : "secondary"}>
+                    variant={p.status === "success" || p.status === "confirmed" ? "default" : p.status === "failed" || p.status === "cancelled" ? "destructive" : "secondary"}>
                     {p.status === "success" ? "confirmed" : (p.status ? p.status.replace("_", " ") : "N/A")}
                   </Badge>
                 </div>
@@ -203,7 +214,7 @@ export function AdminPayments() {
                   </td>
                   <td className="p-4">
                     <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize" 
-                      variant={p.status === "success" || p.status === "confirmed" ? "default" : p.status === "failed" ? "destructive" : "secondary"}>
+                      variant={p.status === "success" || p.status === "confirmed" ? "default" : p.status === "failed" || p.status === "cancelled" ? "destructive" : "secondary"}>
                       {p.status === "success" ? "confirmed" : (p.status ? p.status.replace("_", " ") : "N/A")}
                     </Badge>
                   </td>
@@ -334,11 +345,34 @@ export function AdminPayments() {
                       Mark Processing
                     </Button>
                   )}
-                  {selectedPayment.status !== 'failed' && selectedPayment.status !== 'confirmed' && selectedPayment.status !== 'success' && (
+                  {selectedPayment.status !== 'failed' && selectedPayment.status !== 'confirmed' && selectedPayment.status !== 'success' && selectedPayment.status !== 'cancelled' && (
                     <Button variant="ghost" className="flex-1 h-12 rounded-xl text-destructive font-bold hover:bg-destructive/10" onClick={() => mark(selectedPayment.id, 'failed')}>
                       Decline Payment
                     </Button>
                   )}
+                </div>
+
+                <div className="pt-4 border-t border-border/50">
+                  <Button 
+                    variant="outline" 
+                    className="w-full h-12 rounded-xl text-destructive border-destructive/20 hover:bg-destructive/10 font-bold gap-2"
+                    onClick={async () => {
+                      if (window.confirm("Are you sure you want to permanently delete this payment record and all associated receipts/audit logs? This action cannot be undone.")) {
+                        const { error } = await supabase.rpc("admin_delete_payment", {
+                          p_payment_id: selectedPayment.id
+                        });
+                        if (error) {
+                          toast({ title: "Delete Failed", description: error.message, variant: "destructive" });
+                        } else {
+                          toast({ title: "Record Deleted", description: "The payment record was permanently deleted." });
+                          setSelectedPayment(null);
+                          qc.invalidateQueries({ queryKey: ["admin-payments"] });
+                        }
+                      }
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" /> Permanent Delete Record
+                  </Button>
                 </div>
               </div>
               
@@ -352,4 +386,3 @@ export function AdminPayments() {
     </div>
   );
 }
-

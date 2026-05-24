@@ -93,6 +93,8 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
   const lastDragTimeRef = useRef(0);
   const innerGalleryActiveRef = useRef(false);
   const hasMovedRef = useRef(false);
+  const isPointerDownRef = useRef(false);
+  const pointerIdRef = useRef<number | null>(null);
   const [, forceRender] = useState(0);
 
   // We duplicate the cards for seamless infinite loop
@@ -156,6 +158,8 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
     }
     if (innerGalleryActiveRef.current) return;
     
+    isPointerDownRef.current = true;
+    pointerIdRef.current = e.pointerId;
     isPausedRef.current = true;
     dragStartXRef.current = e.clientX;
     dragStartScrollRef.current = scrollXRef.current;
@@ -163,12 +167,10 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
     lastDragTimeRef.current = Date.now();
     velocityRef.current = 0;
     hasMovedRef.current = false;
-    
-    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
   };
 
   const handlePointerMove = (e: React.PointerEvent) => {
-    if (!e.currentTarget.hasPointerCapture(e.pointerId)) return;
+    if (!isPointerDownRef.current) return;
     
     const deltaX = dragStartXRef.current - e.clientX;
     
@@ -176,6 +178,13 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
     if (!hasMovedRef.current && Math.abs(deltaX) > 8) {
       hasMovedRef.current = true;
       isDraggingRef.current = true;
+      if (pointerIdRef.current !== null) {
+        try {
+          (e.currentTarget as HTMLElement).setPointerCapture(pointerIdRef.current);
+        } catch (err) {
+          console.error("Failed to set pointer capture:", err);
+        }
+      }
     }
     
     if (hasMovedRef.current) {
@@ -195,7 +204,17 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
   };
 
   const handlePointerUp = (e: React.PointerEvent) => {
-    e.currentTarget.releasePointerCapture(e.pointerId);
+    if (!isPointerDownRef.current) return;
+
+    if (pointerIdRef.current !== null) {
+      try {
+        if ((e.currentTarget as HTMLElement).hasPointerCapture(pointerIdRef.current)) {
+          (e.currentTarget as HTMLElement).releasePointerCapture(pointerIdRef.current);
+        }
+      } catch (err) {
+        console.error("Failed to release pointer capture:", err);
+      }
+    }
     
     if (hasMovedRef.current) {
       // Apply momentum
@@ -205,6 +224,9 @@ function PropertyRail({ properties }: { properties: SliderProperty[] }) {
         animateToPosition(target, 500);
       }
     }
+
+    isPointerDownRef.current = false;
+    pointerIdRef.current = null;
 
     // Micro-delay resetting isDragging to false so click events can see it and prevent navigation
     setTimeout(() => {

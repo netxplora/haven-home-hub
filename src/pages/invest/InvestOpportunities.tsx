@@ -58,7 +58,6 @@ export default function InvestOpportunities() {
   const { data: filterMetadata } = useQuery({
     queryKey: ["invest-filter-metadata"],
     queryFn: async () => {
-      // Using any casting to bypass outdated generated types
       const [countries, cities] = await Promise.all([
         (supabase.from("investment_properties" as any).select("country") as any).not("country", "is", null),
         (supabase.from("investment_properties" as any).select("city") as any).not("city", "is", null),
@@ -75,7 +74,6 @@ export default function InvestOpportunities() {
   const { data: opportunities = [], isLoading } = useQuery({
     queryKey: ["invest-opportunities", q, category, country, city, minInvest, maxInvest, minROI, hasInstallment, status, sort],
     queryFn: async () => {
-      // Using the view created in migration with type casting
       let query = supabase
         .from("investment_opportunities_v" as any)
         .select("*");
@@ -130,15 +128,23 @@ export default function InvestOpportunities() {
     setQLocal("");
   }
 
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    const trackedKeys = ["category", "country", "city", "minInvest", "maxInvest", "minROI", "installment", "status"];
-    trackedKeys.forEach(k => {
-      const val = params.get(k);
-      if (val && val !== "all" && val !== "any" && val !== "false") count++;
-    });
-    return count;
-  }, [params]);
+  const activeFilters = useMemo(() => {
+    const list: { key: string; label: string; value: string }[] = [];
+    if (category && category !== "all") {
+      const catLabel = INVESTMENT_CATEGORIES.find(c => c.value === category)?.label || category;
+      list.push({ key: "category", label: `Category: ${catLabel}`, value: category });
+    }
+    if (country && country !== "all") list.push({ key: "country", label: `Country: ${country}`, value: country });
+    if (city && city !== "all") list.push({ key: "city", label: `City: ${city}`, value: city });
+    if (minInvest) list.push({ key: "minInvest", label: `Min Entry: $${Number(minInvest).toLocaleString()}`, value: minInvest });
+    if (maxInvest) list.push({ key: "maxInvest", label: `Max Entry: $${Number(maxInvest).toLocaleString()}`, value: maxInvest });
+    if (minROI && minROI !== "any") list.push({ key: "minROI", label: `Min Return: ${minROI}%+`, value: minROI });
+    if (hasInstallment) list.push({ key: "installment", label: "Installment Available", value: "true" });
+    if (status && status !== "open") list.push({ key: "status", label: `Status: ${status}`, value: status });
+    return list;
+  }, [category, country, city, minInvest, maxInvest, minROI, hasInstallment, status]);
+
+  const activeFilterCount = activeFilters.length;
 
   return (
     <SiteLayout>
@@ -157,7 +163,7 @@ export default function InvestOpportunities() {
 
         <div className="container-wide relative z-10 flex flex-col justify-center py-16 sm:py-24 text-white">
           <div className="max-w-3xl">
-            <span className="inline-block px-3 py-1 mb-5 text-xs font-medium tracking-wider uppercase bg-primary text-primary-foreground rounded-full shadow-lg">
+            <span className="inline-block px-3 py-1 mb-5 text-xs font-semibold tracking-wider uppercase bg-primary text-primary-foreground rounded-full shadow-lg">
               Property Investment
             </span>
             <h1 className="font-serif text-4xl font-bold sm:text-6xl text-white tracking-tight leading-[1.1] mb-4">
@@ -349,12 +355,6 @@ export default function InvestOpportunities() {
                   </SheetFooter>
                 </SheetContent>
               </Sheet>
-
-              {activeFilterCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearAll} className="h-10 text-muted-foreground hover:text-destructive gap-2">
-                  <X className="h-4 w-4" /> Clear
-                </Button>
-              )}
             </div>
             
             {/* Sorting & Results */}
@@ -385,6 +385,29 @@ export default function InvestOpportunities() {
           </div>
         </div>
       </div>
+
+      {/* ── Active Filters Row ── */}
+      {activeFilters.length > 0 && (
+        <div className="bg-secondary/15 py-3 border-b border-border/40 animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className="container-wide flex flex-wrap items-center gap-2">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mr-2">Active Filters:</span>
+            {activeFilters.map(filter => (
+              <Badge 
+                key={filter.key} 
+                variant="secondary" 
+                className="rounded-lg bg-background hover:bg-accent border border-border/40 pl-3.5 pr-2.5 py-1.5 text-xs font-semibold text-foreground flex items-center gap-2 cursor-pointer shadow-sm group hover:border-primary/20 transition-all"
+                onClick={() => update(filter.key, "")}
+              >
+                <span>{filter.label}</span>
+                <X className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Badge>
+            ))}
+            <Button variant="ghost" size="sm" onClick={clearAll} className="h-8 text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg px-3">
+              Reset All
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* ── Main Grid ─────────────────────────────────────────── */}
       <div className="container-wide py-12 min-h-[60vh]">
@@ -422,7 +445,7 @@ export default function InvestOpportunities() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 animate-in fade-in duration-500">
               {opportunities.map((p) => <InvestmentCard key={p.id} p={p} />)}
             </div>
             <div className="mt-16 flex flex-col items-center gap-4">

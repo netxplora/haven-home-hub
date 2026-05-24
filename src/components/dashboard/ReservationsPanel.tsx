@@ -2,15 +2,17 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ClipboardList, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle, CalendarDays, FileText } from "lucide-react";
+import { ClipboardList, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle, CalendarDays, FileText, RefreshCcw, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/lib/invest";
 import { ManualPaymentModal } from "./ManualPaymentModal";
+import { toast } from "@/hooks/use-toast";
 
 export function ReservationsPanel({ userId }: { userId: string }) {
   const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
+  const [cancellingResId, setCancellingResId] = useState<string | null>(null);
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["my-reservations", userId],
@@ -33,6 +35,29 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       return data ?? [];
     },
   });
+
+  const handleCancelReservation = async (reservationId: string) => {
+    setCancellingResId(reservationId);
+    try {
+      const { error } = await supabase.rpc("cancel_reservation", {
+        p_reservation_id: reservationId
+      });
+      if (error) throw error;
+      toast({
+        title: "Reservation Cancelled",
+        description: "Your reservation hold has been cancelled successfully."
+      });
+      refetch();
+    } catch (err: any) {
+      toast({
+        title: "Cancellation Failed",
+        description: err.message || "Failed to cancel reservation.",
+        variant: "destructive"
+      });
+    } finally {
+      setCancellingResId(null);
+    }
+  };
 
   function getStatusStyle(status: string) {
     switch (status) {
@@ -91,7 +116,10 @@ export function ReservationsPanel({ userId }: { userId: string }) {
           <p className="mt-1 text-sm text-muted-foreground">Properties and investments you have placed on hold.</p>
         </div>
         <div className="flex items-center gap-3">
-           <Badge variant="secondary" className="rounded-lg px-4 py-1.5 font-bold">{items.length} Total</Badge>
+           <Badge variant="secondary" className="rounded-lg px-4 py-1.5 font-bold mr-1">{items.length} Total</Badge>
+           <Button variant="outline" size="icon" onClick={() => refetch()} className="rounded-xl border-border/40 hover:bg-accent h-9 w-9">
+              <RefreshCcw className="h-4 w-4" />
+           </Button>
         </div>
       </div>
 
@@ -140,7 +168,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                      {r.status === "awaiting_reservation_fee" ? "Payment Pending" : r.status}
                                   </Badge>
                                   <span className="text-[10px] text-muted-foreground font-mono bg-accent px-2 py-0.5 rounded-md">ID: {r.id.split('-')[0]}</span>
-                               </div>
+                                </div>
                             </div>
                             <div className="text-right">
                                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Fee Paid</p>
@@ -167,7 +195,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                             <div className="space-y-1">
                                <p className="flex items-center gap-1 text-xs font-medium uppercase tracking-wider text-muted-foreground">
                                   <CalendarDays className="h-3 w-3" /> Date Reserved
-                               </p>
+                                </p>
                                <p className="text-xs font-semibold">{new Date(r.created_at).toLocaleDateString()}</p>
                             </div>
                             <div className="space-y-1">
@@ -178,17 +206,17 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                   {r.expires_at ? new Date(r.expires_at).toLocaleDateString() : "No Expiry"}
                                </p>
                             </div>
-                            <div className="sm:col-span-2 flex justify-end gap-2 items-center">
+                            <div className="sm:col-span-2 flex justify-end gap-2 items-center flex-wrap">
                                <Button asChild variant="outline" size="sm" className="rounded-xl border-border/40 text-[11px] font-bold h-9">
                                   <Link to={`/${pathPrefix}/${item?.slug}`}>
                                      Property Details <ExternalLink className="ml-1.5 h-3 w-3" />
                                   </Link>
                                </Button>
-                                {r.status === 'pending' && (
-                                   <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1">
-                                     Under Review
-                                   </Badge>
-                                 )}
+                                 {r.status === 'pending' && (
+                                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1">
+                                      Under Review
+                                    </Badge>
+                                  )}
                                  {r.status === 'information_requested' && (
                                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1">
                                      Information Requested
@@ -208,6 +236,18 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                     onClick={() => setSelectedReservation(r)}
                                   >
                                     Complete Payment Submission
+                                  </Button>
+                                )}
+                                {(r.status === 'pending' || r.status === 'awaiting_reservation_fee') && (
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm" 
+                                    className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 text-[11px] font-bold h-9 gap-1.5"
+                                    onClick={() => handleCancelReservation(r.id)}
+                                    disabled={cancellingResId === r.id}
+                                  >
+                                    {cancellingResId === r.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+                                    Cancel Hold
                                   </Button>
                                 )}
                                 {r.status === 'rejected' && (

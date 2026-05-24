@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TrendingUp, ArrowUpRight, ShieldCheck, Clock, FileText, LayoutGrid, List, ChevronRight, Tag } from "lucide-react";
+import { TrendingUp, ArrowUpRight, ShieldCheck, Clock, FileText, LayoutGrid, List, ChevronRight, Tag, RefreshCcw, Loader2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -12,14 +12,16 @@ import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
 import { formatMoney } from "@/lib/invest";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { toast } from "@/hooks/use-toast";
 
 export function InvestmentsPanel() {
   const { user } = useAuth();
   const [selectedInvestment, setSelectedInvestment] = useState<any | null>(null);
   const [sellInvestment, setSellInvestment] = useState<any | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('list');
+  const [cancellingId, setCancellingId] = useState<string | null>(null);
   
-  const { data: investments = [] as any[], isLoading } = useQuery({
+  const { data: investments = [] as any[], isLoading, refetch } = useQuery({
     queryKey: ["my-investments", user?.id],
     enabled: !!user,
     queryFn: async () => {
@@ -59,6 +61,39 @@ export function InvestmentsPanel() {
       return data ?? [];
     },
   });
+
+  const handleCancelInvestment = async (e: React.MouseEvent, id: string) => {
+    e.stopPropagation();
+    setCancellingId(id);
+    try {
+      const { error } = await supabase
+        .from("user_investments")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() })
+        .eq("id", id);
+      if (error) throw error;
+      
+      // Also cancel associated pending payments
+      await supabase
+        .from("payments")
+        .update({ status: "cancelled", updated_at: new Date().toISOString() } as any)
+        .eq("investment_id", id)
+        .eq("status", "pending");
+
+      toast({
+        title: "Investment Cancelled",
+        description: "Your investment commitment has been successfully cancelled."
+      });
+      refetch();
+    } catch (err: any) {
+      toast({
+        title: "Cancellation Failed",
+        description: err.message || "Failed to cancel investment.",
+        variant: "destructive"
+      });
+    } finally {
+      setCancellingId(null);
+    }
+  };
 
   const returnsByProperty = returns.reduce((acc: Record<string, number>, r: any) => {
     if (r.property_id) {
@@ -120,17 +155,17 @@ export function InvestmentsPanel() {
         <div className="rounded-xl border border-amber-200/50 bg-amber-50/50 dark:bg-amber-950/10 p-4 flex flex-wrap items-center justify-between gap-4">
            <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-lg bg-amber-100 dark:bg-amber-900/30 flex items-center justify-center text-amber-600">
-                 <Clock className="h-5 w-5" />
+                  <Clock className="h-5 w-5" />
               </div>
               <div>
-                 <p className="text-xs font-medium uppercase tracking-wider text-amber-700/70 dark:text-amber-400/70">Next Payment</p>
-                 <h4 className="font-serif text-base font-semibold text-foreground">{nextDueInvestment.investment_properties?.title}</h4>
+                  <p className="text-xs font-medium uppercase tracking-wider text-amber-700/70 dark:text-amber-400/70">Next Payment</p>
+                  <h4 className="font-serif text-base font-semibold text-foreground">{nextDueInvestment.investment_properties?.title}</h4>
               </div>
            </div>
            <div className="flex items-center gap-4">
               <div className="text-right">
-                 <p className="text-xs text-muted-foreground mb-0.5">Due {new Date(nextDueInvestment.next_payment_due).toLocaleDateString()}</p>
-                 <p className="font-serif text-lg font-semibold">{formatMoney(Number(nextDueInvestment.monthly_installment_amount))}</p>
+                  <p className="text-xs text-muted-foreground mb-0.5">Due {new Date(nextDueInvestment.next_payment_due).toLocaleDateString()}</p>
+                  <p className="font-serif text-lg font-semibold">{formatMoney(Number(nextDueInvestment.monthly_installment_amount))}</p>
               </div>
               <Button size="sm" className="rounded-lg px-5 bg-primary hover:bg-primary/90 font-medium" onClick={() => setSelectedInvestment(nextDueInvestment)}>Pay Now</Button>
            </div>
@@ -140,7 +175,11 @@ export function InvestmentsPanel() {
       <div className="space-y-4">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between px-1">
           <h3 className="font-serif text-xl font-semibold">My Investments</h3>
-          <div className="flex items-center gap-2 bg-accent/50 p-1 rounded-xl">
+          <div className="flex items-center gap-3 bg-accent/50 p-1 rounded-xl">
+             <Button variant="ghost" size="icon" onClick={() => refetch()} className="h-8 w-8 rounded-lg hover:bg-secondary/20">
+                <RefreshCcw className="h-4 w-4" />
+             </Button>
+             <div className="h-4 w-px bg-border/60" />
              <Button 
                variant={viewMode === 'grid' ? 'secondary' : 'ghost'} 
                size="icon" 
@@ -220,6 +259,7 @@ export function InvestmentsPanel() {
                           inv.status === "payment_under_review" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
                           inv.status === "pending" && "bg-secondary/10 text-secondary border-secondary/20",
                           inv.status === "rejected" && "bg-red-500/10 text-red-600 border-red-500/20",
+                          inv.status === "cancelled" && "bg-destructive/10 text-destructive border-destructive/20",
                           (inv.status === "active" || inv.status === "confirmed") && "bg-primary text-primary-foreground border-none shadow-sm"
                         )}
                       >
@@ -250,28 +290,41 @@ export function InvestmentsPanel() {
                           </div>
                         )}
                       </div>
-                      {inv.status === "awaiting_payment" ? (
-                        <Button size="sm" className="rounded-xl h-11 px-5 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
-                          Pay Now
-                        </Button>
-                      ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
-                        <Button size="sm" className="rounded-xl h-11 px-5 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
-                          Pay Installment
-                        </Button>
-                      ) : (inv.status === "active" || inv.status === "confirmed") && paid >= total ? (
-                        <div className="flex items-center gap-2">
-                          <Button variant="outline" size="sm" className="rounded-xl h-11 px-4 font-bold border-primary/30 text-primary hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); setSellInvestment(inv); }}>
-                            <Tag className="h-3.5 w-3.5 mr-1.5" /> Sell Units
+                      <div className="flex gap-2">
+                        {inv.status === "awaiting_payment" && (
+                          <>
+                            <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                              Pay Now
+                            </Button>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="rounded-xl h-9 border-red-200 text-red-600 hover:bg-red-50 font-bold" 
+                              onClick={(e) => handleCancelInvestment(e, inv.id)}
+                              disabled={cancellingId === inv.id}
+                            >
+                              {cancellingId === inv.id ? <Loader2 className="h-3 w-3 animate-spin" /> : "Cancel"}
+                            </Button>
+                          </>
+                        )}
+                        {(inv.status === "confirmed" || inv.status === "active") && paid < total && (
+                          <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
+                            Pay Installment
                           </Button>
-                          <Button variant="outline" size="sm" className="rounded-xl h-11 px-4 font-bold">
-                            <FileText className="h-4 w-4 mr-1.5" /> Details
+                        )}
+                        {(inv.status === "active" || inv.status === "confirmed") && paid >= total && (
+                          <div className="flex items-center gap-2">
+                            <Button variant="outline" size="sm" className="rounded-xl h-9 px-3 font-bold border-primary/30 text-primary hover:bg-primary/5" onClick={(e) => { e.stopPropagation(); setSellInvestment(inv); }}>
+                              <Tag className="h-3.5 w-3.5 mr-1.5" /> Sell Units
+                            </Button>
+                          </div>
+                        )}
+                        {inv.status !== "awaiting_payment" && (
+                          <Button variant="outline" size="sm" className="rounded-xl h-9 px-3 font-bold">
+                            <FileText className="h-4 w-4 mr-1" /> Details
                           </Button>
-                        </div>
-                      ) : (
-                        <Button variant="outline" size="sm" className="rounded-xl h-11 px-4 font-bold">
-                          <FileText className="h-4 w-4 mr-1.5" /> Details
-                        </Button>
-                      )}
+                        )}
+                      </div>
                     </div>
                   </div>
                 );
@@ -326,6 +379,7 @@ export function InvestmentsPanel() {
                                  inv.status === "payment_under_review" && "bg-blue-500/10 text-blue-600 border-blue-500/20",
                                  inv.status === "pending" && "bg-secondary/10 text-secondary border-secondary/20",
                                  inv.status === "rejected" && "bg-red-500/10 text-red-600 border-red-500/20",
+                                 inv.status === "cancelled" && "bg-destructive/10 text-destructive border-destructive/20",
                                  (inv.status === "active" || inv.status === "confirmed" || (inv.status === "confirmed" && paid >= total)) && "bg-primary text-primary-foreground border-none shadow-sm"
                                )}
                              >
@@ -350,28 +404,42 @@ export function InvestmentsPanel() {
                              )}
                           </td>
                            <td className="px-6 py-5 text-right">
-                             {inv.status === "awaiting_payment" ? (
-                               <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
-                                 Pay Now
-                               </Button>
-                             ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
-                               <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSelectedInvestment(inv); }}>
-                                 Pay Installment
-                               </Button>
-                             ) : (inv.status === "active" || inv.status === "confirmed") && paid >= total ? (
-                                <div className="flex items-center gap-2 justify-end">
-                                  <Button size="sm" variant="outline" className="rounded-xl h-9 px-3 text-xs font-bold border-primary/30 text-primary hover:bg-primary/5 transition-all hover:scale-105 active:scale-95" onClick={(e) => { e.stopPropagation(); setSellInvestment(inv); }}>
-                                    <Tag className="h-3 w-3 mr-1" /> Sell
-                                  </Button>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
-                                     <FileText className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                             ) : (
-                               <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors">
-                                  <FileText className="h-4 w-4" />
-                               </Button>
-                             )}
+                             <div className="flex items-center gap-2 justify-end" onClick={e => e.stopPropagation()}>
+                               {inv.status === "awaiting_payment" ? (
+                                 <>
+                                   <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={() => setSelectedInvestment(inv)}>
+                                     Pay Now
+                                   </Button>
+                                   <Button 
+                                     size="sm" 
+                                     variant="outline" 
+                                     className="rounded-xl h-9 border-red-200 text-red-600 hover:bg-red-50 font-bold gap-1.5 transition-all" 
+                                     onClick={(e) => handleCancelInvestment(e, inv.id)}
+                                     disabled={cancellingId === inv.id}
+                                   >
+                                     {cancellingId === inv.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+                                     Cancel
+                                   </Button>
+                                 </>
+                               ) : (inv.status === "confirmed" || inv.status === "active") && paid < total ? (
+                                 <Button size="sm" className="rounded-xl h-9 px-4 bg-primary text-primary-foreground font-bold shadow-sm transition-all hover:scale-105 active:scale-95" onClick={() => setSelectedInvestment(inv)}>
+                                   Pay Installment
+                                 </Button>
+                               ) : (inv.status === "active" || inv.status === "confirmed") && paid >= total ? (
+                                  <>
+                                    <Button size="sm" variant="outline" className="rounded-xl h-9 px-3 text-xs font-bold border-primary/30 text-primary hover:bg-primary/5 transition-all hover:scale-105 active:scale-95" onClick={() => setSellInvestment(inv)}>
+                                      <Tag className="h-3 w-3 mr-1" /> Sell
+                                    </Button>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors" onClick={() => setSelectedInvestment(inv)}>
+                                       <FileText className="h-4 w-4" />
+                                    </Button>
+                                  </>
+                               ) : (
+                                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-secondary/10 hover:text-secondary transition-colors" onClick={() => setSelectedInvestment(inv)}>
+                                    <FileText className="h-4 w-4" />
+                                 </Button>
+                               )}
+                             </div>
                           </td>
                         </tr>
                       );

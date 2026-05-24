@@ -1,11 +1,10 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { Bed, Bath, Maximize2, MapPin, Car, Star } from "lucide-react";
+import { Bed, Bath, Maximize2, MapPin, Star, ArrowUpRight, Scale } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { propertyTypeLabel, resolveImage } from "@/lib/format";
 import { useCompare } from "@/hooks/useCompare";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
-import { Scale } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export interface PropertyCardData {
@@ -40,7 +39,7 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
   const { t } = useTranslation();
   
   const statusConfig = {
-    reserved: { label: t("propertyCard.reserved"), className: "bg-secondary text-secondary-foreground" },
+    reserved: { label: t("propertyCard.reserved"), className: "bg-secondary/90 text-secondary-foreground" },
     sold: { label: t("propertyCard.sold"), className: "bg-destructive text-destructive-foreground" },
     under_offer: { label: t("propertyCard.underOffer"), className: "bg-primary text-primary-foreground" },
     available: null
@@ -50,43 +49,44 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
   const isNew = property.created_at ? new Date(property.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) : false;
 
   return (
-    <div className="group relative overflow-hidden rounded-xl border border-border/60 bg-card shadow-soft transition-all duration-300 hover:shadow-card hover:border-border">
+    <div className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card shadow-soft transition-all duration-550 ease-out hover:shadow-card hover:border-primary/30 hover:-translate-y-1.5 flex flex-col h-full">
       <Link to={`/properties/${property.slug}`} className="absolute inset-0 z-0" />
       
-      {/* Image */}
+      {/* Image Block */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted pointer-events-none">
         <img
           src={img}
           alt={property.title}
           loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-50 group-hover:opacity-30 transition-opacity duration-550" />
         
-        {/* Badges */}
-        <div className="absolute left-3 top-3 flex flex-col gap-1.5">
-          <div className="flex gap-1.5">
-            <Badge className="bg-white/95 text-foreground hover:bg-white border-none shadow-sm text-xs font-medium px-2.5 py-1">
+        {/* Glassmorphic Badges */}
+        <div className="absolute left-4 top-4 flex flex-col gap-1.5">
+          <div className="flex flex-wrap gap-1.5">
+            <Badge className="bg-background/90 text-foreground hover:bg-background border border-white/20 backdrop-blur-md shadow-sm text-xs font-semibold px-2.5 py-1">
               {propertyTypeLabel(property.property_type)}
             </Badge>
             {property.featured && (
-              <Badge className="bg-primary text-primary-foreground border-none shadow-sm gap-1 text-xs px-2.5 py-1">
+              <Badge className="bg-primary/95 text-primary-foreground border border-primary/20 backdrop-blur-sm shadow-sm gap-1 text-xs px-2.5 py-1">
                 <Star className="h-3 w-3 fill-current" /> {t("propertyCard.featured")}
               </Badge>
             )}
             {isNew && (
-              <Badge className="bg-emerald-500 text-white border-none shadow-sm gap-1 text-xs px-2.5 py-1">
+              <Badge className="bg-emerald-500/90 text-white border border-emerald-400/20 backdrop-blur-sm shadow-sm text-xs px-2.5 py-1">
                 {t("propertyCard.newListing")}
               </Badge>
             )}
           </div>
           {statusConfig && (
-            <Badge className={`${statusConfig.className} border-none shadow-sm text-[10px] font-semibold uppercase tracking-wider py-1 px-2.5 w-fit`}>
+            <Badge className={`${statusConfig.className} border border-white/10 backdrop-blur-md shadow-sm text-[10px] font-bold uppercase tracking-wider py-1 px-2.5 w-fit`}>
               {statusConfig.label}
             </Badge>
           )}
         </div>
         
-        {/* Compare button */}
+        {/* Interactive Compare button */}
         <button
           onClick={(e) => {
             e.preventDefault();
@@ -104,44 +104,53 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
               });
             }
           }}
-          className={`absolute top-3 right-3 h-8 w-8 rounded-lg flex items-center justify-center transition-all z-20 pointer-events-auto ${
+          className={`absolute top-4 right-4 h-9 w-9 rounded-xl flex items-center justify-center transition-all duration-300 ease-out z-20 pointer-events-auto shadow-md border ${
             inCompare 
-              ? 'bg-primary text-primary-foreground shadow-sm' 
-              : 'bg-white/90 text-muted-foreground opacity-0 group-hover:opacity-100 hover:bg-white hover:text-foreground shadow-sm'
+              ? 'bg-primary text-primary-foreground border-primary/30' 
+              : 'bg-background/85 text-muted-foreground border-white/20 opacity-0 group-hover:opacity-100 hover:bg-background hover:text-primary'
           }`}
           title={inCompare ? t("propertyCard.addedToCompare") : t("propertyCard.addToCompare")}
         >
-          <Scale className="h-3.5 w-3.5" />
+          <Scale className="h-4 w-4" />
         </button>
+
+        {/* Dynamic Detail Overlay Button */}
+        <div className="absolute bottom-4 right-4 translate-y-8 opacity-0 scale-95 group-hover:translate-y-0 group-hover:opacity-100 group-hover:scale-100 transition-all duration-400 ease-out z-10">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white text-primary shadow-lg border border-primary/10">
+            <ArrowUpRight className="h-4 w-4" />
+          </div>
+        </div>
       </div>
       
-      {/* Content */}
-      <div className="relative z-10 p-3 sm:p-5 pointer-events-none flex flex-col h-full">
-        <p className="font-serif text-lg sm:text-xl font-semibold text-primary">
-          {formatPrice(property.price, property.currency, property.property_type)}
-        </p>
-        <h3 className="mt-1 sm:mt-1.5 line-clamp-1 text-sm sm:text-[15px] font-medium text-foreground">
-          {property.title}
-        </h3>
-        <p className="mt-1 sm:mt-1.5 flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm text-muted-foreground">
-          <MapPin className="h-3 w-3 sm:h-3.5 sm:w-3.5 shrink-0" />
-          <span className="line-clamp-1">
-            {property.city && property.country 
-              ? `${property.city}${property.state ? `, ${property.state}` : ''}, ${property.country}`
-              : property.locations?.name ?? property.address ?? "—"}
-          </span>
-        </p>
+      {/* Content Block */}
+      <div className="relative z-10 p-5 pointer-events-none flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-background/50">
+        <div>
+          <p className="font-serif text-lg sm:text-xl font-bold text-primary transition-colors group-hover:text-primary-dark">
+            {formatPrice(property.price, property.currency, property.property_type)}
+          </p>
+          <h3 className="mt-1.5 line-clamp-1 text-sm sm:text-[15px] font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+            {property.title}
+          </h3>
+          <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+            <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
+            <span className="truncate">
+              {property.city && property.country 
+                ? `${property.city}${property.state ? `, ${property.state}` : ''}, ${property.country}`
+                : property.locations?.name ?? property.address ?? "—"}
+            </span>
+          </p>
+        </div>
         
-        {/* Specs */}
-        <div className="mt-auto pt-3 sm:pt-4 border-t border-border/50 flex flex-wrap items-center gap-x-2 sm:gap-x-4 gap-y-1 sm:gap-y-1.5 text-[10px] sm:text-xs text-muted-foreground">
+        {/* Specs Toolbar */}
+        <div className="mt-5 pt-4 border-t border-border/40 flex items-center gap-4 text-xs text-muted-foreground font-semibold">
           {property.bedrooms != null && (
-            <span className="flex items-center gap-1"><Bed className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {property.bedrooms}</span>
+            <span className="flex items-center gap-1.5"><Bed className="h-4 w-4 text-primary/60" /> {property.bedrooms}</span>
           )}
           {property.bathrooms != null && (
-            <span className="flex items-center gap-1"><Bath className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {property.bathrooms}</span>
+            <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 text-primary/60" /> {property.bathrooms}</span>
           )}
           {property.size_sqm != null && (
-            <span className="flex items-center gap-1"><Maximize2 className="h-3 w-3 sm:h-3.5 sm:w-3.5" /> {Number(property.size_sqm).toLocaleString()} {t("propertyCard.sqm")}</span>
+            <span className="flex items-center gap-1.5 ml-auto"><Maximize2 className="h-4 w-4 text-primary/60" /> {Number(property.size_sqm).toLocaleString()} {t("propertyCard.sqm")}</span>
           )}
         </div>
       </div>

@@ -189,15 +189,31 @@ export default function Properties() {
     setQLocal("");
   }
 
-  const activeFilterCount = useMemo(() => {
-    let count = 0;
-    const trackedKeys = ["category", "country", "state", "city", "minPrice", "maxPrice", "bedrooms", "bathrooms", "parking", "status", "minSize", "maxSize"];
-    trackedKeys.forEach(k => {
-      const val = params.get(k);
-      if (val && val !== "all" && val !== "any") count++;
-    });
-    return count;
-  }, [params]);
+  const activeFilters = useMemo(() => {
+    const list: { key: string; label: string; value: string }[] = [];
+    if (type && type !== "all") list.push({ key: "type", label: `Type: ${type}`, value: type });
+    if (category && category !== "all") {
+      const catLabel = PROPERTY_CATEGORIES.find(c => c.value === category)?.label || category;
+      list.push({ key: "category", label: `Category: ${catLabel}`, value: category });
+    }
+    if (country && country !== "all") list.push({ key: "country", label: `Country: ${country}`, value: country });
+    if (state && state !== "all") list.push({ key: "state", label: `State: ${state}`, value: state });
+    if (city && city !== "all") list.push({ key: "city", label: `City: ${city}`, value: city });
+    if (minPrice) list.push({ key: "minPrice", label: `Min Price: $${Number(minPrice).toLocaleString()}`, value: minPrice });
+    if (maxPrice) list.push({ key: "maxPrice", label: `Max Price: $${Number(maxPrice).toLocaleString()}`, value: maxPrice });
+    if (bedrooms && bedrooms !== "any") list.push({ key: "bedrooms", label: `Bedrooms: ${bedrooms}+`, value: bedrooms });
+    if (bathrooms && bathrooms !== "any") list.push({ key: "bathrooms", label: `Bathrooms: ${bathrooms}+`, value: bathrooms });
+    if (parking && parking !== "any") list.push({ key: "parking", label: `Parking: ${parking}+`, value: parking });
+    if (status && status !== "available") list.push({ key: "status", label: `Status: ${status}`, value: status });
+    
+    const minSize = params.get("minSize");
+    const maxSize = params.get("maxSize");
+    if (minSize) list.push({ key: "minSize", label: `Min Size: ${minSize} sqm`, value: minSize });
+    if (maxSize) list.push({ key: "maxSize", label: `Max Size: ${maxSize} sqm`, value: maxSize });
+    return list;
+  }, [type, category, country, state, city, minPrice, maxPrice, bedrooms, bathrooms, parking, status, params]);
+
+  const activeFilterCount = activeFilters.length;
 
   return (
     <SiteLayout>
@@ -217,7 +233,7 @@ export default function Properties() {
 
         <div className="container-wide relative z-10 flex flex-col justify-center py-16 sm:py-24 text-white">
           <div className="max-w-3xl">
-            <span className="inline-block px-3 py-1 mb-5 text-xs font-medium tracking-wider uppercase bg-primary text-primary-foreground rounded-full shadow-lg">
+            <span className="inline-block px-3 py-1 mb-5 text-xs font-semibold tracking-wider uppercase bg-primary text-primary-foreground rounded-full shadow-lg">
               {content.badge}
             </span>
             <h1 className="font-serif text-4xl font-bold sm:text-6xl text-white tracking-tight leading-[1.1] mb-4">
@@ -343,7 +359,7 @@ export default function Properties() {
                             variant={status === s ? "default" : "outline"}
                             size="sm"
                             onClick={() => update("status", s)}
-                            className="capitalize"
+                            className="capitalize font-semibold"
                           >
                             {s.replace("_", " ")}
                           </Button>
@@ -511,6 +527,29 @@ export default function Properties() {
           </div>
         </div>
       </div>
+
+      {/* ── Active Filters Row ── */}
+      {activeFilters.length > 0 && (
+        <div className="bg-secondary/15 py-3 border-b border-border/40 animate-in fade-in slide-in-from-top-1 duration-300">
+          <div className="container-wide flex flex-wrap items-center gap-2">
+            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mr-2">Active Filters:</span>
+            {activeFilters.map(filter => (
+              <Badge 
+                key={filter.key} 
+                variant="secondary" 
+                className="rounded-lg bg-background hover:bg-accent border border-border/40 pl-3.5 pr-2.5 py-1.5 text-xs font-semibold text-foreground flex items-center gap-2 cursor-pointer shadow-sm group hover:border-primary/20 transition-all"
+                onClick={() => update(filter.key, "")}
+              >
+                <span>{filter.label}</span>
+                <X className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
+              </Badge>
+            ))}
+            <Button variant="ghost" size="sm" onClick={clearAll} className="h-8 text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg px-3">
+              Reset All
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* ── Main Grid ─────────────────────────────────────────── */}
       <div className="container-wide py-12 min-h-[60vh]">
