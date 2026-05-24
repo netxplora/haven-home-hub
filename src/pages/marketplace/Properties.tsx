@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
 import { PropertyMap } from "@/components/site/PropertyMap";
+import { PromoBanner } from "@/components/site/PromoBanner";
 import { SaveSearchButton } from "@/components/site/SavedSearch";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -471,6 +472,10 @@ export default function Properties() {
                     <Button onClick={() => setIsFilterOpen(false)} className="w-full h-12 font-bold uppercase tracking-wider">Show Results</Button>
                     <Button variant="ghost" onClick={clearAll} className="w-full text-muted-foreground">Reset All</Button>
                   </SheetFooter>
+
+                  <div className="mt-8">
+                    <PromoBanner placement="sidebar" />
+                  </div>
                 </SheetContent>
               </Sheet>
 

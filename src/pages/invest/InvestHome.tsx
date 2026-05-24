@@ -8,6 +8,7 @@ import { InvestmentCard } from "@/components/invest/InvestmentCard";
 import investHero from "@/assets/invest-hero.jpg";
 import type { InvestmentProperty } from "@/lib/invest";
 import { SEO } from "@/components/site/SEO";
+import { PromoBanner } from "@/components/site/PromoBanner";
 
 export default function InvestHome() {
   const { data: featured = [] } = useQuery({
@@ -76,6 +77,8 @@ export default function InvestHome() {
           </div>
         </div>
       </section>
+
+      <PromoBanner placement="invest_page" className="my-10" />
 
       {/* How it works */}
       <section className="container-wide py-20">

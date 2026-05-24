@@ -51,6 +51,7 @@ import { YieldCalculator } from "@/components/site/YieldCalculator";
 import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
 import { VirtualTourButton, VirtualTourEmbed } from "@/components/site/VirtualTour";
 import { MessageAgentButton } from "@/components/site/Messaging";
+import { PromoBanner } from "@/components/site/PromoBanner";
 import { useTranslation } from "react-i18next";
 
 const InteractivePropertyMap = lazy(() => import("@/components/site/InteractivePropertyMap").then(mod => ({ default: mod.InteractivePropertyMap })));
@@ -750,6 +751,10 @@ export default function PropertyDetail() {
             <div className="mt-6">
               <InquiryForm propertyId={property.id} agentId={agent?.id ?? null} />
             </div>
+          </div>
+          
+          <div className="mt-6">
+            <PromoBanner placement="property_detail" />
           </div>
         </aside>
       </section>

@@ -32,6 +32,7 @@ import { DocumentsPanel } from "@/components/dashboard/DocumentsPanel";
 import { SavedPanel } from "@/components/dashboard/SavedPanel";
 import { BookingsPanel } from "@/components/dashboard/BookingsPanel";
 import { InquiriesPanel } from "@/components/dashboard/InquiriesPanel";
+import { PromoBanner } from "@/components/site/PromoBanner";
 
 export default function UserDashboard() {
   const { user, signOut, loading } = useAuth();
@@ -125,6 +126,7 @@ export default function UserDashboard() {
       onTabChange={handleTabChange}
     >
       <div className="max-w-7xl mx-auto py-2">
+        <PromoBanner placement="dashboard_promo" className="mb-6" />
         {renderContent()}
       </div>
       
