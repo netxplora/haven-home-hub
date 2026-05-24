@@ -40,7 +40,7 @@ const TYPE_ICONS: Record<string, typeof Info> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  general: "bg-primary/90 text-primary-foreground",
+  general: "bg-[#F97316] text-white",
   investor_update: "bg-blue-600 text-white",
   maintenance: "bg-amber-500 text-white",
   promotion: "bg-emerald-600 text-white",
@@ -126,7 +126,7 @@ export function AnnouncementBar() {
   }
 
   return (
-    <div className={cn("relative z-50", colorClass)}>
+    <div id="announcement-bar" className={cn("relative z-50", colorClass)}>
       <div className="container-wide flex items-center justify-between gap-3 py-2.5 px-4 sm:px-6">
         {/* Left: Icon + Text */}
         <div className="flex items-center gap-2.5 min-w-0 flex-1">

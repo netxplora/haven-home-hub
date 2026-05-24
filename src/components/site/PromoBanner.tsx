@@ -94,15 +94,25 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
   // Show the highest priority ad
   const ad = ads[0];
 
-  // Render based on ad_type
+  // 1. Determine if this placement requires a container-wide wrapper
+  const isWidePlacement = ["homepage_hero", "homepage_mid", "invest_page"].includes(placement);
+  // 2. Determine if it's a very compact vertical placement
+  const isVerticalCompact = ["sidebar", "property_detail"].includes(placement);
+
+  const wrapperClass = cn(
+    isWidePlacement ? "container-wide" : "w-full",
+    className
+  );
+
+  // Render text_image_card type
   if (ad.ad_type === "text_image_card") {
     return (
-      <div className={cn("container-wide", className)}>
+      <div className={wrapperClass}>
         <div className="rounded-2xl border border-border/40 bg-card shadow-soft overflow-hidden hover:shadow-card transition-shadow duration-300">
-          <div className="grid md:grid-cols-2 items-center">
+          <div className={cn("grid items-center", isVerticalCompact ? "grid-cols-1" : "md:grid-cols-2")}>
             {/* Image */}
             {ad.image_url && !imgError ? (
-              <div className="h-48 md:h-64 overflow-hidden bg-muted">
+              <div className={cn("overflow-hidden bg-muted", isVerticalCompact ? "h-40" : "h-48 md:h-64")}>
                 <img
                   src={ad.image_url}
                   alt={ad.title}
@@ -112,22 +122,22 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
                 />
               </div>
             ) : (
-              <div className="h-48 md:h-64 bg-accent/30 flex items-center justify-center">
+              <div className={cn("bg-accent/30 flex items-center justify-center", isVerticalCompact ? "h-40" : "h-48 md:h-64")}>
                 <ImageIcon className="h-12 w-12 text-muted-foreground/20" />
               </div>
             )}
             {/* Text */}
-            <div className="p-6 md:p-10 space-y-4">
-              <h3 className="font-serif text-xl md:text-2xl font-semibold text-foreground leading-tight">
+            <div className={cn("space-y-4", isVerticalCompact ? "p-5" : "p-6 md:p-10")}>
+              <h3 className={cn("font-serif font-semibold text-foreground leading-tight", isVerticalCompact ? "text-lg" : "text-xl md:text-2xl")}>
                 {ad.title}
               </h3>
               {ad.description && (
-                <p className="text-sm text-muted-foreground leading-relaxed">
+                <p className="text-sm text-muted-foreground leading-relaxed line-clamp-3">
                   {ad.description}
                 </p>
               )}
               {ad.click_url && (
-                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg">
+                <Button asChild className="bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg w-full sm:w-auto">
                   <Link to={ad.click_url} onClick={() => trackClick(ad.id)}>
                     {ad.cta_label || "Learn More"} <ArrowRight className="ml-2 h-4 w-4" />
                   </Link>
@@ -140,35 +150,35 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
     );
   }
 
-  // Default: image_banner / clickable_promo / featured_property / promo_slider
+  // Default: image_banner / clickable_promo
   return (
-    <div className={cn("container-wide", className)}>
+    <div className={wrapperClass}>
       <div className="relative rounded-2xl overflow-hidden shadow-soft border border-border/30 group">
         {/* Image */}
         {ad.image_url && !imgError ? (
           <img
             src={ad.image_url}
             alt={ad.title}
-            className="w-full h-48 sm:h-56 md:h-64 object-cover transition-transform duration-700 group-hover:scale-[1.02]"
+            className={cn("w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]", isVerticalCompact ? "h-64" : "h-48 sm:h-56 md:h-64")}
             loading="lazy"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className="w-full h-48 sm:h-56 md:h-64 bg-accent/30 flex items-center justify-center">
+          <div className={cn("w-full bg-accent/30 flex items-center justify-center", isVerticalCompact ? "h-64" : "h-48 sm:h-56 md:h-64")}>
             <ImageIcon className="h-12 w-12 text-muted-foreground/20" />
           </div>
         )}
 
         {/* Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
         {/* Content */}
-        <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8 z-10">
-          <h3 className="font-serif text-xl sm:text-2xl font-semibold text-white leading-tight max-w-lg">
+        <div className={cn("absolute inset-x-0 bottom-0 z-10", isVerticalCompact ? "p-5" : "p-6 sm:p-8")}>
+          <h3 className={cn("font-serif font-semibold text-white leading-tight max-w-lg", isVerticalCompact ? "text-lg" : "text-xl sm:text-2xl")}>
             {ad.title}
           </h3>
           {ad.description && (
-            <p className="mt-2 text-sm text-white/80 max-w-md line-clamp-2">
+            <p className={cn("mt-2 text-white/80 max-w-md", isVerticalCompact ? "text-xs line-clamp-3" : "text-sm line-clamp-2")}>
               {ad.description}
             </p>
           )}
@@ -176,7 +186,7 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
             <Button
               asChild
               size="sm"
-              className="mt-4 bg-white/95 text-foreground hover:bg-white shadow-sm rounded-lg font-medium"
+              className="mt-4 bg-white/95 text-foreground hover:bg-white shadow-sm rounded-lg font-medium w-full sm:w-auto"
             >
               <Link to={ad.click_url} onClick={() => trackClick(ad.id)}>
                 {ad.cta_label || "View Details"} <ArrowRight className="ml-2 h-3.5 w-3.5" />
@@ -187,7 +197,7 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
 
         {/* Subtle "Promoted" label */}
         <div className="absolute top-3 right-3 z-10">
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-white/50 bg-black/30 backdrop-blur-sm rounded-md px-2 py-1">
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-white/70 bg-black/40 backdrop-blur-sm rounded-md px-2 py-1 shadow-sm">
             Promoted
           </span>
         </div>

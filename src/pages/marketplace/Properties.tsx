@@ -99,12 +99,26 @@ export default function Properties() {
 
   /* ── Fetch Metadata for Filters ────────────────────────────── */
   const { data: filterMetadata } = useQuery({
-    queryKey: ["filter-metadata"],
+    queryKey: ["filter-metadata", country, state],
     queryFn: async () => {
+      let countryQuery = supabase.from("properties" as any).select("country").not("country", "is", null);
+      
+      let stateQuery = supabase.from("properties" as any).select("state").not("state", "is", null);
+      if (country && country !== "all") {
+        stateQuery = stateQuery.eq("country", country);
+      }
+
+      let cityQuery = supabase.from("properties" as any).select("city").not("city", "is", null);
+      if (state && state !== "all") {
+        cityQuery = cityQuery.eq("state", state);
+      } else if (country && country !== "all") {
+        cityQuery = cityQuery.eq("country", country);
+      }
+
       const [countries, states, cities] = await Promise.all([
-        (supabase.from("properties" as any).select("country") as any).not("country", "is", null),
-        (supabase.from("properties" as any).select("state") as any).not("state", "is", null),
-        (supabase.from("properties" as any).select("city") as any).not("city", "is", null),
+        countryQuery,
+        stateQuery,
+        cityQuery,
       ]);
 
       return {
@@ -182,6 +196,23 @@ export default function Properties() {
     const next = new URLSearchParams(params);
     if (!value || String(value) === "any" || String(value) === "all") next.delete(key);
     else next.set(key, value);
+    setParams(next);
+  }
+
+  function updateLocation(level: "country" | "state" | "city", value: string) {
+    const next = new URLSearchParams(params);
+    if (!value || String(value) === "any" || String(value) === "all") {
+      next.delete(level);
+    } else {
+      next.set(level, value);
+    }
+    
+    if (level === "country") {
+      next.delete("state");
+      next.delete("city");
+    } else if (level === "state") {
+      next.delete("city");
+    }
     setParams(next);
   }
 
@@ -306,7 +337,7 @@ export default function Properties() {
 
               {/* Location Selects */}
               <div className="hidden xl:flex items-center gap-2">
-                <Select value={country} onValueChange={(v) => update("country", v)}>
+                <Select value={country} onValueChange={(v) => updateLocation("country", v)}>
                   <SelectTrigger className="w-[130px] h-10 border-border bg-card">
                     <SelectValue placeholder="Country" />
                   </SelectTrigger>
@@ -318,7 +349,19 @@ export default function Properties() {
                   </SelectContent>
                 </Select>
 
-                <Select value={city} onValueChange={(v) => update("city", v)}>
+                <Select value={state} onValueChange={(v) => updateLocation("state", v)}>
+                  <SelectTrigger className="w-[130px] h-10 border-border bg-card">
+                    <SelectValue placeholder="State" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Any State</SelectItem>
+                    {filterMetadata?.states.map(s => (
+                      <SelectItem key={s} value={s}>{s}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select value={city} onValueChange={(v) => updateLocation("city", v)}>
                   <SelectTrigger className="w-[130px] h-10 border-border bg-card">
                     <SelectValue placeholder="City" />
                   </SelectTrigger>
@@ -450,14 +493,21 @@ export default function Properties() {
                     <div className="space-y-4 pt-4 border-t lg:hidden">
                       <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Location</Label>
                       <div className="space-y-4">
-                        <Select value={country} onValueChange={(v) => update("country", v)}>
+                        <Select value={country} onValueChange={(v) => updateLocation("country", v)}>
                           <SelectTrigger className="h-11"><SelectValue placeholder="Select Country" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">Any Country</SelectItem>
                             {filterMetadata?.countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                           </SelectContent>
                         </Select>
-                        <Select value={city} onValueChange={(v) => update("city", v)}>
+                        <Select value={state} onValueChange={(v) => updateLocation("state", v)}>
+                          <SelectTrigger className="h-11"><SelectValue placeholder="Select State" /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">Any State</SelectItem>
+                            {filterMetadata?.states.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                        <Select value={city} onValueChange={(v) => updateLocation("city", v)}>
                           <SelectTrigger className="h-11"><SelectValue placeholder="Select City" /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="all">Any City</SelectItem>
