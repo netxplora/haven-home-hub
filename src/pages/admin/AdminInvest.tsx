@@ -111,12 +111,9 @@ export function AdminInvest() {
 
       <Tabs defaultValue="list" className="w-full">
         <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
-          <TabsList className="bg-secondary/40 rounded-xl p-1 h-12 w-[240px]">
-             <TabsTrigger value="list" className="flex-1 rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs">
-               <Layers className="h-4 w-4 mr-2" /> List View
-             </TabsTrigger>
-             <TabsTrigger value="map" className="flex-1 rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs">
-               <Map className="h-4 w-4 mr-2" /> Map View
+          <TabsList className="bg-secondary/20 p-1 border border-border/50 rounded-xl h-auto flex flex-wrap gap-1">
+             <TabsTrigger value="list" className="rounded-lg data-[state=active]:bg-card data-[state=active]:shadow-sm px-4 py-2 text-xs font-bold gap-2">
+                <Layers className="h-4 w-4" /> List View
              </TabsTrigger>
           </TabsList>
         </div>
@@ -311,17 +308,6 @@ export function AdminInvest() {
           </div>
         </TabsContent>
 
-        <TabsContent value="map" className="m-0 focus-visible:outline-none">
-           <div className="h-[700px] rounded-xl border border-border/50 overflow-hidden shadow-sm relative">
-              <InteractivePropertyMap
-                 properties={filtered}
-                 onMarkerClick={(p) => {
-                    setEditing(p);
-                    setOpen(true);
-                 }}
-              />
-           </div>
-        </TabsContent>
       </Tabs>
 
       <Dialog open={open} onOpenChange={setOpen}>
