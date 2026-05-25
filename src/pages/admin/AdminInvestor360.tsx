@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   User, ShieldCheck, ShieldAlert, Clock, Mail, Phone, CalendarDays,
   LayoutDashboard, TrendingUp, CreditCard, Calendar, ArrowLeftRight, Settings,
-  CheckCircle2, Search, Building2, Eye, ExternalLink, X, MapPin, ChevronRight
+  CheckCircle2, Search, Building2, Eye, ExternalLink, X, MapPin, ChevronRight, ChevronLeft, ArrowUpDown
 } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 import { Button } from "@/components/ui/button";
@@ -188,47 +188,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
   };
 
   if (!selectedUserId) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="font-serif text-2xl font-bold">Investor 360 View</h2>
-          <p className="text-sm text-muted-foreground">Comprehensive intelligence panel for any platform user.</p>
-        </div>
-        <div className="bg-card border border-border/50 rounded-xl p-8 max-w-2xl mx-auto shadow-sm">
-          <h3 className="font-semibold mb-4 text-center">Select an Investor to view their profile</h3>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input 
-              placeholder="Search by name, ID, or email..." 
-              className="pl-9 h-12 rounded-xl bg-accent/50" 
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          {search && (
-            <div className="mt-2 border rounded-xl overflow-hidden max-h-[300px] overflow-y-auto">
-              {filteredUsers.length === 0 ? (
-                <div className="p-4 text-center text-muted-foreground text-sm">No users found.</div>
-              ) : (
-                filteredUsers.map((u: any) => (
-                  <button 
-                    key={u.id}
-                    onClick={() => { setSelectedUserId(u.id); setSearch(""); }}
-                    className="w-full text-left px-4 py-3 hover:bg-secondary/20 border-b last:border-0 transition-colors flex items-center justify-between"
-                  >
-                    <div>
-                      <p className="font-medium text-sm">{u.full_name || 'Unnamed User'}</p>
-                      <p className="text-[10px] text-muted-foreground font-mono">{u.id}</p>
-                    </div>
-                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
-                  </button>
-                ))
-              )}
-            </div>
-          )}
-        </div>
-      </div>
-    );
+    return <GlobalInvestorDirectory onSelectUser={setSelectedUserId} />;
   }
 
   return (
@@ -689,6 +649,263 @@ function StatCard({ title, value, icon: Icon }: { title: string, value: string, 
         <div className="p-1.5 bg-primary/10 rounded-lg text-primary"><Icon className="h-4 w-4" /></div>
       </div>
       <p className="text-xl font-bold font-serif text-foreground">{value}</p>
+    </div>
+  );
+}
+
+const ITEMS_PER_PAGE = 20;
+
+function GlobalInvestorDirectory({ onSelectUser }: { onSelectUser: (id: string) => void }) {
+  const qc = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [kycFilter, setKycFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // Setup real-time sync for profiles and investments
+  useEffect(() => {
+    const channel = supabase
+      .channel("admin-global-directory-sync")
+      .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => qc.invalidateQueries({ queryKey: ["admin-global-directory"] }))
+      .on("postgres_changes", { event: "*", schema: "public", table: "user_investments" }, () => qc.invalidateQueries({ queryKey: ["admin-global-directory"] }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [qc]);
+
+  const { data: allUsers = [], isLoading } = useQuery({
+    queryKey: ["admin-global-directory"],
+    queryFn: async () => {
+      const [profilesRes, rolesRes, invRes] = await Promise.all([
+        supabase.from("profiles").select("*"),
+        supabase.from("user_roles").select("user_id, role"),
+        supabase.from("user_investments").select("user_id, amount_invested, total_amount, status")
+      ]);
+
+      const profiles = profilesRes.data || [];
+      const roles = rolesRes.data || [];
+      const investments = invRes.data || [];
+
+      return profiles.map((p: any) => {
+        const userInv = investments.filter(i => i.user_id === p.id && (i.status === 'active' || i.status === 'confirmed'));
+        const isSuspended = getSuspension(p.id);
+        const invCount = userInv.length;
+        const totalVal = userInv.reduce((sum, i) => sum + Number(i.total_amount || i.amount_invested || 0), 0);
+        
+        let investorStatus = "inactive";
+        if (isSuspended) investorStatus = "suspended";
+        else if (invCount > 0) investorStatus = "active";
+        else investorStatus = "pending";
+
+        return {
+          ...p,
+          roles: roles.filter(r => r.user_id === p.id).map(r => r.role),
+          investorStatus,
+          invCount,
+          totalVal
+        };
+      });
+    },
+  });
+
+  const filtered = useMemo(() => {
+    let result = [...allUsers];
+
+    // Search
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter(u =>
+        (u.full_name || "").toLowerCase().includes(term) ||
+        (u.email || "").toLowerCase().includes(term) ||
+        (u.phone || "").toLowerCase().includes(term) ||
+        (u.id || "").toLowerCase().includes(term)
+      );
+    }
+
+    // Filters
+    if (statusFilter !== "all") {
+      result = result.filter(u => u.investorStatus === statusFilter);
+    }
+    
+    if (kycFilter !== "all") {
+      if (kycFilter === "verified") {
+        result = result.filter(u => u.kyc_status === "approved");
+      } else {
+        result = result.filter(u => u.kyc_status !== "approved");
+      }
+    }
+
+    // Sorting
+    switch (sortBy) {
+      case "newest":
+        result.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "oldest":
+        result.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case "highest_value":
+        result.sort((a, b) => b.totalVal - a.totalVal);
+        break;
+      case "most_active":
+        result.sort((a, b) => b.invCount - a.invCount);
+        break;
+    }
+
+    return result;
+  }, [allUsers, searchTerm, statusFilter, kycFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  return (
+    <div className="space-y-6 animate-in fade-in duration-500">
+      <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <div>
+          <h2 className="font-serif text-2xl font-bold">Global Investor Directory</h2>
+          <p className="text-sm text-muted-foreground">Real-time synchronized list of all registered platform users.</p>
+        </div>
+        <div className="bg-primary/10 text-primary px-4 py-2 rounded-xl text-sm font-bold flex items-center gap-2">
+          <User className="h-4 w-4" /> {allUsers.length} Total Users
+        </div>
+      </div>
+
+      <div className="bg-card border border-border/50 rounded-xl shadow-sm overflow-hidden flex flex-col">
+        {/* Toolbar */}
+        <div className="p-4 border-b border-border/50 bg-secondary/10 flex flex-col lg:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search by name, email, phone, or ID..." 
+              className="pl-9 h-10 bg-background"
+              value={searchTerm}
+              onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
+            />
+          </div>
+          <div className="flex gap-2 flex-wrap lg:flex-nowrap">
+            <Select value={statusFilter} onValueChange={(v) => { setStatusFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-[140px] h-10 bg-background"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="suspended">Suspended</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={kycFilter} onValueChange={(v) => { setKycFilter(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-[140px] h-10 bg-background"><SelectValue placeholder="KYC" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All KYC</SelectItem>
+                <SelectItem value="verified">Verified</SelectItem>
+                <SelectItem value="unverified">Unverified</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={(v) => { setSortBy(v); setCurrentPage(1); }}>
+              <SelectTrigger className="w-[180px] h-10 bg-background"><SelectValue placeholder="Sort" /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="highest_value">Highest Inv. Value</SelectItem>
+                <SelectItem value="most_active">Most Active</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+
+        {/* Data Table */}
+        <div className="overflow-x-auto min-h-[400px]">
+          {isLoading ? (
+            <div className="p-8 space-y-4">
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+              <Skeleton className="h-12 w-full" />
+            </div>
+          ) : (
+            <table className="w-full text-sm text-left whitespace-nowrap">
+              <thead className="bg-secondary/40 border-b">
+                <tr>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Investor</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Contact</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Joined</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Status / KYC</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Investments</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {paginated.length === 0 ? (
+                  <tr><td colSpan={6} className="p-12 text-center text-muted-foreground">No users found.</td></tr>
+                ) : (
+                  paginated.map((u: any) => (
+                    <tr key={u.id} className="hover:bg-secondary/10 transition-colors">
+                      <td className="p-4">
+                        <div className="flex items-center gap-3">
+                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
+                            {u.full_name ? u.full_name[0].toUpperCase() : "U"}
+                          </div>
+                          <div>
+                            <p className="font-medium">{u.full_name || 'Unnamed'}</p>
+                            <p className="text-[10px] text-muted-foreground font-mono">{u.id.substring(0,8)}...</p>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <div className="text-xs space-y-1">
+                          {u.email ? <p className="text-muted-foreground">{u.email}</p> : <p className="text-muted-foreground/50 italic">No email</p>}
+                          {u.phone && <p className="text-muted-foreground">{u.phone}</p>}
+                        </div>
+                      </td>
+                      <td className="p-4 text-xs text-muted-foreground">
+                        {format(new Date(u.created_at), "MMM d, yyyy")}
+                      </td>
+                      <td className="p-4 space-y-1.5">
+                        <div>
+                          <Badge variant={u.investorStatus === 'active' ? 'default' : u.investorStatus === 'suspended' ? 'destructive' : 'secondary'} className="uppercase text-[9px] font-bold">
+                            {u.investorStatus}
+                          </Badge>
+                        </div>
+                        <div>
+                          {u.kyc_status === 'approved' ? (
+                            <span className="text-[10px] font-bold text-green-600 flex items-center gap-1"><ShieldCheck className="h-3 w-3" /> VERIFIED</span>
+                          ) : (
+                            <span className="text-[10px] font-bold text-muted-foreground flex items-center gap-1"><Clock className="h-3 w-3" /> {u.kyc_status || 'UNVERIFIED'}</span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="p-4">
+                        <p className="font-mono font-semibold">{formatMoney(u.totalVal)}</p>
+                        <p className="text-[10px] text-muted-foreground">{u.invCount} active {u.invCount === 1 ? 'investment' : 'investments'}</p>
+                      </td>
+                      <td className="p-4 text-right">
+                        <Button variant="outline" size="sm" className="h-8 rounded-lg font-medium" onClick={() => onSelectUser(u.id)}>
+                          View Profile <ChevronRight className="h-4 w-4 ml-1" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-accent/30">
+            <p className="text-xs text-muted-foreground">
+              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button size="icon" variant="outline" className="h-8 w-8 rounded-lg" disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)}>
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs font-medium text-foreground min-w-[60px] text-center">Page {currentPage} of {totalPages}</span>
+              <Button size="icon" variant="outline" className="h-8 w-8 rounded-lg" disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)}>
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
