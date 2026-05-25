@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Building2, Hash, Calendar, Car, Bed, Bath } from "lucide-react";
+import { Plus, Pencil, Trash2, Building2, Hash, Calendar, Car, Bed, Bath, Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,10 +19,20 @@ function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function AdminProperties() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+
+  /* Search, filter, sort state */
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState("all");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [filterLocation, setFilterLocation] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
 
   const { data: properties = [] } = useQuery({
     queryKey: ["admin-properties"],
@@ -42,6 +52,60 @@ export function AdminProperties() {
     queryFn: async () => (await supabase.from("agents").select("id, full_name").order("full_name")).data ?? [],
   });
 
+  /* Derived: filtered, sorted, paginated */
+  const filtered = useMemo(() => {
+    let result = [...properties];
+
+    /* Search */
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((p: any) =>
+        (p.title ?? "").toLowerCase().includes(term) ||
+        (p.address ?? "").toLowerCase().includes(term) ||
+        (p.internal_id ?? "").toLowerCase().includes(term) ||
+        (p.locations?.name ?? "").toLowerCase().includes(term)
+      );
+    }
+
+    /* Filters */
+    if (filterType !== "all") {
+      result = result.filter((p: any) => p.property_type === filterType);
+    }
+    if (filterStatus !== "all") {
+      result = result.filter((p: any) => p.status === filterStatus);
+    }
+    if (filterLocation !== "all") {
+      result = result.filter((p: any) => p.location_id === filterLocation);
+    }
+
+    /* Sort */
+    switch (sortBy) {
+      case "newest":
+        result.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "oldest":
+        result.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case "price_high":
+        result.sort((a: any, b: any) => Number(b.price ?? 0) - Number(a.price ?? 0));
+        break;
+      case "price_low":
+        result.sort((a: any, b: any) => Number(a.price ?? 0) - Number(b.price ?? 0));
+        break;
+    }
+
+    return result;
+  }, [properties, searchTerm, filterType, filterStatus, filterLocation, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  /* Reset page when filters change */
+  const handleFilterChange = (setter: Function, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
   async function remove(id: string) {
     if (!confirm("Delete this property?")) return;
     const { error } = await supabase.from("properties").delete().eq("id", id);
@@ -58,7 +122,7 @@ export function AdminProperties() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-serif text-2xl font-bold">Properties</h2>
-          <p className="text-sm text-muted-foreground">Manage your real estate listings and availability.</p>
+          <p className="text-sm text-muted-foreground">Manage your real estate listings and availability. {filtered.length} results.</p>
         </div>
         <Button 
           onClick={() => { setEditing(null); setOpen(true); }} 
@@ -68,13 +132,67 @@ export function AdminProperties() {
         </Button>
       </div>
 
+      {/* Search + Filter Bar */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search title, address, ID..."
+            value={searchTerm}
+            onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
+            className="pl-10 rounded-xl border-border/50 bg-card"
+          />
+        </div>
+        <Select value={filterType} onValueChange={(v) => handleFilterChange(setFilterType, v)}>
+          <SelectTrigger className="w-[140px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Type" /></SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="buy">For Sale</SelectItem>
+            <SelectItem value="rent">For Rent</SelectItem>
+            <SelectItem value="land">Land/Plot</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterStatus} onValueChange={(v) => handleFilterChange(setFilterStatus, v)}>
+          <SelectTrigger className="w-[150px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Status" /></SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="available">Available</SelectItem>
+            <SelectItem value="reserved">Reserved</SelectItem>
+            <SelectItem value="sold">Sold</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="archived">Archived</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={filterLocation} onValueChange={(v) => handleFilterChange(setFilterLocation, v)}>
+          <SelectTrigger className="w-[160px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Location" /></SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="all">All Locations</SelectItem>
+            {locations.map((l: any) => (
+              <SelectItem key={l.id} value={l.id}>{l.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={(v) => handleFilterChange(setSortBy, v)}>
+          <SelectTrigger className="w-[150px] rounded-xl border-border/50 bg-card">
+            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Sort" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="newest">Newest First</SelectItem>
+            <SelectItem value="oldest">Oldest First</SelectItem>
+            <SelectItem value="price_high">Price: High → Low</SelectItem>
+            <SelectItem value="price_low">Price: Low → High</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
         {/* ── Mobile Card Layout ── */}
         <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-          {properties.length === 0 ? (
-            <div className="p-8 text-center text-muted-foreground italic">No properties listed yet.</div>
+          {paginated.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground italic">No properties match your filters.</div>
           ) : (
-            properties.map((p: any) => (
+            paginated.map((p: any) => (
               <div key={p.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -143,7 +261,7 @@ export function AdminProperties() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
-              {properties.map((p: any) => (
+              {paginated.map((p: any) => (
                 <tr key={p.id} className="transition-colors hover:bg-secondary/40 group">
                   <td className="p-4">
                     <div className="flex items-center gap-2 mb-1">
@@ -189,14 +307,46 @@ export function AdminProperties() {
                   </td>
                 </tr>
               ))}
-              {properties.length === 0 && (
+              {paginated.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground italic">No properties listed yet.</td>
+                  <td colSpan={6} className="p-8 text-center text-muted-foreground italic">No properties match your filters.</td>
                 </tr>
               )}
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-accent/30">
+            <p className="text-xs text-muted-foreground">
+              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-8 w-8 rounded-lg" 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => p - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs font-medium text-foreground min-w-[60px] text-center">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-8 w-8 rounded-lg" 
+                disabled={currentPage === totalPages} 
+                onClick={() => setCurrentPage(p => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={open} onOpenChange={setOpen}>

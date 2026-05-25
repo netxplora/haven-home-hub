@@ -1,16 +1,19 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, ShieldAlert, ClipboardList, User, Phone, Mail, Upload, CheckCircle2, ChevronRight, FileText, Clock } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ClipboardList, User, Phone, Mail, Upload, CheckCircle2, ChevronRight, FileText, Clock, Copy, CalendarDays, BadgeCheck, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export function ProfilePanel({ userId }: { userId: string }) {
   const qc = useQueryClient();
+  const { user, roles } = useAuth();
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", userId],
     queryFn: async () => {
@@ -65,10 +68,26 @@ export function ProfilePanel({ userId }: { userId: string }) {
     localStorage.setItem(`profile_draft_kyc_step_${userId}`, String(kycStep));
   }, [kycStep, userId]);
 
+  // Profile completeness calculation
+  const completenessFields = [
+    !!profile?.full_name,
+    !!profile?.phone,
+    !!user?.email,
+    profile?.kyc_status === "approved",
+    !!profile?.id_document_url,
+    !!profile?.proof_of_address_url,
+  ];
+  const completenessScore = Math.round(
+    (completenessFields.filter(Boolean).length / completenessFields.length) * 100
+  );
+
   async function save(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const { error } = await supabase.from("profiles").update(form).eq("id", userId);
+    const { error } = await supabase.from("profiles").upsert({
+      id: userId,
+      ...form,
+    });
     setSaving(false);
     if (error) toast({ title: "Save failed", description: error.message, variant: "destructive" });
     else { 
@@ -123,6 +142,11 @@ export function ProfilePanel({ userId }: { userId: string }) {
     }
   }
 
+  function copyToClipboard(text: string) {
+    navigator.clipboard.writeText(text);
+    toast({ title: "Copied to clipboard" });
+  }
+
   if (isLoading) return (
     <div className="space-y-6">
        <Skeleton className="h-64 rounded-xl" />
@@ -135,6 +159,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
   return (
     <div className="grid gap-10 lg:grid-cols-5 ">
       <div className="lg:col-span-2 space-y-8">
+        {/* Profile Form Card */}
         <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
           <div className="flex items-center gap-4 mb-6">
              <div className="h-14 w-14 rounded-lg bg-primary/8 text-primary flex items-center justify-center font-semibold text-xl">
@@ -160,6 +185,18 @@ export function ProfilePanel({ userId }: { userId: string }) {
               </div>
             </div>
             <div className="space-y-2">
+              <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">Email Address</Label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
+                <Input 
+                  value={user?.email || ""} 
+                  readOnly
+                  disabled
+                  className="pl-10 rounded-lg bg-accent/30 border-border/50 text-muted-foreground cursor-not-allowed"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
               <Label className="text-xs font-medium uppercase tracking-wider text-muted-foreground px-1">Contact Phone</Label>
               <div className="relative">
                 <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground/50" />
@@ -177,6 +214,87 @@ export function ProfilePanel({ userId }: { userId: string }) {
           </form>
         </div>
 
+        {/* Account Details Card */}
+        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft space-y-5">
+          <h3 className="font-serif text-base font-semibold">Account Details</h3>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Account ID</p>
+                <p className="text-sm font-mono text-foreground">{userId.slice(0, 12)}...</p>
+              </div>
+              <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg hover:bg-accent" onClick={() => copyToClipboard(userId)}>
+                <Copy className="h-3.5 w-3.5 text-muted-foreground" />
+              </Button>
+            </div>
+            <div className="h-px bg-border/40" />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Member Since</p>
+                <p className="text-sm font-medium text-foreground flex items-center gap-1.5">
+                  <CalendarDays className="h-3.5 w-3.5 text-muted-foreground/50" />
+                  {profile?.created_at ? new Date(profile.created_at).toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" }) : "N/A"}
+                </p>
+              </div>
+            </div>
+            <div className="h-px bg-border/40" />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">Account Role</p>
+                <div className="flex flex-wrap gap-1.5 mt-1">
+                  {roles.length > 0 ? roles.map(r => (
+                    <Badge key={r} variant="secondary" className="rounded-md text-[10px] uppercase font-bold px-2 py-0.5">{r}</Badge>
+                  )) : (
+                    <Badge variant="outline" className="rounded-md text-[10px] uppercase font-bold px-2 py-0.5">User</Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div className="h-px bg-border/40" />
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <p className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">KYC Verification</p>
+                <Badge variant={kycStatus === 'approved' ? 'default' : kycStatus === 'pending' ? 'secondary' : kycStatus === 'rejected' ? 'destructive' : 'outline'} 
+                  className="capitalize rounded-md text-[10px] font-bold mt-1 gap-1">
+                  {kycStatus === 'approved' && <ShieldCheck className="h-3 w-3" />}
+                  {kycStatus === 'rejected' && <ShieldAlert className="h-3 w-3" />}
+                  {kycStatus === 'pending' && <Clock className="h-3 w-3" />}
+                  {kycStatus === 'approved' ? 'Verified' : kycStatus === 'pending' ? 'Under Review' : kycStatus === 'rejected' ? 'Declined' : 'Not Verified'}
+                </Badge>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Profile Completeness Card */}
+        <div className="rounded-xl border border-border/50 bg-accent/30 p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="font-serif text-base font-semibold">Profile Completeness</h3>
+            <span className="text-sm font-bold text-primary">{completenessScore}%</span>
+          </div>
+          <Progress value={completenessScore} className="h-2" />
+          <div className="space-y-2">
+            {[
+              { label: "Full Name", done: !!profile?.full_name },
+              { label: "Phone Number", done: !!profile?.phone },
+              { label: "Email Address", done: !!user?.email },
+              { label: "ID Document", done: !!profile?.id_document_url },
+              { label: "Address Proof", done: !!profile?.proof_of_address_url },
+              { label: "KYC Approved", done: profile?.kyc_status === "approved" },
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-2 text-xs">
+                {item.done ? (
+                  <CheckCircle2 className="h-3.5 w-3.5 text-green-500 shrink-0" />
+                ) : (
+                  <div className="h-3.5 w-3.5 rounded-full border-2 border-muted-foreground/20 shrink-0" />
+                )}
+                <span className={item.done ? "text-foreground font-medium" : "text-muted-foreground"}>{item.label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Security Preferences */}
         <div className="rounded-xl border border-border/50 bg-accent/30 p-6 space-y-5">
            <h3 className="font-serif text-base font-semibold">Security Preferences</h3>
            <div className="space-y-4">

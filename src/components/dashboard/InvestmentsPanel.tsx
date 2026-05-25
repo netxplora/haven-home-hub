@@ -138,7 +138,7 @@ export function InvestmentsPanel() {
           <p className="font-serif text-2xl font-semibold text-primary">{formatMoney(totalReturns)}</p>
           <div className="mt-3 flex items-center gap-1.5 text-xs text-primary/60">
              <TrendingUp className="h-3.5 w-3.5" />
-             Average Return: +12.4%
+             Average Return: {totalInvested > 0 ? `+${((totalReturns / totalInvested) * 100).toFixed(1)}%` : "No data"}
           </div>
         </div>
         <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">

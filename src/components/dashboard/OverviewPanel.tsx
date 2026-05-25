@@ -38,14 +38,21 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
     queryKey: ["dashboard-overview-stats", userId],
     queryFn: async () => {
       const [investmentsResponse, returnsResponse, balanceResponse, reservationsResponse, purchasesResponse] = await Promise.all([
-        supabase.from("user_investments").select("amount_invested, total_amount, amount_paid").eq("user_id", userId),
+        supabase.from("user_investments").select("amount_invested, total_amount, amount_paid, status").eq("user_id", userId),
         supabase.from("returns").select("amount_received, distribution_date").eq("user_id", userId).order("distribution_date", { ascending: true }),
         supabase.rpc("user_available_balance"),
         supabase.from("reservations").select("id").eq("user_id", userId).in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested"]),
         supabase.from("reservations").select("id").eq("user_id", userId).in("status", ["confirmed", "completed"])
       ]);
       
-      const totalInvested = (investmentsResponse.data ?? []).reduce((acc, curr: any) => acc + Number(curr.total_amount ?? curr.amount_invested ?? 0), 0);
+      /* Only count investments with confirmed/active/completed status for totals */
+      const allInvestments = investmentsResponse.data ?? [];
+      const validStatuses = ["confirmed", "active", "completed"];
+      const activeInvestments = allInvestments.filter((inv: any) => validStatuses.includes(inv.status));
+      const completedInvestments = allInvestments.filter((inv: any) => inv.status === "completed");
+      const totalInvested = activeInvestments.reduce((acc: number, curr: any) => acc + Number(curr.total_amount ?? curr.amount_invested ?? 0), 0);
+      const investmentCount = activeInvestments.length;
+      const completedCount = completedInvestments.length;
       const totalReturns = (returnsResponse.data ?? []).reduce((acc, curr) => acc + curr.amount_received, 0);
       const availableBalance = Number(balanceResponse.data ?? 0);
       
@@ -71,7 +78,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
       const activeReservationsCount = (reservationsResponse.data ?? []).length;
       const propertiesOwnedCount = (purchasesResponse.data ?? []).length;
 
-      return { totalInvested, totalReturns, availableBalance, chartData, activeReservationsCount, propertiesOwnedCount };
+      return { totalInvested, totalReturns, availableBalance, chartData, activeReservationsCount, propertiesOwnedCount, investmentCount, completedCount };
     }
   });
 
@@ -162,7 +169,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
           </div>
           <p className="font-serif text-2xl font-semibold text-foreground">{formatMoney(stats?.totalInvested ?? 0)}</p>
           <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-            <TrendingUp className="h-3 w-3 text-primary" /> Assets performing well
+            <TrendingUp className="h-3 w-3 text-primary" /> {stats?.investmentCount ?? 0} Active · {stats?.completedCount ?? 0} Completed
           </p>
         </div>
         

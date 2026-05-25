@@ -166,7 +166,7 @@ export function PurchasesPanel({ userId }: { userId: string }) {
                         </div>
                         <div className="sm:text-right">
                           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Value</p>
-                          <p className="text-lg font-bold text-foreground">{formatMoney(r.total_price || r.amount || 0, "USD")}</p>
+                          <p className="text-lg font-bold text-foreground">{formatMoney(r.total_price || r.amount || r.metadata?.amount_invested || 0, "USD")}</p>
                         </div>
                       </div>
 

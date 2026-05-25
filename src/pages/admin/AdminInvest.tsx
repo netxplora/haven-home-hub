@@ -1,9 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, TrendingUp, Layers } from "lucide-react";
+import { Plus, Pencil, Trash2, Layers, Search, ArrowUpDown, ChevronLeft, ChevronRight, Map } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,144 +11,319 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ImageUploader } from "@/components/site/ImageUploader";
 import { Separator } from "@/components/ui/separator";
 import { formatMoney } from "@/lib/invest";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { InteractivePropertyMap } from "@/components/site/InteractivePropertyMap";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function AdminInvest() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
-  const { data = [] } = useQuery({
+
+  /* Search, filter, sort state */
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const { data: properties = [] } = useQuery({
     queryKey: ["admin-invest"],
     queryFn: async () => (await (supabase as any).from("investment_properties").select("*").order("created_at", { ascending: false })).data ?? [],
   });
+
+  /* Derived: filtered, sorted, paginated */
+  const filtered = useMemo(() => {
+    let result = [...properties];
+
+    /* Search */
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((p: any) =>
+        (p.title ?? "").toLowerCase().includes(term) ||
+        (p.location ?? "").toLowerCase().includes(term)
+      );
+    }
+
+    /* Filters */
+    if (filterStatus !== "all") {
+      result = result.filter((p: any) => p.status === filterStatus);
+    }
+
+    /* Sort */
+    switch (sortBy) {
+      case "newest":
+        result.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "oldest":
+        result.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case "price_high":
+        result.sort((a: any, b: any) => Number(b.unit_price ?? 0) - Number(a.unit_price ?? 0));
+        break;
+      case "price_low":
+        result.sort((a: any, b: any) => Number(a.unit_price ?? 0) - Number(b.unit_price ?? 0));
+        break;
+      case "return_high":
+        result.sort((a: any, b: any) => Number(b.projected_return_max ?? 0) - Number(a.projected_return_max ?? 0));
+        break;
+    }
+
+    return result;
+  }, [properties, searchTerm, filterStatus, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  /* Reset page when filters change */
+  const handleFilterChange = (setter: Function, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
   async function remove(id: string) {
     if (!confirm("Delete this investment property?")) return;
     const { error } = await (supabase as any).from("investment_properties").delete().eq("id", id);
     if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
     else qc.invalidateQueries({ queryKey: ["admin-invest"] });
   }
+
   return (
-    <div>
-      <div className="mb-4 flex justify-end">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="font-serif text-2xl font-bold">Investments</h2>
+          <p className="text-sm text-muted-foreground">Manage investment opportunities and offerings. {filtered.length} results.</p>
+        </div>
         <Button 
           onClick={() => { setEditing(null); setOpen(true); }} 
-          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all active:scale-[0.98] rounded-xl"
+          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all active:scale-[0.98] rounded-xl font-bold"
         >
-          <Plus className="mr-2 h-4 w-4" /> New investment property
+          <Plus className="mr-2 h-4 w-4" /> New Investment
         </Button>
       </div>
-      {/* Mobile Card View (md:hidden) */}
-      <div className="grid grid-cols-1 gap-4 md:hidden">
-        {data.length === 0 ? (
-          <div className="rounded-xl border border-border bg-card p-8 text-center text-muted-foreground shadow-sm">
-            No investment properties found.
-          </div>
-        ) : (
-          data.map((p: any) => (
-            <div key={p.id} className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
-              <div className="flex justify-between items-start">
-                <div>
-                  <Link to={`/invest/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors text-base block">{p.title}</Link>
-                  <p className="text-xs text-muted-foreground mt-0.5">{p.location}</p>
-                </div>
-                <Badge variant={p.status === "open" ? "default" : "secondary"} className="rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold">
-                  {p.status}
-                </Badge>
-              </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
-                <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Units Sold</span>
-                  <span className="font-medium text-foreground block mt-0.5">{p.units_sold} <span className="text-[10px] text-muted-foreground/50">/</span> {p.total_units}</span>
-                </div>
-                <div>
-                  <span className="text-muted-foreground block text-[10px] uppercase font-medium">Min. Investment</span>
-                  <span className="font-semibold text-primary block mt-0.5">{formatMoney(Number(p.min_investment), p.currency)}</span>
-                </div>
-              </div>
+      <Tabs defaultValue="list" className="w-full">
+        <div className="flex justify-between items-center mb-4 flex-wrap gap-4">
+          <TabsList className="bg-secondary/40 rounded-xl p-1 h-12 w-[240px]">
+             <TabsTrigger value="list" className="flex-1 rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs">
+               <Layers className="h-4 w-4 mr-2" /> List View
+             </TabsTrigger>
+             <TabsTrigger value="map" className="flex-1 rounded-lg font-bold data-[state=active]:bg-background data-[state=active]:shadow-sm text-xs">
+               <Map className="h-4 w-4 mr-2" /> Map View
+             </TabsTrigger>
+          </TabsList>
+        </div>
 
-              <div className="flex flex-wrap items-center gap-1.5">
-                {p.installment_available && (
-                  <Badge variant="outline" className="rounded-md text-[9px] tracking-wider px-2 py-0.5 font-bold border-primary/30 text-primary">
-                    <Layers className="h-3 w-3 mr-1" /> Installments
-                  </Badge>
-                )}
-              </div>
-
-              <div className="pt-2 border-t border-border/50 flex gap-2">
-                <Button variant="outline" size="sm" className="flex-1 h-11 text-sm font-medium flex items-center justify-center gap-2" onClick={() => { setEditing(p); setOpen(true); }}>
-                  <Pencil className="h-4 w-4" /> Edit
-                </Button>
-                <Button variant="destructive" size="sm" className="flex-1 h-11 text-sm font-medium flex items-center justify-center gap-2" onClick={() => remove(p.id)}>
-                  <Trash2 className="h-4 w-4" /> Delete
-                </Button>
-              </div>
+        <TabsContent value="list" className="space-y-4 m-0 focus-visible:outline-none">
+          {/* Search + Filter Bar */}
+          <div className="flex flex-wrap gap-3 items-center">
+            <div className="relative flex-1 min-w-[200px] max-w-sm">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Search title, location..."
+                value={searchTerm}
+                onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
+                className="pl-10 rounded-xl border-border/50 bg-card"
+              />
             </div>
-          ))
-        )}
-      </div>
+            <Select value={filterStatus} onValueChange={(v) => handleFilterChange(setFilterStatus, v)}>
+              <SelectTrigger className="w-[150px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Status" /></SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="all">All Statuses</SelectItem>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="open">Open</SelectItem>
+                <SelectItem value="funded">Funded</SelectItem>
+                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="closed">Closed</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={sortBy} onValueChange={(v) => handleFilterChange(setSortBy, v)}>
+              <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card">
+                <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Sort" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl">
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="price_high">Unit Price: High → Low</SelectItem>
+                <SelectItem value="price_low">Unit Price: Low → High</SelectItem>
+                <SelectItem value="return_high">Highest Return First</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
 
-      {/* Desktop Table View (hidden md:block) */}
-      <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="bg-accent text-left">
-            <tr>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Title</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Location</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Status</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Units</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Min.</th>
-              <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Plan</th>
-              <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {data.map((p: any) => (
-              <tr key={p.id} className="transition-colors hover:bg-secondary/40">
-                <td className="p-4">
-                  <Link to={`/invest/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors">{p.title}</Link>
-                </td>
-                <td className="p-4 text-muted-foreground">{p.location}</td>
-                <td className="p-4">
-                  <Badge variant={p.status === "open" ? "default" : "secondary"} className="rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold">
-                    {p.status}
-                  </Badge>
-                </td>
-                <td className="p-4 font-medium text-muted-foreground">{p.units_sold} <span className="text-xs text-muted-foreground/50">/</span> {p.total_units}</td>
-                <td className="p-4 font-semibold text-primary">{formatMoney(Number(p.min_investment), p.currency)}</td>
-                <td className="p-4">
-                  {p.installment_available && (
-                    <Badge variant="outline" className="rounded-md text-[9px] tracking-wider px-2 py-0.5 font-bold border-primary/30 text-primary">
-                      <Layers className="h-3 w-3 mr-1" /> Installments
-                    </Badge>
-                  )}
-                </td>
-                <td className="p-4 text-right">
-                  <div className="flex justify-end gap-1">
-                    <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }} className="h-8 w-8 rounded-lg">
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button size="icon" variant="ghost" onClick={() => remove(p.id)} className="h-8 w-8 rounded-lg hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+          <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+            {/* Mobile Card View (md:hidden) */}
+            <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+              {paginated.length === 0 ? (
+                <div className="p-8 text-center text-muted-foreground italic shadow-sm">
+                  No investment properties match your filters.
+                </div>
+              ) : (
+                paginated.map((p: any) => (
+                  <div key={p.id} className="rounded-xl border border-border bg-card p-4 shadow-sm space-y-4">
+                    <div className="flex justify-between items-start gap-3">
+                      <div>
+                        <Link to={`/invest/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors text-base block">{p.title}</Link>
+                        <p className="text-[10px] text-muted-foreground mt-0.5">{p.location}</p>
+                      </div>
+                      <Badge variant={p.status === "open" ? "default" : "secondary"} className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold shrink-0 ${
+                          p.status === 'open' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                          p.status === 'funded' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                          p.status === 'closed' ? 'bg-gray-500/10 text-gray-500 border-gray-500/20' :
+                          p.status === 'paused' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : ''
+                        }`}>
+                        {p.status}
+                      </Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-3">
+                      <div>
+                        <span className="text-muted-foreground block text-[10px] uppercase font-medium">Units Sold</span>
+                        <span className="font-medium text-foreground block mt-0.5">{p.units_sold} <span className="text-[10px] text-muted-foreground/50">/</span> {p.total_units}</span>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-muted-foreground block text-[10px] uppercase font-medium">Min. Investment</span>
+                        <span className="font-semibold text-primary block mt-0.5">{formatMoney(Number(p.min_investment), p.currency)}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                      {p.installment_available && (
+                        <Badge variant="outline" className="rounded-md text-[9px] tracking-wider px-2 py-0.5 font-bold border-primary/30 text-primary">
+                          <Layers className="h-3 w-3 mr-1" /> Installments
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="pt-3 border-t border-border/50 flex gap-2 justify-end">
+                      <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4" onClick={() => { setEditing(p); setOpen(true); }}>
+                        <Pencil className="h-4 w-4" /> Edit
+                      </Button>
+                      <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-muted-foreground hover:bg-destructive/10 hover:text-destructive border-destructive/20" onClick={() => remove(p.id)}>
+                        <Trash2 className="h-4 w-4" /> Delete
+                      </Button>
+                    </div>
                   </div>
-                </td>
-              </tr>
-            ))}
-            {data.length === 0 && (
-              <tr>
-                <td colSpan={7} className="p-8 text-center text-muted-foreground italic">No investment properties found.</td>
-              </tr>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Table View (hidden md:block) */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full text-sm">
+                <thead className="bg-accent text-left">
+                  <tr>
+                    <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Title</th>
+                    <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Location</th>
+                    <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Status</th>
+                    <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Units</th>
+                    <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Min.</th>
+                    <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Plan</th>
+                    <th className="p-4 font-serif font-semibold text-right text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-border">
+                  {paginated.map((p: any) => (
+                    <tr key={p.id} className="transition-colors hover:bg-secondary/40 group">
+                      <td className="p-4">
+                        <Link to={`/invest/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors block max-w-[200px] truncate">{p.title}</Link>
+                      </td>
+                      <td className="p-4 text-[10px] text-muted-foreground">{p.location}</td>
+                      <td className="p-4">
+                        <Badge variant={p.status === "open" ? "default" : "secondary"} className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold ${
+                            p.status === 'open' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                            p.status === 'funded' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                            p.status === 'closed' ? 'bg-gray-500/10 text-gray-500 border-gray-500/20' :
+                            p.status === 'paused' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : ''
+                          }`}>
+                          {p.status}
+                        </Badge>
+                      </td>
+                      <td className="p-4 font-medium text-muted-foreground text-xs">{p.units_sold} <span className="text-[10px] text-muted-foreground/50">/</span> {p.total_units}</td>
+                      <td className="p-4 font-semibold text-primary">{formatMoney(Number(p.min_investment), p.currency)}</td>
+                      <td className="p-4">
+                        {p.installment_available && (
+                          <Badge variant="outline" className="rounded-md text-[9px] tracking-wider px-2 py-0.5 font-bold border-primary/30 text-primary">
+                            <Layers className="h-3 w-3 mr-1" /> Installments
+                          </Badge>
+                        )}
+                      </td>
+                      <td className="p-4 text-right">
+                        <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }} className="h-8 w-8 rounded-lg">
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button size="icon" variant="ghost" onClick={() => remove(p.id)} className="h-8 w-8 rounded-lg hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {paginated.length === 0 && (
+                    <tr>
+                      <td colSpan={7} className="p-8 text-center text-muted-foreground italic">No investment properties match your filters.</td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-accent/30">
+                <p className="text-xs text-muted-foreground">
+                  Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button 
+                    size="icon" 
+                    variant="outline" 
+                    className="h-8 w-8 rounded-lg" 
+                    disabled={currentPage === 1} 
+                    onClick={() => setCurrentPage(p => p - 1)}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <span className="text-xs font-medium text-foreground min-w-[60px] text-center">
+                    Page {currentPage} of {totalPages}
+                  </span>
+                  <Button 
+                    size="icon" 
+                    variant="outline" 
+                    className="h-8 w-8 rounded-lg" 
+                    disabled={currentPage === totalPages} 
+                    onClick={() => setCurrentPage(p => p + 1)}
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="map" className="m-0 focus-visible:outline-none">
+           <div className="h-[700px] rounded-xl border border-border/50 overflow-hidden shadow-sm relative">
+              <InteractivePropertyMap
+                 properties={filtered}
+                 onMarkerClick={(p) => {
+                    setEditing(p);
+                    setOpen(true);
+                 }}
+              />
+           </div>
+        </TabsContent>
+      </Tabs>
+
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-w-2xl p-0 border border-border">
           <DialogHeader className="bg-primary p-6 shrink-0">

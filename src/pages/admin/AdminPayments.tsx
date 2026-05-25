@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from "@/components/ui/dialog";
@@ -8,39 +8,91 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/invest";
-import { RefreshCw, Trash2 } from "lucide-react";
+import { RefreshCw, Trash2, Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Input } from "@/components/ui/input";
 
 // Map UI-friendly filter labels to actual DB values
 const STATUS_FILTER_MAP: Record<string, string> = {
   confirmed: "success",
 };
 
+const ITEMS_PER_PAGE = 10;
+
 export function AdminPayments() {
   const qc = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
   const [status, setStatus] = useState("all");
   const [type, setType] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [selectedPayment, setSelectedPayment] = useState<any>(null);
   const [adminNote, setAdminNote] = useState("");
 
-  const { data = [], isLoading } = useQuery({
-    queryKey: ["admin-payments", status, type],
+  const { data: allPayments = [], isLoading } = useQuery({
+    queryKey: ["admin-payments-all"],
     queryFn: async () => {
-      let q = (supabase as any).from("payments").select(`
+      const { data } = await (supabase as any).from("payments").select(`
         *,
         profiles(full_name),
         properties(title, slug),
         investment_properties(title, slug),
         receipts(*),
         payment_audit_logs(admin_id, previous_status, new_status, notes, created_at)
-      `).order("created_at", { ascending: false }).limit(500);
-      if (status !== "all") {
-        const dbStatus = STATUS_FILTER_MAP[status] ?? status;
-        q = q.eq("status", dbStatus as any);
-      }
-      if (type !== "all") q = q.eq("payment_type", type as any);
-      return (await q).data ?? [];
+      `);
+      return data ?? [];
     },
   });
+
+  const filtered = useMemo(() => {
+    let result = [...allPayments];
+
+    /* Search */
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((p: any) =>
+        (p.profiles?.full_name ?? "").toLowerCase().includes(term) ||
+        (p.transaction_hash ?? "").toLowerCase().includes(term) ||
+        (p.user_id ?? "").toLowerCase().includes(term)
+      );
+    }
+
+    /* Filters */
+    if (status !== "all") {
+      const dbStatus = STATUS_FILTER_MAP[status] ?? status;
+      result = result.filter((p: any) => p.status === dbStatus);
+    }
+    if (type !== "all") {
+      result = result.filter((p: any) => p.payment_type === type);
+    }
+
+    /* Sort */
+    switch (sortBy) {
+      case "newest":
+        result.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "oldest":
+        result.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case "amount_high":
+        result.sort((a: any, b: any) => Number(b.amount ?? 0) - Number(a.amount ?? 0));
+        break;
+      case "amount_low":
+        result.sort((a: any, b: any) => Number(a.amount ?? 0) - Number(b.amount ?? 0));
+        break;
+    }
+
+    return result;
+  }, [allPayments, searchTerm, status, type, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  /* Reset page when filters change */
+  const handleFilterChange = (setter: Function, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
 
   async function mark(id: string, action: "confirmed" | "failed" | "processing") {
     if (!adminNote.trim()) {
@@ -78,7 +130,7 @@ export function AdminPayments() {
       }
 
       toast({ title: `Transaction marked as ${action.replace("_", " ")}` });
-      qc.invalidateQueries({ queryKey: ["admin-payments"] });
+      qc.invalidateQueries({ queryKey: ["admin-payments-all"] });
       qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
       qc.invalidateQueries({ queryKey: ["admin-reservations"] });
       qc.invalidateQueries({ queryKey: ["admin-investments"] });
@@ -99,49 +151,75 @@ export function AdminPayments() {
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex flex-wrap gap-3 items-center">
-          <Select value={status} onValueChange={setStatus}>
-            <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Filter Status" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All statuses</SelectItem>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="processing">Processing</SelectItem>
-              <SelectItem value="confirmed">Confirmed</SelectItem>
-              <SelectItem value="failed">Failed</SelectItem>
-              <SelectItem value="cancelled">Cancelled</SelectItem>
-              <SelectItem value="refunded">Refunded</SelectItem>
-            </SelectContent>
-          </Select>
-          <Select value={type} onValueChange={setType}>
-            <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Filter Type" /></SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All types</SelectItem>
-              <SelectItem value="investment">Investment</SelectItem>
-              <SelectItem value="booking">Booking</SelectItem>
-              <SelectItem value="reservation">Reservation</SelectItem>
-              <SelectItem value="referral_bonus">Referral Bonus</SelectItem>
-              <SelectItem value="investment_return">Investment Return</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button 
-            variant="outline" 
-            size="icon" 
-            className="rounded-xl border-border/50 bg-card h-10 w-10 hover:bg-accent"
-            onClick={() => qc.invalidateQueries({ queryKey: ["admin-payments"] })}
-            title="Refresh List"
-          >
-            <RefreshCw className="h-4 w-4" />
-          </Button>
+        <div>
+          <h2 className="font-serif text-2xl font-bold">Payments</h2>
+          <p className="text-sm text-muted-foreground">Audit payment history and transactions. {filtered.length} results.</p>
         </div>
+        <Button 
+          variant="outline" 
+          size="sm" 
+          className="rounded-xl border-border/50 bg-card hover:bg-accent"
+          onClick={() => qc.invalidateQueries({ queryKey: ["admin-payments-all"] })}
+          title="Refresh List"
+        >
+          <RefreshCw className="h-4 w-4 mr-2" /> Refresh
+        </Button>
+      </div>
+
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search user, ID or reference..."
+            value={searchTerm}
+            onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
+            className="pl-10 rounded-xl border-border/50 bg-card"
+          />
+        </div>
+        <Select value={status} onValueChange={(v) => handleFilterChange(setStatus, v)}>
+          <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Filter Status" /></SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="all">All statuses</SelectItem>
+            <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="processing">Processing</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
+            <SelectItem value="failed">Failed</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+            <SelectItem value="refunded">Refunded</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={type} onValueChange={(v) => handleFilterChange(setType, v)}>
+          <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Filter Type" /></SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="investment">Investment</SelectItem>
+            <SelectItem value="booking">Booking</SelectItem>
+            <SelectItem value="reservation">Reservation</SelectItem>
+            <SelectItem value="referral_bonus">Referral Bonus</SelectItem>
+            <SelectItem value="investment_return">Investment Return</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={sortBy} onValueChange={(v) => handleFilterChange(setSortBy, v)}>
+          <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card">
+            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Sort" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="newest">Newest First</SelectItem>
+            <SelectItem value="oldest">Oldest First</SelectItem>
+            <SelectItem value="amount_high">Amount: High → Low</SelectItem>
+            <SelectItem value="amount_low">Amount: Low → High</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
         {/* ── Mobile Card Layout ── */}
         <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-          {data.length === 0 ? (
-            <div className="p-12 text-center text-muted-foreground">No records found.</div>
+          {paginated.length === 0 ? (
+            <div className="p-12 text-center text-muted-foreground">No records match your filters.</div>
           ) : (
-            data.map((p: any) => (
+            paginated.map((p: any) => (
               <div key={p.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -195,11 +273,11 @@ export function AdminPayments() {
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {data.length === 0 ? (
-                <tr><td colSpan={6} className="p-12 text-center text-muted-foreground">No records found.</td></tr>
-              ) : data.map((p: any) => (
+              {paginated.length === 0 ? (
+                <tr><td colSpan={6} className="p-12 text-center text-muted-foreground">No records match your filters.</td></tr>
+              ) : paginated.map((p: any) => (
                 <tr key={p.id} className="transition-colors hover:bg-secondary/20">
-                  <td className="p-4">{new Date(p.created_at).toLocaleDateString()}</td>
+                  <td className="p-4 text-muted-foreground">{new Date(p.created_at).toLocaleDateString()}</td>
                   <td className="p-4">
                     <p className="font-medium">{p.profiles?.full_name || "Unknown User"}</p>
                     <p className="text-[10px] text-muted-foreground font-mono">{p.user_id ? p.user_id.slice(0, 8) : "N/A"}</p>
@@ -218,7 +296,7 @@ export function AdminPayments() {
                       {p.status === "success" ? "confirmed" : (p.status ? p.status.replace("_", " ") : "N/A")}
                     </Badge>
                   </td>
-                  <td className="p-4 text-right font-semibold">
+                  <td className="p-4 text-right font-semibold text-primary">
                     {formatMoney(Number(p.amount), p.currency)}
                   </td>
                   <td className="p-4 text-right">
@@ -229,6 +307,38 @@ export function AdminPayments() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-accent/30">
+            <p className="text-xs text-muted-foreground">
+              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-8 w-8 rounded-lg" 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => p - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs font-medium text-foreground min-w-[60px] text-center">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-8 w-8 rounded-lg" 
+                disabled={currentPage === totalPages} 
+                onClick={() => setCurrentPage(p => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Review dialog — rendered ONCE outside the table loop */}
@@ -366,7 +476,7 @@ export function AdminPayments() {
                         } else {
                           toast({ title: "Record Deleted", description: "The payment record was permanently deleted." });
                           setSelectedPayment(null);
-                          qc.invalidateQueries({ queryKey: ["admin-payments"] });
+                          qc.invalidateQueries({ queryKey: ["admin-payments-all"] });
                         }
                       }
                     }}

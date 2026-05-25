@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, Landmark, TrendingUp, Eye, CheckCircle2, XCircle, Trash2, RefreshCw, Clock, MessageSquare, Calendar, AlertCircle } from "lucide-react";
+import { ShieldCheck, Landmark, TrendingUp, Eye, CheckCircle2, XCircle, Trash2, RefreshCw, Clock, MessageSquare, Calendar, AlertCircle, Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,18 +16,24 @@ import { Skeleton } from "@/components/ui/skeleton";
 type ReservationFilter = "all" | "reservation" | "investment";
 type StatusFilter = "all" | "awaiting_reservation_fee" | "under_admin_review" | "pending_review" | "approved" | "rejected" | "information_requested";
 
+const ITEMS_PER_PAGE = 10;
+
 export function AdminReservations() {
   const qc = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
   const [typeFilter, setTypeFilter] = useState<ReservationFilter>("all");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [sortBy, setSortBy] = useState("newest");
+  const [currentPage, setCurrentPage] = useState(1);
+
   const [selected, setSelected] = useState<any>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [infoRequest, setInfoRequest] = useState("");
 
   // Fetch reservations and user_investments
-  const { data: applications = [], isLoading, isError, error, refetch } = useQuery({
-    queryKey: ["admin-applications", typeFilter, statusFilter],
+  const { data: allApplications = [], isLoading, refetch } = useQuery({
+    queryKey: ["admin-applications-all"],
     queryFn: async () => {
       const [resResult, invResult] = await Promise.all([
         supabase
@@ -37,8 +43,7 @@ export function AdminReservations() {
             profiles(full_name),
             properties:property_id(title, slug, status, price, currency),
             investment_properties:investment_property_id(title, slug, unit_price, currency)
-          `)
-          .order("created_at", { ascending: false }),
+          `),
         supabase
           .from("user_investments")
           .select(`
@@ -46,7 +51,6 @@ export function AdminReservations() {
             profiles(full_name),
             investment_properties:property_id(title, slug, unit_price, currency, total_units, units_sold)
           `)
-          .order("created_at", { ascending: false })
       ]);
 
       if (resResult.error) throw resResult.error;
@@ -77,22 +81,62 @@ export function AdminReservations() {
         })
       ];
 
-      // Sort by date
-      merged.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-
-      // Apply filters
-      return merged.filter(app => {
-        const typeMatch = typeFilter === "all" || app.app_type === typeFilter;
-        const statusMatch = statusFilter === "all" || app.status === statusFilter;
-        return typeMatch && statusMatch;
-      });
+      return merged;
     },
   });
 
-  // Stats
-  const pendingCount = applications.filter((r: any) => r.status === "pending_review" || r.status === "under_admin_review").length;
-  const confirmedCount = applications.filter((r: any) => r.status === "approved" || r.status === "confirmed" || r.status === "pending").length;
-  const totalValue = applications.reduce((s: number, r: any) => s + Number(r.display_amount || 0), 0);
+  const filtered = useMemo(() => {
+    let result = [...allApplications];
+
+    /* Search */
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((app: any) =>
+        (app.display_title ?? "").toLowerCase().includes(term) ||
+        (app.profiles?.full_name ?? "").toLowerCase().includes(term)
+      );
+    }
+
+    /* Filters */
+    if (typeFilter !== "all") {
+      result = result.filter((app: any) => app.app_type === typeFilter);
+    }
+    if (statusFilter !== "all") {
+      result = result.filter((app: any) => app.status === statusFilter);
+    }
+
+    /* Sort */
+    switch (sortBy) {
+      case "newest":
+        result.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case "oldest":
+        result.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case "value_high":
+        result.sort((a: any, b: any) => Number(b.display_amount ?? 0) - Number(a.display_amount ?? 0));
+        break;
+      case "value_low":
+        result.sort((a: any, b: any) => Number(a.display_amount ?? 0) - Number(b.display_amount ?? 0));
+        break;
+    }
+
+    return result;
+  }, [allApplications, searchTerm, typeFilter, statusFilter, sortBy]);
+
+  const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
+  const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  /* Reset page when filters change */
+  const handleFilterChange = (setter: Function, value: string) => {
+    setter(value);
+    setCurrentPage(1);
+  };
+
+  // Stats (computed from all data so they don't change drastically when filtering, but we'll use filtered data to be consistent with other pages)
+  const pendingCount = allApplications.filter((r: any) => r.status === "pending_review" || r.status === "under_admin_review").length;
+  const confirmedCount = allApplications.filter((r: any) => r.status === "approved" || r.status === "confirmed" || r.status === "pending").length;
+  const totalValue = allApplications.reduce((s: number, r: any) => s + Number(r.display_amount || 0), 0);
 
   async function handleApprove(app: any) {
     try {
@@ -107,7 +151,7 @@ export function AdminReservations() {
       if (error) throw error;
 
       toast({ title: "Application Approved", description: "The user has been notified and can now proceed to payment." });
-      qc.invalidateQueries({ queryKey: ["admin-applications"] });
+      qc.invalidateQueries({ queryKey: ["admin-applications-all"] });
       setSelected(null);
       setAdminNotes("");
     } catch (err: any) {
@@ -135,7 +179,7 @@ export function AdminReservations() {
       if (error) throw error;
 
       toast({ title: "Application Declined", description: "The user has been notified of the decision." });
-      qc.invalidateQueries({ queryKey: ["admin-applications"] });
+      qc.invalidateQueries({ queryKey: ["admin-applications-all"] });
       setSelected(null);
       setRejectionReason("");
     } catch (err: any) {
@@ -163,7 +207,7 @@ export function AdminReservations() {
       if (error) throw error;
 
       toast({ title: "Information Requested", description: "The user has been notified of your request." });
-      qc.invalidateQueries({ queryKey: ["admin-applications"] });
+      qc.invalidateQueries({ queryKey: ["admin-applications-all"] });
       setSelected(null);
       setInfoRequest("");
     } catch (err: any) {
@@ -176,7 +220,7 @@ export function AdminReservations() {
       const { error } = await supabase.rpc('expire_stale_reservations');
       if (error) throw error;
       toast({ title: "Cleanup complete", description: "Expired reservations have been processed." });
-      qc.invalidateQueries({ queryKey: ["admin-applications"] });
+      qc.invalidateQueries({ queryKey: ["admin-applications-all"] });
     } catch (err: any) {
       toast({ title: "Cleanup failed", description: err.message, variant: "destructive" });
     }
@@ -195,13 +239,13 @@ export function AdminReservations() {
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
           <h2 className="font-serif text-2xl font-bold">Pending Requests</h2>
-          <p className="text-sm text-muted-foreground">Review property reservations and investment requests.</p>
+          <p className="text-sm text-muted-foreground">Review property reservations and investment requests. {filtered.length} results.</p>
         </div>
         <div className="flex gap-2">
           <Button variant="outline" size="sm" className="rounded-xl gap-2 border-border/50" onClick={handleCleanup}>
             <Trash2 className="h-4 w-4" /> Clear Expired
           </Button>
-          <Button size="sm" className="rounded-xl gap-2 bg-primary/10 text-primary hover:bg-primary/20 border-none" onClick={() => refetch()}>
+          <Button size="sm" className="rounded-xl gap-2 bg-primary/10 text-primary hover:bg-primary/20 border-none shadow-sm" onClick={() => refetch()}>
             <RefreshCw className="h-4 w-4" /> Refresh
           </Button>
         </div>
@@ -209,36 +253,45 @@ export function AdminReservations() {
 
       {/* Stats Strip */}
       <div className="grid gap-4 sm:grid-cols-4">
-        <div className="rounded-xl border border-border/50 bg-card p-5">
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Valuation</p>
           <p className="mt-1 font-serif text-2xl font-bold">{formatMoney(totalValue)}</p>
         </div>
-        <div className="rounded-xl border border-amber-500/20 bg-amber-50/50 dark:bg-amber-950/20 p-5">
+        <div className="rounded-xl border border-amber-500/20 bg-amber-50/50 dark:bg-amber-950/20 p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-amber-700 dark:text-amber-400">Needs Review</p>
           <p className="mt-1 font-serif text-2xl font-bold text-amber-700 dark:text-amber-400">{pendingCount}</p>
         </div>
-        <div className="rounded-xl border border-green-500/20 bg-green-50/50 dark:bg-green-950/20 p-5">
+        <div className="rounded-xl border border-green-500/20 bg-green-50/50 dark:bg-green-950/20 p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-green-700 dark:text-green-400">Approved</p>
           <p className="mt-1 font-serif text-2xl font-bold text-green-700 dark:text-green-400">{confirmedCount}</p>
         </div>
-        <div className="rounded-xl border border-border/50 bg-card p-5">
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-sm">
           <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Requests</p>
-          <p className="mt-1 font-serif text-2xl font-bold">{applications.length}</p>
+          <p className="mt-1 font-serif text-2xl font-bold">{allApplications.length}</p>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="flex flex-wrap gap-3">
-        <Select value={typeFilter} onValueChange={(v) => setTypeFilter(v as ReservationFilter)}>
-          <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card shadow-sm"><SelectValue placeholder="Filter type" /></SelectTrigger>
+      {/* Search & Filters */}
+      <div className="flex flex-wrap gap-3 items-center">
+        <div className="relative flex-1 min-w-[200px] max-w-sm">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search asset or user..."
+            value={searchTerm}
+            onChange={(e) => handleFilterChange(setSearchTerm, e.target.value)}
+            className="pl-10 rounded-xl border-border/50 bg-card"
+          />
+        </div>
+        <Select value={typeFilter} onValueChange={(v) => handleFilterChange(setTypeFilter, v)}>
+          <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card shadow-sm"><SelectValue placeholder="Type" /></SelectTrigger>
           <SelectContent className="rounded-xl">
             <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="reservation">Property Reservation</SelectItem>
             <SelectItem value="investment">Investment Request</SelectItem>
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-          <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card shadow-sm"><SelectValue placeholder="Filter status" /></SelectTrigger>
+        <Select value={statusFilter} onValueChange={(v) => handleFilterChange(setStatusFilter, v)}>
+          <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card shadow-sm"><SelectValue placeholder="Status" /></SelectTrigger>
           <SelectContent className="rounded-xl">
             <SelectItem value="all">All Statuses</SelectItem>
             <SelectItem value="awaiting_reservation_fee">Awaiting Fee</SelectItem>
@@ -249,19 +302,31 @@ export function AdminReservations() {
             <SelectItem value="rejected">Declined</SelectItem>
           </SelectContent>
         </Select>
+        <Select value={sortBy} onValueChange={(v) => handleFilterChange(setSortBy, v)}>
+          <SelectTrigger className="w-[160px] rounded-xl border-border/50 bg-card shadow-sm">
+            <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+            <SelectValue placeholder="Sort" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl">
+            <SelectItem value="newest">Newest First</SelectItem>
+            <SelectItem value="oldest">Oldest First</SelectItem>
+            <SelectItem value="value_high">Value: High → Low</SelectItem>
+            <SelectItem value="value_low">Value: Low → High</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Table */}
       <div className="rounded-xl border border-border/50 bg-card shadow-sm overflow-hidden">
         {/* ── Mobile Card Layout ── */}
         <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
-          {applications.length === 0 ? (
+          {paginated.length === 0 ? (
             <div className="p-12 text-center text-muted-foreground">
               <Calendar className="h-8 w-8 mx-auto mb-3 opacity-20" />
-              No applications found.
+              No applications match your filters.
             </div>
           ) : (
-            applications.map((app: any) => (
+            paginated.map((app: any) => (
               <div key={app.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -311,23 +376,23 @@ export function AdminReservations() {
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Type</th>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Property / Asset</th>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Amount</th>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Status</th>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
-              {applications.length === 0 ? (
+              {paginated.length === 0 ? (
                 <tr>
                   <td colSpan={7} className="p-16 text-center">
                     <div className="max-w-xs mx-auto space-y-4">
                       <Calendar className="h-12 w-12 text-muted-foreground mx-auto opacity-20" />
-                      <p className="font-serif text-lg text-muted-foreground italic">No applications found.</p>
+                      <p className="font-serif text-lg text-muted-foreground italic">No applications match your filters.</p>
                     </div>
                   </td>
                 </tr>
-              ) : applications.map((app: any) => (
+              ) : paginated.map((app: any) => (
                 <tr key={app.id} className="transition-colors hover:bg-secondary/20">
                   <td className="p-4 text-muted-foreground whitespace-nowrap">
                     {new Date(app.created_at).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
@@ -341,8 +406,8 @@ export function AdminReservations() {
                   <td className="p-4">
                     <p className="font-medium">{app.profiles?.full_name || "Unknown"}</p>
                   </td>
-                  <td className="p-4 font-medium">{app.display_title}</td>
-                  <td className="p-4 text-right font-bold">{formatMoney(app.display_amount, app.display_currency)}</td>
+                  <td className="p-4 font-medium max-w-[200px] truncate">{app.display_title}</td>
+                  <td className="p-4 text-right font-bold text-primary">{formatMoney(app.display_amount, app.display_currency)}</td>
                   <td className="p-4">
                     <Badge className="rounded-md px-2 py-0.5 text-[10px] font-bold capitalize"
                       variant={app.status === "approved" || app.status === "confirmed" || app.status === "pending" ? "default" : app.status === "rejected" ? "destructive" : "secondary"}>
@@ -359,6 +424,38 @@ export function AdminReservations() {
             </tbody>
           </table>
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-accent/30">
+            <p className="text-xs text-muted-foreground">
+              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-8 w-8 rounded-lg" 
+                disabled={currentPage === 1} 
+                onClick={() => setCurrentPage(p => p - 1)}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </Button>
+              <span className="text-xs font-medium text-foreground min-w-[60px] text-center">
+                Page {currentPage} of {totalPages}
+              </span>
+              <Button 
+                size="icon" 
+                variant="outline" 
+                className="h-8 w-8 rounded-lg" 
+                disabled={currentPage === totalPages} 
+                onClick={() => setCurrentPage(p => p + 1)}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Review Dialog */}
