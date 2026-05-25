@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Navigate, Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -19,7 +19,8 @@ import {
   Fingerprint,
   Star,
   Sparkles,
-  Landmark
+  Landmark,
+  UserSearch
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -42,6 +43,7 @@ import { DashboardShell, NavItem } from "@/components/dashboard/DashboardShell";
 import { AdminUsers } from "./AdminUsers";
 import { AdminReferrals } from "./AdminReferrals";
 import { AdminDocuments } from "./AdminDocuments";
+import { AdminInvestor360 } from "./AdminInvestor360";
 import { Award, CreditCard } from "lucide-react";
 
 const navItems: NavItem[] = [
@@ -62,6 +64,7 @@ const navItems: NavItem[] = [
   { id: "documents", label: "Documents", icon: FileText },
   { id: "referrals", label: "Referral Program", icon: Award },
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
+  { id: "investor-360", label: "Investor 360", icon: UserSearch },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -69,6 +72,16 @@ export default function Admin() {
   const { user, isAdmin, loading } = useAuth();
   // Realtime updates handled globally in App.tsx via RealtimeGlobal component
   const [activeTab, setActiveTab] = useState("overview");
+  const [investor360Id, setInvestor360Id] = useState<string | undefined>();
+
+  useEffect(() => {
+    const handleOpen360 = (e: CustomEvent) => {
+      setInvestor360Id(e.detail.userId);
+      setActiveTab("investor-360");
+    };
+    window.addEventListener("open-investor-360", handleOpen360 as EventListener);
+    return () => window.removeEventListener("open-investor-360", handleOpen360 as EventListener);
+  }, []);
 
   if (loading) return <div className="min-h-screen bg-background flex items-center justify-center p-12"><Skeleton className="h-[600px] w-full max-w-6xl rounded-xl" /></div>;
   if (!user) return <Navigate to="/auth" replace />;
@@ -100,6 +113,7 @@ export default function Admin() {
         {activeTab === "documents" && <AdminDocuments />}
         {activeTab === "referrals" && <AdminReferrals />}
         {activeTab === "payment-methods" && <AdminPaymentMethods />}
+        {activeTab === "investor-360" && <AdminInvestor360 initialUserId={investor360Id} onBack={() => setActiveTab("overview")} />}
         {activeTab === "settings" && <AdminSettings />}
       </div>
     </DashboardShell>

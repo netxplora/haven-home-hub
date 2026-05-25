@@ -232,6 +232,9 @@ export function AdminUsers() {
                 </div>
 
                 <div className="pt-2 border-t border-border/50 flex flex-col gap-2">
+                  <Button variant="outline" className="w-full h-10 rounded-lg text-xs font-medium" onClick={() => window.dispatchEvent(new CustomEvent("open-investor-360", { detail: { userId: u.id } }))}>
+                    View 360 Profile
+                  </Button>
                   <Select onValueChange={(v) => addRole(u.id, v)}>
                     <SelectTrigger className="w-full h-10 rounded-lg bg-secondary/20 text-xs font-medium border-border/50">
                       <SelectValue placeholder="+ Grant Role" />
@@ -264,7 +267,7 @@ export function AdminUsers() {
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Verification</th>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Roles</th>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Joined</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Assign Role</th>
+                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border/50">
@@ -320,7 +323,11 @@ export function AdminUsers() {
                     {new Date(u.created_at).toLocaleDateString()}
                   </td>
                   <td className="p-4 text-right">
-                    <Select onValueChange={(v) => addRole(u.id, v)}>
+                    <div className="flex justify-end items-center gap-2">
+                      <Button variant="outline" size="sm" className="h-8 rounded-lg" onClick={() => window.dispatchEvent(new CustomEvent("open-investor-360", { detail: { userId: u.id } }))}>
+                        360 View
+                      </Button>
+                      <Select onValueChange={(v) => addRole(u.id, v)}>
                       <SelectTrigger className="w-[140px] h-8 rounded-lg bg-secondary/20 text-xs font-medium ml-auto border-border/50">
                         <SelectValue placeholder="+ Grant Role" />
                       </SelectTrigger>
@@ -337,6 +344,7 @@ export function AdminUsers() {
                         )}
                       </SelectContent>
                     </Select>
+                    </div>
                   </td>
                 </tr>
               ))}
