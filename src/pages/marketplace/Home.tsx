@@ -63,19 +63,6 @@ export default function Home() {
     refetchInterval: 30000,
   });
 
-  const { data: recentlySold = [], isLoading: recentlySoldLoading } = useQuery({
-    queryKey: ["recently-sold-properties"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("properties")
-        .select("id, slug, title, price, currency, property_type, property_category, status, bedrooms, bathrooms, size_sqm, cover_image_url, address, city, state, country, featured, created_at, locations(name)")
-        .in("status", ["sold", "rented", "under_offer"])
-        .order("updated_at", { ascending: false })
-        .limit(4);
-      if (error) throw error;
-      return data as PropertyCardData[];
-    },
-  });
 
   const { data: siteContent = [] } = useQuery({
     queryKey: ["public-site-content"],
@@ -170,7 +157,7 @@ export default function Home() {
               {hero.subtitle}
             </p>
           </div>
-          <div className="mt-10 max-w-4xl glass-panel p-4 sm:p-6 rounded-2xl animate-fade-in-up shadow-lux border-white/15 dark:border-white/5" style={{ animationDelay: '150ms' }}>
+          <div className="mt-10 max-w-3xl animate-fade-in-up" style={{ animationDelay: '150ms' }}>
             <SearchBar />
           </div>
         </div>
@@ -264,18 +251,20 @@ export default function Home() {
               {"Co-invest in fully-managed, high-yield properties alongside other verified investors. Earn monthly rental income and long-term appreciation with a single intuitive dashboard."}
             </p>
             
-            <div className="mt-8 grid grid-cols-3 gap-4 p-5 rounded-xl glass-panel border-white/10 backdrop-blur-md max-w-lg mb-8">
-              <div>
-                 <div className="text-2xl font-semibold text-foreground dark:text-white">42+</div>
-                 <div className="text-[10px] text-muted-foreground dark:text-gray-300 mt-1 uppercase tracking-wider font-medium">{"Active Units"}</div>
+            <div className="mt-10 flex flex-wrap items-center gap-8 sm:gap-12 max-w-lg mb-10">
+              <div className="flex flex-col">
+                 <div className="text-3xl font-semibold text-white">42+</div>
+                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">{"Active Units"}</div>
               </div>
-              <div>
-                 <div className="text-2xl font-semibold text-foreground dark:text-white">12%</div>
-                 <div className="text-[10px] text-muted-foreground dark:text-gray-300 mt-1 uppercase tracking-wider font-medium">{"Avg Target ROI"}</div>
+              <div className="h-10 w-[1px] bg-white/20 hidden sm:block"></div>
+              <div className="flex flex-col">
+                 <div className="text-3xl font-semibold text-white">12%</div>
+                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">{"Avg Target ROI"}</div>
               </div>
-              <div>
-                 <div className="text-2xl font-semibold text-foreground dark:text-white">$4.2M</div>
-                 <div className="text-[10px] text-muted-foreground dark:text-gray-300 mt-1 uppercase tracking-wider font-medium">{"Funded"}</div>
+              <div className="h-10 w-[1px] bg-white/20 hidden sm:block"></div>
+              <div className="flex flex-col">
+                 <div className="text-3xl font-semibold text-white">$4.2M</div>
+                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">{"Funded"}</div>
               </div>
             </div>
 
@@ -382,58 +371,30 @@ export default function Home() {
 
       {/* 8. EXPLORE BY CITY */}
       <section className="container-wide section-gap">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
           <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{"Explore Locations"}</span>
           <h2 className="font-serif text-3xl font-semibold text-foreground">{"Find Properties by City"}</h2>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 max-w-4xl mx-auto">
           {EXPLORE_CITIES.map((city) => (
             <Link
               key={city.name}
-              to={`/properties?location=${city.name.toLowerCase()}`}
-              className="group relative overflow-hidden rounded-2xl shadow-card aspect-[4/3] hover-lift"
+              to={`/properties?city=${encodeURIComponent(city.name)}`}
+              className="group flex items-center gap-3 px-5 py-3 sm:px-6 sm:py-3.5 rounded-full bg-secondary/40 hover:bg-primary border border-border/50 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
             >
-              <img src={city.image} alt={city.name} loading="lazy" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent z-[1]" />
-              <div className="absolute inset-x-0 bottom-0 p-5 flex items-end justify-between z-10">
-                <div>
-                  <h3 className="font-serif text-lg sm:text-xl font-medium text-white">{city.name}</h3>
-                  <p className="text-xs sm:text-sm text-gray-300 mt-1">{city.count} {"Properties"}</p>
-                </div>
-                <div className="h-8 w-8 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                   <ArrowRight className="h-4 w-4 text-white" />
-                </div>
-              </div>
+              <MapPin className="h-4 w-4 text-primary group-hover:text-primary-foreground transition-colors" />
+              <span className="font-medium text-sm sm:text-base text-foreground group-hover:text-primary-foreground transition-colors">
+                {city.name}
+              </span>
+              <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-background text-muted-foreground group-hover:bg-primary-foreground/20 group-hover:text-primary-foreground transition-colors">
+                {city.count}
+              </span>
             </Link>
           ))}
         </div>
       </section>
 
-      {/* 9. RECENTLY SOLD / RENTED */}
-      <section className="bg-accent/40 border-y border-border/50 section-gap">
-        <div className="container-wide">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
-            <div>
-              <span className="section-label flex items-center gap-1.5"><CheckCircle className="h-3.5 w-3.5" /> {"Market Activity"}</span>
-              <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{"Recently Completed Transactions"}</h2>
-            </div>
-          </div>
 
-          {!recentlySoldLoading && recentlySold.length > 0 ? (
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-               {recentlySold.map((p) => (
-                 <PropertyCard key={p.id} property={p} />
-               ))}
-             </div>
-          ) : recentlySoldLoading ? (
-             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-               {Array.from({ length: 4 }).map((_, i) => (
-                 <div key={i} className="rounded-xl bg-card border border-border/50 h-72 animate-pulse" />
-               ))}
-             </div>
-          ) : null}
-        </div>
-      </section>
 
       {/* 10. INVESTMENT EDUCATION */}
       <section className="container-wide section-gap">
