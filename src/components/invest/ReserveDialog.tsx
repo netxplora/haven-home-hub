@@ -37,6 +37,8 @@ interface ReserveDialogProps {
     id: string;
     title: string;
     currency: string;
+    property_type?: string;
+    location?: string;
   };
   type?: "property" | "investment";
 }
@@ -114,7 +116,7 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
   }
 
   async function handlePayment() {
-    if (method === "digital_currency" || method === "bank_transfer" || method === "third_party_provider") {
+    if (method) {
       setCryptoOpen(true);
       return;
     }
@@ -308,10 +310,14 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
         method={method as any}
         onClose={() => {
           setCryptoOpen(false);
-          onClose();
         }}
         onSuccess={async () => {
+          if (existingReservation?.id) {
+            await supabase.from("reservations").update({ status: "under_admin_review" }).eq("id", existingReservation.id);
+          }
           await refetchRes();
+          setStep("success");
+          setCryptoOpen(false);
         }}
         amount={reservationFee}
         currency="USD"
@@ -323,6 +329,11 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
         metadata={{
           reservation_type: type === "investment" ? "investment_property" : "property",
           property_title: property.title
+        }}
+        propertyData={{
+          title: property.title,
+          property_type: property.property_type || "property",
+          location: property.location
         }}
       />
     </>

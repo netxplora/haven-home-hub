@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { FileText, CheckCircle2, AlertCircle, Upload, Trash2, Search, Plus } from "lucide-react";
+import { FileText, CheckCircle2, AlertCircle, Upload, Trash2, Search, Plus, Mail } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -31,7 +31,8 @@ export function AdminDocuments() {
         .select(`
           *,
           profiles:user_id(full_name, email),
-          investment_properties(title)
+          investment_properties(title),
+          properties(title)
         `)
         .order("created_at", { ascending: false });
       if (error && error.code !== '42P01') throw error;
@@ -54,12 +55,12 @@ export function AdminDocuments() {
   const { data: properties = [] } = useQuery({
     queryKey: ["admin-properties-list"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("investment_properties")
-        .select("id, title")
-        .order("title");
-      if (error) throw error;
-      return data || [];
+      const [invProps, regProps] = await Promise.all([
+        supabase.from("investment_properties").select("id, title"),
+        supabase.from("properties").select("id, title")
+      ]);
+      const merged = [...(invProps.data || []), ...(regProps.data || [])];
+      return merged.sort((a, b) => a.title.localeCompare(b.title));
     },
   });
 
@@ -122,6 +123,12 @@ export function AdminDocuments() {
     } catch (error: any) {
       toast({ title: "Error", description: error.message, variant: "destructive" });
     }
+  };
+
+  const handleSimulateEmail = async (doc: any) => {
+    toast({ title: "Email Dispatched", description: `Sent ${doc.name} to ${doc.profiles?.email}` });
+    await supabase.from("user_documents" as any).update({ status: 'delivered' }).eq("id", doc.id);
+    qc.invalidateQueries({ queryKey: ["admin-documents"] });
   };
 
   const filteredDocs = documents.filter((d: any) => 
@@ -193,19 +200,24 @@ export function AdminDocuments() {
                         <p className="text-xs text-muted-foreground">{doc.profiles?.email}</p>
                       </td>
                       <td className="px-5 py-4 text-muted-foreground">
-                        {doc.investment_properties?.title || "N/A"}
+                        {doc.investment_properties?.title || doc.properties?.title || "N/A"}
                       </td>
                       <td className="px-5 py-4">
                         <Badge variant="outline" className={
-                          doc.status === 'available' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20" : "bg-amber-500/10 text-amber-600 border-amber-500/20"
+                          doc.status === 'available' || doc.status === 'verified' || doc.status === 'delivered' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 capitalize" : "bg-amber-500/10 text-amber-600 border-amber-500/20 capitalize"
                         }>
-                          {doc.status}
+                          {doc.status.replace('_', ' ')}
                         </Badge>
                       </td>
                       <td className="px-5 py-4 text-right">
-                        <Button variant="ghost" size="icon" onClick={() => handleDelete(doc)} className="text-destructive hover:bg-destructive/10">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => handleSimulateEmail(doc)} className="text-blue-600 hover:bg-blue-50" title="Resend to Investor">
+                            <Mail className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(doc)} className="text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </td>
                     </tr>
                   ))

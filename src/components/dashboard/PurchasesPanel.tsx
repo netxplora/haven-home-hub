@@ -2,17 +2,19 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Home, ExternalLink, Clock, CheckCircle2, ShieldCheck, MapPin, Receipt, History } from "lucide-react";
+import { Home, ExternalLink, Clock, CheckCircle2, ShieldCheck, MapPin, Receipt, History, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/lib/invest";
 import { ReceiptDialog } from "./ReceiptDialog";
+import { LegalDocumentsDialog } from "./LegalDocumentsDialog";
 import { toast } from "sonner";
 
 export function PurchasesPanel({ userId }: { userId: string }) {
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
+  const [selectedPropertyForDocs, setSelectedPropertyForDocs] = useState<{ id: string; title: string } | null>(null);
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["my-purchases", userId],
@@ -87,6 +89,13 @@ export function PurchasesPanel({ userId }: { userId: string }) {
   return (
     <div className="space-y-6">
       <ReceiptDialog open={isReceiptOpen} onClose={() => setIsReceiptOpen(false)} receipt={selectedReceipt} />
+      <LegalDocumentsDialog 
+        open={!!selectedPropertyForDocs} 
+        onClose={() => setSelectedPropertyForDocs(null)} 
+        propertyId={selectedPropertyForDocs?.id || ""} 
+        propertyTitle={selectedPropertyForDocs?.title || ""} 
+        userId={userId} 
+      />
       
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between p-8 rounded-xl border border-border/40 bg-card shadow-soft">
         <div>
@@ -207,6 +216,11 @@ export function PurchasesPanel({ userId }: { userId: string }) {
                       </div>
                       
                       <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0 justify-end">
+                        {item?.property_type === 'land' && ['confirmed', 'completed', 'success'].includes(r.status) && (
+                          <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold text-blue-700 hover:text-blue-800 hover:bg-blue-50 border-blue-200" onClick={() => setSelectedPropertyForDocs({ id: item.id || r.related_id, title: item.title })}>
+                            <FileText className="mr-2 h-4 w-4" /> Legal Docs
+                          </Button>
+                        )}
                         <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-200" onClick={() => handleViewReceipt(r)}>
                           <Receipt className="mr-2 h-4 w-4" /> Receipt
                         </Button>

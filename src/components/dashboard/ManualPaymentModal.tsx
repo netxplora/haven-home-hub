@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { QRCodeSVG } from "qrcode.react";
-import { CheckCircle2, Copy, Loader2, AlertCircle, ChevronRight, Wallet, Clock, Upload, ShieldCheck, Building2, ChevronLeft, Globe, ExternalLink } from "lucide-react";
+import { CheckCircle2, Copy, Loader2, AlertCircle, ChevronRight, Wallet, Clock, Upload, ShieldCheck, Building2, ChevronLeft, Globe, ExternalLink, FileText } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -25,6 +25,11 @@ interface ManualPaymentModalProps {
   holdHours?: number;
   isInvestmentProperty?: boolean;
   onSuccess?: () => void | Promise<void>;
+  propertyData?: {
+    title: string;
+    property_type: string;
+    location?: string;
+  };
 }
 
 interface CryptoAsset {
@@ -38,7 +43,7 @@ interface CryptoAsset {
 type Step = "method_select" | "asset" | "buy_crypto" | "pay_manual" | "pay_bank" | "proof" | "confirm";
 
 export function ManualPaymentModal({ 
-  open, onClose, method, amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess
+  open, onClose, method, amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess, propertyData
 }: ManualPaymentModalProps) {
   const { user } = useAuth();
   
@@ -139,7 +144,7 @@ export function ManualPaymentModal({
         if (existingPayment.status === "processing") {
           setStep("confirm");
         } else {
-          if (existingPayment.provider === "digital_currency") {
+          if (existingPayment.provider === "digital_currency" || existingPayment.provider === "crypto") {
             if (metadataVal.proof_url || metadataVal.draft_hash || existingPayment.crypto_address) {
               if (metadataVal.proof_url || metadataVal.draft_hash) {
                 setStep("proof");
@@ -167,8 +172,9 @@ export function ManualPaymentModal({
       } else {
         if (method) {
           setActiveMethod(method);
-          setStep(method === "digital_currency" || method === "third_party_provider" ? "asset" : "pay_bank");
-          if (method === "bank_transfer") {
+          const isCrypto = method === "digital_currency" || method === "crypto" || method === "third_party_provider";
+          setStep(isCrypto ? "asset" : "pay_bank");
+          if (!isCrypto) {
             await initBankPayment();
           }
         } else {
@@ -425,6 +431,55 @@ export function ManualPaymentModal({
         <DialogBody className="py-8">
           {step === "method_select" && (
             <div className="space-y-6">
+              {propertyData && (
+                <div className="bg-accent/50 rounded-xl p-5 border border-border/50 shadow-sm">
+                  <h4 className="text-sm font-semibold mb-4 text-foreground uppercase tracking-wider">Purchase Breakdown</h4>
+                  <div className="space-y-3 text-sm">
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Property</span>
+                      <span className="font-medium text-foreground text-right">{propertyData.title}</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-muted-foreground">Type</span>
+                      <span className="font-medium text-foreground capitalize">{propertyData.property_type.replace(/_/g, ' ')}</span>
+                    </div>
+                    {propertyData.location && (
+                      <div className="flex justify-between items-center">
+                        <span className="text-muted-foreground">Location</span>
+                        <span className="font-medium text-foreground text-right">{propertyData.location}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {propertyData?.property_type === 'land' && (
+                <div className="bg-emerald-500/5 rounded-xl p-5 border border-emerald-500/20 shadow-sm">
+                  <h4 className="text-sm font-semibold mb-2 text-emerald-700 flex items-center gap-2">
+                    <ShieldCheck className="h-4 w-4" /> Included Ownership Documentation
+                  </h4>
+                  <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
+                    After admin verification, the following official legal documents will be available to download or email directly from your investor dashboard:
+                  </p>
+                  <div className="space-y-3">
+                    <div className="flex gap-3 items-start bg-background/80 p-3 rounded-lg border border-border/50">
+                      <FileText className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Contract of Sale (COS)</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">Legally binding agreement of property sale and formal transaction acknowledgment.</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3 items-start bg-background/80 p-3 rounded-lg border border-border/50">
+                      <FileText className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Deed of Assignment (DOA)</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">Official ownership transfer agreement assigning full land rights to the buyer.</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <PaymentMethodPicker value={activeMethod} onChange={setActiveMethod} />
               <Button 
                 className="w-full h-11 rounded-lg bg-primary text-primary-foreground font-medium" 

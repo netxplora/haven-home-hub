@@ -5,7 +5,6 @@ import { Badge } from "@/components/ui/badge";
 import { propertyTypeLabel, resolveImage } from "@/lib/format";
 import { useCompare } from "@/hooks/useCompare";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
-import { useTranslation } from "react-i18next";
 
 export interface PropertyCardData {
   id: string;
@@ -36,12 +35,11 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
   const img = resolveImage(property.cover_image_url);
   const { addToCompare, removeFromCompare, compareList } = useCompare();
   const formatPrice = useFormatPrice();
-  const { t } = useTranslation();
-  
+    
   const statusConfig = {
-    reserved: { label: t("propertyCard.reserved"), className: "bg-secondary/90 text-secondary-foreground" },
-    sold: { label: t("propertyCard.sold"), className: "bg-destructive text-destructive-foreground" },
-    under_offer: { label: t("propertyCard.underOffer"), className: "bg-primary text-primary-foreground" },
+    reserved: { label: "Reserved", className: "bg-secondary/90 text-secondary-foreground" },
+    sold: { label: "Sold", className: "bg-destructive text-destructive-foreground" },
+    under_offer: { label: "Under Offer", className: "bg-primary text-primary-foreground" },
     available: null
   }[property.status];
 
@@ -70,12 +68,12 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
             </Badge>
             {property.featured && (
               <Badge className="bg-primary/95 text-primary-foreground border border-primary/20 backdrop-blur-sm shadow-sm gap-1 text-xs px-2.5 py-1">
-                <Star className="h-3 w-3 fill-current" /> {t("propertyCard.featured")}
+                <Star className="h-3 w-3 fill-current" /> {"Featured"}
               </Badge>
             )}
             {isNew && (
               <Badge className="bg-emerald-500/90 text-white border border-emerald-400/20 backdrop-blur-sm shadow-sm text-xs px-2.5 py-1">
-                {t("propertyCard.newListing")}
+                {"New Listing"}
               </Badge>
             )}
           </div>
@@ -109,7 +107,7 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
               ? 'bg-primary text-primary-foreground border-primary/30' 
               : 'bg-background/85 text-muted-foreground border-white/20 opacity-0 group-hover:opacity-100 hover:bg-background hover:text-primary'
           }`}
-          title={inCompare ? t("propertyCard.addedToCompare") : t("propertyCard.addToCompare")}
+          title={inCompare ? "Added to compare" : "Add to compare"}
         >
           <Scale className="h-4 w-4" />
         </button>
@@ -143,14 +141,25 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
         
         {/* Specs Toolbar */}
         <div className="mt-5 pt-4 border-t border-border/40 flex items-center gap-4 text-xs text-muted-foreground font-semibold">
-          {property.bedrooms != null && (
-            <span className="flex items-center gap-1.5"><Bed className="h-4 w-4 text-primary/60" /> {property.bedrooms}</span>
-          )}
-          {property.bathrooms != null && (
-            <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 text-primary/60" /> {property.bathrooms}</span>
-          )}
-          {property.size_sqm != null && (
-            <span className="flex items-center gap-1.5 ml-auto"><Maximize2 className="h-4 w-4 text-primary/60" /> {Number(property.size_sqm).toLocaleString()} {t("propertyCard.sqm")}</span>
+          {property.property_type === 'land' ? (
+            <>
+              {property.size_sqm != null && (
+                <span className="flex items-center gap-1.5"><Maximize2 className="h-4 w-4 text-primary/60" /> {Number(property.size_sqm).toLocaleString()} {"sqm"}</span>
+              )}
+              <span className="flex items-center gap-1.5 ml-auto text-primary"><MapPin className="h-4 w-4 text-primary/60" /> Land Plot</span>
+            </>
+          ) : (
+            <>
+              {property.bedrooms != null && (
+                <span className="flex items-center gap-1.5"><Bed className="h-4 w-4 text-primary/60" /> {property.bedrooms}</span>
+              )}
+              {property.bathrooms != null && (
+                <span className="flex items-center gap-1.5"><Bath className="h-4 w-4 text-primary/60" /> {property.bathrooms}</span>
+              )}
+              {property.size_sqm != null && (
+                <span className="flex items-center gap-1.5 ml-auto"><Maximize2 className="h-4 w-4 text-primary/60" /> {Number(property.size_sqm).toLocaleString()} {"sqm"}</span>
+              )}
+            </>
           )}
         </div>
       </div>

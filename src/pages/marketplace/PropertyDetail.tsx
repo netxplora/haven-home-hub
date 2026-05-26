@@ -52,7 +52,6 @@ import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
 import { VirtualTourButton, VirtualTourEmbed } from "@/components/site/VirtualTour";
 import { MessageAgentButton } from "@/components/site/Messaging";
 import { PromoBanner } from "@/components/site/PromoBanner";
-import { useTranslation } from "react-i18next";
 
 const InteractivePropertyMap = lazy(() => import("@/components/site/InteractivePropertyMap").then(mod => ({ default: mod.InteractivePropertyMap })));
 
@@ -60,8 +59,7 @@ export default function PropertyDetail() {
   const { slug } = useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
-  const { t } = useTranslation();
-  const [bookingOpen, setBookingOpen] = useState(false);
+    const [bookingOpen, setBookingOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<any>("digital_currency");
@@ -130,7 +128,7 @@ export default function PropertyDetail() {
 
   async function toggleSave() {
     if (!user) {
-      toast({ title: t("propertyDetail.pleaseSignIn"), description: t("propertyDetail.signInToSave") });
+      toast({ title: "Please sign in", description: "Create an account to save properties." });
       return;
     }
     if (!property) return;
@@ -149,14 +147,14 @@ export default function PropertyDetail() {
     if (inCompare) {
       removeFromCompare(property.id);
       toast({
-        title: t("propertyDetail.removedFromComparison"),
-        description: t("propertyDetail.removedFromComparisonDesc", { title: property.title }),
+        title: "Removed from comparison",
+        description: `"$title" has been removed from your comparison list.`,
       });
     } else {
       if (compareList.length >= 4) {
         toast({
-          title: t("propertyDetail.comparisonFull"),
-          description: t("propertyDetail.comparisonFullDesc"),
+          title: "Comparison list full",
+          description: "You can compare up to 4 properties. Remove one to add this property.",
           variant: "destructive",
         });
         return;
@@ -170,8 +168,8 @@ export default function PropertyDetail() {
         cover_image_url: property.cover_image_url || null
       });
       toast({
-        title: t("propertyDetail.addedToComparison"),
-        description: t("propertyDetail.addedToComparisonDesc", { title: property.title }),
+        title: "Added to comparison",
+        description: `"$title" has been added to your comparison list.`,
       });
     }
   };
@@ -198,8 +196,8 @@ export default function PropertyDetail() {
     return (
       <SiteLayout>
         <div className="container-wide py-24 text-center">
-          <h1 className="font-serif text-3xl">{t("propertyDetail.notFound")}</h1>
-          <Button asChild className="mt-6"><Link to="/properties">{t("propertyDetail.backToListings")}</Link></Button>
+          <h1 className="font-serif text-3xl">{"Listing not found"}</h1>
+          <Button asChild className="mt-6"><Link to="/properties">{"Back to listings"}</Link></Button>
         </div>
       </SiteLayout>
     );
@@ -221,9 +219,9 @@ export default function PropertyDetail() {
       
       <div className="container-wide pt-8 pb-4">
         <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-primary transition-colors">{t("propertyDetail.breadcrumbs.home")}</Link>
+          <Link to="/" className="hover:text-primary transition-colors">{"Home"}</Link>
           <span>/</span>
-          <Link to="/properties" className="hover:text-primary transition-colors">{t("propertyDetail.breadcrumbs.marketplace")}</Link>
+          <Link to="/properties" className="hover:text-primary transition-colors">{"Marketplace"}</Link>
           <span>/</span>
           <span className="text-foreground font-medium truncate">{property.title}</span>
         </div>
@@ -255,7 +253,7 @@ export default function PropertyDetail() {
                 </p>
               </div>
               <div className="text-right">
-                <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">{t("propertyDetail.listingPrice")}</p>
+                <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">{"Listing Price"}</p>
                 <p className="font-serif text-3xl font-semibold text-foreground">
                   {formatPrice(Number(property.price), property.currency, property.property_type)}
                 </p>
@@ -267,7 +265,7 @@ export default function PropertyDetail() {
                     className={`rounded-lg font-medium ${saved ? "text-primary border-primary bg-primary/5" : ""}`}
                   >
                     <Heart className={`h-4 w-4 mr-2 ${saved ? "fill-primary" : ""}`} />
-                    {saved ? t("propertyDetail.saved") : t("propertyDetail.saveProperty")}
+                    {saved ? "Saved" : "Save Property"}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -276,7 +274,7 @@ export default function PropertyDetail() {
                     className={`rounded-lg font-medium ${inCompare ? "text-primary border-primary bg-primary/5" : ""}`}
                   >
                     <Scale className="h-4 w-4 mr-2" />
-                    {inCompare ? t("propertyDetail.compared") : t("propertyDetail.compare")}
+                    {inCompare ? "Compared" : "Compare"}
                   </Button>
                   <Button 
                     variant="outline" 
@@ -284,10 +282,10 @@ export default function PropertyDetail() {
                     className="rounded-lg font-medium"
                     onClick={() => {
                       navigator.clipboard.writeText(window.location.href);
-                      toast({ title: t("propertyDetail.linkCopied"), description: t("propertyDetail.linkCopiedDesc") });
+                      toast({ title: "Link Copied", description: "Property link copied to clipboard." });
                     }}
                   >
-                    <ExternalLink className="h-4 w-4 mr-2" /> {t("propertyDetail.share")}
+                    <ExternalLink className="h-4 w-4 mr-2" /> {"Share"}
                   </Button>
                   {property.virtual_tour_url && (
                     <VirtualTourButton url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
@@ -296,28 +294,53 @@ export default function PropertyDetail() {
               </div>
             </div>
 
-            <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
-              <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                <Bed className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.bedrooms")}</p>
-                <p className="text-lg font-bold">{property.bedrooms ?? "—"}</p>
+            {property.property_type === 'land' ? (
+              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Land Size"}</p>
+                  <p className="text-lg font-bold">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{"sqm"}</span></p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <Building2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Land Type"}</p>
+                  <p className="text-lg font-bold capitalize">{property.property_category || "Residential Land"}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <FileText className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Title Status"}</p>
+                  <p className="text-sm font-bold mt-1 text-foreground">{"C of O / Deed"}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <MapIcon className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Topography"}</p>
+                  <p className="text-sm font-bold mt-1 text-foreground">{"Dry Land"}</p>
+                </div>
               </div>
-              <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                <Bath className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.bathrooms")}</p>
-                <p className="text-lg font-bold">{property.bathrooms ?? "—"}</p>
+            ) : (
+              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <Bed className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Bedrooms"}</p>
+                  <p className="text-lg font-bold">{property.bedrooms ?? "—"}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <Bath className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Bathrooms"}</p>
+                  <p className="text-lg font-bold">{property.bathrooms ?? "—"}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <Car className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Parking"}</p>
+                  <p className="text-lg font-bold">{property.parking_spaces ?? "0"}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
+                  <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Total Area"}</p>
+                  <p className="text-lg font-bold">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{"sq ft"}</span></p>
+                </div>
               </div>
-              <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                <Car className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.parking")}</p>
-                <p className="text-lg font-bold">{property.parking_spaces ?? "0"}</p>
-              </div>
-              <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
-                <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{t("propertyDetail.specs.totalArea")}</p>
-                <p className="text-lg font-bold">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{t("propertyDetail.specs.sqft")}</span></p>
-              </div>
-            </div>
+            )}
           </div>
 
           <Separator />
@@ -325,7 +348,7 @@ export default function PropertyDetail() {
           {/* Description */}
           <div>
             <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
-              <FileText className="h-5 w-5 text-primary" /> {t("propertyDetail.description")}
+              <FileText className="h-5 w-5 text-primary" /> {"Description"}
             </h2>
             <div className="mt-6">
               <p className="whitespace-pre-line leading-relaxed text-foreground/80 text-lg">
@@ -341,39 +364,39 @@ export default function PropertyDetail() {
 
           {/* Key Details Grid */}
           <div className="rounded-xl bg-accent/50 p-8 border border-border/50">
-            <h2 className="font-serif text-lg font-semibold mb-5 text-foreground">{t("propertyDetail.overview.title")}</h2>
+            <h2 className="font-serif text-lg font-semibold mb-5 text-foreground">{"Property Overview"}</h2>
             <div className="grid gap-y-6 gap-x-12 sm:grid-cols-2">
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Hash className="h-4 w-4" /> {t("propertyDetail.overview.propertyId")}</span>
-                <span className="text-sm font-bold font-mono">{property.internal_id || t("propertyDetail.overview.na")}</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Hash className="h-4 w-4" /> {"Property ID"}</span>
+                <span className="text-sm font-bold font-mono">{property.internal_id || "N/A"}</span>
               </div>
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Building2 className="h-4 w-4" /> {t("propertyDetail.overview.propertyType")}</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Building2 className="h-4 w-4" /> {"Property Type"}</span>
                 <span className="text-sm font-bold capitalize">{property.property_type}</span>
               </div>
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Clock className="h-4 w-4" /> {t("propertyDetail.overview.yearBuilt")}</span>
-                <span className="text-sm font-bold">{property.year_built || t("propertyDetail.overview.yearBuiltDefault")}</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Clock className="h-4 w-4" /> {"Year Built"}</span>
+                <span className="text-sm font-bold">{property.year_built || "Modern"}</span>
               </div>
               <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Calendar className="h-4 w-4" /> {t("propertyDetail.overview.listingDate")}</span>
+                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Calendar className="h-4 w-4" /> {"Listing Date"}</span>
                 <span className="text-sm font-bold">{new Date(property.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
               </div>
             </div>
           </div>
 
           {/* Features & Amenities */}
-          {(interior_features.length > 0 || exterior_features.length > 0) && (
+          {property.property_type !== 'land' && (interior_features.length > 0 || exterior_features.length > 0) && (
             <div className="space-y-8">
               <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
-                <CheckCircle2 className="h-5 w-5 text-primary" /> {t("propertyDetail.amenities.title")}
+                <CheckCircle2 className="h-5 w-5 text-primary" /> {"Amenities & Features"}
               </h2>
               
               <div className="grid gap-10 sm:grid-cols-2">
                 {interior_features.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {t("propertyDetail.amenities.interior")}
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {"Interior Features"}
                     </h3>
                     <div className="grid gap-3">
                       {interior_features.map(f => (
@@ -389,7 +412,7 @@ export default function PropertyDetail() {
                 {exterior_features.length > 0 && (
                   <div className="space-y-4">
                     <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {t("propertyDetail.amenities.exterior")}
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {"Exterior Features"}
                     </h3>
                     <div className="grid gap-3">
                       {exterior_features.map(f => (
@@ -405,22 +428,99 @@ export default function PropertyDetail() {
             </div>
           )}
 
+          {property.property_type === 'land' && (
+            <div className="space-y-12 mt-8">
+              <div className="space-y-6">
+                <h2 className="font-serif text-2xl font-bold flex items-center gap-3 text-foreground">
+                  <FileText className="h-6 w-6 text-primary" /> {"Ownership & Documentation"}
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <div>
+                      <p className="font-bold text-foreground">Certificate of Occupancy (C of O)</p>
+                      <p className="text-xs text-muted-foreground">Verified by state government</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <div>
+                      <p className="font-bold text-foreground">Registered Survey Plan</p>
+                      <p className="text-xs text-muted-foreground">Free from government acquisition</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <div>
+                      <p className="font-bold text-foreground">Deed of Assignment</p>
+                      <p className="text-xs text-muted-foreground">Ready for ownership transfer</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
+                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <div>
+                      <p className="font-bold text-foreground">Contract of Sale</p>
+                      <p className="text-xs text-muted-foreground">Issued immediately upon purchase</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h2 className="font-serif text-2xl font-bold flex items-center gap-3 text-foreground">
+                  <Building2 className="h-6 w-6 text-primary" /> {"Investment Highlights & Development"}
+                </h2>
+                <div className="rounded-xl border border-border bg-secondary/20 p-6 space-y-5 shadow-sm">
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Clock className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground text-lg mb-1">High Appreciation Potential</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">Located in a rapidly developing zone with projected high ROI over the next 3-5 years. Perfect for long term holds.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <MapIcon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground text-lg mb-1">Strategic Accessibility</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">Direct access to major road networks, upcoming infrastructure projects, and commercial hubs.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-4">
+                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                      <Building2 className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                      <p className="font-bold text-foreground text-lg mb-1">Development-Ready</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">Dry, flat topography. Ready for immediate allocation and physical development. Zero sandfilling required.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Location & Neighborhood */}
           <div className="space-y-8 mt-16 pt-12 border-t border-border">
             {/* 1. Neighborhood Summary Header */}
             <div className="flex flex-col gap-2">
               <div className="flex items-center gap-3 mb-1">
                 <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-md">
-                  {t("propertyDetail.neighborhood.badge")}
+                  {"Neighborhood Profile"}
                 </span>
               </div>
               <h2 className="font-serif text-3xl font-bold text-foreground">
-                {property.city ? `${property.neighborhood || property.city}, ${property.state || ''}` : t("propertyDetail.neighborhood.title")}
+                {property.city ? `${property.neighborhood || property.city}, ${property.state || ''}` : "Neighborhood & Location"}
               </h2>
               <p className="text-muted-foreground max-w-2xl text-lg">
-                {property.property_type === 'commercial' 
-                  ? t("propertyDetail.neighborhood.descCommercial") 
-                  : t("propertyDetail.neighborhood.descResidential")}
+                {property.property_type === 'land'
+                  ? "A strategic land parcel located in a high-potential development zone."
+                  : property.property_type === 'commercial' 
+                  ? "A strategic business location with excellent connectivity and established commercial infrastructure." 
+                  : "A well-connected residential district offering convenient access to essential community amenities."}
               </p>
             </div>
             
@@ -428,10 +528,10 @@ export default function PropertyDetail() {
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-3 border-b border-border">
                 <h3 className="font-serif text-xl font-bold text-foreground">
-                  {t("propertyDetail.neighborhood.localAmenities")}
+                  {"Local Amenities"}
                 </h3>
                 <span className="text-sm font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-                  {nearbyPois.length} {t("propertyDetail.neighborhood.found")}
+                  {nearbyPois.length} {"Found"}
                 </span>
               </div>
               
@@ -480,8 +580,8 @@ export default function PropertyDetail() {
                   <div className="h-12 w-12 rounded-full bg-card flex items-center justify-center mb-3 shadow-sm border border-border/50">
                     <MapPin className="h-5 w-5 text-muted-foreground/60" />
                   </div>
-                  <p className="font-serif text-base font-bold text-foreground">{t("propertyDetail.neighborhood.emptyTitle")}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{t("propertyDetail.neighborhood.emptyDesc")}</p>
+                  <p className="font-serif text-base font-bold text-foreground">{"Neighborhood information pending"}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">{"Local amenity data is currently being updated for this listing."}</p>
                 </div>
               )}
             </div>
@@ -494,7 +594,7 @@ export default function PropertyDetail() {
                     <div className="h-16 w-16 rounded-full bg-card flex items-center justify-center mb-4 shadow-sm border border-border/50">
                       <MapPin className="h-8 w-8 text-muted-foreground/60" />
                     </div>
-                    <p className="text-muted-foreground font-medium font-sans">{t("propertyDetail.neighborhood.loadingMap")}</p>
+                    <p className="text-muted-foreground font-medium font-sans">{"Loading interactive map..."}</p>
                   </div>
                 }>
                   <InteractivePropertyMap 
@@ -509,11 +609,11 @@ export default function PropertyDetail() {
               
               {/* Context Banner Overlay */}
               <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-auto md:w-[400px] p-4 rounded-lg bg-card/95 backdrop-blur border border-border shadow-md flex flex-col gap-2 z-20 pointer-events-none">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{t("propertyDetail.neighborhood.registeredAddress")}</p>
-                <p className="text-sm font-bold leading-tight text-foreground line-clamp-2">{property.address || t("propertyDetail.neighborhood.locationOnRequest")}</p>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{"Registered Address"}</p>
+                <p className="text-sm font-bold leading-tight text-foreground line-clamp-2">{property.address || "Location on request"}</p>
                 <Button variant="outline" size="sm" className="pointer-events-auto mt-2 rounded-md font-bold border-border text-foreground hover:bg-secondary w-fit" asChild>
                   <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.title)}`} target="_blank" rel="noreferrer">
-                    {t("propertyDetail.neighborhood.getDirections")} <ExternalLink className="ml-2 h-3 w-3" />
+                    {"Get Directions"} <ExternalLink className="ml-2 h-3 w-3" />
                   </a>
                 </Button>
               </div>
@@ -526,9 +626,9 @@ export default function PropertyDetail() {
                   <Clock className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.viewingSchedule")}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{"Viewing Schedule"}</p>
                   <p className="text-sm font-medium leading-relaxed text-foreground">
-                    {property.inspection_availability || t("propertyDetail.neighborhood.viewingScheduleDefault")}
+                    {property.inspection_availability || "Available for viewing Monday to Saturday, 9AM - 5PM."}
                   </p>
                 </div>
               </div>
@@ -538,9 +638,9 @@ export default function PropertyDetail() {
                   <Building2 className="h-5 w-5" />
                 </div>
                 <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{t("propertyDetail.neighborhood.zoningStatus")}</p>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{"Zoning Status"}</p>
                   <p className="text-sm font-medium leading-relaxed text-foreground">
-                    {property.property_type === 'commercial' ? t("propertyDetail.neighborhood.zoningCommercial") : t("propertyDetail.neighborhood.zoningResidential")}
+                    {property.property_type === 'commercial' ? "Premium Business Zone" : "Premium Residential Zone"}
                   </p>
                 </div>
               </div>
@@ -551,7 +651,7 @@ export default function PropertyDetail() {
           {property.video_url && (
             <div className="mt-8">
               <h2 className="font-serif text-2xl font-bold flex items-center gap-3 text-foreground">
-                <Maximize2 className="h-6 w-6 text-primary" /> {t("propertyDetail.videoTour")}
+                <Maximize2 className="h-6 w-6 text-primary" /> {"Property Tour"}
               </h2>
               <div className="mt-6 aspect-video overflow-hidden rounded-xl border-4 border-card shadow-card">
                 <iframe src={property.video_url} className="h-full w-full" allowFullScreen />
@@ -580,7 +680,7 @@ export default function PropertyDetail() {
           {agent && (
             <div className="mt-12">
               <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground mb-6">
-                <Star className="h-5 w-5 text-amber-400" /> {t("propertyDetail.agentReviews")}
+                <Star className="h-5 w-5 text-amber-400" /> {"Agent Reviews"}
               </h2>
               <AgentReviews agentId={agent.id} agentName={agent.full_name} propertyId={property.id} />
             </div>
@@ -608,13 +708,13 @@ export default function PropertyDetail() {
               <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {agent.phone && (
                   <Button asChild variant="outline" className="rounded-xl h-11 border-border hover:bg-secondary font-bold text-xs shadow-sm">
-                    <a href={`tel:${agent.phone}`}><Phone className="mr-2 h-4 w-4" /> {t("propertyDetail.agent.callAgent")}</a>
+                    <a href={`tel:${agent.phone}`}><Phone className="mr-2 h-4 w-4" /> {"Call Agent"}</a>
                   </Button>
                 )}
                 {agent.whatsapp && (
                   <Button asChild variant="outline" className="rounded-xl h-11 border-emerald-500/20 text-emerald-600 hover:bg-emerald-50 shadow-sm font-bold text-xs">
                     <a href={`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-                      <MessageSquare className="mr-2 h-4 w-4" /> {t("propertyDetail.agent.whatsapp")}</a>
+                      <MessageSquare className="mr-2 h-4 w-4" /> {"WhatsApp"}</a>
                   </Button>
                 )}
                 {agent.user_id && (
@@ -631,12 +731,12 @@ export default function PropertyDetail() {
                 <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
                   <DialogTrigger asChild>
                     <Button className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold shadow-sm text-sm">
-                      <Calendar className="mr-2 h-4 w-4" /> {t("propertyDetail.agent.scheduleViewing")}
+                      <Calendar className="mr-2 h-4 w-4" /> {property.property_type === 'land' ? "Schedule Site Inspection" : "Schedule Viewing"}
                     </Button>
                   </DialogTrigger>
                   <DialogContent className="max-w-lg">
                     <DialogHeader className="bg-primary pb-6">
-                      <DialogTitle className="font-serif text-2xl text-white">{t("propertyDetail.agent.scheduleViewingTitle")}</DialogTitle>
+                      <DialogTitle className="font-serif text-2xl text-white">{property.property_type === 'land' ? "Schedule Site Inspection" : "Schedule a Viewing"}</DialogTitle>
                       <p className="text-sm text-white/80 italic">{property.title}</p>
                     </DialogHeader>
                     <DialogBody className="py-6">
@@ -647,7 +747,7 @@ export default function PropertyDetail() {
 
                 <Button onClick={toggleSave} variant="secondary" className="w-full h-12 rounded-xl font-bold text-sm bg-secondary/80 hover:bg-secondary border border-border/50 transition-all">
                   <Heart className={`mr-2 h-5 w-5 ${saved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-                  {saved ? t("propertyDetail.agent.addedToSaved") : t("propertyDetail.agent.saveListing")}
+                  {saved ? "Added to Saved" : "Save Listing"}
                 </Button>
               </div>
             </div>
@@ -657,29 +757,29 @@ export default function PropertyDetail() {
           <div className="rounded-xl border border-primary/15 bg-card p-6 shadow-soft">
             <h3 className="font-serif text-lg font-semibold text-foreground">
               {userReservation?.status === 'confirmed' 
-                ? t("propertyDetail.reservation.completePurchase") 
+                ? "Complete Purchase" 
                 : ['reserved', 'sold', 'rented', 'unavailable', 'payment_under_review'].includes(property.status) 
                   ? `${property.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`
-                  : t("propertyDetail.reservation.reserveProperty")}
+                  : property.property_type === 'land' ? "Reserve Plot" : "Reserve Property"}
             </h3>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
               {userReservation?.status === 'confirmed'
-                ? t("propertyDetail.reservation.reservationApproved")
+                ? "Your reservation is approved. You can now complete the final purchase of this property."
                 : property.status === 'reserved' 
-                ? t("propertyDetail.reservation.propertyReserved") 
+                ? "This property has been officially reserved and is currently off the market." 
                 : property.status === 'sold'
-                ? t("propertyDetail.reservation.propertySold")
+                ? "This property has been sold and is no longer available."
                 : property.status === 'rented'
-                ? t("propertyDetail.reservation.propertyRented")
+                ? "This property is currently rented out."
                 : property.status === 'payment_under_review'
-                ? t("propertyDetail.reservation.paymentUnderReview")
+                ? "A payment for this property is currently being reviewed."
                 : property.status === 'unavailable'
-                ? t("propertyDetail.reservation.propertyUnavailable")
-                : t("propertyDetail.reservation.holdProperty")}
+                ? "This property is currently not available for purchase."
+                : property.property_type === 'land' ? "Hold this plot for 7 days to finalize your purchase." : "Hold this property for 7 days to finalize your purchase."}
             </p>
             {(!userReservation || userReservation.status !== 'confirmed') && property.status === 'available' && (
               <div className="mt-5 flex items-center justify-between p-3.5 rounded-lg bg-accent/50 border border-border/50">
-                <span className="text-xs font-medium text-muted-foreground">{t("propertyDetail.reservation.reservationFee")}</span>
+                <span className="text-xs font-medium text-muted-foreground">{"Reservation Fee"}</span>
                 <span className="text-lg font-semibold text-primary font-serif">500.00 USD</span>
               </div>
             )}
@@ -687,7 +787,7 @@ export default function PropertyDetail() {
             {userReservation?.status === 'confirmed' ? (
               <div className="space-y-5 mt-5">
                 <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
-                  <span className="text-xs font-medium text-primary">{t("propertyDetail.reservation.remainingBalance")}</span>
+                  <span className="text-xs font-medium text-primary">{"Remaining Balance"}</span>
                   <span className="text-lg font-semibold text-primary font-serif">
                     {formatPrice(Number(property.price) - 500, property.currency, property.property_type)}
                   </span>
@@ -701,7 +801,7 @@ export default function PropertyDetail() {
                   className="w-full h-11 bg-primary text-primary-foreground font-medium rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
                   onClick={() => setPaymentModalOpen(true)}
                 >
-                  {t("propertyDetail.reservation.completePurchase")}
+                  {"Complete Purchase"}
                 </Button>
               </div>
             ) : (
@@ -710,28 +810,28 @@ export default function PropertyDetail() {
                 disabled={property.status !== 'available'}
                 onClick={() => {
                   if (!user) {
-                    toast({ title: t("propertyDetail.reservation.signInRequired"), description: t("propertyDetail.reservation.signInToReserve") });
+                    toast({ title: "Sign in required", description: "Please sign in to reserve this property." });
                     return;
                   }
                   setReserveOpen(true);
                 }}
               >
                 {property.status === 'available' 
-                  ? t("propertyDetail.reservation.reserveNow") 
-                  : property.status === 'reserved' 
-                  ? t("propertyDetail.reservation.alreadyReserved") 
+                  ? (property.property_type === 'land' ? "Reserve Plot" : "Reserve Now") 
+                  : property.status === 'reserved'  
+                  ? "Already Reserved" 
                   : property.status === 'sold'
-                  ? t("propertyDetail.reservation.sold")
+                  ? "Sold"
                   : property.status === 'rented'
-                  ? t("propertyDetail.reservation.rented")
+                  ? "Rented"
                   : property.status === 'payment_under_review'
-                  ? t("propertyDetail.reservation.paymentReview")
-                  : t("propertyDetail.reservation.unavailable")}
+                  ? "Payment Under Review"
+                  : "Unavailable"}
               </Button>
             )}
             
             <p className="mt-3 text-[11px] text-center text-muted-foreground">
-              {property.status === 'available' || userReservation?.status === 'confirmed' ? t("propertyDetail.reservation.secureEscrow") : t("propertyDetail.reservation.currentlyUnavailable")}
+              {property.status === 'available' || userReservation?.status === 'confirmed' ? "Processed securely via escrow" : "This property is currently unavailable"}
             </p>
             <ReserveDialog
               open={reserveOpen}
@@ -739,15 +839,17 @@ export default function PropertyDetail() {
               property={{
                 id: property.id,
                 title: property.title,
-                currency: property.currency
+                currency: property.currency,
+                property_type: property.property_type,
+                location: property.locations?.name || property.address || undefined
               }}
               type={property.is_investment ? "investment" : "property"}
             />
           </div>
 
           <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-            <h3 className="font-serif text-lg font-semibold text-foreground">{t("propertyDetail.inquiry.title")}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{t("propertyDetail.inquiry.desc")}</p>
+            <h3 className="font-serif text-lg font-semibold text-foreground">{"Questions?"}</h3>
+            <p className="mt-1 text-sm text-muted-foreground">{"Inquire about details or flexible payment plans."}</p>
             <div className="mt-6">
               <InquiryForm propertyId={property.id} agentId={agent?.id ?? null} />
             </div>
@@ -764,11 +866,11 @@ export default function PropertyDetail() {
         <section className="container-wide py-16 bg-accent/40">
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h2 className="font-serif text-2xl font-semibold">{t("propertyDetail.related.title")}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">{property.locations?.name ? t("propertyDetail.related.desc", { location: property.locations.name }) : t("propertyDetail.related.descFallback")}</p>
+              <h2 className="font-serif text-2xl font-semibold">{"Similar Properties"}</h2>
+              <p className="text-muted-foreground mt-1 text-sm">{property.locations?.name ? `More listings in $location.` : "More listings in the area."}</p>
             </div>
             <Button asChild variant="ghost" className="rounded-lg font-medium text-primary hover:bg-primary/5 group">
-              <Link to="/properties">{t("propertyDetail.related.viewAll")} <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></Link>
+              <Link to="/properties">{"View all"} <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></Link>
             </Button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
@@ -791,6 +893,11 @@ export default function PropertyDetail() {
           paymentType="property"
           targetId={property.id}
           bookingId={userReservation.id}
+          propertyData={{
+            title: property.title,
+            property_type: property.property_type,
+            location: property.locations?.name || property.address || undefined
+          }}
         />
       )}
     </SiteLayout>

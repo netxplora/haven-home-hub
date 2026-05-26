@@ -12,15 +12,12 @@ import {
 } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/site/NotificationBell";
 import { CurrencyToggle } from "@/components/site/CurrencyToggle";
-import { LanguageToggle } from "@/components/site/LanguageToggle";
-import { useTranslation } from "react-i18next";
 import logo from "@/assets/logo-emerald.png";
 
 export function Header() {
   const { user, isAdmin, isAgent, signOut } = useAuth();
   const navigate = useNavigate();
-  const { t } = useTranslation();
-  const [mobileOpen, setMobileOpen] = useState(false);
+    const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [announcementHeight, setAnnouncementHeight] = useState(0);
   const [propertiesOpen, setPropertiesOpen] = useState(false);
@@ -67,17 +64,17 @@ export function Header() {
   const topOffset = isScrolled ? 0 : announcementHeight;
 
   const nav = [
-    { to: "/invest", label: t('nav.invest', 'Invest') },
-    { to: "/agents", label: t('nav.agents', 'Agents') },
-    { to: "/blog", label: t('nav.blog', 'Blog') },
-    { to: "/about", label: t('nav.about', 'About') },
+    { to: "/invest", label: "Invest" },
+    { to: "/agents", label: "Agents" },
+    { to: "/blog", label: "Blog" },
+    { to: "/about", label: "About" },
   ];
 
   const propertyLinks = [
-    { to: "/properties?type=buy", label: t('nav.buy', 'Buy') },
-    { to: "/properties?type=rent", label: t('nav.rent', 'Rent') },
-    { to: "/properties?type=land", label: t('nav.land', 'Land') },
-    { to: "/properties", label: t('nav.allProperties', 'All Properties'), separator: true },
+    { to: "/properties?type=buy", label: "Buy" },
+    { to: "/properties?type=rent", label: "Rent" },
+    { to: "/properties?type=land", label: "Land" },
+    { to: "/properties", label: "All Properties", separator: true },
   ];
 
   // ── Shared Nav Link Style ──
@@ -121,7 +118,7 @@ export function Header() {
               aria-expanded={propertiesOpen}
               aria-haspopup="true"
             >
-              {t('nav.properties', 'Properties')}
+              {"Properties"}
               <ChevronDown className={`h-3.5 w-3.5 transition-transform duration-200 ${propertiesOpen ? "rotate-180" : ""}`} />
             </button>
 
@@ -165,7 +162,7 @@ export function Header() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-2 md:flex">
-          <LanguageToggle />
+          
           <CurrencyToggle />
           {user ? (
             <>
@@ -174,28 +171,28 @@ export function Header() {
               <DropdownMenuTrigger asChild>
                 <Button variant="outline" size="sm" className="gap-2 rounded-lg h-9 border-border/60 hover:bg-accent/50">
                   <UserIcon className="h-4 w-4" />
-                  {t('nav.account', 'Account')}
+                  {"Account"}
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">
                 <DropdownMenuLabel className="truncate font-normal text-muted-foreground text-xs">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={() => navigate("/dashboard")}>
-                  <LayoutDashboard className="mr-2 h-4 w-4" /> {t('nav.myDashboard', 'My dashboard')}
+                  <LayoutDashboard className="mr-2 h-4 w-4" /> {"My dashboard"}
                 </DropdownMenuItem>
                 {isAgent && (
                   <DropdownMenuItem onSelect={() => navigate("/agent")}>
-                    <UserIcon className="mr-2 h-4 w-4" /> {t('nav.agentDashboard', 'Agent dashboard')}
+                    <UserIcon className="mr-2 h-4 w-4" /> {"Agent dashboard"}
                   </DropdownMenuItem>
                 )}
                 {isAdmin && (
                   <DropdownMenuItem onSelect={() => navigate("/admin")}>
-                    <Shield className="mr-2 h-4 w-4" /> {t('nav.admin', 'Admin')}
+                    <Shield className="mr-2 h-4 w-4" /> {"Admin"}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onSelect={signOut} className="text-destructive focus:text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" /> {t('nav.signOut', 'Sign out')}
+                  <LogOut className="mr-2 h-4 w-4" /> {"Sign out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
               </DropdownMenu>
@@ -208,10 +205,10 @@ export function Header() {
                 className="h-9 text-foreground/70 hover:text-foreground"
                 onClick={() => navigate("/auth")}
               >
-                {t('nav.signIn', 'Sign in')}
+                {"Sign in"}
               </Button>
               <Button size="sm" className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-sm" onClick={() => navigate("/auth?tab=signup")}>
-                {t('nav.getStarted', 'Get started')}
+                {"Get started"}
               </Button>
             </>
           )}
@@ -220,7 +217,7 @@ export function Header() {
         {/* Mobile Hamburger */}
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="md:hidden h-10 w-10 rounded-lg" aria-label={t('nav.menu', 'Menu')}>
+            <Button variant="ghost" size="icon" className="md:hidden h-10 w-10 rounded-lg" aria-label={"Menu"}>
               <Menu className="h-5 w-5" />
             </Button>
           </SheetTrigger>
@@ -230,12 +227,12 @@ export function Header() {
               <div className="flex-1 overflow-y-auto px-6 pt-10 pb-6">
                 <nav className="flex flex-col gap-1">
                   <div className="py-2 px-3">
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{t('nav.properties', 'Properties')}</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">{"Properties"}</p>
                     <div className="flex flex-col gap-1 ml-2 border-l border-border/50 pl-3">
-                      <Link to="/properties?type=buy" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{t('nav.buy', 'Buy')}</Link>
-                      <Link to="/properties?type=rent" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{t('nav.rent', 'Rent')}</Link>
-                      <Link to="/properties?type=land" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{t('nav.land', 'Land')}</Link>
-                      <Link to="/properties" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{t('nav.allProperties', 'All Properties')}</Link>
+                      <Link to="/properties?type=buy" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{"Buy"}</Link>
+                      <Link to="/properties?type=rent" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{"Rent"}</Link>
+                      <Link to="/properties?type=land" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{"Land"}</Link>
+                      <Link to="/properties" onClick={() => setMobileOpen(false)} className="text-sm font-medium py-2 rounded-lg hover:text-primary transition-colors text-foreground">{"All Properties"}</Link>
                     </div>
                   </div>
                   {nav.map((item) => (
@@ -253,23 +250,23 @@ export function Header() {
               {/* Mobile Footer Actions */}
               <div className="border-t border-border/50 px-6 py-5 space-y-3">
                 <div className="flex items-center justify-between pb-2 border-b border-border/30 mb-2 gap-2">
-                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{t('nav.settings', 'Settings')}</span>
+                  <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{"Settings"}</span>
                   <div className="flex gap-2">
-                    <LanguageToggle />
+                    
                     <CurrencyToggle />
                   </div>
                 </div>
                 {user ? (
                   <>
-                    <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{t('nav.myDashboard', 'My dashboard')}</Link>
-                    {isAgent && <Link to="/agent" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{t('nav.agentDashboard', 'Agent dashboard')}</Link>}
-                    {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{t('nav.admin', 'Admin')}</Link>}
-                    <button onClick={() => { setMobileOpen(false); signOut(); }} className="block w-full text-left text-sm font-medium py-2 text-destructive">{t('nav.signOut', 'Sign out')}</button>
+                    <Link to="/dashboard" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{"My dashboard"}</Link>
+                    {isAgent && <Link to="/agent" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{"Agent dashboard"}</Link>}
+                    {isAdmin && <Link to="/admin" onClick={() => setMobileOpen(false)} className="block py-2 text-sm font-medium text-foreground">{"Admin"}</Link>}
+                    <button onClick={() => { setMobileOpen(false); signOut(); }} className="block w-full text-left text-sm font-medium py-2 text-destructive">{"Sign out"}</button>
                   </>
                 ) : (
                   <>
-                    <Button variant="outline" className="w-full rounded-lg" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>{t('nav.signIn', 'Sign in')}</Button>
-                    <Button className="w-full rounded-lg bg-primary text-primary-foreground" onClick={() => { setMobileOpen(false); navigate("/auth?tab=signup"); }}>{t('nav.getStarted', 'Get started')}</Button>
+                    <Button variant="outline" className="w-full rounded-lg" onClick={() => { setMobileOpen(false); navigate("/auth"); }}>{"Sign in"}</Button>
+                    <Button className="w-full rounded-lg bg-primary text-primary-foreground" onClick={() => { setMobileOpen(false); navigate("/auth?tab=signup"); }}>{"Get started"}</Button>
                   </>
                 )}
               </div>

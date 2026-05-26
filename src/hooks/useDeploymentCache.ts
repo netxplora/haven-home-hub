@@ -19,7 +19,7 @@ export function useDeploymentCache() {
         queryClient.clear();
 
         // Selective LocalStorage clearing (do NOT clear supabase auth tokens or core settings)
-        const keysToKeep = ["sb-", "i18nextLng", "theme"]; // keep Supabase auth, language, and theme
+        const keysToKeep = ["sb-", "theme"]; // keep Supabase auth and theme
         const keysToRemove: string[] = [];
 
         for (let i = 0; i < localStorage.length; i++) {

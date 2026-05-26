@@ -439,28 +439,30 @@ export default function Properties() {
                     </div>
 
                     {/* Rooms & Features */}
-                    <div className="grid grid-cols-2 gap-6">
-                      <div className="space-y-3">
-                        <Label className="text-sm font-bold">Bedrooms</Label>
-                        <Select value={bedrooms} onValueChange={(v) => update("bedrooms", v)}>
-                          <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="any">Any</SelectItem>
-                            {[1,2,3,4,5].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Beds</SelectItem>)}
-                          </SelectContent>
-                        </Select>
+                    {type !== "land" && (
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="space-y-3">
+                          <Label className="text-sm font-bold">Bedrooms</Label>
+                          <Select value={bedrooms} onValueChange={(v) => update("bedrooms", v)}>
+                            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="any">Any</SelectItem>
+                              {[1,2,3,4,5].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Beds</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-3">
+                          <Label className="text-sm font-bold">Bathrooms</Label>
+                          <Select value={bathrooms} onValueChange={(v) => update("bathrooms", v)}>
+                            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="any">Any</SelectItem>
+                              {[1,2,3,4].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Baths</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
                       </div>
-                      <div className="space-y-3">
-                        <Label className="text-sm font-bold">Bathrooms</Label>
-                        <Select value={bathrooms} onValueChange={(v) => update("bathrooms", v)}>
-                          <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="any">Any</SelectItem>
-                            {[1,2,3,4].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Baths</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+                    )}
 
                     {/* Property Size */}
                     <div className="space-y-4 pt-4 border-t">
