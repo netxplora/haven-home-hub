@@ -117,25 +117,35 @@ export default function PrintDocument() {
       </div>
 
       {/* A4 Document Container */}
-      <div className="max-w-[800px] mx-auto bg-white dark:bg-white text-slate-900 p-[60px] border border-slate-200 shadow-lg print:border-0 print:shadow-none min-h-[1123px] flex flex-col justify-between print:p-0">
+      <div className="max-w-[800px] mx-auto bg-white dark:bg-white text-slate-900 p-[60px] border border-slate-200 shadow-lg print:border-0 print:shadow-none min-h-[1123px] flex flex-col justify-between print:p-0 relative overflow-hidden">
         
+        {/* Background Watermark */}
+        <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0">
+          <ShieldCheck className="w-[600px] h-[600px]" />
+        </div>
+
         {/* Document Content */}
-        <div className="flex-1">
+        <div className="flex-1 relative z-10">
           {/* Header & Logo */}
-          <div className="flex justify-between items-start border-b-2 border-rose-800 pb-6 mb-8">
-            <div>
-              <h1 className="font-serif text-2xl font-bold tracking-tight text-rose-900">HAVEN HOME HUB</h1>
-              <p className="text-xs uppercase tracking-wider text-muted-foreground font-semibold mt-0.5">Real Estate Documentation Service</p>
+          <div className="flex justify-between items-start border-b-[3px] border-double border-slate-800 pb-6 mb-10">
+            <div className="flex items-center gap-4">
+              <div className="h-14 w-14 bg-slate-900 rounded-sm flex items-center justify-center shrink-0">
+                <span className="text-white font-serif font-bold text-3xl tracking-tighter">H</span>
+              </div>
+              <div>
+                <h1 className="font-serif text-3xl font-black tracking-tight text-slate-900 uppercase">Haven Home Hub</h1>
+                <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Certified Legal Documentation Service</p>
+              </div>
             </div>
-            <div className="text-right">
-              <p className="text-xs font-mono font-bold text-slate-500">REF: {docRef}</p>
-              <p className="text-xs text-slate-500 mt-0.5">Issued: {new Date(doc.created_at).toLocaleDateString()}</p>
+            <div className="text-right flex flex-col items-end justify-center h-14">
+              <p className="text-xs font-mono font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">REF: {docRef}</p>
+              <p className="text-[10px] uppercase font-bold tracking-widest text-slate-400 mt-2">Issued: {new Date(doc.created_at).toLocaleDateString()}</p>
             </div>
           </div>
 
           {/* Dynamic HTML Content */}
           <div 
-            className="prose max-w-none text-slate-800 prose-headings:font-serif prose-h3:text-md prose-h3:font-bold prose-h3:mt-4 prose-h3:mb-2 prose-ul:list-disc prose-ul:pl-5"
+            className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
             dangerouslySetInnerHTML={{ __html: snapshotHtml }} 
           />
 
@@ -171,23 +181,23 @@ export default function PrintDocument() {
         </div>
 
         {/* Verification Footer Block */}
-        <div className="mt-16 pt-6 border-t-2 border-slate-200 flex justify-between items-center bg-slate-50 p-6 rounded-xl border border-slate-100 print:bg-slate-50">
+        <div className="mt-16 pt-6 border-t-[3px] border-double border-slate-800 flex justify-between items-center bg-slate-50 p-6 rounded-none print:bg-slate-50 relative z-10">
           <div className="flex-1 pr-6 space-y-1">
-            <h4 className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-              <ShieldCheck className="h-4 w-4 text-rose-700" /> DIGITAL LEGAL VERIFICATION
+            <h4 className="text-[10px] font-black tracking-widest text-slate-900 uppercase flex items-center gap-1.5 mb-2">
+              <ShieldCheck className="h-4 w-4 text-slate-900" /> OFFICIAL DIGITAL VERIFICATION
             </h4>
-            <p className="text-[11px] text-slate-500 leading-relaxed">
-              This document is digitally verified and registered in the Haven Home Hub property registry. Scan the QR code or verify using the reference code below.
+            <p className="text-[10px] text-slate-500 leading-relaxed font-sans max-w-md">
+              This document is digitally verified and permanently registered in the Haven Home Hub legal registry. Scan the cryptographic QR code or verify online using the unique reference code.
             </p>
-            <div className="grid grid-cols-2 gap-x-4 pt-2 text-[10px] font-mono text-slate-600">
-              <p>Doc ID: <span className="text-slate-800 font-bold">{doc.id}</span></p>
-              <p>Verify Code: <span className="text-slate-800 font-bold">{verifyCode}</span></p>
-              <p>Reference: <span className="text-slate-800 font-bold">{docRef}</span></p>
-              <p>Timestamp: <span className="text-slate-800 font-bold">{new Date(doc.created_at).toLocaleString()}</span></p>
+            <div className="grid grid-cols-2 gap-x-4 pt-3 text-[9px] font-mono text-slate-600 uppercase tracking-wider">
+              <p>Registry ID: <span className="text-slate-900 font-bold ml-1">{doc.id.split('-')[0]}</span></p>
+              <p>Security Hash: <span className="text-slate-900 font-bold ml-1">{verifyCode}</span></p>
+              <p>Ledger Ref: <span className="text-slate-900 font-bold ml-1">{docRef}</span></p>
+              <p>Timestamp: <span className="text-slate-900 font-bold ml-1">{new Date(doc.created_at).toLocaleString()}</span></p>
             </div>
           </div>
-          <div className="shrink-0 bg-white p-2 border border-slate-200 rounded-lg flex items-center justify-center">
-            <QRCodeSVG value={verifyUrl} size={70} />
+          <div className="shrink-0 bg-white p-2 border-2 border-slate-900 flex items-center justify-center shadow-sm">
+            <QRCodeSVG value={verifyUrl} size={76} />
           </div>
         </div>
 

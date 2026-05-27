@@ -112,19 +112,11 @@ export function AdminDocuments() {
     },
   });
 
-  // 4. Fetch document requests
+  // 4. Fetch document requests via SECURITY DEFINER RPC (bypasses RLS)
   const { data: requests = [], isLoading: isLoadingRequests, refetch: refetchRequests } = useQuery({
     queryKey: ["admin-document-requests"],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("document_requests")
-        .select(`
-          *,
-          profiles:user_id(full_name, email),
-          properties:property_id(title, slug),
-          investment_properties:investment_property_id(title, slug)
-        `)
-        .order("created_at", { ascending: false });
+      const { data, error } = await supabase.rpc("admin_get_document_requests");
       if (error) throw error;
       return data || [];
     },
@@ -260,23 +252,23 @@ export function AdminDocuments() {
   };
 
 
-  // Actions: Requests
+  // Actions: Requests (using SECURITY DEFINER RPCs)
   const handleApproveRequest = async (req: any, type: string) => {
     try {
       toast.loading("Generating document...");
       
-      // Attempt to find the payment ID for this property if it exists, to bind to the document
-      // (This is a simplified approach; ideally the request should store the payment ID if needed)
-      
       const { data, error } = await supabase.rpc("create_automated_document", {
         p_user_id: req.user_id,
-        p_payment_id: null, // Fallback, RPC will use property_id to gather details if possible
+        p_payment_id: null,
         p_document_type: type
       });
       if (error) throw error;
 
-      // Update the request status
-      await supabase.from("document_requests").update({ status: 'approved' }).eq("id", req.id);
+      // Update the request status via RPC
+      await supabase.rpc("admin_update_document_request", {
+        p_request_id: req.id,
+        p_status: "approved"
+      });
       
       toast.dismiss();
       toast.success("Document generated successfully.");
@@ -292,7 +284,11 @@ export function AdminDocuments() {
     const note = prompt("Please provide a reason for rejecting this request:");
     if (note === null) return;
     try {
-      await supabase.from("document_requests").update({ status: 'rejected', admin_notes: note }).eq("id", id);
+      await supabase.rpc("admin_update_document_request", {
+        p_request_id: id,
+        p_status: "rejected",
+        p_admin_notes: note
+      });
       toast.success("Request rejected.");
       refetchRequests();
     } catch (error: any) {
@@ -519,15 +515,15 @@ export function AdminDocuments() {
                 <div key={req.id} className="p-5 border border-border/50 rounded-xl bg-card hover:shadow-sm transition-all flex flex-col sm:flex-row justify-between gap-4">
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
-                      <span className="font-bold">{req.profiles?.full_name}</span>
-                      <span className="text-muted-foreground text-sm">({req.profiles?.email})</span>
+                      <span className="font-bold">{req.user_full_name || "Investor"}</span>
+                      <span className="text-muted-foreground text-sm">({req.user_email})</span>
                     </div>
                     <div className="text-sm text-muted-foreground">
-                      Requested: {req.requested_documents?.length ? req.requested_documents.join(", ") : "General Ownership Documents"}
+                      Requested: {Array.isArray(req.requested_documents) && req.requested_documents.length ? req.requested_documents.join(", ") : "General Ownership Documents"}
                     </div>
-                    {(req.properties || req.investment_properties) && (
+                    {(req.property_title || req.investment_property_title) && (
                       <div className="text-sm font-medium">
-                        Property: <span className="text-primary">{req.properties?.title || req.investment_properties?.title}</span>
+                        Property: <span className="text-primary">{req.property_title || req.investment_property_title}</span>
                       </div>
                     )}
                     <div className="text-xs text-muted-foreground uppercase tracking-widest font-bold mt-2 flex items-center gap-2">
