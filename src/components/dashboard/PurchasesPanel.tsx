@@ -27,7 +27,7 @@ export function PurchasesPanel({ userId }: { userId: string }) {
         .from("reservations")
         .select(`
           *,
-          properties:property_id(title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm, features),
+          properties:property_id(title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm),
           investment_properties:investment_property_id(title, slug, cover_image_url, location, property_type)
         `)
         .eq("user_id", userId)
