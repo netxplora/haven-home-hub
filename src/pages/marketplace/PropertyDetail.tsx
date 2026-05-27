@@ -756,15 +756,15 @@ export default function PropertyDetail() {
           {/* Reservation Card */}
           <div className="rounded-xl border border-primary/15 bg-card p-6 shadow-soft">
             <h3 className="font-serif text-lg font-semibold text-foreground">
-              {userReservation?.status === 'confirmed' 
+              {userReservation?.status === 'approved' || userReservation?.status === 'confirmed'
                 ? "Complete Purchase" 
                 : ['reserved', 'sold', 'rented', 'unavailable', 'payment_under_review'].includes(property.status) 
                   ? `${property.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`
                   : property.property_type === 'land' ? "Reserve Plot" : "Reserve Property"}
             </h3>
             <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              {userReservation?.status === 'confirmed'
-                ? "Your reservation is approved. You can now complete the final purchase of this property."
+              {userReservation?.status === 'approved' || userReservation?.status === 'confirmed'
+                ? "Your reservation has been approved. You can now complete full payment to secure this property."
                 : property.status === 'reserved' 
                 ? "This property has been officially reserved and is currently off the market." 
                 : property.status === 'sold'
@@ -777,14 +777,14 @@ export default function PropertyDetail() {
                 ? "This property is currently not available for purchase."
                 : property.property_type === 'land' ? "Hold this plot for 7 days to finalize your purchase." : "Hold this property for 7 days to finalize your purchase."}
             </p>
-            {(!userReservation || userReservation.status !== 'confirmed') && property.status === 'available' && (
+            {(!userReservation || (userReservation.status !== 'approved' && userReservation.status !== 'confirmed')) && property.status === 'available' && (
               <div className="mt-5 flex items-center justify-between p-3.5 rounded-lg bg-accent/50 border border-border/50">
                 <span className="text-xs font-medium text-muted-foreground">{"Reservation Fee"}</span>
                 <span className="text-lg font-semibold text-primary font-serif">500.00 USD</span>
               </div>
             )}
             
-            {userReservation?.status === 'confirmed' ? (
+            {userReservation?.status === 'approved' || userReservation?.status === 'confirmed' ? (
               <div className="space-y-5 mt-5">
                 <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
                   <span className="text-xs font-medium text-primary">{"Remaining Balance"}</span>
@@ -831,7 +831,7 @@ export default function PropertyDetail() {
             )}
             
             <p className="mt-3 text-[11px] text-center text-muted-foreground">
-              {property.status === 'available' || userReservation?.status === 'confirmed' ? "Processed securely via escrow" : "This property is currently unavailable"}
+              {property.status === 'available' || userReservation?.status === 'approved' || userReservation?.status === 'confirmed' ? "Processed securely via escrow" : "This property is currently unavailable"}
             </p>
             <ReserveDialog
               open={reserveOpen}
@@ -890,7 +890,7 @@ export default function PropertyDetail() {
           }}
           amount={Number(property.price) - 500}
           currency={property.currency}
-          paymentType="property"
+          paymentType="purchase"
           targetId={property.id}
           bookingId={userReservation.id}
           propertyData={{

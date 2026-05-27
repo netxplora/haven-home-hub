@@ -151,6 +151,9 @@ export function useRealtimeSync() {
               qc.invalidateQueries({ queryKey: ["admin-locations"] });
               qc.invalidateQueries({ queryKey: ["admin-locations-list"] });
               qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
+              qc.invalidateQueries({ queryKey: ["homepage-locations"] });
+              qc.invalidateQueries({ queryKey: ["locations"] });
+              qc.invalidateQueries({ queryKey: ["filter-metadata"] });
             }
 
             // --- Wallets ---

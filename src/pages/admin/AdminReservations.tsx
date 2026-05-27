@@ -14,7 +14,7 @@ import { formatMoney } from "@/lib/invest";
 import { Skeleton } from "@/components/ui/skeleton";
 
 type ReservationFilter = "all" | "reservation" | "investment";
-type StatusFilter = "all" | "awaiting_reservation_fee" | "under_admin_review" | "pending_review" | "approved" | "rejected" | "information_requested";
+type StatusFilter = "all" | "awaiting_reservation_fee" | "under_admin_review" | "pending_review" | "approved" | "completed" | "rejected" | "information_requested";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -299,6 +299,7 @@ export function AdminReservations() {
             <SelectItem value="pending_review">Pending Review</SelectItem>
             <SelectItem value="information_requested">Info Requested</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="rejected">Declined</SelectItem>
           </SelectContent>
         </Select>

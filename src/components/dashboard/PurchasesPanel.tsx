@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Home, ExternalLink, Clock, CheckCircle2, ShieldCheck, MapPin, Receipt, History, FileText } from "lucide-react";
+import { Home, ExternalLink, Clock, CheckCircle2, ShieldCheck, MapPin, Receipt, History, FileText, Search, RefreshCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/invest";
 import { ReceiptDialog } from "./ReceiptDialog";
 import { LegalDocumentsDialog } from "./LegalDocumentsDialog";
@@ -15,8 +17,10 @@ export function PurchasesPanel({ userId }: { userId: string }) {
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
   const [isReceiptOpen, setIsReceiptOpen] = useState(false);
   const [selectedPropertyForDocs, setSelectedPropertyForDocs] = useState<{ id: string; title: string } | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
 
-  const { data: items = [], isLoading } = useQuery({
+  const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["my-purchases", userId],
     queryFn: async () => {
       const { data, error } = await (supabase as any)
@@ -27,7 +31,7 @@ export function PurchasesPanel({ userId }: { userId: string }) {
           investment_properties:investment_property_id(title, slug, cover_image_url, location, property_type)
         `)
         .eq("user_id", userId)
-        .in("status", ["confirmed", "completed"])
+        .in("status", ["completed"])
         .order("created_at", { ascending: false });
         
       if (error) {
@@ -36,6 +40,28 @@ export function PurchasesPanel({ userId }: { userId: string }) {
       }
       return data ?? [];
     },
+    refetchInterval: 15000,
+  });
+
+  const filteredItems = items.filter((r: any) => {
+    const prop = Array.isArray(r.properties) ? r.properties[0] : r.properties;
+    const invProp = Array.isArray(r.investment_properties) ? r.investment_properties[0] : r.investment_properties;
+    const item = prop || invProp;
+    const title = (item?.title || "").toLowerCase();
+    const searchMatch = title.includes(searchTerm.toLowerCase());
+
+    if (!searchMatch) return false;
+
+    if (typeFilter !== "all") {
+      const isInvestment = !!r.investment_property_id;
+      if (typeFilter === "investment") {
+        return isInvestment;
+      }
+      if (typeFilter === "property") {
+        return !isInvestment;
+      }
+    }
+    return true;
   });
 
   const handleViewReceipt = async (purchase: any) => {
@@ -104,7 +130,32 @@ export function PurchasesPanel({ userId }: { userId: string }) {
         </div>
         <div className="flex items-center gap-3">
            <Badge variant="secondary" className="rounded-lg px-4 py-1.5 font-bold text-sm bg-primary/10 text-primary">{items.length} Properties Owned</Badge>
+           <Button variant="outline" size="icon" onClick={() => refetch()} className="rounded-xl border-border/40 hover:bg-accent h-9 w-9">
+              <RefreshCcw className="h-4 w-4" />
+           </Button>
         </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by property name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 rounded-xl border-border/40"
+          />
+        </div>
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-full sm:w-[220px] rounded-xl border-border/40">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl border-border/40">
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="property">Full Ownership</SelectItem>
+            <SelectItem value="investment">Fractional Investment</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
       {isLoading ? (
@@ -122,9 +173,17 @@ export function PurchasesPanel({ userId }: { userId: string }) {
             <Link to="/properties">Explore Properties</Link>
           </Button>
         </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="rounded-2xl border border-dashed border-border/60 p-12 text-center bg-secondary/5">
+          <p className="font-serif text-lg font-medium text-foreground">No purchases match your filters</p>
+          <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search terms or filter settings.</p>
+          <Button onClick={() => { setSearchTerm(""); setTypeFilter("all"); }} variant="outline" className="mt-4 rounded-xl">
+             Clear Filters
+          </Button>
+        </div>
       ) : (
         <div className="grid gap-6">
-           {items.map((r: any) => {
+           {filteredItems.map((r: any) => {
               const prop = Array.isArray(r.properties) ? r.properties[0] : r.properties;
               const invProp = Array.isArray(r.investment_properties) ? r.investment_properties[0] : r.investment_properties;
               const item = prop || invProp;

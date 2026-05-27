@@ -27,14 +27,7 @@ const heroImages = [
   "/hero_luxury_penthouse.png"
 ];
 
-const EXPLORE_CITIES = [
-  { name: "Miami", image: "https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?auto=format&fit=crop&w=800&q=80", count: 142 },
-  { name: "Houston", image: "https://images.unsplash.com/photo-1538099130811-745e64318258?auto=format&fit=crop&w=800&q=80", count: 98 },
-  { name: "Denver", image: "https://images.unsplash.com/photo-1618083818320-fa065ec4da6d?auto=format&fit=crop&w=800&q=80", count: 75 },
-  { name: "Austin", image: "https://images.unsplash.com/photo-1531218150217-5afc8926bc24?auto=format&fit=crop&w=800&q=80", count: 110 },
-  { name: "Los Angeles", image: "https://images.unsplash.com/photo-1580659324420-c2bd92b5123d?auto=format&fit=crop&w=800&q=80", count: 215 },
-  { name: "New York", image: "https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?auto=format&fit=crop&w=800&q=80", count: 340 },
-];
+
 
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -61,6 +54,18 @@ export default function Home() {
       return data as PropertyCardData[];
     },
     refetchInterval: 30000,
+  });
+
+  const { data: exploreLocations = [] } = useQuery({
+    queryKey: ["homepage-locations"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("locations")
+        .select("id, name, slug")
+        .order("name");
+      if (error) throw error;
+      return data ?? [];
+    },
   });
 
 
@@ -370,29 +375,30 @@ export default function Home() {
       </section>
 
       {/* 8. EXPLORE BY CITY */}
+      {exploreLocations.length > 0 && (
       <section className="container-wide section-gap">
         <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
           <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{"Explore Locations"}</span>
           <h2 className="font-serif text-3xl font-semibold text-foreground">{"Find Properties by City"}</h2>
         </div>
-        <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-4 max-w-4xl mx-auto">
-          {EXPLORE_CITIES.map((city) => (
-            <Link
-              key={city.name}
-              to={`/properties?city=${encodeURIComponent(city.name)}`}
-              className="group flex items-center gap-3 px-5 py-3 sm:px-6 sm:py-3.5 rounded-full bg-secondary/40 hover:bg-primary border border-border/50 hover:border-primary shadow-sm hover:shadow-md transition-all duration-300 hover:-translate-y-0.5 active:scale-95"
-            >
-              <MapPin className="h-4 w-4 text-primary group-hover:text-primary-foreground transition-colors" />
-              <span className="font-medium text-sm sm:text-base text-foreground group-hover:text-primary-foreground transition-colors">
-                {city.name}
-              </span>
-              <span className="text-[10px] sm:text-xs font-semibold px-2 py-0.5 rounded-full bg-background text-muted-foreground group-hover:bg-primary-foreground/20 group-hover:text-primary-foreground transition-colors">
-                {city.count}
-              </span>
-            </Link>
+        <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 max-w-4xl mx-auto font-medium">
+          {exploreLocations.map((loc: any, idx: number) => (
+            <div key={loc.id} className="flex items-center gap-x-4 sm:gap-x-6">
+              <Link
+                to={`/properties?city=${encodeURIComponent(loc.name)}`}
+                className="group text-sm sm:text-base text-muted-foreground hover:text-primary transition-colors duration-300 relative"
+              >
+                <span>{loc.name}</span>
+                <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
+              </Link>
+              {idx < exploreLocations.length - 1 && (
+                <span className="text-primary/30 text-xs select-none">✦</span>
+              )}
+            </div>
           ))}
         </div>
       </section>
+      )}
 
 
 

@@ -2,10 +2,12 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ClipboardList, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle, CalendarDays, FileText, RefreshCcw, Loader2 } from "lucide-react";
+import { ClipboardList, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle, CalendarDays, FileText, RefreshCcw, Loader2, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/invest";
 import { ManualPaymentModal } from "./ManualPaymentModal";
 import { toast } from "@/hooks/use-toast";
@@ -13,6 +15,8 @@ import { toast } from "@/hooks/use-toast";
 export function ReservationsPanel({ userId }: { userId: string }) {
   const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
   const [cancellingResId, setCancellingResId] = useState<string | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
 
   const { data: items = [], isLoading, refetch } = useQuery({
     queryKey: ["my-reservations", userId],
@@ -25,7 +29,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
           investment_properties:investment_property_id(title, slug, cover_image_url)
         `)
         .eq("user_id", userId)
-        .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested", "confirmed", "success", "rejected", "expired", "failed", "cancelled"])
+        .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested", "confirmed", "completed", "rejected", "expired", "cancelled"])
         .order("created_at", { ascending: false });
         
       if (error) {
@@ -34,6 +38,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       }
       return data ?? [];
     },
+    refetchInterval: 15000,
   });
 
   const handleCancelReservation = async (reservationId: string) => {
@@ -58,6 +63,38 @@ export function ReservationsPanel({ userId }: { userId: string }) {
       setCancellingResId(null);
     }
   };
+
+  const filteredItems = items.filter((r: any) => {
+    const prop = Array.isArray(r.properties) ? r.properties[0] : r.properties;
+    const invProp = Array.isArray(r.investment_properties) ? r.investment_properties[0] : r.investment_properties;
+    const item = prop || invProp;
+    const title = (item?.title || "").toLowerCase();
+    const searchMatch = title.includes(searchTerm.toLowerCase());
+
+    if (!searchMatch) return false;
+
+    if (statusFilter !== "all") {
+      if (statusFilter === "pending") {
+        return r.status === "pending" || r.status === "pending_review";
+      }
+      if (statusFilter === "awaiting_reservation_fee") {
+        return r.status === "awaiting_reservation_fee" || r.status === "under_admin_review" || r.status === "information_requested" || r.status === "processing";
+      }
+      if (statusFilter === "confirmed") {
+        return r.status === "approved" || r.status === "confirmed" || r.status === "success" || r.status === "completed";
+      }
+      if (statusFilter === "rejected") {
+        return r.status === "rejected" || r.status === "failed";
+      }
+      if (statusFilter === "expired") {
+        return r.status === "expired";
+      }
+      if (statusFilter === "cancelled") {
+        return r.status === "cancelled";
+      }
+    }
+    return true;
+  });
 
   function getStatusStyle(status: string) {
     switch (status) {
@@ -123,6 +160,33 @@ export function ReservationsPanel({ userId }: { userId: string }) {
         </div>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input
+            placeholder="Search by property name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 rounded-xl border-border/40"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-full sm:w-[220px] rounded-xl border-border/40">
+            <SelectValue placeholder="All Statuses" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl border-border/40">
+            <SelectItem value="all">All Statuses</SelectItem>
+            <SelectItem value="pending">Pending Review</SelectItem>
+            <SelectItem value="awaiting_reservation_fee">Payment Pending</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="confirmed">Confirmed</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectItem value="expired">Expired</SelectItem>
+            <SelectItem value="cancelled">Cancelled</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+
       {isLoading ? (
         <div className="space-y-4">
            {[1, 2, 3].map(i => <Skeleton key={i} className="h-24 rounded-xl" />)}
@@ -138,9 +202,17 @@ export function ReservationsPanel({ userId }: { userId: string }) {
             <Link to="/properties">View Properties</Link>
           </Button>
         </div>
+      ) : filteredItems.length === 0 ? (
+        <div className="rounded-xl border border-dashed border-border/60 p-12 text-center bg-secondary/5">
+          <p className="font-serif text-lg font-medium text-foreground">No reservations match your filters</p>
+          <p className="mt-1 text-sm text-muted-foreground">Try adjusting your search terms or filter settings.</p>
+          <Button onClick={() => { setSearchTerm(""); setStatusFilter("all"); }} variant="outline" className="mt-4 rounded-xl">
+             Clear Filters
+          </Button>
+        </div>
       ) : (
         <div className="grid gap-6">
-           {items.map((r: any) => {
+           {filteredItems.map((r: any) => {
               const prop = Array.isArray(r.properties) ? r.properties[0] : r.properties;
               const invProp = Array.isArray(r.investment_properties) ? r.investment_properties[0] : r.investment_properties;
               const item = prop || invProp;
@@ -190,6 +262,16 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                              )}
                            </div>
                          )}
+
+                         {r.status === "approved" && (
+                           <div className="p-3.5 bg-green-500/5 border border-green-500/20 rounded-lg flex items-center gap-3">
+                             <CheckCircle2 className="h-4.5 w-4.5 text-green-600 shrink-0" />
+                             <div className="flex-1 min-w-0">
+                               <p className="text-xs font-semibold text-green-800">Reservation Approved</p>
+                               <p className="text-[10px] text-green-700/80 mt-0.5 font-normal">Your reservation has been approved. You can now complete full payment to secure this property.</p>
+                             </div>
+                           </div>
+                         )}
                          
                          <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 pt-4 border-t border-border/40">
                             <div className="space-y-1">
@@ -207,11 +289,17 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                </p>
                             </div>
                             <div className="sm:col-span-2 flex justify-end gap-2 items-center flex-wrap">
-                               <Button asChild variant="outline" size="sm" className="rounded-xl border-border/40 text-[11px] font-bold h-9">
-                                  <Link to={`/${pathPrefix}/${item?.slug}`}>
-                                     Property Details <ExternalLink className="ml-1.5 h-3 w-3" />
-                                  </Link>
-                               </Button>
+                               {item?.slug ? (
+                                 <Button asChild variant="outline" size="sm" className="rounded-xl border-border/40 text-[11px] font-bold h-9">
+                                    <Link to={`/${pathPrefix}/${item.slug}`}>
+                                       Property Details <ExternalLink className="ml-1.5 h-3 w-3" />
+                                    </Link>
+                                 </Button>
+                               ) : (
+                                 <Button variant="outline" size="sm" disabled className="rounded-xl border-border/40 text-[11px] font-bold h-9">
+                                    Listing Unavailable
+                                 </Button>
+                               )}
                                  {r.status === 'pending' && (
                                     <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1">
                                       Under Review
@@ -222,12 +310,18 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                      Information Requested
                                    </Badge>
                                  )}
-                                {(r.status === 'confirmed' || r.status === 'success') && (
-                                  <Button asChild size="sm" className="rounded-xl px-5 text-[11px] font-bold h-9 bg-primary hover:bg-primary/90">
-                                     <Link to={isInvestment ? `/invest/${item?.slug}` : `/properties/${item?.slug}`}>
-                                        Complete Purchase
-                                     </Link>
-                                  </Button>
+                                {(r.status === 'approved' || r.status === 'confirmed' || r.status === 'success') && (
+                                  item?.slug ? (
+                                    <Button asChild size="sm" className="rounded-xl px-5 text-[11px] font-bold h-9 bg-primary hover:bg-primary/90">
+                                       <Link to={isInvestment ? `/invest/${item.slug}` : `/properties/${item.slug}`}>
+                                          Complete Purchase
+                                       </Link>
+                                    </Button>
+                                  ) : (
+                                    <Button size="sm" disabled className="rounded-xl px-5 text-[11px] font-bold h-9 bg-primary/50 text-white">
+                                       Property Unavailable
+                                    </Button>
+                                  )
                                 )}
                                 {r.status === 'awaiting_reservation_fee' && (
                                   <Button 

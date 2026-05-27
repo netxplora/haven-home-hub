@@ -108,25 +108,11 @@ export function AdminPayments() {
     if (error) {
       toast({ title: "Operation failed", description: error.message, variant: "destructive" });
     } else {
-      // When confirming a full purchase payment, also complete the linked reservation
-      // This triggers the database sync_property_sold_status trigger to mark property as sold
-      if (action === "confirmed" && selectedPayment) {
-        const reservationId = selectedPayment.reservation_id;
-        const propertyId = selectedPayment.property_id;
-        
-        // If this payment has a linked reservation, mark it completed
-        if (reservationId) {
-          await (supabase.from("reservations") as any)
-            .update({ status: "completed", updated_at: new Date().toISOString() })
-            .eq("id", reservationId);
-        }
-        
-        // If this is a property purchase payment (not just reservation fee), mark property as sold
-        if (propertyId && selectedPayment.payment_type === "purchase") {
-          await (supabase.from("properties") as any)
-            .update({ status: "sold", updated_at: new Date().toISOString() })
-            .eq("id", propertyId);
-        }
+      // When confirming a full purchase payment, use the RPC
+      if (action === "confirmed" && selectedPayment?.payment_type === "purchase") {
+        await (supabase as any).rpc("complete_property_purchase", {
+          p_payment_id: selectedPayment.id
+        });
       }
 
       toast({ title: `Transaction marked as ${action.replace("_", " ")}` });

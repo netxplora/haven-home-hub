@@ -79,12 +79,13 @@ export function AdminVerificationQueue() {
         const { error } = await (supabase.from("payments") as any).update({ status: "success" }).eq("id", item.id);
         if (error) throw error;
         
-        // Handle specific types attached to payments
         if (item.type === "reservation") {
           const reservationId = item.raw.reservation_id || item.raw.target_id;
           if (reservationId) {
-            await (supabase.from("reservations") as any).update({ status: "confirmed" }).eq("id", reservationId);
+            await (supabase as any).rpc("approve_reservation", { p_reservation_id: reservationId });
           }
+        } else if (item.type === "purchase") {
+          await (supabase as any).rpc("complete_property_purchase", { p_payment_id: item.id });
         } else if (item.type === "property") {
           const propertyId = item.raw.property_id;
           if (propertyId) {

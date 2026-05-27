@@ -1,14 +1,12 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, MapPin, Globe } from "lucide-react";
+import { Plus, Pencil, Trash2, MapPin, Globe, X } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -22,23 +20,62 @@ export function AdminLocations() {
   });
   
   const [f, setF] = useState({ name: "", slug: "", image_url: "", featured: false });
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
 
-  async function add(e: React.FormEvent) {
+  function startEdit(loc: any) {
+    setEditingId(loc.id);
+    setF({ name: loc.name, slug: loc.slug, image_url: loc.image_url || "", featured: loc.featured });
+  }
+
+  function cancelEdit() {
+    setEditingId(null);
+    setF({ name: "", slug: "", image_url: "", featured: false });
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
-    const { error } = await supabase.from("locations").insert({ 
-      ...f, 
-      slug: f.slug || slugify(f.name) 
-    });
-    
-    setSaving(false);
-    if (error) {
-      toast({ title: "Failed", description: error.message, variant: "destructive" });
-    } else { 
-      toast({ title: "Location added" });
-      setF({ name: "", slug: "", image_url: "", featured: false }); 
-      qc.invalidateQueries({ queryKey: ["admin-locations"] }); 
+
+    if (editingId) {
+      // Update existing location
+      const { error } = await supabase
+        .from("locations")
+        .update({ 
+          name: f.name, 
+          slug: f.slug || slugify(f.name), 
+          image_url: f.image_url || null, 
+          featured: f.featured 
+        })
+        .eq("id", editingId);
+
+      setSaving(false);
+      if (error) {
+        toast({ title: "Update Failed", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "Location updated" });
+        cancelEdit();
+        qc.invalidateQueries({ queryKey: ["admin-locations"] });
+        qc.invalidateQueries({ queryKey: ["homepage-locations"] });
+        qc.invalidateQueries({ queryKey: ["locations"] });
+      }
+    } else {
+      // Create new location
+      const { error } = await supabase.from("locations").insert({ 
+        ...f, 
+        slug: f.slug || slugify(f.name) 
+      });
+
+      setSaving(false);
+      if (error) {
+        toast({ title: "Failed", description: error.message, variant: "destructive" });
+      } else { 
+        toast({ title: "Location added" });
+        setF({ name: "", slug: "", image_url: "", featured: false }); 
+        qc.invalidateQueries({ queryKey: ["admin-locations"] });
+        qc.invalidateQueries({ queryKey: ["homepage-locations"] });
+        qc.invalidateQueries({ queryKey: ["locations"] });
+      }
     }
   }
 
@@ -49,7 +86,10 @@ export function AdminLocations() {
       toast({ title: "Delete failed", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Location removed" });
+      if (editingId === id) cancelEdit();
       qc.invalidateQueries({ queryKey: ["admin-locations"] });
+      qc.invalidateQueries({ queryKey: ["homepage-locations"] });
+      qc.invalidateQueries({ queryKey: ["locations"] });
     }
   }
 
@@ -58,7 +98,7 @@ export function AdminLocations() {
       <div className="space-y-4">
         <div className="grid gap-3 sm:grid-cols-2">
           {locations.map((l: any) => (
-            <div key={l.id} className="group flex items-center justify-between rounded-xl border border-border/50 bg-card p-4 transition-all hover:shadow-md hover:border-primary/20">
+            <div key={l.id} className={`group flex items-center justify-between rounded-xl border bg-card p-4 transition-all hover:shadow-md ${editingId === l.id ? 'border-primary/50 shadow-md ring-1 ring-primary/20' : 'border-border/50 hover:border-primary/20'}`}>
               <div className="flex items-center gap-3">
                 <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
                   <MapPin className="h-5 w-5" />
@@ -70,6 +110,14 @@ export function AdminLocations() {
               </div>
               <div className="flex items-center gap-2">
                 {l.featured && <Badge variant="default" className="text-[8px] uppercase tracking-tighter h-5">Featured</Badge>}
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={() => startEdit(l)} 
+                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
                 <Button 
                   variant="ghost" 
                   size="icon" 
@@ -91,15 +139,22 @@ export function AdminLocations() {
       </div>
 
       <div className="relative">
-        <form onSubmit={add} className="sticky top-6 space-y-4 rounded-xl border border-border/50 bg-card p-6 shadow-xl shadow-primary/5">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
-              <Plus className="h-5 w-5" />
+        <form onSubmit={handleSubmit} className="sticky top-6 space-y-4 rounded-xl border border-border/50 bg-card p-6 shadow-xl shadow-primary/5">
+          <div className="flex items-center justify-between mb-2">
+            <div className="flex items-center gap-3">
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${editingId ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'}`}>
+                {editingId ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+              </div>
+              <div>
+                <h3 className="font-serif text-lg font-bold">{editingId ? "Edit Location" : "Add Location"}</h3>
+                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{editingId ? "Update Details" : "Regional Mapping"}</p>
+              </div>
             </div>
-            <div>
-              <h3 className="font-serif text-lg font-bold">Add Location</h3>
-              <p className="text-[10px] text-muted-foreground uppercase tracking-widest">Regional Mapping</p>
-            </div>
+            {editingId && (
+              <Button type="button" variant="ghost" size="icon" onClick={cancelEdit} className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
+                <X className="h-4 w-4" />
+              </Button>
+            )}
           </div>
 
           <div className="space-y-4">
@@ -123,9 +178,11 @@ export function AdminLocations() {
               <Label htmlFor="featured-loc" className="text-sm font-medium">Feature this region</Label>
             </div>
 
-            <Button type="submit" disabled={saving} className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold shadow-sm transition-all">
-              {saving ? "Adding..." : "Add Region"}
-            </Button>
+            <div className="flex gap-2">
+              <Button type="submit" disabled={saving} className={`flex-1 h-12 text-primary-foreground rounded-xl font-bold shadow-sm transition-all ${editingId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary hover:bg-primary/90'}`}>
+                {saving ? (editingId ? "Updating..." : "Adding...") : (editingId ? "Update Location" : "Add Region")}
+              </Button>
+            </div>
           </div>
         </form>
       </div>

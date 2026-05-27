@@ -18,7 +18,7 @@ interface ManualPaymentModalProps {
   method?: "digital_currency" | "bank_transfer" | "third_party_provider" | string;
   amount: number;
   currency: string;
-  paymentType: "investment" | "booking" | "reservation" | "installment" | "property";
+  paymentType: "investment" | "booking" | "reservation" | "installment" | "property" | "purchase";
   targetId: string;
   bookingId?: string;
   metadata?: Record<string, any>;
@@ -121,6 +121,8 @@ export function ManualPaymentModal({
         query = query.eq("booking_id", bookingId);
       } else if (paymentType === "investment") {
         query = query.eq("investment_id", targetId);
+      } else if (paymentType === "purchase") {
+        query = query.eq("property_id", targetId).eq("payment_type", "purchase");
       } else {
         query = query.eq("property_id", targetId);
       }
@@ -277,7 +279,7 @@ export function ManualPaymentModal({
       investment_property_id: isInvestmentProperty && paymentType !== 'investment' ? targetId : null,
       investment_id: paymentType === 'investment' ? targetId : null,
       booking_id: paymentType === 'booking' ? bookingId : null,
-      reservation_id: paymentType === 'reservation' ? bookingId : null,
+      reservation_id: (paymentType === 'reservation' || paymentType === 'purchase') ? bookingId : null,
       hold_hours: holdHours || (paymentType === 'reservation' ? 168 : null),
       metadata: { manual: true, method: activeMethod || method, ...metadata }
     });
