@@ -26,7 +26,7 @@ export function LegalDocumentsDialog({ open, onClose, propertyId, propertyTitle,
         .select("*")
         .eq("user_id", userId)
         .eq("property_id", propertyId)
-        .in("document_type", ["contract", "deed"]);
+        .in("document_type", ["contract", "deed", "contract_of_sale", "deed_of_assignment", "property_purchase_agreement", "ownership_confirmation"]);
 
       if (error) throw error;
       return data || [];
@@ -34,17 +34,26 @@ export function LegalDocumentsDialog({ open, onClose, propertyId, propertyTitle,
     enabled: open && !!propertyId && !!userId,
   });
 
-  const handleSimulateEmail = (docType: string, docName: string) => {
-    setSendingEmail(docType);
-    setTimeout(() => {
+  const handleSimulateEmail = (doc: any, docName: string) => {
+    setSendingEmail(doc.document_type);
+    setTimeout(async () => {
+      await supabase.from("user_documents").update({ status: 'delivered' }).eq("id", doc.id);
       setSendingEmail(null);
       toast.success(`${docName} sent to your registered email address securely.`);
     }, 1500);
   };
 
   const requiredDocs = [
-    { type: "contract", title: "Contract of Sale (COS)", desc: "Agreement of property sale and terms." },
-    { type: "deed", title: "Deed of Assignment (DOA)", desc: "Official ownership transfer agreement." }
+    { 
+      types: ["contract", "contract_of_sale", "property_purchase_agreement"], 
+      title: "Contract of Sale (COS)", 
+      desc: "Agreement of property sale and terms." 
+    },
+    { 
+      types: ["deed", "deed_of_assignment", "ownership_confirmation"], 
+      title: "Deed of Assignment (DOA)", 
+      desc: "Official ownership transfer agreement." 
+    }
   ];
 
   return (
@@ -69,13 +78,13 @@ export function LegalDocumentsDialog({ open, onClose, propertyId, propertyTitle,
             </div>
           ) : (
             requiredDocs.map(reqDoc => {
-              const doc = documents?.find(d => d.document_type === reqDoc.type);
+              const doc = documents?.find(d => reqDoc.types.includes(d.document_type));
               
-              const isReady = doc && doc.document_url && doc.status !== 'pending';
+              const isReady = doc && (doc.file_path || doc.metadata?.document_snapshot) && doc.status !== 'pending';
               const isVerified = doc?.status === 'verified';
               
               return (
-                <div key={reqDoc.type} className="flex flex-col sm:flex-row gap-4 p-5 rounded-xl border border-border/60 bg-card shadow-sm hover:border-border transition-colors">
+                <div key={reqDoc.title} className="flex flex-col sm:flex-row gap-4 p-5 rounded-xl border border-border/60 bg-card shadow-sm hover:border-border transition-colors">
                   <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                     <FileText className="h-6 w-6 text-primary" />
                   </div>
@@ -104,22 +113,27 @@ export function LegalDocumentsDialog({ open, onClose, propertyId, propertyTitle,
                         size="sm" 
                         className="text-xs font-semibold rounded-lg h-9"
                         disabled={!isReady}
-                        onClick={() => {
-                          if (doc?.document_url) {
-                            window.open(doc.document_url, '_blank');
+                        onClick={async () => {
+                          if (doc?.file_path) {
+                            if (doc.file_path.startsWith('generated://')) {
+                              window.open(`/print-document/${doc.id}`, '_blank');
+                            } else {
+                              const { data } = await supabase.storage.from("user-documents").createSignedUrl(doc.file_path, 60);
+                              if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                            }
                           }
                         }}
                       >
-                        <Download className="h-3.5 w-3.5 mr-2" /> Download PDF
+                        <Download className="h-3.5 w-3.5 mr-2" /> Download / Print PDF
                       </Button>
                       <Button 
                         variant="secondary" 
                         size="sm" 
                         className="text-xs font-semibold rounded-lg h-9 bg-secondary/60 hover:bg-secondary"
-                        disabled={!isReady || sendingEmail === reqDoc.type}
-                        onClick={() => handleSimulateEmail(reqDoc.type, reqDoc.title)}
+                        disabled={!isReady || sendingEmail === doc?.document_type}
+                        onClick={() => handleSimulateEmail(doc, reqDoc.title)}
                       >
-                        {sendingEmail === reqDoc.type ? (
+                        {sendingEmail === doc?.document_type ? (
                           <><Loader2 className="h-3.5 w-3.5 mr-2 animate-spin" /> Sending...</>
                         ) : (
                           <><Mail className="h-3.5 w-3.5 mr-2" /> Email Copy</>

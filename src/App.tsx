@@ -41,6 +41,8 @@ const Privacy = lazy(() => import("./pages/static/Privacy"));
 const Terms = lazy(() => import("./pages/static/Terms"));
 const BlogList = lazy(() => import("./pages/cms/BlogList"));
 const BlogPost = lazy(() => import("./pages/cms/BlogPost"));
+const PrintDocument = lazy(() => import("./pages/static/PrintDocument"));
+const VerifyDocument = lazy(() => import("./pages/static/VerifyDocument"));
 
 // Root
 const NotFound = lazy(() => import("./pages/NotFound"));
@@ -134,6 +136,8 @@ const App = () => (
               <Route path="/invest/:slug" element={<InvestDetail />} />
               <Route path="/payments/:id" element={<PaymentStatus />} />
               <Route path="/certificate/:id" element={<CertificateView />} />
+              <Route path="/print-document/:id" element={<PrintDocument />} />
+              <Route path="/verify-document/:id" element={<VerifyDocument />} />
 
               {/* Static Pages */}
               <Route path="/about" element={<About />} />
