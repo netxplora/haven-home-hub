@@ -104,8 +104,8 @@ export function AdminMarketplace() {
           icon={ArrowLeftRight}
           label="Completed Trades"
           value={soldListings.length.toString()}
-          accent="text-emerald-600"
-          bgAccent="bg-emerald-500/10"
+          accent="text-orange-600"
+          bgAccent="bg-orange-500/10"
         />
         <StatCard
           icon={TrendingUp}
@@ -218,7 +218,7 @@ export function AdminMarketplace() {
                             variant="secondary"
                             className={cn(
                               "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
-                              l.status === "active" && "bg-emerald-500/10 text-emerald-600 border-emerald-500/20",
+                              l.status === "active" && "bg-orange-500/10 text-orange-600 border-orange-500/20",
                               l.status === "sold" && "bg-primary text-primary-foreground border-none shadow-sm",
                               l.status === "cancelled" && "bg-secondary/50 text-muted-foreground border-border/50"
                             )}

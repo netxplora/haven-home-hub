@@ -158,7 +158,7 @@ export default function InvestOpportunities() {
           className="absolute inset-0 h-full w-full object-cover"
         />
         <div className="absolute inset-0 bg-black/30 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-hero-emerald mix-blend-multiply opacity-60 z-[2]" />
+        <div className="absolute inset-0 bg-gradient-hero-orange mix-blend-multiply opacity-60 z-[2]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[3]" />
 
         <div className="container-wide relative z-10 flex flex-col justify-center py-16 sm:py-24 text-white">
@@ -174,7 +174,7 @@ export default function InvestOpportunities() {
             </p>
             
             <div className="relative max-w-xl group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-emerald-500/50 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-orange-500/50 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
               <form
                 onSubmit={(e) => { e.preventDefault(); update("q", qLocal); }}
                 className="relative flex items-center bg-white rounded-xl shadow-xl overflow-hidden"

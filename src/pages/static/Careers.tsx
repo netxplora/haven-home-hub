@@ -74,7 +74,7 @@ export default function Careers() {
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />
-        <div className="absolute inset-0 bg-gradient-hero-emerald mix-blend-multiply opacity-70 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-hero-orange mix-blend-multiply opacity-70 z-[1]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[2]" />
         
         <div className="container-wide relative z-10 text-primary-foreground">

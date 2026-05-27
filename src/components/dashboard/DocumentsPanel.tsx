@@ -164,7 +164,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                   <h2 className="font-serif text-2xl font-bold mb-4">Action Required</h2>
                   {requiredDocs.length === 0 ? (
                     <div className="rounded-xl border border-border bg-card p-6 flex flex-col items-center justify-center text-center">
-                      <CheckCircle2 className="h-10 w-10 text-emerald-500 mb-3" />
+                      <CheckCircle2 className="h-10 w-10 text-orange-500 mb-3" />
                       <p className="font-semibold">All caught up!</p>
                       <p className="text-sm text-muted-foreground">You have no pending documents to sign.</p>
                     </div>
@@ -213,7 +213,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <p className="text-xs text-muted-foreground">Signed on {new Date(doc.signed_at).toLocaleString()}</p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-500/20 shrink-0">
+                          <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20 shrink-0">
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Legally Binding
                           </Badge>
                         </div>
@@ -269,7 +269,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             variant="secondary" 
                             className={cn(
                               "text-[10px] uppercase tracking-wider",
-                              doc.status === 'available' ? "bg-emerald-500/10 text-emerald-600" :
+                              doc.status === 'available' ? "bg-orange-500/10 text-orange-600" :
                               doc.status === 'processing' ? "bg-amber-500/10 text-amber-600" :
                               doc.status === 'rejected' ? "bg-destructive/10 text-destructive" :
                               ""
@@ -321,13 +321,13 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {certificates.map((cert: any) => (
-                  <div key={cert.id} className="p-5 rounded-xl border border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40 transition-colors flex flex-col h-full justify-between">
+                  <div key={cert.id} className="p-5 rounded-xl border border-orange-500/20 bg-orange-500/5 hover:border-orange-500/40 transition-colors flex flex-col h-full justify-between">
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-full bg-emerald-500/10 flex items-center justify-center">
-                          <ShieldCheck className="h-5 w-5 text-emerald-600" />
+                        <div className="h-10 w-10 rounded-full bg-orange-500/10 flex items-center justify-center">
+                          <ShieldCheck className="h-5 w-5 text-orange-600" />
                         </div>
-                        <Badge variant="outline" className="bg-emerald-50 text-emerald-700 border-emerald-200">Verified</Badge>
+                        <Badge variant="outline" className="bg-orange-50 text-orange-700 border-orange-200">Verified</Badge>
                       </div>
                       <h4 className="font-bold text-lg leading-tight mb-1">{cert.investment_properties?.title || "Property Asset"}</h4>
                       <p className="text-sm text-muted-foreground mb-4">Certificate ID: <span className="font-mono text-xs">{cert.certificate_number}</span></p>
@@ -345,7 +345,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                     </div>
                     
                     <Button 
-                      className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                      className="w-full bg-orange-600 hover:bg-orange-700 text-white"
                       onClick={() => window.open(`/certificate/${cert.id}`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" /> View Certificate

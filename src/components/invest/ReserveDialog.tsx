@@ -152,7 +152,7 @@ export function ReserveDialog({ open, onClose, property, type = "property" }: Re
                   </div>
                   <div className="flex justify-between items-end">
                     <div>
-                      <p className="text-3xl font-bold font-serif text-emerald-600">{formatMoney(reservationFee, "USD")}</p>
+                      <p className="text-3xl font-bold font-serif text-orange-600">{formatMoney(reservationFee, "USD")}</p>
                       <p className="text-[10px] text-muted-foreground mt-1 uppercase tracking-tighter">Fully refundable if purchase proceeds</p>
                     </div>
                     <div className="text-right">

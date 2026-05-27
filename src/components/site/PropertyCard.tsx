@@ -72,7 +72,7 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
               </Badge>
             )}
             {isNew && (
-              <Badge className="bg-emerald-500/90 text-white border border-emerald-400/20 backdrop-blur-sm shadow-sm text-xs px-2.5 py-1">
+              <Badge className="bg-orange-500/90 text-white border border-orange-400/20 backdrop-blur-sm shadow-sm text-xs px-2.5 py-1">
                 {"New Listing"}
               </Badge>
             )}

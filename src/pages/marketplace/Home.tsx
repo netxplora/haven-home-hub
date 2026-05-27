@@ -153,7 +153,7 @@ export default function Home() {
         <div className="container-wide relative z-10 py-24">
           <div className="animate-fade-in-up">
             <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white/95 backdrop-blur-md border border-white/20 shadow-sm">
-              <Sparkles className="h-4 w-4 text-emerald-400" /> {hero.badge}
+              <Sparkles className="h-4 w-4 text-orange-400" /> {hero.badge}
             </p>
             <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-white sm:text-5xl md:text-6xl tracking-tight">
               {hero.title}
@@ -176,8 +176,8 @@ export default function Home() {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2.5 px-4 rounded-xl bg-accent/30 border border-border/40">
             <div className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-primary shrink-0">
               <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-orange-500"></span>
               </span>
               {"Live Activity"}
             </div>
@@ -246,7 +246,7 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-transparent" />
 
           <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-2xl text-left">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-emerald-400 mb-6 border border-emerald-400/30 backdrop-blur-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-orange-500/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-orange-400 mb-6 border border-orange-400/30 backdrop-blur-sm">
               <PieChart className="h-4 w-4" /> {"Fractional Ownership"}
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
@@ -274,7 +274,7 @@ export default function Home() {
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Button asChild size="lg" className="w-full sm:w-auto bg-emerald-600 text-white hover:bg-emerald-700 shadow-lg font-medium text-base h-12 px-8">
+              <Button asChild size="lg" className="w-full sm:w-auto bg-orange-600 text-white hover:bg-orange-700 shadow-lg font-medium text-base h-12 px-8">
                 <Link to="/invest">{"Start Investing"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-white/5 text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md font-medium text-base h-12 px-8">

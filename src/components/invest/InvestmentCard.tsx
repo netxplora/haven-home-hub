@@ -75,7 +75,7 @@ export const InvestmentCard = memo(function InvestmentCard({ p }: { p: Investmen
             </div>
             <div className="h-2 w-full overflow-hidden rounded-full bg-accent/60 p-[1.5px] border border-border/20">
               <div
-                className="h-full rounded-full bg-gradient-to-r from-primary to-emerald-500 transition-all duration-1000 ease-out"
+                className="h-full rounded-full bg-gradient-to-r from-primary to-orange-500 transition-all duration-1000 ease-out"
                 style={{ width: `${pct}%` }}
               />
             </div>

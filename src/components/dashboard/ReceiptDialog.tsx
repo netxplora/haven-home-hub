@@ -64,7 +64,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-gray-200 pb-8 mb-8">
               <div className="flex items-start gap-4">
-                <div className="h-14 w-14 bg-emerald-900 text-white rounded-lg flex items-center justify-center font-bold font-serif text-2xl shadow-sm shrink-0">
+                <div className="h-14 w-14 bg-orange-900 text-white rounded-lg flex items-center justify-center font-bold font-serif text-2xl shadow-sm shrink-0">
                   VE
                 </div>
                 <div>
@@ -85,7 +85,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               {/* Investor Information */}
               <div>
-                <h3 className="text-xs font-bold text-emerald-800 uppercase tracking-wider border-b-2 border-emerald-100 pb-2 mb-4 inline-block">Investor Information</h3>
+                <h3 className="text-xs font-bold text-orange-800 uppercase tracking-wider border-b-2 border-orange-100 pb-2 mb-4 inline-block">Investor Information</h3>
                 <div className="space-y-3">
                   <div>
                     <p className="text-[10px] uppercase text-gray-400 font-bold">Account Name</p>
@@ -104,20 +104,20 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
 
               {/* Payment Verification */}
               <div>
-                <h3 className="text-xs font-bold text-emerald-800 uppercase tracking-wider border-b-2 border-emerald-100 pb-2 mb-4 inline-block">Payment Verification</h3>
-                <div className="space-y-3 p-4 bg-emerald-50/50 rounded-lg border border-emerald-100/50">
+                <h3 className="text-xs font-bold text-orange-800 uppercase tracking-wider border-b-2 border-orange-100 pb-2 mb-4 inline-block">Payment Verification</h3>
+                <div className="space-y-3 p-4 bg-orange-50/50 rounded-lg border border-orange-100/50">
                   <div className="flex justify-between items-center">
                     <p className="text-[10px] uppercase text-gray-500 font-bold">Status</p>
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isVerified ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'}`}>
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isVerified ? 'bg-orange-100 text-orange-700' : 'bg-amber-100 text-amber-700'}`}>
                       {isVerified && <CheckCircle2 className="h-3.5 w-3.5" />}
                       {receipt.status.toUpperCase()}
                     </div>
                   </div>
-                  <div className="flex justify-between items-center border-t border-emerald-100/50 pt-2">
+                  <div className="flex justify-between items-center border-t border-orange-100/50 pt-2">
                     <p className="text-[10px] uppercase text-gray-500 font-bold">Method</p>
                     <p className="text-sm font-semibold text-gray-800 capitalize">{receipt.payment_method?.replace("_", " ")}</p>
                   </div>
-                  <div className="flex justify-between items-center border-t border-emerald-100/50 pt-2">
+                  <div className="flex justify-between items-center border-t border-orange-100/50 pt-2">
                     <p className="text-[10px] uppercase text-gray-500 font-bold">Reference</p>
                     <p className="text-xs font-mono font-medium text-gray-800 truncate max-w-[150px]">{receipt.transaction_reference}</p>
                   </div>
@@ -140,7 +140,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                   )}
                   <div className="flex-1 w-full">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-bold text-emerald-700 uppercase tracking-widest bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                      <span className="text-[10px] font-bold text-orange-700 uppercase tracking-widest bg-orange-50 px-2 py-0.5 rounded border border-orange-100">
                         {meta.purchase_type || (receipt.type === 'investment' ? 'Fractional Investment' : receipt.type === 'reservation' ? 'Reservation' : 'Asset Purchase')}
                       </span>
                       {meta.property_type && (
@@ -248,7 +248,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                     )}
                     
                     {/* The actual payment recorded */}
-                    <tr className="bg-emerald-50/20">
+                    <tr className="bg-orange-50/20">
                       <td className="px-5 py-4">
                         <p className="font-semibold text-gray-800">
                           {receipt.type === 'installment' ? 'Installment Payment' : 
@@ -278,7 +278,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                     <tr>
                       <th className="px-5 py-4 text-right text-gray-500 font-bold uppercase text-xs">Total Settled</th>
                       <td className="px-5 py-4 text-right">
-                        <span className="text-2xl font-serif font-bold text-emerald-900">{formatMoney(receipt.amount_paid, receipt.currency)}</span>
+                        <span className="text-2xl font-serif font-bold text-orange-900">{formatMoney(receipt.amount_paid, receipt.currency)}</span>
                       </td>
                     </tr>
                   </tfoot>
@@ -301,12 +301,12 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                 )}
                 
                 {meta.certificate_id && (
-                  <div className="p-4 border border-emerald-200 rounded-lg bg-emerald-50 flex items-start gap-3">
-                    <ShieldCheck className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                  <div className="p-4 border border-orange-200 rounded-lg bg-orange-50 flex items-start gap-3">
+                    <ShieldCheck className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-[10px] font-bold text-emerald-800 uppercase tracking-widest mb-1">Digital Certificate</p>
-                      <p className="text-sm font-mono font-bold text-emerald-900">{meta.certificate_id}</p>
-                      <p className="text-xs text-emerald-700 mt-0.5">Ownership registered</p>
+                      <p className="text-[10px] font-bold text-orange-800 uppercase tracking-widest mb-1">Digital Certificate</p>
+                      <p className="text-sm font-mono font-bold text-orange-900">{meta.certificate_id}</p>
+                      <p className="text-xs text-orange-700 mt-0.5">Ownership registered</p>
                     </div>
                   </div>
                 )}
@@ -332,7 +332,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
           <Button variant="outline" onClick={onClose} className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-200 font-bold">
             Close
           </Button>
-          <Button onClick={handlePrint} className="rounded-xl bg-emerald-800 text-white shadow-sm hover:bg-emerald-900 transition-colors font-bold">
+          <Button onClick={handlePrint} className="rounded-xl bg-orange-800 text-white shadow-sm hover:bg-orange-900 transition-colors font-bold">
             <Printer className="mr-2 h-4 w-4" />
             Print Receipt
           </Button>

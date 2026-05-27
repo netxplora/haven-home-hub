@@ -150,13 +150,13 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
         <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Properties Owned</p>
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-emerald-500/10 text-emerald-600">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-orange-500/10 text-orange-600">
               <Heart className="h-4 w-4" />
             </span>
           </div>
           <p className="font-serif text-2xl font-semibold text-foreground">{stats?.propertiesOwnedCount ?? 0}</p>
           <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-            <Heart className="h-3 w-3 text-emerald-600" /> Successfully acquired
+            <Heart className="h-3 w-3 text-orange-600" /> Successfully acquired
           </p>
         </div>
 

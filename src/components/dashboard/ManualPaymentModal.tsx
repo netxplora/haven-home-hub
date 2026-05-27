@@ -456,8 +456,8 @@ export function ManualPaymentModal({
               )}
 
               {propertyData?.property_type === 'land' && (
-                <div className="bg-emerald-500/5 rounded-xl p-5 border border-emerald-500/20 shadow-sm">
-                  <h4 className="text-sm font-semibold mb-2 text-emerald-700 flex items-center gap-2">
+                <div className="bg-orange-500/5 rounded-xl p-5 border border-orange-500/20 shadow-sm">
+                  <h4 className="text-sm font-semibold mb-2 text-orange-700 flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Included Ownership Documentation
                   </h4>
                   <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
@@ -465,14 +465,14 @@ export function ManualPaymentModal({
                   </p>
                   <div className="space-y-3">
                     <div className="flex gap-3 items-start bg-background/80 p-3 rounded-lg border border-border/50">
-                      <FileText className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                      <FileText className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">Contract of Sale (COS)</p>
                         <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">Legally binding agreement of property sale and formal transaction acknowledgment.</p>
                       </div>
                     </div>
                     <div className="flex gap-3 items-start bg-background/80 p-3 rounded-lg border border-border/50">
-                      <FileText className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
+                      <FileText className="h-5 w-5 text-orange-600 shrink-0 mt-0.5" />
                       <div>
                         <p className="text-sm font-semibold text-foreground">Deed of Assignment (DOA)</p>
                         <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">Official ownership transfer agreement assigning full land rights to the buyer.</p>
@@ -721,7 +721,7 @@ export function ManualPaymentModal({
                 </div>
               </div>
               {draftSavedText && (
-                <p className={`text-xs text-center font-medium ${draftSavedText.includes("failed") ? "text-destructive" : "text-emerald-600"}`}>
+                <p className={`text-xs text-center font-medium ${draftSavedText.includes("failed") ? "text-destructive" : "text-orange-600"}`}>
                   {draftSavedText}
                 </p>
               )}

@@ -204,7 +204,7 @@ export function AdminDocuments() {
                       </td>
                       <td className="px-5 py-4">
                         <Badge variant="outline" className={
-                          doc.status === 'available' || doc.status === 'verified' || doc.status === 'delivered' ? "bg-emerald-500/10 text-emerald-600 border-emerald-500/20 capitalize" : "bg-amber-500/10 text-amber-600 border-amber-500/20 capitalize"
+                          doc.status === 'available' || doc.status === 'verified' || doc.status === 'delivered' ? "bg-orange-500/10 text-orange-600 border-orange-500/20 capitalize" : "bg-amber-500/10 text-amber-600 border-amber-500/20 capitalize"
                         }>
                           {doc.status.replace('_', ' ')}
                         </Badge>

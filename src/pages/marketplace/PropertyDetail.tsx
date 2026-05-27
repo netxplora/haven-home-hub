@@ -436,28 +436,28 @@ export default function PropertyDetail() {
                 </h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-orange-500 shrink-0" />
                     <div>
                       <p className="font-bold text-foreground">Certificate of Occupancy (C of O)</p>
                       <p className="text-xs text-muted-foreground">Verified by state government</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-orange-500 shrink-0" />
                     <div>
                       <p className="font-bold text-foreground">Registered Survey Plan</p>
                       <p className="text-xs text-muted-foreground">Free from government acquisition</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-orange-500 shrink-0" />
                     <div>
                       <p className="font-bold text-foreground">Deed of Assignment</p>
                       <p className="text-xs text-muted-foreground">Ready for ownership transfer</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />
+                    <CheckCircle2 className="h-5 w-5 text-orange-500 shrink-0" />
                     <div>
                       <p className="font-bold text-foreground">Contract of Sale</p>
                       <p className="text-xs text-muted-foreground">Issued immediately upon purchase</p>
@@ -695,7 +695,7 @@ export default function PropertyDetail() {
                 <div className="relative">
                   <img src={resolveImage(agent.photo_url)} alt={agent.full_name} loading="lazy"
                     className="h-20 w-20 rounded-xl object-cover border border-border shadow-sm" />
-                  <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-emerald-500 rounded-full border-4 border-card flex items-center justify-center">
+                  <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-orange-500 rounded-full border-4 border-card flex items-center justify-center">
                     <ShieldCheck className="h-3 w-3 text-white" />
                   </div>
                 </div>
@@ -712,7 +712,7 @@ export default function PropertyDetail() {
                   </Button>
                 )}
                 {agent.whatsapp && (
-                  <Button asChild variant="outline" className="rounded-xl h-11 border-emerald-500/20 text-emerald-600 hover:bg-emerald-50 shadow-sm font-bold text-xs">
+                  <Button asChild variant="outline" className="rounded-xl h-11 border-orange-500/20 text-orange-600 hover:bg-orange-50 shadow-sm font-bold text-xs">
                     <a href={`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
                       <MessageSquare className="mr-2 h-4 w-4" /> {"WhatsApp"}</a>
                   </Button>

@@ -43,7 +43,7 @@ const TYPE_COLORS: Record<string, string> = {
   general: "bg-[#F97316] text-white",
   investor_update: "bg-blue-600 text-white",
   maintenance: "bg-amber-500 text-white",
-  promotion: "bg-emerald-600 text-white",
+  promotion: "bg-orange-600 text-white",
   featured_property: "bg-primary text-primary-foreground",
   emergency: "bg-red-600 text-white",
 };

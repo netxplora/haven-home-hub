@@ -33,7 +33,7 @@ export default function BlogList() {
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />
-        <div className="absolute inset-0 bg-gradient-hero-emerald mix-blend-multiply opacity-60 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-hero-orange mix-blend-multiply opacity-60 z-[1]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 z-[2]" />
 
         <div className="container-wide relative z-10 text-center py-16 sm:py-20">
