@@ -46,7 +46,7 @@ export default function About() {
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />
-        <div className="absolute inset-0 bg-gradient-hero-orange mix-blend-multiply opacity-70 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-70 z-[1]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[2]" />
         
         <div className="container-wide relative z-10 text-primary-foreground">
@@ -134,7 +134,7 @@ export default function About() {
               </p>
             </div>
             <div className="rounded-xl border border-border bg-background p-8 shadow-soft">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-orange-500/10 text-orange-600 mb-6">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-rose-500/10 text-rose-600 mb-6">
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <h3 className="font-serif text-lg font-semibold">Structured investments</h3>

@@ -10,39 +10,39 @@
 @layer base {
   :root {
     /* Surfaces */
-    --background: 0 0% 100%; /* Background #FFFFFF */
-    --foreground: 220 20% 18%; /* Dark text */
+    --background: 0 0% 100%; /* Page background */
+    --foreground: 220 20% 18%;
 
-    --card: 0 0% 100%; /* Surface Default */
+    --card: 210 20% 98%; /* Surface */
     --card-foreground: 220 20% 18%;
 
-    --popover: 0 0% 100%;
+    --popover: 210 20% 98%;
     --popover-foreground: 220 20% 18%;
 
-    /* Brand — Red-Orange */
-    --primary: 24 90% 48%; /* Primary #EA580C */
+    /* Brand — Coral */
+    --primary: 350 89% 60%;
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 24 90% 48%;
+    --primary-glow: 350 89% 60%;
 
-    /* Secondary — Teal */
-    --secondary: 175 84% 32%; /* Secondary #0D9488 */
+    /* Secondary — Gold */
+    --secondary: 41 96% 40%;
     --secondary-foreground: 0 0% 100%;
 
-    /* Accent — Yellow / Secondary background */
-    --accent: 45 93% 47%; /* Yellow #EAB308 */
-    --accent-foreground: 220 20% 18%;
+    /* Accent — Teal */
+    --accent: 175 84% 32%;
+    --accent-foreground: 0 0% 100%;
 
-    /* Muted — soft gray for secondary info */
+    /* Muted */
     --muted: 220 10% 95%; 
     --muted-foreground: 220 10% 46%;
 
     /* Utility colors */
-    --destructive: 0 72% 51%; /* Error #DC2626 */
+    --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 220 13% 91%;
     --input: 220 13% 91%;
-    --ring: 24 90% 48%; /* Primary */
+    --ring: 350 89% 60%;
 
     --radius: 0.75rem;
 
@@ -51,9 +51,9 @@
         rgba(0, 0, 0, 0.45) 0%,
         rgba(0, 0, 0, 0.15) 50%,
         rgba(0, 0, 0, 0.65) 100%);
-    --gradient-hero-orange: linear-gradient(135deg,
-        rgba(234, 88, 12, 0.7) 0%,
-        rgba(13, 148, 136, 0.6) 100%);
+    --gradient-hero-rose: linear-gradient(135deg,
+        rgba(244, 63, 94, 0.7) 0%,
+        rgba(202, 138, 4, 0.6) 100%);
 
     /* Shadows */
     --shadow-soft: 0 1px 3px 0 rgba(0, 0, 0, 0.04), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
@@ -63,12 +63,12 @@
     /* Sidebar (admin/dashboard) */
     --sidebar-background: 0 0% 100%;
     --sidebar-foreground: 220 20% 18%;
-    --sidebar-primary: 24 90% 48%;
+    --sidebar-primary: 350 89% 60%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 175 84% 32%;
+    --sidebar-accent: 41 96% 40%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 24 90% 48%;
+    --sidebar-ring: 350 89% 60%;
   }
 
   .dark {
@@ -78,12 +78,12 @@
     --card-foreground: 0 0% 100%;
     --popover: 220 20% 14%;
     --popover-foreground: 0 0% 100%;
-    --primary: 24 90% 55%; 
+    --primary: 350 89% 65%; 
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 24 90% 55%;
-    --secondary: 175 84% 45%; 
+    --primary-glow: 350 89% 65%;
+    --secondary: 41 96% 45%; 
     --secondary-foreground: 0 0% 100%;
-    --accent: 45 93% 55%; 
+    --accent: 175 84% 45%; 
     --accent-foreground: 220 20% 10%;
     --muted: 220 20% 20%;
     --muted-foreground: 220 10% 65%;
@@ -91,15 +91,15 @@
     --destructive-foreground: 0 0% 100%;
     --border: 220 20% 20%;
     --input: 220 20% 20%;
-    --ring: 24 90% 55%;
+    --ring: 350 89% 65%;
     --sidebar-background: 220 20% 10%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 24 90% 55%;
+    --sidebar-primary: 350 89% 65%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 175 84% 45%;
+    --sidebar-accent: 41 96% 45%;
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 220 20% 20%;
-    --sidebar-ring: 24 90% 55%;
+    --sidebar-ring: 350 89% 65%;
   }
 }
 

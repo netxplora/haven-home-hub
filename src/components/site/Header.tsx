@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/site/NotificationBell";
 import { CurrencyToggle } from "@/components/site/CurrencyToggle";
-import logo from "@/assets/logo-orange.png";
+import logo from "@/assets/logo-rose.png";
 
 export function Header() {
   const { user, isAdmin, isAgent, signOut } = useAuth();

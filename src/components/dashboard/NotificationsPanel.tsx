@@ -54,7 +54,7 @@ export function NotificationsPanel() {
       case "investment": return "bg-blue-100 text-blue-700 dark:bg-blue-950/30 dark:text-blue-400";
       case "investment_confirmed": return "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400";
       case "withdrawal": return "bg-purple-100 text-purple-700 dark:bg-purple-950/30 dark:text-purple-400";
-      case "payment_confirmed": return "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400";
+      case "payment_confirmed": return "bg-rose-100 text-rose-700 dark:bg-rose-950/30 dark:text-rose-400";
       case "kyc": return "bg-indigo-100 text-indigo-700 dark:bg-indigo-950/30 dark:text-indigo-400";
       default: return "bg-primary/10 text-primary";
     }

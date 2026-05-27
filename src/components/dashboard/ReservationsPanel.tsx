@@ -29,7 +29,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
           investment_properties:investment_property_id(title, slug, cover_image_url)
         `)
         .eq("user_id", userId)
-        .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested", "confirmed", "completed", "rejected", "expired", "cancelled"])
+        .in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested", "confirmed", "rejected", "expired", "cancelled"])
         .order("created_at", { ascending: false });
         
       if (error) {

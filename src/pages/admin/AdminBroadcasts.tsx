@@ -104,7 +104,7 @@ function getStatusBadge(b: BroadcastRow) {
     if (b.published_at && new Date(b.published_at) > now) {
       return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 hover:bg-amber-500/20">Scheduled</Badge>;
     }
-    return <Badge className="bg-orange-500/15 text-orange-700 border-orange-200 hover:bg-orange-500/20">Active</Badge>;
+    return <Badge className="bg-rose-500/15 text-rose-700 border-rose-200 hover:bg-rose-500/20">Active</Badge>;
   }
   return <Badge variant="secondary">Draft</Badge>;
 }

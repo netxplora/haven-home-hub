@@ -204,7 +204,7 @@ export function AdminPropertyImport() {
             <div className="bg-card border border-border rounded-xl shadow-sm overflow-hidden">
               <div className="border-b border-border p-4 bg-muted/20 flex items-center justify-between">
                 <h3 className="font-medium flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-orange-500" />
+                  <CheckCircle2 className="h-4 w-4 text-rose-500" />
                   Review & Edit Schema
                 </h3>
                 <div className="flex items-center gap-2 text-sm">

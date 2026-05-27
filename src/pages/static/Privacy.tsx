@@ -8,7 +8,7 @@ export default function Privacy() {
       {/* Header */}
       <section className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-black">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center" />
-        <div className="absolute inset-0 bg-gradient-hero-orange mix-blend-multiply opacity-60 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-60 z-[1]" />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[2]" />
         
         <div className="container-wide relative z-10 text-primary-foreground text-center">

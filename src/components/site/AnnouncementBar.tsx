@@ -40,12 +40,12 @@ const TYPE_ICONS: Record<string, typeof Info> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-  general: "bg-[#F97316] text-white",
+  general: "bg-primary text-primary-foreground",
   investor_update: "bg-blue-600 text-white",
   maintenance: "bg-amber-500 text-white",
-  promotion: "bg-orange-600 text-white",
+  promotion: "bg-secondary text-secondary-foreground",
   featured_property: "bg-primary text-primary-foreground",
-  emergency: "bg-red-600 text-white",
+  emergency: "bg-destructive text-destructive-foreground",
 };
 
 const CYCLE_INTERVAL = 6000; // 6 seconds per broadcast

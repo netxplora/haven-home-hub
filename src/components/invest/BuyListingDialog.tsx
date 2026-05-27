@@ -120,7 +120,7 @@ export function BuyListingDialog({
               <span className="text-muted-foreground font-medium flex items-center gap-1.5">
                 <Wallet className="h-3.5 w-3.5 text-primary" /> Your Wallet Balance
               </span>
-              <span className={`font-bold ${hasEnoughBalance ? "text-orange-600" : "text-red-500"}`}>
+              <span className={`font-bold ${hasEnoughBalance ? "text-rose-600" : "text-red-500"}`}>
                 {formatMoney(walletBalance, currency)}
               </span>
             </div>
@@ -159,7 +159,7 @@ export function BuyListingDialog({
 
         <DialogFooter className="p-6 pt-4 bg-accent/20 border-t border-border/40 flex flex-col sm:flex-col gap-3">
           <Button
-            className="w-full h-12 text-sm font-semibold rounded-xl bg-orange-600 hover:bg-orange-700 text-white"
+            className="w-full h-12 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white"
             disabled={!hasEnoughBalance || submitting}
             onClick={handlePurchase}
           >

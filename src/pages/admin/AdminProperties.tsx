@@ -212,7 +212,7 @@ export function AdminProperties() {
                     p.status === 'available' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                     p.status === 'reserved' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                     p.status === 'sold' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                    p.status === 'pending' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
+                    p.status === 'pending' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
                     p.status === 'archived' ? 'bg-gray-500/10 text-gray-500 border-gray-500/20' : ''
                   }`}>
                     {p.status}
@@ -281,7 +281,7 @@ export function AdminProperties() {
                       p.status === 'available' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                       p.status === 'reserved' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                       p.status === 'sold' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                      p.status === 'pending' ? 'bg-orange-500/10 text-orange-600 border-orange-500/20' :
+                      p.status === 'pending' ? 'bg-rose-500/10 text-rose-600 border-rose-500/20' :
                       p.status === 'archived' ? 'bg-gray-500/10 text-gray-500 border-gray-500/20' : ''
                     }`}>
                       {p.status}

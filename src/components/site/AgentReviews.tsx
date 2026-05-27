@@ -90,7 +90,7 @@ export function AgentReviews({ agentId, agentName, propertyId }: AgentReviewsPro
                     <div className="flex items-center gap-2">
                       <p className="text-sm font-medium">{review.profiles?.full_name || "User"}</p>
                       {review.verified && (
-                        <Badge variant="outline" className="text-[10px] gap-1 text-orange-600 border-orange-200 bg-orange-50">
+                        <Badge variant="outline" className="text-[10px] gap-1 text-rose-600 border-rose-200 bg-rose-50">
                           <ShieldCheck className="h-2.5 w-2.5" /> Verified
                         </Badge>
                       )}

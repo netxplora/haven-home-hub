@@ -7,8 +7,8 @@ import {
 import { formatMoney } from "@/lib/invest";
 
 const COLORS = [
-  "#10b981", "#3b82f6", "#f59e0b", "#8b5cf6", "#ec4899",
-  "#14b8a6", "#f97316", "#6366f1", "#06b6d4", "#84cc16",
+  "#F43F5E", "#CA8A04", "#0D9488", "#8b5cf6", "#3b82f6",
+  "#16A34A", "#D97706", "#6366f1", "#06b6d4", "#84cc16",
 ];
 
 interface PortfolioChartsProps {
@@ -143,8 +143,8 @@ export function PortfolioCharts({ investments, returns, payments }: PortfolioCha
               <AreaChart data={roiData}>
                 <defs>
                   <linearGradient id="roiGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#10b981" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#10b981" stopOpacity={0} />
+                    <stop offset="5%" stopColor="#0D9488" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#0D9488" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -162,7 +162,7 @@ export function PortfolioCharts({ investments, returns, payments }: PortfolioCha
                 <Area
                   type="monotone"
                   dataKey="cumulative"
-                  stroke="#10b981"
+                  stroke="#0D9488"
                   strokeWidth={2}
                   fill="url(#roiGrad)"
                   name="Total Returns"
@@ -193,8 +193,8 @@ export function PortfolioCharts({ investments, returns, payments }: PortfolioCha
                   }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
-                <Bar dataKey="invested" fill="#3b82f6" name="Invested" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="returned" fill="#10b981" name="Returns" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="invested" fill="#F43F5E" name="Invested" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="returned" fill="#0D9488" name="Returns" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>
