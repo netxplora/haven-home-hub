@@ -27,8 +27,8 @@ export function PurchasesPanel({ userId }: { userId: string }) {
         .from("reservations")
         .select(`
           *,
-          properties:property_id(title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm),
-          investment_properties:investment_property_id(title, slug, cover_image_url, location, property_type)
+          properties:property_id(title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm, price),
+          investment_properties:investment_property_id(title, slug, cover_image_url, location, property_type, total_value, unit_price)
         `)
         .eq("user_id", userId)
         .in("status", ["completed", "confirmed"])
@@ -66,12 +66,30 @@ export function PurchasesPanel({ userId }: { userId: string }) {
 
   const handleViewReceipt = async (purchase: any) => {
     try {
-      // Find the receipt for this reservation
-      const { data, error } = await (supabase as any)
+      // 1. Find the payment for this reservation
+      const { data: payment, error: paymentError } = await (supabase as any)
+        .from("payments")
+        .select("id")
+        .eq("reservation_id", purchase.id)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (paymentError) throw paymentError;
+
+      // 2. Build receipt query using payment_id or reservation_id in metadata
+      let query = (supabase as any)
         .from("receipts")
         .select("*")
-        .eq("user_id", userId)
-        .or(`reference_id.eq.${purchase.id},metadata->>reservation_id.eq.${purchase.id}`)
+        .eq("user_id", userId);
+
+      if (payment?.id) {
+        query = query.or(`payment_id.eq.${payment.id},metadata->>reservation_id.eq.${purchase.id}`);
+      } else {
+        query = query.eq("metadata->>reservation_id", purchase.id);
+      }
+
+      const { data, error } = await query
         .order("created_at", { ascending: false })
         .limit(1)
         .maybeSingle();
@@ -234,7 +252,7 @@ export function PurchasesPanel({ userId }: { userId: string }) {
                         </div>
                         <div className="sm:text-right">
                           <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-1">Total Value</p>
-                          <p className="text-lg font-bold text-foreground">{formatMoney(r.total_price || r.amount || r.metadata?.amount_invested || 0, "USD")}</p>
+                          <p className="text-lg font-bold text-foreground">{formatMoney(r.total_price || r.amount || r.metadata?.amount_invested || item?.price || item?.total_value || 0, "USD")}</p>
                         </div>
                       </div>
 

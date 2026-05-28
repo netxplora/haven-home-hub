@@ -5,16 +5,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { 
-  FileText, 
-  CheckCircle2, 
-  AlertCircle, 
-  ShieldCheck, 
-  Download, 
-  ExternalLink, 
-  Clock, 
-  Folder, 
-  RefreshCw, 
+import {
+  FileText,
+  CheckCircle2,
+  AlertCircle,
+  ShieldCheck,
+  Download,
+  ExternalLink,
+  Clock,
+  Folder,
+  RefreshCw,
   Send,
   Eye,
   Mail,
@@ -86,9 +86,59 @@ export function DocumentsPanel({ userId }: { userId: string }) {
           properties(title, address)
         `)
         .eq("user_id", userId)
+        .neq("status", "deleted") // Exclude deleted documents
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
+    },
+  });
+
+  // Search & Filtering State
+  const [docSearch, setDocSearch] = useState("");
+  const [selectedPropertyId, setSelectedPropertyId] = useState("none");
+
+  // Fetch user's portfolio assets for the document request dropdown
+  const { data: portfolioAssets = [] } = useQuery({
+    queryKey: ["portfolio-assets", userId],
+    queryFn: async () => {
+      // Fetch only verified investments and standard properties from fully completed payments
+      const [invs, paymentsResponse] = await Promise.all([
+        supabase.from("user_investments" as any)
+          .select("investment_property_id, investment_properties(title)")
+          .eq("user_id", userId)
+          .in("status", ["active", "completed", "verified"]),
+        supabase.from("payments" as any)
+          .select("property_id, investment_property_id, properties(title), investment_properties(title)")
+          .eq("user_id", userId)
+          .eq("status", "success")
+      ]);
+      
+      const merged = [
+        ...(invs.data || []).map((i: any) => ({
+          id: i.investment_property_id,
+          title: i.investment_properties?.title || "Unknown Asset",
+          type: "investment"
+        })),
+        ...(paymentsResponse.data || [])
+          .filter((p: any) => p.property_id)
+          .map((p: any) => ({
+            id: p.property_id,
+            title: p.properties?.title || "Unknown Asset",
+            type: "property"
+          })),
+        ...(paymentsResponse.data || [])
+          .filter((p: any) => p.investment_property_id)
+          .map((p: any) => ({
+            id: p.investment_property_id,
+            title: p.investment_properties?.title || "Unknown Asset",
+            type: "investment"
+          }))
+      ];
+
+      
+      // Deduplicate by ID
+      const unique = Array.from(new Map(merged.map(item => [item.id, item])).values());
+      return unique;
     },
   });
 
@@ -132,7 +182,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
       const { data, error } = await supabase.storage
         .from("user-documents")
         .createSignedUrl(doc.file_path, 60);
-      
+
       if (error) throw error;
       window.open(data.signedUrl, '_blank');
     } catch (err: any) {
@@ -151,22 +201,56 @@ export function DocumentsPanel({ userId }: { userId: string }) {
     }, 1500);
   };
 
+  const handleDeleteDoc = async (doc: any) => {
+    if (!confirm("CRITICAL WARNING: This action will permanently delete this document and its file. It cannot be easily undone. Are you absolutely sure?")) return;
+
+    toast.loading("Permanently deleting document...");
+    try {
+      // 1. If it's a physical file in storage, remove it completely.
+      if (!doc.file_path.startsWith('generated://')) {
+        await supabase.storage.from("user-documents").remove([doc.file_path]);
+      }
+
+      // 2. Call the secure RPC to soft-delete the DB record and generate an audit log
+      const { error } = await supabase.rpc('investor_delete_document', { p_document_id: doc.id });
+      if (error) throw error;
+
+      toast.dismiss();
+      toast.success("Document permanently deleted from your dashboard.");
+      refetchPropertyDocs();
+    } catch (error: any) {
+      toast.dismiss();
+      toast.error(error.message || "Failed to delete document.");
+    }
+  };
+
   const handleRequestDocument = async () => {
     if (selectedRequestTypes.length === 0) {
       toast.error("Please select at least one document type.");
       return;
     }
+
+    // Find the selected asset from the portfolio array
+    const asset = portfolioAssets.find(a => a.id === selectedPropertyId);
+    if (!asset) {
+      toast.error("Invalid property selection.");
+      return;
+    }
+
     setRequestingDoc(true);
     try {
       const { error } = await supabase.from("document_requests").insert({
         user_id: userId,
         requested_documents: selectedRequestTypes,
-        status: "pending"
+        status: "pending",
+        property_id: asset.type === 'property' ? asset.id : null,
+        investment_property_id: asset.type === 'investment' ? asset.id : null
       });
       if (error) throw error;
       toast.success("Document request submitted. Our team will verify and generate them shortly.");
       setRequestModalOpen(false);
       setSelectedRequestTypes([]);
+      setSelectedPropertyId("none");
       qc.invalidateQueries({ queryKey: ["admin-document-requests"] }); // if admin is also logged in
     } catch (error: any) {
       toast.error(error.message || "Failed to submit request.");
@@ -204,8 +288,8 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             onClick={() => setActiveTab(tab.id)}
             className={cn(
               "pb-3 text-sm font-bold whitespace-nowrap border-b-2 transition-colors duration-200",
-              activeTab === tab.id 
-                ? "border-primary text-primary" 
+              activeTab === tab.id
+                ? "border-primary text-primary"
                 : "border-transparent text-muted-foreground hover:text-foreground"
             )}
           >
@@ -245,7 +329,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <p className="text-xs text-muted-foreground mt-0.5">Please review and sign this agreement to fully authorize your investments.</p>
                             </div>
                           </div>
-                          <Button 
+                          <Button
                             onClick={() => { setSelectedDocType(doc.type); setSignModalOpen(true); }}
                             className="w-full sm:w-auto rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold"
                           >
@@ -300,147 +384,170 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                 <h3 className="font-serif text-xl font-bold">Ownership Records</h3>
                 <p className="text-sm text-muted-foreground">Certificates of Occupancy, Deed of Assignments, and survey documentation.</p>
               </div>
-              <Button onClick={() => setRequestModalOpen(true)} disabled={requestingDoc} variant="outline" className="rounded-xl font-bold">
-                 {requestingDoc ? "Sending..." : <><Send className="h-4 w-4 mr-2" /> Request Documentation</>}
-              </Button>
+              <div className="flex items-center gap-3">
+                <input
+                  type="text"
+                  placeholder="Search documents..."
+                  className="flex h-10 w-full sm:w-[250px] rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                  value={docSearch}
+                  onChange={(e) => setDocSearch(e.target.value)}
+                />
+                <Button onClick={() => setRequestModalOpen(true)} disabled={requestingDoc} variant="outline" className="rounded-xl font-bold">
+                  {requestingDoc ? "Sending..." : <><Send className="h-4 w-4 mr-2" /> Request Documentation</>}
+                </Button>
+              </div>
             </div>
 
             {isLoadingPropertyDocs ? (
               <Skeleton className="h-64 rounded-2xl" />
             ) : propertyDocs.length === 0 ? (
-               <div className="rounded-2xl border border-dashed border-border p-12 text-center flex flex-col items-center bg-card shadow-soft">
-                 <Folder className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                 <p className="font-bold text-slate-800">No Deeds Generated Yet</p>
-                 <p className="text-sm text-muted-foreground max-w-sm mt-1 leading-relaxed">
-                   Your dynamic legal documents are auto-generated when your payment checks clear.
-                 </p>
-               </div>
+              <div className="rounded-2xl border border-dashed border-border p-12 text-center flex flex-col items-center bg-card shadow-soft">
+                <Folder className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                <p className="font-bold text-slate-800">No Deeds Generated Yet</p>
+                <p className="text-sm text-muted-foreground max-w-sm mt-1 leading-relaxed">
+                  Your dynamic legal documents are auto-generated when your payment checks clear.
+                </p>
+              </div>
             ) : (
               <div className="grid gap-6">
-                {propertyDocs.map((doc: any) => {
-                  const docRef = doc.metadata?.reference_id || doc.id.split('-')[0].toUpperCase();
-                  const isReady = doc.status !== 'pending' && doc.status !== 'processing';
-                  const isRevoked = doc.status === 'revoked';
+                {propertyDocs
+                  .filter((d: any) =>
+                    d.name.toLowerCase().includes(docSearch.toLowerCase()) ||
+                    (d.investment_properties?.title || "").toLowerCase().includes(docSearch.toLowerCase()) ||
+                    (d.properties?.title || "").toLowerCase().includes(docSearch.toLowerCase())
+                  )
+                  .map((doc: any) => {
+                    const docRef = doc.metadata?.reference_id || doc.id.split('-')[0].toUpperCase();
+                    const isReady = doc.status !== 'pending' && doc.status !== 'processing';
+                    const isRevoked = doc.status === 'revoked';
 
-                  return (
-                    <div key={doc.id} className="p-6 rounded-2xl border border-border/40 bg-card flex flex-col space-y-4 hover:border-primary/20 transition-all shadow-soft group">
-                      
-                      {/* Document details header */}
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
-                        <div className="flex gap-4">
-                          <div className={cn(
-                            "h-12 w-12 rounded-xl flex items-center justify-center shrink-0",
-                            isRevoked ? "bg-red-50 text-red-500 border border-red-100" : "bg-primary/5 text-primary"
-                          )}>
-                            <FileText className="h-6 w-6" />
+                    return (
+                      <div key={doc.id} className="p-6 rounded-2xl border border-border/40 bg-card flex flex-col space-y-4 hover:border-primary/20 transition-all shadow-soft group">
+
+                        {/* Document details header */}
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                          <div className="flex gap-4">
+                            <div className={cn(
+                              "h-12 w-12 rounded-xl flex items-center justify-center shrink-0",
+                              isRevoked ? "bg-red-50 text-red-500 border border-red-100" : "bg-primary/5 text-primary"
+                            )}>
+                              <FileText className="h-6 w-6" />
+                            </div>
+                            <div>
+                              <h4 className="font-bold text-slate-800 leading-snug">{doc.name}</h4>
+                              <p className="text-xs text-muted-foreground font-medium mt-1">
+                                Asset: {doc.investment_properties?.title || doc.properties?.title || "Property Unit"}
+                              </p>
+                              <p className="text-[10px] text-slate-400 font-mono mt-1">Reference: {docRef}</p>
+                            </div>
                           </div>
-                          <div>
-                            <h4 className="font-bold text-slate-800 leading-snug">{doc.name}</h4>
-                            <p className="text-xs text-muted-foreground font-medium mt-1">
-                              Asset: {doc.investment_properties?.title || doc.properties?.title || "Property Unit"}
-                            </p>
-                            <p className="text-[10px] text-slate-400 font-mono mt-1">Reference: {docRef}</p>
+
+                          <div className="flex flex-col sm:items-end gap-1 shrink-0">
+                            <Badge variant="outline" className={cn("font-bold text-xs capitalize", getStatusColor(doc.status))}>
+                              {doc.status}
+                            </Badge>
+                            <span className="text-[10px] text-muted-foreground font-medium mt-1">Generated: {new Date(doc.created_at).toLocaleDateString()}</span>
                           </div>
                         </div>
 
-                        <div className="flex flex-col sm:items-end gap-1 shrink-0">
-                          <Badge variant="outline" className={cn("font-bold text-xs capitalize", getStatusColor(doc.status))}>
-                            {doc.status}
-                          </Badge>
-                          <span className="text-[10px] text-muted-foreground font-medium mt-1">Generated: {new Date(doc.created_at).toLocaleDateString()}</span>
-                        </div>
-                      </div>
+                        {/* Timeline System */}
+                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100/80">
+                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Document Timeline Tracking</p>
+                          <div className="flex items-center justify-between relative max-w-lg">
+                            {/* Stepper line */}
+                            <div className="absolute top-[9px] left-3 right-3 h-[2px] bg-slate-200 -z-0" />
 
-                      {/* Timeline System */}
-                      <div className="bg-slate-50 rounded-xl p-4 border border-slate-100/80">
-                        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Document Timeline Tracking</p>
-                        <div className="flex items-center justify-between relative max-w-lg">
-                          {/* Stepper line */}
-                          <div className="absolute top-[9px] left-3 right-3 h-[2px] bg-slate-200 -z-0" />
-                          
-                          <div className="flex flex-col items-center relative z-10">
-                            <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white", isRevoked ? "bg-destructive" : "bg-rose-500")}>
-                              {isRevoked ? "✕" : "✓"}
+                            <div className="flex flex-col items-center relative z-10">
+                              <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white", isRevoked ? "bg-destructive" : "bg-rose-500")}>
+                                {isRevoked ? "✕" : "✓"}
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-700 mt-1">Generated</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-700 mt-1">Generated</span>
-                          </div>
 
-                          <div className="flex flex-col items-center relative z-10">
-                            <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold", 
-                              doc.status === 'pending' || doc.status === 'processing' 
-                                ? "bg-slate-200 text-slate-400" 
-                                : isRevoked ? "bg-destructive text-white" : "bg-rose-500 text-white"
-                            )}>
-                              {doc.status === 'pending' || doc.status === 'processing' ? "2" : "✓"}
+                            <div className="flex flex-col items-center relative z-10">
+                              <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                                doc.status === 'pending' || doc.status === 'processing'
+                                  ? "bg-slate-200 text-slate-400"
+                                  : isRevoked ? "bg-destructive text-white" : "bg-rose-500 text-white"
+                              )}>
+                                {doc.status === 'pending' || doc.status === 'processing' ? "2" : "✓"}
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-700 mt-1">Approved</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-700 mt-1">Approved</span>
-                          </div>
 
-                          <div className="flex flex-col items-center relative z-10">
-                            <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold", 
-                              ['verified', 'delivered'].includes(doc.status) && !isRevoked
-                                ? "bg-rose-500 text-white" 
-                                : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
-                            )}>
-                              {['verified', 'delivered'].includes(doc.status) && !isRevoked ? "✓" : "3"}
+                            <div className="flex flex-col items-center relative z-10">
+                              <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                                ['verified', 'delivered'].includes(doc.status) && !isRevoked
+                                  ? "bg-rose-500 text-white"
+                                  : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
+                              )}>
+                                {['verified', 'delivered'].includes(doc.status) && !isRevoked ? "✓" : "3"}
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-700 mt-1">Delivered</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-700 mt-1">Delivered</span>
-                          </div>
 
-                          <div className="flex flex-col items-center relative z-10">
-                            <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold", 
-                              doc.status === 'verified' && !isRevoked
-                                ? "bg-rose-500 text-white" 
-                                : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
-                            )}>
-                              {doc.status === 'verified' && !isRevoked ? "✓" : "4"}
+                            <div className="flex flex-col items-center relative z-10">
+                              <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
+                                doc.status === 'verified' && !isRevoked
+                                  ? "bg-rose-500 text-white"
+                                  : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
+                              )}>
+                                {doc.status === 'verified' && !isRevoked ? "✓" : "4"}
+                              </div>
+                              <span className="text-[10px] font-bold text-slate-700 mt-1">Verified</span>
                             </div>
-                            <span className="text-[10px] font-bold text-slate-700 mt-1">Verified</span>
                           </div>
                         </div>
-                      </div>
 
-                      {/* Interactive Buttons */}
-                      <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/30">
-                        {isReady && !isRevoked && doc.file_path.startsWith('generated://') && (
-                          <Button 
-                            onClick={() => {
-                              setPreviewDoc(doc);
-                              setPreviewOpen(true);
-                            }} 
-                            variant="ghost" 
-                            size="sm" 
-                            className="rounded-lg font-bold text-xs"
-                          >
-                            <Eye className="h-4 w-4 mr-2" /> Live Preview
-                          </Button>
-                        )}
-                        <Button 
-                          onClick={() => handleDownloadDoc(doc)} 
-                          variant="outline" 
-                          size="sm" 
-                          disabled={!isReady}
-                          className="rounded-lg font-bold text-xs shrink-0 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all"
-                        >
-                          <Download className="h-4 w-4 mr-2" /> {doc.file_path.startsWith('generated://') ? 'View / Print PDF' : 'Download Securely'}
-                        </Button>
-                        <Button 
-                          onClick={() => handleResendDoc(doc)} 
-                          variant="secondary" 
-                          size="sm" 
-                          disabled={!isReady || isRevoked || sendingEmailId === doc.id}
-                          className="rounded-lg font-bold text-xs bg-secondary/60 hover:bg-secondary shrink-0"
-                        >
-                          {sendingEmailId === doc.id ? (
-                            <><RefreshCw className="h-3.5 w-3.5 mr-2 animate-spin" /> Dispatching...</>
-                          ) : (
-                            <><Mail className="h-3.5 w-3.5 mr-2" /> Send Email Link</>
+                        {/* Interactive Buttons */}
+                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/30">
+                          {isReady && !isRevoked && doc.file_path.startsWith('generated://') && (
+                            <Button
+                              onClick={() => {
+                                setPreviewDoc(doc);
+                                setPreviewOpen(true);
+                              }}
+                              variant="ghost"
+                              size="sm"
+                              className="rounded-lg font-bold text-xs"
+                            >
+                              <Eye className="h-4 w-4 mr-2" /> Live Preview
+                            </Button>
                           )}
-                        </Button>
+                          <Button
+                            onClick={() => handleDownloadDoc(doc)}
+                            variant="outline"
+                            size="sm"
+                            disabled={!isReady}
+                            className="rounded-lg font-bold text-xs shrink-0 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all"
+                          >
+                            <Download className="h-4 w-4 mr-2" /> {doc.file_path.startsWith('generated://') ? 'View / Print PDF' : 'Download Securely'}
+                          </Button>
+                          <Button
+                            onClick={() => handleResendDoc(doc)}
+                            variant="secondary"
+                            size="sm"
+                            disabled={!isReady || isRevoked || sendingEmailId === doc.id}
+                            className="rounded-lg font-bold text-xs bg-secondary/60 hover:bg-secondary shrink-0"
+                          >
+                            {sendingEmailId === doc.id ? (
+                              <><RefreshCw className="h-3.5 w-3.5 mr-2 animate-spin" /> Dispatching...</>
+                            ) : (
+                              <><Mail className="h-3.5 w-3.5 mr-2" /> Send Email Link</>
+                            )}
+                          </Button>
+                          <Button
+                            onClick={() => handleDeleteDoc(doc)}
+                            variant="destructive"
+                            size="sm"
+                            className="rounded-lg font-bold text-xs shrink-0"
+                          >
+                            <XCircle className="h-3.5 w-3.5 mr-2" /> Delete Permanently
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </div>
             )}
           </div>
@@ -458,13 +565,13 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             {isLoadingCertificates ? (
               <Skeleton className="h-64 rounded-2xl" />
             ) : certificates.length === 0 ? (
-               <div className="rounded-2xl border border-dashed border-border p-10 text-center flex flex-col items-center bg-card shadow-soft">
-                 <ShieldCheck className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                 <p className="font-bold text-slate-800">No Certificates Issued</p>
-                 <p className="text-sm text-muted-foreground max-w-sm mt-1 leading-relaxed">
-                   Certificates are cryptographically verified upon the validation of investment transactions.
-                 </p>
-               </div>
+              <div className="rounded-2xl border border-dashed border-border p-10 text-center flex flex-col items-center bg-card shadow-soft">
+                <ShieldCheck className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                <p className="font-bold text-slate-800">No Certificates Issued</p>
+                <p className="text-sm text-muted-foreground max-w-sm mt-1 leading-relaxed">
+                  Certificates are cryptographically verified upon the validation of investment transactions.
+                </p>
+              </div>
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {certificates.map((cert: any) => (
@@ -478,7 +585,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                       </div>
                       <h4 className="font-bold text-lg leading-tight mb-1">{cert.investment_properties?.title || "Property Asset"}</h4>
                       <p className="text-xs text-muted-foreground mb-4">Certificate ID: <span className="font-mono text-xs">{cert.certificate_number}</span></p>
-                      
+
                       <div className="grid grid-cols-2 gap-2 mb-6">
                         <div className="bg-background rounded-lg p-3 border border-border/50">
                           <p className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Units Owned</p>
@@ -490,8 +597,8 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                         </div>
                       </div>
                     </div>
-                    
-                    <Button 
+
+                    <Button
                       className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold"
                       onClick={() => window.open(`/certificate/${cert.id}`, '_blank')}
                     >
@@ -515,11 +622,11 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             {isLoadingReceipts ? (
               <Skeleton className="h-64 rounded-2xl" />
             ) : receipts.length === 0 ? (
-               <div className="rounded-2xl border border-dashed border-border p-10 text-center flex flex-col items-center bg-card shadow-soft">
-                 <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                 <p className="font-bold text-slate-800">No Receipts Found</p>
-                 <p className="text-sm text-muted-foreground mt-1">Transaction receipts appear here immediately after payment processing.</p>
-               </div>
+              <div className="rounded-2xl border border-dashed border-border p-10 text-center flex flex-col items-center bg-card shadow-soft">
+                <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
+                <p className="font-bold text-slate-800">No Receipts Found</p>
+                <p className="text-sm text-muted-foreground mt-1">Transaction receipts appear here immediately after payment processing.</p>
+              </div>
             ) : (
               <div className="grid gap-3">
                 {receipts.map((receipt: any) => (
@@ -557,9 +664,9 @@ export function DocumentsPanel({ userId }: { userId: string }) {
       </div>
 
       {selectedDocType && (
-        <ESignatureModal 
-          open={signModalOpen} 
-          onOpenChange={setSignModalOpen} 
+        <ESignatureModal
+          open={signModalOpen}
+          onOpenChange={setSignModalOpen}
           documentType={selectedDocType}
         />
       )}
@@ -584,7 +691,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                 <DialogTitle className="font-serif text-lg">{previewDoc?.name}</DialogTitle>
                 <p className="text-xs text-muted-foreground mt-0.5">Reference ID: {previewDoc?.metadata?.reference_id || previewDoc?.id.split('-')[0].toUpperCase()}</p>
               </div>
-              <Button 
+              <Button
                 onClick={() => window.open(`/print-document/${previewDoc?.id}`, '_blank')}
                 className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold"
               >
@@ -598,7 +705,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
               <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0">
                 <ShieldCheck className="w-[400px] h-[400px]" />
               </div>
-              
+
               {/* Document Content */}
               <div className="relative z-10">
                 {/* Header */}
@@ -617,9 +724,9 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                   </div>
                 </div>
 
-                <div 
+                <div
                   className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
-                  dangerouslySetInnerHTML={{ __html: previewDoc?.metadata?.document_snapshot || "" }} 
+                  dangerouslySetInnerHTML={{ __html: previewDoc?.metadata?.document_snapshot || "" }}
                 />
               </div>
             </div>
@@ -633,7 +740,23 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             <DialogTitle className="font-serif text-2xl">Request Documents</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <p className="text-sm text-muted-foreground">Select the official documents you are requesting for your property/investment:</p>
+            <div className="space-y-2">
+              <label className="text-sm font-bold text-slate-700">Select Property / Asset</label>
+              <select
+                className="w-full flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                value={selectedPropertyId}
+                onChange={(e) => setSelectedPropertyId(e.target.value)}
+              >
+                <option value="none" disabled>Select an asset...</option>
+                {portfolioAssets.map((asset: any) => (
+                  <option key={asset.id} value={asset.id}>
+                    {asset.title} ({asset.type === 'investment' ? 'Fractional' : 'Full Ownership'})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <p className="text-sm text-muted-foreground mt-4">Select the official documents you are requesting:</p>
             <div className="space-y-2">
               {[
                 { id: "contract_of_sale", label: "Contract of Sale" },
@@ -642,8 +765,8 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                 { id: "allocation_letter", label: "Allocation Letter" }
               ].map(docType => (
                 <label key={docType.id} className="flex items-center gap-3 p-3 rounded-lg border border-border/50 hover:bg-secondary/50 cursor-pointer transition-colors">
-                  <input 
-                    type="checkbox" 
+                  <input
+                    type="checkbox"
                     className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
                     checked={selectedRequestTypes.includes(docType.id)}
                     onChange={(e) => {
@@ -659,7 +782,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
               ))}
             </div>
             <div className="flex justify-end pt-4">
-              <Button onClick={handleRequestDocument} disabled={requestingDoc || selectedRequestTypes.length === 0} className="w-full">
+              <Button onClick={handleRequestDocument} disabled={requestingDoc || selectedRequestTypes.length === 0 || selectedPropertyId === "none"} className="w-full">
                 {requestingDoc ? "Submitting..." : "Submit Request"}
               </Button>
             </div>

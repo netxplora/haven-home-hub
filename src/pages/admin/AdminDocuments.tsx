@@ -22,7 +22,8 @@ import {
   RotateCcw,
   RefreshCw,
   Loader2,
-  Clock
+  Clock,
+  ShieldCheck
 } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
@@ -34,7 +35,7 @@ import { Textarea } from "@/components/ui/textarea";
 
 export function AdminDocuments() {
   const qc = useQueryClient();
-  const [activeSubTab, setActiveSubTab] = useState<"docs" | "templates" | "signatures" | "requests">("requests");
+  const [activeSubTab, setActiveSubTab] = useState<"docs" | "templates" | "signatures" | "requests" | "audit">("requests");
   
   // Modals state
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
@@ -117,6 +118,24 @@ export function AdminDocuments() {
     queryKey: ["admin-document-requests"],
     queryFn: async () => {
       const { data, error } = await supabase.rpc("admin_get_document_requests");
+      if (error) throw error;
+      return data || [];
+    },
+  });
+
+  // 5. Fetch Audit Logs
+  const { data: auditLogs = [], isLoading: isLoadingAudit } = useQuery({
+    queryKey: ["admin-document-audit-logs"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("document_audit_logs")
+        .select(`
+          *,
+          user_documents (name, document_type),
+          profiles:user_id (full_name, email),
+          action_user:action_by (full_name)
+        `)
+        .order("created_at", { ascending: false });
       if (error) throw error;
       return data || [];
     },
@@ -214,7 +233,9 @@ export function AdminDocuments() {
       const { data, error } = await supabase.rpc("create_automated_document", {
         p_user_id: doc.user_id,
         p_payment_id: doc.metadata?.payment_id || null,
-        p_document_type: doc.document_type
+        p_document_type: doc.document_type,
+        p_property_id: doc.property_id || null,
+        p_investment_property_id: doc.investment_property_id || null
       });
       if (error) throw error;
 
@@ -255,28 +276,42 @@ export function AdminDocuments() {
   // Actions: Requests (using SECURITY DEFINER RPCs)
   const handleApproveRequest = async (req: any, type: string) => {
     try {
-      toast.loading("Generating document...");
-      
-      const { data, error } = await supabase.rpc("create_automated_document", {
-        p_user_id: req.user_id,
-        p_payment_id: null,
-        p_document_type: type
-      });
-      if (error) throw error;
+      const docsToGenerate = type === 'all' 
+        ? (req.requested_documents || []) 
+        : [type];
 
-      // Update the request status via RPC
-      await supabase.rpc("admin_update_document_request", {
+      if (docsToGenerate.length === 0) {
+        toast.error("No documents specified to generate.");
+        return;
+      }
+
+      toast.loading(`Generating ${docsToGenerate.length} document(s)...`);
+
+      for (const docType of docsToGenerate) {
+        const { error: docError } = await supabase.rpc("create_automated_document", {
+          p_user_id: req.user_id,
+          p_payment_id: null,
+          p_document_type: docType,
+          p_property_id: req.property_id || null,
+          p_investment_property_id: req.investment_property_id || null
+        });
+        if (docError) throw new Error(`Failed to generate ${docType}: ${docError.message}`);
+      }
+
+      const { error: updError } = await supabase.rpc("admin_update_document_request", {
         p_request_id: req.id,
-        p_status: "approved"
+        p_status: "approved",
+        p_admin_notes: `Generated ${docsToGenerate.length} document(s) automatically.`
       });
-      
+      if (updError) throw updError;
+
       toast.dismiss();
-      toast.success("Document generated successfully.");
+      toast.success("Document(s) generated and request approved.");
       refetchRequests();
       refetchDocs();
     } catch (error: any) {
       toast.dismiss();
-      toast.error(error.message || "Failed to generate document.");
+      toast.error(error.message || "Failed to approve request");
     }
   };
 
@@ -307,41 +342,27 @@ export function AdminDocuments() {
       const placement = { signature: templateSignatureX, seal: templateSealX };
       
       if (editingTemplate) {
-        // Save current version to history first
-        await supabase.from("document_template_history").insert({
-          template_id: editingTemplate.id,
-          name: editingTemplate.name,
-          content_html: editingTemplate.content_html,
-          document_type: editingTemplate.document_type,
-          version: editingTemplate.version,
-          signature_placement: editingTemplate.signature_placement
+        // Update via RPC
+        const { error } = await supabase.rpc("admin_save_document_template", {
+          p_template_id: editingTemplate.id,
+          p_name: templateName,
+          p_type: editingTemplate.document_type,
+          p_html: templateHtml,
+          p_placement: placement,
+          p_version: editingTemplate.version + 1
         });
-
-        // Update active template
-        const { error } = await supabase
-          .from("document_templates")
-          .update({
-            name: templateName,
-            content_html: templateHtml,
-            signature_placement: placement,
-            version: editingTemplate.version + 1,
-            updated_at: new Date().toISOString()
-          })
-          .eq("id", editingTemplate.id);
         if (error) throw error;
         toast.success("Template updated to version " + (editingTemplate.version + 1));
       } else {
-        // Insert new template
-        const { error } = await supabase
-          .from("document_templates")
-          .insert({
-            name: templateName,
-            document_type: templateType,
-            content_html: templateHtml,
-            signature_placement: placement,
-            version: 1,
-            is_active: true
-          });
+        // Insert new via RPC
+        const { error } = await supabase.rpc("admin_save_document_template", {
+          p_template_id: null,
+          p_name: templateName,
+          p_type: templateType,
+          p_html: templateHtml,
+          p_placement: placement,
+          p_version: 1
+        });
         if (error) throw error;
         toast.success("New template created successfully.");
       }
@@ -494,11 +515,12 @@ export function AdminDocuments() {
 
       {/* Tabs */}
       <Tabs value={activeSubTab} onValueChange={(val: any) => setActiveSubTab(val)} className="space-y-6">
-        <TabsList className="bg-secondary/40 p-1 rounded-xl">
+        <TabsList className="bg-secondary/40 p-1 rounded-xl flex-wrap h-auto">
           <TabsTrigger value="requests" className="rounded-lg font-bold">Verification Queue</TabsTrigger>
           <TabsTrigger value="docs" className="rounded-lg font-bold">Issued Documents</TabsTrigger>
           <TabsTrigger value="templates" className="rounded-lg font-bold">Document Templates</TabsTrigger>
           <TabsTrigger value="signatures" className="rounded-lg font-bold">Signatures & Seals</TabsTrigger>
+          <TabsTrigger value="audit" className="rounded-lg font-bold text-amber-600 data-[state=active]:text-amber-700">Audit Logs</TabsTrigger>
         </TabsList>
 
         {/* 0. VERIFICATION QUEUE TAB */}
@@ -553,10 +575,20 @@ export function AdminDocuments() {
                             Generate...
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="contract_of_sale">Contract of Sale</SelectItem>
-                            <SelectItem value="deed_of_assignment">Deed of Assignment</SelectItem>
-                            <SelectItem value="purchase_receipt">Purchase Receipt</SelectItem>
-                            <SelectItem value="allocation_letter">Allocation Letter</SelectItem>
+                            {(Array.isArray(req.requested_documents) && req.requested_documents.length > 1) && (
+                              <SelectItem value="all" className="font-bold text-primary bg-primary/5">
+                                ✨ Generate All Documents ({req.requested_documents.length})
+                              </SelectItem>
+                            )}
+                            {(Array.isArray(req.requested_documents) && req.requested_documents.length > 0) ? (
+                              req.requested_documents.map((docType: string) => (
+                                <SelectItem key={docType} value={docType}>
+                                  {docType.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                                </SelectItem>
+                              ))
+                            ) : (
+                              <div className="p-2 text-xs text-muted-foreground text-center">No specific documents requested</div>
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -630,7 +662,9 @@ export function AdminDocuments() {
                                   ? "bg-rose-500/10 text-rose-700 border-rose-500/20 capitalize font-bold" 
                                   : doc.status === 'revoked' 
                                     ? "bg-destructive/10 text-destructive border-destructive/20 capitalize font-bold"
-                                    : "bg-amber-500/10 text-amber-700 border-amber-500/20 capitalize font-bold"
+                                    : doc.status === 'deleted'
+                                      ? "bg-slate-100 text-slate-400 border-slate-200 capitalize font-bold line-through"
+                                      : "bg-amber-500/10 text-amber-700 border-amber-500/20 capitalize font-bold"
                               }>
                                 {doc.status}
                               </Badge>
@@ -639,6 +673,24 @@ export function AdminDocuments() {
                           </td>
                           <td className="px-6 py-4 text-right">
                             <div className="flex items-center justify-end gap-2">
+                              {doc.status === 'deleted' ? (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-lg font-bold text-xs text-green-700 border-green-200 hover:bg-green-50"
+                                  title="Recover Deleted Document" 
+                                  onClick={async () => {
+                                    const { error } = await supabase.rpc('admin_recover_document', { p_document_id: doc.id });
+                                    if (error) { toast.error(error.message); return; }
+                                    toast.success("Document recovered successfully.");
+                                    refetchDocs();
+                                    qc.invalidateQueries({ queryKey: ["admin-document-audit-logs"] });
+                                  }}
+                                >
+                                  <RotateCcw className="h-3.5 w-3.5 mr-1.5" /> Recover
+                                </Button>
+                              ) : (
+                                <>
                               {doc.file_path.startsWith('generated://') && (
                                 <>
                                   <Button variant="ghost" size="icon" className="rounded-lg" title="Preview Document" onClick={() => window.open(`/print-document/${doc.id}`, '_blank')}>
@@ -660,6 +712,8 @@ export function AdminDocuments() {
                               <Button variant="ghost" size="icon" className="rounded-lg text-destructive hover:bg-destructive/10" title="Delete" onClick={() => handleDeleteDoc(doc)}>
                                 <Trash2 className="h-4 w-4" />
                               </Button>
+                                </>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -760,6 +814,80 @@ export function AdminDocuments() {
             </div>
           )}
         </TabsContent>
+
+        {/* 4. AUDIT LOGS TAB */}
+        <TabsContent value="audit" className="space-y-6 animate-in fade-in">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search audit logs..." 
+              className="pl-9 rounded-xl"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+
+          {isLoadingAudit ? (
+            <Skeleton className="h-[400px] rounded-2xl" />
+          ) : (
+            <div className="border border-border/40 rounded-2xl bg-card overflow-hidden shadow-soft">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="bg-secondary/30 text-muted-foreground font-bold border-b border-border/40">
+                    <tr>
+                      <th className="px-6 py-4">Action</th>
+                      <th className="px-6 py-4">Document</th>
+                      <th className="px-6 py-4">Investor</th>
+                      <th className="px-6 py-4">Triggered By</th>
+                      <th className="px-6 py-4 text-right">Timestamp</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-border/30">
+                    {auditLogs.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="px-6 py-12 text-center text-muted-foreground">
+                          No audit events recorded yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      auditLogs.map((log: any) => (
+                        <tr key={log.id} className="hover:bg-muted/10 transition-colors">
+                          <td className="px-6 py-4">
+                            <Badge variant="outline" className={cn(
+                              "font-bold text-[10px] tracking-widest",
+                              log.action === 'DELETED' ? "bg-red-50 text-red-700 border-red-200" :
+                              log.action === 'RECOVERED' ? "bg-green-50 text-green-700 border-green-200" :
+                              "bg-slate-50 text-slate-700 border-slate-200"
+                            )}>
+                              {log.action}
+                            </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-medium text-slate-800">{log.user_documents?.name || "Unknown Document"}</div>
+                            <div className="text-[10px] text-muted-foreground uppercase">{log.user_documents?.document_type?.replace(/_/g, ' ')}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="font-medium">{log.profiles?.full_name || "Unknown"}</div>
+                            <div className="text-[10px] text-muted-foreground">{log.profiles?.email}</div>
+                          </td>
+                          <td className="px-6 py-4 text-slate-600">
+                            {log.action_user?.full_name || "System"}
+                          </td>
+                          <td className="px-6 py-4 text-right">
+                            <div className="flex items-center justify-end gap-1 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              {new Date(log.created_at).toLocaleString()}
+                            </div>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </TabsContent>
       </Tabs>
 
       {/* MODAL: Upload External Document */}
@@ -837,81 +965,145 @@ export function AdminDocuments() {
         </DialogContent>
       </Dialog>
 
-      {/* MODAL: Add/Edit Template */}
+      {/* MODAL: Add/Edit Template (Live Editor) */}
       <Dialog open={templateModalOpen} onOpenChange={setTemplateModalOpen}>
-        <DialogContent className="sm:max-w-[700px] max-h-[85vh] overflow-y-auto rounded-2xl border-border/40">
-          <DialogHeader>
-            <DialogTitle className="font-serif text-xl">{editingTemplate ? "Edit Document Template" : "Create Document Template"}</DialogTitle>
+        <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full overflow-hidden rounded-none sm:rounded-2xl border-border/40 p-0 flex flex-col">
+          <DialogHeader className="p-6 border-b border-border/40 shrink-0 bg-slate-50">
+            <DialogTitle className="font-serif text-2xl flex items-center gap-3">
+              <Edit3 className="h-6 w-6 text-rose-700" />
+              {editingTemplate ? "Live Document Editor" : "New Document Template"}
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 pt-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-slate-500">Template Title</label>
-                <Input 
-                  placeholder="e.g., Land Allocation Letter" 
-                  value={templateName}
-                  onChange={(e) => setTemplateName(e.target.value)}
-                  className="rounded-xl"
+          
+          <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
+            {/* Left side: Editor Form */}
+            <div className="w-full md:w-[450px] shrink-0 border-r border-border/40 bg-slate-50 p-6 overflow-y-auto space-y-6">
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase font-bold text-slate-500">Template Title</label>
+                  <Input 
+                    placeholder="e.g., Land Allocation Letter" 
+                    value={templateName}
+                    onChange={(e) => setTemplateName(e.target.value)}
+                    className="rounded-xl bg-white"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase font-bold text-slate-500">Assigned Document Type</label>
+                  <Select value={templateType} onValueChange={setTemplateType} disabled={!!editingTemplate}>
+                    <SelectTrigger className="rounded-xl bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="contract_of_sale">Contract of Sale (COS)</SelectItem>
+                      <SelectItem value="deed_of_assignment">Deed of Assignment (DOA)</SelectItem>
+                      <SelectItem value="survey_plan">Survey Plan Reference</SelectItem>
+                      <SelectItem value="allocation_letter">Allocation Letter</SelectItem>
+                      <SelectItem value="purchase_receipt">Purchase Receipt</SelectItem>
+                      <SelectItem value="property_purchase_agreement">Property Purchase Agreement</SelectItem>
+                      <SelectItem value="ownership_confirmation">Ownership Confirmation</SelectItem>
+                      <SelectItem value="fractional_ownership_certificate">Fractional Ownership Certificate</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-2 flex-1 flex flex-col">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs uppercase font-bold text-slate-500">HTML Template Source</label>
+                  <span className="text-[10px] text-primary font-bold px-2 py-0.5 bg-primary/10 rounded-full">Live Preview Active</span>
+                </div>
+                <Textarea 
+                  placeholder="<h1>Document Title</h1><p>This certifies that {{investor_name}}...</p>" 
+                  value={templateHtml}
+                  onChange={(e) => setTemplateHtml(e.target.value)}
+                  className="font-mono text-[11px] min-h-[350px] h-full resize-none rounded-xl bg-slate-900 text-green-400 focus-visible:ring-rose-500 p-4 leading-relaxed"
+                  spellCheck={false}
                 />
               </div>
-              <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-slate-500">Assigned Document Type</label>
-                <Select value={templateType} onValueChange={setTemplateType} disabled={!!editingTemplate}>
-                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="contract_of_sale">Contract of Sale (COS)</SelectItem>
-                    <SelectItem value="deed_of_assignment">Deed of Assignment (DOA)</SelectItem>
-                    <SelectItem value="survey_plan">Survey Plan Reference</SelectItem>
-                    <SelectItem value="allocation_letter">Allocation Letter</SelectItem>
-                    <SelectItem value="purchase_receipt">Purchase Receipt</SelectItem>
-                    <SelectItem value="property_purchase_agreement">Property Purchase Agreement</SelectItem>
-                    <SelectItem value="ownership_confirmation">Ownership Confirmation</SelectItem>
-                    <SelectItem value="fractional_ownership_certificate">Fractional Ownership Certificate</SelectItem>
-                  </SelectContent>
-                </Select>
+
+              <div className="bg-white p-4 rounded-xl border border-slate-200">
+                <h4 className="text-[10px] uppercase font-bold text-slate-500 mb-2 border-b pb-2">Available Variables</h4>
+                <div className="flex flex-wrap gap-1">
+                  {["{{investor_name}}", "{{investor_email}}", "{{investor_phone}}", "{{property_name}}", "{{property_location}}", "{{purchase_amount}}", "{{amount_paid}}", "{{outstanding_balance}}", "{{payment_method}}", "{{issue_date}}", "{{document_reference}}", "{{verification_code}}"].map(v => (
+                    <code key={v} className="text-[9px] text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm hover:bg-slate-200 cursor-copy" onClick={() => {navigator.clipboard.writeText(v); toast.success("Copied!");}}>{v}</code>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs uppercase font-bold text-slate-500">Signature Align</label>
+                  <Select value={templateSignatureX} onValueChange={setTemplateSignatureX}>
+                    <SelectTrigger className="rounded-xl bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="bottom-left">Left Side</SelectItem>
+                      <SelectItem value="bottom-center">Center</SelectItem>
+                      <SelectItem value="bottom-right">Right Side</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs uppercase font-bold text-slate-500">Seal Align</label>
+                  <Select value={templateSealX} onValueChange={setTemplateSealX}>
+                    <SelectTrigger className="rounded-xl bg-white"><SelectValue /></SelectTrigger>
+                    <SelectContent className="rounded-xl">
+                      <SelectItem value="bottom-left">Left Side</SelectItem>
+                      <SelectItem value="bottom-center">Center</SelectItem>
+                      <SelectItem value="bottom-right">Right Side</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-xs uppercase font-bold text-slate-500">HTML Template Body</label>
-              <Textarea 
-                placeholder="<h1>Document Title</h1><p>This certifies that {{investor_name}}...</p>" 
-                value={templateHtml}
-                onChange={(e) => setTemplateHtml(e.target.value)}
-                className="font-mono text-xs min-h-[250px] rounded-xl"
-              />
-              <p className="text-[10px] text-muted-foreground leading-relaxed">
-                Available placeholders: <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{investor_name}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{investor_email}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{investor_phone}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{investor_address}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{property_name}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{property_location}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{purchase_amount}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{amount_paid}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{outstanding_balance}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{payment_method}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{transaction_reference}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{issue_date}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{document_reference}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{verification_code}}"}</code>, <code className="text-rose-700 bg-rose-50 px-1 rounded">{"{{units_owned}}"}</code>.
-              </p>
-            </div>
+            {/* Right side: Live Preview rendering */}
+            <div className="flex-1 bg-slate-200 overflow-y-auto p-4 md:p-10 flex justify-center custom-scrollbar shadow-inner">
+              
+              <div className="w-full max-w-[800px] bg-white text-slate-900 p-8 md:p-14 border border-slate-300 shadow-xl min-h-[1123px] relative overflow-hidden h-fit">
+                {/* Background Watermark */}
+                <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0">
+                  <ShieldCheck className="w-[500px] h-[500px]" />
+                </div>
+                
+                {/* Document Content Wrapper */}
+                <div className="relative z-10 flex flex-col h-full justify-between">
+                  <div>
+                    {/* Header */}
+                    <div className="flex justify-between items-start border-b-[3px] border-double border-slate-800 pb-5 mb-8">
+                      <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 bg-slate-900 rounded-sm flex items-center justify-center shrink-0 shadow-sm">
+                          <span className="text-white font-serif font-bold text-2xl tracking-tighter">H</span>
+                        </div>
+                        <div>
+                          <h1 className="font-serif text-2xl font-black tracking-tight text-slate-900 uppercase leading-none">Haven Home Hub</h1>
+                          <p className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mt-1">Certified Legal Documentation</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded shadow-inner">REF: PREVIEW-001</p>
+                      </div>
+                    </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-slate-500">Signature Alignment</label>
-                <Select value={templateSignatureX} onValueChange={setTemplateSignatureX}>
-                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="bottom-left">Left Side</SelectItem>
-                    <SelectItem value="bottom-center">Center</SelectItem>
-                    <SelectItem value="bottom-right">Right Side</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <label className="text-xs uppercase font-bold text-slate-500">Company Seal Alignment</label>
-                <Select value={templateSealX} onValueChange={setTemplateSealX}>
-                  <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="bottom-left">Left Side</SelectItem>
-                    <SelectItem value="bottom-center">Center</SelectItem>
-                    <SelectItem value="bottom-right">Right Side</SelectItem>
-                  </SelectContent>
-                </Select>
+                    {/* Editor Content Injected Here */}
+                    <div 
+                      className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
+                      dangerouslySetInnerHTML={{ __html: templateHtml || "<p class='text-muted-foreground italic text-center py-20'>No content provided. Start typing in the HTML source editor to see a live preview.</p>" }} 
+                    />
+                  </div>
+
+                  {/* Dummy Footer for context */}
+                  <div className="mt-16 pt-6 border-t-[3px] border-double border-slate-800 bg-slate-50 p-6 rounded-none relative z-10">
+                     <p className="text-[10px] text-center uppercase tracking-widest font-bold text-slate-400">Footer & Signatures automatically appended during generation</p>
+                  </div>
+                </div>
               </div>
             </div>
-
-            <Button onClick={handleSaveTemplate} disabled={submitting} className="w-full mt-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold">
-              {submitting ? "Saving Template..." : editingTemplate ? "Deploy Version " + (editingTemplate.version + 1) : "Deploy Document Template"}
+          </div>
+          
+          {/* Action Bar Footer */}
+          <div className="p-4 border-t border-border/40 bg-card flex justify-end gap-3 shrink-0">
+            <Button variant="outline" onClick={() => setTemplateModalOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveTemplate} disabled={submitting} className="min-w-[150px] rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold">
+              {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...</> : editingTemplate ? "Deploy Revision " + (editingTemplate.version + 1) : "Deploy Template"}
             </Button>
           </div>
         </DialogContent>
