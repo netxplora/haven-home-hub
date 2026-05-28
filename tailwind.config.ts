@@ -64,17 +64,19 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
-        serif: ['Poppins', 'Inter', 'sans-serif'],
+        sans: ['"DM Sans"', 'sans-serif'],
+        serif: ['"Red Hat Display"', 'sans-serif'],
+        mono: ['"Fira Code"', 'monospace'],
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-hero-rose': 'var(--gradient-hero-rose)',
       },
       boxShadow: {
-        'soft': 'var(--shadow-soft)',
-        'card': 'var(--shadow-card)',
-        'lux': 'var(--shadow-lux)',
+        'sm': '0 1px 2px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.10)',
+        'DEFAULT': '0 2px 4px rgba(0,0,0,0.06), 0 4px 6px rgba(0,0,0,0.10)',
+        'md': '0 4px 8px rgba(0,0,0,0.07), 0 10px 20px rgba(0,0,0,0.10)',
+        'lg': '0 10px 20px rgba(0,0,0,0.10), 0 20px 48px rgba(0,0,0,0.12)',
       },
       keyframes: {
         "accordion-down": {

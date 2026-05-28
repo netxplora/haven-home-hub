@@ -24,13 +24,13 @@ serve(async (req) => {
 
     console.log("Fetching URL:", url);
 
-    const headers = {
-      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7",
+    const browserHeaders = {
+      "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36",
+      "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
       "Accept-Language": "en-US,en;q=0.9",
       "Accept-Encoding": "gzip, deflate, br",
       "Cache-Control": "max-age=0",
-      "Sec-Ch-Ua": '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+      "Sec-Ch-Ua": '"Chromium";v="125", "Google Chrome";v="125", "Not-A.Brand";v="99"',
       "Sec-Ch-Ua-Mobile": "?0",
       "Sec-Ch-Ua-Platform": '"Windows"',
       "Sec-Fetch-Dest": "document",
@@ -41,7 +41,7 @@ serve(async (req) => {
     };
 
     const fetchWithTimeout = async (resource: string, options: any = {}) => {
-      const { timeout = 5000 } = options;
+      const { timeout = 15000 } = options;
       const controller = new AbortController();
       const id = setTimeout(() => controller.abort(), timeout);
       const response = await fetch(resource, {
@@ -52,60 +52,126 @@ serve(async (req) => {
       return response;
     };
 
-    let response;
-    let usedProxy = false;
+    /**
+     * Detects whether fetched HTML is a bot-protection challenge page
+     * rather than real content. Covers Cloudflare, PerimeterX, DataDome,
+     * Akamai Bot Manager, and generic CAPTCHA walls.
+     */
+    const isBotProtectionPage = (html: string): boolean => {
+      const signatures = [
+        "Just a moment...",
+        "Enable JavaScript and cookies to continue",
+        "cf-browser-verification",
+        "cf-challenge-running",
+        "challenge-platform",
+        "_cf_chl_opt",
+        "Checking your browser",
+        "Attention Required! | Cloudflare",
+        "Pardon Our Interruption",
+        "Please verify you are a human",
+        "Access denied",
+        "captcha",
+        "px-captcha",
+        "perimeterx",
+        "datadome",
+      ];
+      const lower = html.toLowerCase();
+      return signatures.some(sig => lower.includes(sig.toLowerCase()));
+    };
+
     let successfulHtml = "";
+    let fetchTier = "";
+    const scraperApiKey = Deno.env.get("SCRAPER_API_KEY");
 
-    // Array of fallback proxies to try if the direct fetch is blocked
-    const proxyList = [
-      url, // Try direct first
-      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-      `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`,
-      `https://corsproxy.io/?${encodeURIComponent(url)}`
-    ];
+    // ── TIER 1: Direct fetch (free, fast) ───────────────────────────
+    // Works for smaller, unprotected property sites.
+    try {
+      console.log("Tier 1: Attempting direct fetch...");
+      const directRes = await fetchWithTimeout(url, { headers: browserHeaders, timeout: 8000 });
 
-    for (let i = 0; i < proxyList.length; i++) {
-      const currentUrl = proxyList[i];
-      try {
-        console.log(`Attempting fetch with strategy ${i}: ${currentUrl}`);
-        response = await fetchWithTimeout(currentUrl, { headers, timeout: i === 0 ? 3000 : 5000 });
-        
-        // If we get a 200 OK, check if it's a Cloudflare captcha page
-        if (response && response.ok) {
-          const text = await response.text();
-          // Heuristic to detect Cloudflare/PerimeterX blocks disguised as 200 OK
-          if (
-            text.includes("Just a moment...") || 
-            text.includes("Enable JavaScript and cookies to continue") ||
-            text.includes("cf-browser-verification") ||
-            text.includes("captcha")
-          ) {
-            console.log(`Strategy ${i} blocked by bot protection page.`);
-            continue; // Try next proxy
-          }
-          
-          // Success!
+      if (directRes && directRes.ok) {
+        const text = await directRes.text();
+        if (!isBotProtectionPage(text) && text.length > 1000) {
           successfulHtml = text;
-          if (i > 0) usedProxy = true;
-          break; // Break the loop, we have our HTML
+          fetchTier = "direct";
+          console.log("Tier 1 succeeded (direct fetch).");
         } else {
-          console.log(`Strategy ${i} failed with status:`, response?.status);
+          console.log("Tier 1 returned bot protection page or empty content.");
+        }
+      } else {
+        console.log("Tier 1 failed with status:", directRes?.status);
+      }
+    } catch (err) {
+      console.log("Tier 1 threw exception:", err);
+    }
+
+    // ── TIER 2: ScraperAPI with JS rendering ────────────────────────
+    // Routes through residential IPs with headless browser rendering.
+    // Handles Cloudflare, PerimeterX, and JS-rendered SPAs.
+    if (!successfulHtml && scraperApiKey) {
+      try {
+        console.log("Tier 2: Attempting ScraperAPI with render=true...");
+        const scraperUrl = `https://api.scraperapi.com?api_key=${scraperApiKey}&url=${encodeURIComponent(url)}&render=true`;
+        const scraperRes = await fetchWithTimeout(scraperUrl, { timeout: 30000 });
+
+        if (scraperRes && scraperRes.ok) {
+          const text = await scraperRes.text();
+          if (!isBotProtectionPage(text) && text.length > 500) {
+            successfulHtml = text;
+            fetchTier = "scraperapi-render";
+            console.log("Tier 2 succeeded (ScraperAPI + render).");
+          } else {
+            console.log("Tier 2 returned bot protection page or empty content.");
+          }
+        } else {
+          console.log("Tier 2 failed with status:", scraperRes?.status);
         }
       } catch (err) {
-        console.log(`Strategy ${i} threw exception:`, err);
+        console.log("Tier 2 threw exception:", err);
       }
     }
 
+    // ── TIER 3: ScraperAPI with premium residential proxies ─────────
+    // Maximum bypass for very aggressive protection (rare).
+    if (!successfulHtml && scraperApiKey) {
+      try {
+        console.log("Tier 3: Attempting ScraperAPI with premium=true...");
+        const premiumUrl = `https://api.scraperapi.com?api_key=${scraperApiKey}&url=${encodeURIComponent(url)}&render=true&premium=true&country_code=us`;
+        const premiumRes = await fetchWithTimeout(premiumUrl, { timeout: 45000 });
+
+        if (premiumRes && premiumRes.ok) {
+          const text = await premiumRes.text();
+          if (!isBotProtectionPage(text) && text.length > 500) {
+            successfulHtml = text;
+            fetchTier = "scraperapi-premium";
+            console.log("Tier 3 succeeded (ScraperAPI premium).");
+          } else {
+            console.log("Tier 3 still returned a blocked page.");
+          }
+        } else {
+          console.log("Tier 3 failed with status:", premiumRes?.status);
+        }
+      } catch (err) {
+        console.log("Tier 3 threw exception:", err);
+      }
+    }
+
+    // ── All tiers exhausted ─────────────────────────────────────────
     if (!successfulHtml) {
-      // Return a graceful error for ANY failure (403, 522, 500, etc) after all proxies exhausted
+      const missingKey = !scraperApiKey;
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Extraction Failed: This real estate website uses advanced bot protection (like Cloudflare) which is blocking our automated system. You will need to enter this property manually, or use a Scraper Proxy." 
+        error: missingKey
+          ? "Extraction Failed: No Scraper API key is configured. Please add your SCRAPER_API_KEY to the Supabase project secrets (Dashboard → Settings → Edge Functions → Secrets). You can get a free key at scraperapi.com."
+          : "Extraction Failed: All fetch strategies were blocked by bot protection. The target site may have very aggressive anti-scraping measures. Please enter this property manually.",
+        errorType: missingKey ? "missing_api_key" : "blocked"
       }), {
-        status: 200, // Return 200 so the frontend can parse the JSON error gracefully
+        status: 200,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    console.log(`Extraction succeeded via: ${fetchTier}`);
 
     const html = successfulHtml;
     const $ = cheerio.load(html);

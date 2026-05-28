@@ -90,7 +90,13 @@ export function AdminPropertyImport() {
       setIsEditMode(true);
     },
     onError: (error: any) => {
-      toast({ title: "Extraction Failed", description: error.message, variant: "destructive" });
+      const msg = error.message || "Unknown error";
+      const isMissingKey = msg.includes("No Scraper API key");
+      toast({ 
+        title: isMissingKey ? "Configuration Required" : "Extraction Failed", 
+        description: msg, 
+        variant: "destructive" 
+      });
     }
   });
 
@@ -192,7 +198,7 @@ export function AdminPropertyImport() {
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Supports Zillow, Realtor.com, Trulia, and standard property sites. The AI will normalize the schema to match our platform standards.
+              Supports most property listing sites including Zillow, Realtor.com, and Trulia. Uses ScraperAPI for bot-protected sites with JS rendering. The AI will normalize the schema to match platform standards.
             </p>
           </div>
         </div>
