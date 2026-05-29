@@ -928,7 +928,7 @@ export function AdminDocuments() {
                 <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-xl">
                   <SelectItem value="contract_of_sale">Contract of Sale (COS)</SelectItem>
-                  <SelectItem value="deed_of_assignment">Deed of Assignment (DOA)</SelectItem>
+                  <SelectItem value="deed_of_assignment">Grant Deed</SelectItem>
                   <SelectItem value="allocation_letter">Allocation Letter</SelectItem>
                   <SelectItem value="survey_plan">Survey Plan Reference</SelectItem>
                   <SelectItem value="property_purchase_agreement">Purchase Agreement</SelectItem>
@@ -941,7 +941,7 @@ export function AdminDocuments() {
             <div className="space-y-2">
               <label className="text-xs uppercase font-bold text-muted-foreground">Document Title</label>
               <Input 
-                placeholder="e.g., C of O for Haven Alpha" 
+                placeholder="e.g., Title Insurance for Haven Alpha" 
                 value={documentName}
                 onChange={(e) => setDocumentName(e.target.value)}
                 className="rounded-xl"
@@ -994,7 +994,7 @@ export function AdminDocuments() {
                     <SelectTrigger className="rounded-xl bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent className="rounded-xl">
                       <SelectItem value="contract_of_sale">Contract of Sale (COS)</SelectItem>
-                      <SelectItem value="deed_of_assignment">Deed of Assignment (DOA)</SelectItem>
+                      <SelectItem value="deed_of_assignment">Grant Deed</SelectItem>
                       <SelectItem value="survey_plan">Survey Plan Reference</SelectItem>
                       <SelectItem value="allocation_letter">Allocation Letter</SelectItem>
                       <SelectItem value="purchase_receipt">Purchase Receipt</SelectItem>

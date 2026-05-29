@@ -474,7 +474,7 @@ export function ManualPaymentModal({
                     <div className="flex gap-3 items-start bg-background/80 p-3 rounded-lg border border-border/50">
                       <FileText className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                       <div>
-                        <p className="text-sm font-semibold text-foreground">Deed of Assignment (DOA)</p>
+                        <p className="text-sm font-semibold text-foreground">Grant Deed</p>
                         <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">Official ownership transfer agreement assigning full land rights to the buyer.</p>
                       </div>
                     </div>

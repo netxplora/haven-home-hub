@@ -382,7 +382,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-2">
               <div>
                 <h3 className="font-serif text-xl font-bold">Ownership Records</h3>
-                <p className="text-sm text-muted-foreground">Certificates of Occupancy, Deed of Assignments, and survey documentation.</p>
+                <p className="text-sm text-muted-foreground">Title Insurance, Grant Deeds, and survey documentation.</p>
               </div>
               <div className="flex items-center gap-3">
                 <input
@@ -760,7 +760,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             <div className="space-y-2">
               {[
                 { id: "contract_of_sale", label: "Contract of Sale" },
-                { id: "deed_of_assignment", label: "Deed of Assignment" },
+                { id: "deed_of_assignment", label: "Grant Deed" },
                 { id: "purchase_receipt", label: "Purchase Receipt" },
                 { id: "allocation_letter", label: "Allocation Letter" }
               ].map(docType => (

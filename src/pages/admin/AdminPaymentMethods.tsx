@@ -71,7 +71,7 @@ const CONFIG_FIELDS: Record<PaymentCategory, { key: string; label: string; place
     { key: "account_number", label: "Account Number", placeholder: "e.g. 0123456789" },
     { key: "swift_code", label: "SWIFT / BIC Code", placeholder: "e.g. FBNINGLA" },
     { key: "routing_number", label: "Routing / Sort Code", placeholder: "Optional" },
-    { key: "country", label: "Country", placeholder: "e.g. Nigeria" },
+    { key: "country", label: "Country", placeholder: "e.g. United States" },
   ],
   digital_currency: [
     { key: "wallet_address", label: "Wallet Address", placeholder: "e.g. 0x1234...abcd" },

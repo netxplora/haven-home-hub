@@ -35,7 +35,7 @@ export function PropertyMap({ properties, onRadiusSearch }: PropertyMapProps) {
   // Find center based on properties or default to a generic location
   const center: [number, number] = properties.length > 0 && properties[0].latitude && properties[0].longitude
     ? [properties[0].latitude, properties[0].longitude]
-    : [6.5244, 3.3792]; // Default to Lagos, Nigeria if no valid coords
+    : [30.2672, -97.7431]; // Default to Austin, TX if no valid coords
 
   return (
     <div className="h-[600px] w-full rounded-xl overflow-hidden border border-border shadow-soft relative z-0">

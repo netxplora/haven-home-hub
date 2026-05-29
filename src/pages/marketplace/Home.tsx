@@ -353,8 +353,8 @@ export default function Home() {
         </div>
 
         {featuredLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {Array.from({ length: 3 }).map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 4 }).map((_, i) => (
               <div key={i} className="rounded-xl border border-border/60 bg-card overflow-hidden animate-pulse">
                 <div className="aspect-[4/3] bg-muted" />
                 <div className="p-5 space-y-3">
@@ -365,11 +365,9 @@ export default function Home() {
             ))}
           </div>
         ) : featured.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {featured.slice(0, 3).map((p, idx) => (
-              <div key={p.id} className={idx === 0 ? "lg:col-span-2" : "lg:col-span-1"}>
-                <PropertyCard property={p} />
-              </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {featured.slice(0, 4).map((p) => (
+              <PropertyCard key={p.id} property={p} />
             ))}
           </div>
         ) : (

@@ -286,7 +286,7 @@ export function AdminOverview() {
               <span className="text-xs text-muted-foreground">5h ago</span>
             </div>
             <p className="font-serif font-semibold text-foreground text-sm">Admin login from new device</p>
-            <p className="text-xs text-muted-foreground mt-1">Verified via 2FA. IP: 102.24.45.19 (Lagos, NG).</p>
+            <p className="text-xs text-muted-foreground mt-1">Verified via 2FA. IP: 102.24.45.19 (Austin, TX).</p>
           </div>
         </div>
       </div>

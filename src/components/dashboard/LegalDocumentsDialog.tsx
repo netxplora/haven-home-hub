@@ -51,7 +51,7 @@ export function LegalDocumentsDialog({ open, onClose, propertyId, propertyTitle,
     },
     { 
       types: ["deed", "deed_of_assignment", "ownership_confirmation"], 
-      title: "Deed of Assignment (DOA)", 
+      title: "Grant Deed", 
       desc: "Official ownership transfer agreement." 
     }
   ];

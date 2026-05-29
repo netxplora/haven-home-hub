@@ -140,7 +140,7 @@ VALUES (
       <p>The total purchase price for the property is <strong>{{purchase_amount}}</strong>. The Purchaser has paid a sum of <strong>{{amount_paid}}</strong> via {{payment_method}} leaving an outstanding balance of <strong>{{outstanding_balance}}</strong>.</p>
       
       <h3>3. TRANSFER OF INTEREST</h3>
-      <p>Upon final payment and verification, all legal title and beneficial ownership in the property shall transfer to the Purchaser. The Seller shall execute a Deed of Assignment in favor of the Purchaser.</p>
+      <p>Upon final payment and verification, all legal title and beneficial ownership in the property shall transfer to the Purchaser. The Seller shall execute a Grant Deed in favor of the Purchaser.</p>
 
       <h3>4. GOVERNING LAW</h3>
       <p>This Contract shall be governed by, and construed in accordance with, the laws of the jurisdiction in which the property is located.</p>

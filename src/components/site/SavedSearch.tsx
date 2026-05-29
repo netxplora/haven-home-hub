@@ -65,7 +65,7 @@ export function SaveSearchButton({ currentFilters }: SaveSearchButtonProps) {
           <div className="space-y-2">
             <label className="text-sm font-medium text-muted-foreground">Search Name</label>
             <Input
-              placeholder="e.g. Lagos 3-bed apartments"
+              placeholder="e.g. Austin 3-bed apartments"
               value={name}
               onChange={(e) => setName(e.target.value)}
             />

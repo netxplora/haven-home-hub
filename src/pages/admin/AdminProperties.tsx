@@ -602,7 +602,7 @@ function PropertyForm({ initial, locations, agents, onClose }: any) {
         
         <div className="space-y-2">
           <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Nearby Points of Interest (JSON)</Label>
-          <Textarea rows={4} value={form.nearby_pois} onChange={(e) => setForm({ ...form, nearby_pois: e.target.value })} className="rounded-xl font-mono text-[10px] resize-none bg-accent/50 focus:bg-background transition-all" placeholder='[{"name": "Ikoyi School", "type": "School", "distance": "1.2km"}]' />
+          <Textarea rows={4} value={form.nearby_pois} onChange={(e) => setForm({ ...form, nearby_pois: e.target.value })} className="rounded-xl font-mono text-[10px] resize-none bg-accent/50 focus:bg-background transition-all" placeholder='[{"name": "Austin High School", "type": "School", "distance": "1.2mi"}]' />
         </div>
 
         <div className="space-y-2">

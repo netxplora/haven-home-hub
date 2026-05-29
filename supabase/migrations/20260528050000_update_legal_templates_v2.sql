@@ -64,7 +64,7 @@ SET
     <!-- Execution & Covenants -->
     <div style="margin-bottom: 40px;">
       <h3 style="font-size: 16px; border-bottom: 1px solid #cbd5e1; padding-bottom: 5px; margin-bottom: 15px; color: #0f172a;">3. COVENANTS AND EXECUTION</h3>
-      <p style="text-align: justify; font-size: 14px;">The Vendor hereby covenants with the Purchaser that the property is free from all encumbrances, charges, and adverse claims. Upon full payment, the Vendor shall execute a Deed of Assignment transferring all residual rights to the Purchaser.</p>
+      <p style="text-align: justify; font-size: 14px;">The Vendor hereby covenants with the Purchaser that the property is free from all encumbrances, charges, and adverse claims. Upon full payment, the Vendor shall execute a Grant Deed transferring all residual rights to the Purchaser.</p>
     </div>
 
     <!-- Signatures placeholder -->
@@ -198,7 +198,7 @@ SET
         </table>
       </div>
 
-      <p>Please note that this allocation is provisional. Physical allocation and final documentation (Deed of Assignment) will only be processed upon the complete settlement of any outstanding property balances and associated statutory fees.</p>
+      <p>Please note that this allocation is provisional. Physical allocation and final documentation (Grant Deed) will only be processed upon the complete settlement of any outstanding property balances and associated statutory fees.</p>
       <p>Congratulations on your investment.</p>
     </div>
 
