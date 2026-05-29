@@ -64,7 +64,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-gray-200 pb-8 mb-8">
               <div className="flex items-start gap-4">
-                <div className="h-14 w-14 bg-rose-900 text-white rounded-lg flex items-center justify-center font-bold font-serif text-2xl shadow-sm shrink-0">
+                <div className="h-14 w-14 bg-primary text-white rounded-lg flex items-center justify-center font-bold font-serif text-2xl shadow-sm shrink-0">
                   VE
                 </div>
                 <div>
@@ -332,7 +332,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
           <Button variant="outline" onClick={onClose} className="rounded-xl border-gray-300 text-gray-700 hover:bg-gray-200 font-bold">
             Close
           </Button>
-          <Button onClick={handlePrint} className="rounded-xl bg-rose-800 text-white shadow-sm hover:bg-rose-900 transition-colors font-bold">
+          <Button onClick={handlePrint} className="rounded-xl bg-primary text-white shadow-sm hover:bg-primary transition-colors font-bold">
             <Printer className="mr-2 h-4 w-4" />
             Print Receipt
           </Button>

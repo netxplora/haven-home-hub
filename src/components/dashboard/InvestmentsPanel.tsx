@@ -508,7 +508,7 @@ function InvestmentGridCard({ investment, dividends = 0, onSelect }: { investmen
           </div>
 
           {dividends > 0 && (
-             <div className="bg-primary/100/5 border border-rose-500/10 rounded-xl p-3 flex justify-between items-center text-xs">
+             <div className="bg-primary/100/5 border border-primary/ rounded-xl p-3 flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-medium">Dividends Received</span>
                 <span className="font-bold text-yellow-600">{formatMoney(dividends, investment.investment_properties?.currency ?? "USD")}</span>
              </div>

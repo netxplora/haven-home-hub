@@ -292,7 +292,7 @@ export function FractionalPaymentDialog({
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-4xl p-0 overflow-hidden border border-border bg-background shadow-lux max-h-[90vh] overflow-y-auto flex flex-col rounded-2xl md:max-h-[90vh]">
         {/* Header Block with Premium Aesthetics */}
-        <DialogHeader className="p-6 md:p-8 bg-gradient-to-br from-rose-500/5 via-primary/5 to-background border-b border-border/40 shrink-0">
+        <DialogHeader className="p-6 md:p-8 bg-gradient-to-br from-primary/5 via-primary/5 to-background border-b border-border/40 shrink-0">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
@@ -320,7 +320,7 @@ export function FractionalPaymentDialog({
                       className={cn(
                         "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
                         i < activeIdx ? "bg-primary text-white" :
-                        i === activeIdx ? "bg-primary text-white shadow-sm font-extrabold ring-4 ring-rose-600/15" :
+                        i === activeIdx ? "bg-primary text-white shadow-sm font-extrabold ring-4 ring-primary/" :
                         "bg-muted text-muted-foreground"
                       )}
                     >
@@ -336,7 +336,7 @@ export function FractionalPaymentDialog({
             {step !== "confirm" && (
               <div className="md:hidden flex items-center justify-between text-xs border border-border bg-accent/40 rounded-xl p-2.5">
                 <span className="font-medium text-muted-foreground">Progress Checklist</span>
-                <span className="font-bold text-primary bg-primary/100/5 px-2 py-0.5 rounded-lg border border-rose-500/10">Step {activeIdx + 1} of 5</span>
+                <span className="font-bold text-primary bg-primary/100/5 px-2 py-0.5 rounded-lg border border-primary/">Step {activeIdx + 1} of 5</span>
               </div>
             )}
           </div>
@@ -348,8 +348,8 @@ export function FractionalPaymentDialog({
           {/* STEP 1: SUMMARY */}
           {step === "summary" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="p-4 bg-primary/100/5 border border-rose-500/10 rounded-xl">
-                <p className="text-xs md:text-sm text-primary dark:text-rose-300 leading-relaxed">
+              <div className="p-4 bg-primary/100/5 border border-primary/ rounded-xl">
+                <p className="text-xs md:text-sm text-primary dark:text-primary leading-relaxed">
                   You are about to make a fractional ownership investment payment for <strong className="font-semibold">{property.title}</strong>. 
                   Purchased fractional units grant legal ownership. Projected ROI yields begin accumulating post-subscription completion. 
                   All updates will propagate live to your dashboard.
@@ -468,14 +468,14 @@ export function FractionalPaymentDialog({
               <label 
                 className={cn(
                   "flex items-start gap-3.5 p-4 border rounded-2xl cursor-pointer hover:bg-accent/40 transition-all",
-                  ackChecked ? "border-rose-600 bg-primary/100/5 shadow-sm" : "border-border"
+                  ackChecked ? "border-primary bg-primary/100/5 shadow-sm" : "border-border"
                 )}
               >
                 <Checkbox 
                   id="modal-terms-ack" 
                   checked={ackChecked} 
                   onCheckedChange={(c) => setAckChecked(!!c)} 
-                  className="mt-1 border-muted-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-rose-600" 
+                  className="mt-1 border-muted-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-primary" 
                 />
                 <div>
                   <p className="font-bold text-sm text-foreground">I acknowledge and authorize terms</p>
@@ -493,8 +493,8 @@ export function FractionalPaymentDialog({
               {/* Buy Digital Currency assistance section */}
               {method === "third_party_provider" && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <div className="p-4 bg-primary/100/5 border border-rose-500/10 rounded-xl">
-                    <h5 className="font-bold text-xs text-primary dark:text-rose-300 flex items-center gap-1.5">
+                  <div className="p-4 bg-primary/100/5 border border-primary/ rounded-xl">
+                    <h5 className="font-bold text-xs text-primary dark:text-primary flex items-center gap-1.5">
                       <Wallet className="h-4 w-4" />
                       Buy Digital Currency Assistance Flow
                     </h5>
@@ -504,7 +504,7 @@ export function FractionalPaymentDialog({
                   </div>
 
                   <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="border border-border rounded-xl p-4 bg-card hover:border-rose-600/50 hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div className="border border-border rounded-xl p-4 bg-card hover:border-primary/ hover:shadow-sm transition-all flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start">
                           <span className="font-bold text-sm text-foreground">MoonPay</span>
@@ -521,7 +521,7 @@ export function FractionalPaymentDialog({
                       </Button>
                     </div>
 
-                    <div className="border border-border rounded-xl p-4 bg-card hover:border-rose-600/50 hover:shadow-sm transition-all flex flex-col justify-between">
+                    <div className="border border-border rounded-xl p-4 bg-card hover:border-primary/ hover:shadow-sm transition-all flex flex-col justify-between">
                       <div>
                         <div className="flex justify-between items-start">
                           <span className="font-bold text-sm text-foreground">Transak</span>
@@ -587,7 +587,7 @@ export function FractionalPaymentDialog({
                       {/* Zoomable QR code component */}
                       <button 
                         onClick={() => setQrZoomed(!qrZoomed)}
-                        className="group relative bg-white p-4 rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-rose-600/30 transition-all focus:outline-none"
+                        className="group relative bg-white p-4 rounded-2xl border border-border shadow-sm hover:shadow-md hover:border-primary/ transition-all focus:outline-none"
                       >
                         <QRCodeSVG value={paymentData?.address || "wallet_address"} size={160} />
                         <div className="absolute inset-0 bg-black/60 rounded-2xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -611,7 +611,7 @@ export function FractionalPaymentDialog({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs transition-all hover:bg-primary/5 hover:border-rose-600/40"
+                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs transition-all hover:bg-primary/5 hover:border-primary/"
                           onClick={() => handleCopyText(String(paymentData?.cryptoAmount), "crypto_amount")}
                         >
                           {copyStates["crypto_amount"] ? (
@@ -635,7 +635,7 @@ export function FractionalPaymentDialog({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs shrink-0 transition-all hover:bg-primary/5 hover:border-rose-600/40"
+                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs shrink-0 transition-all hover:bg-primary/5 hover:border-primary/"
                           onClick={() => handleCopyText(String(paymentData?.address), "crypto_address")}
                         >
                           {copyStates["crypto_address"] ? (
@@ -702,7 +702,7 @@ export function FractionalPaymentDialog({
                     <div className="grid grid-cols-[1fr_2fr] gap-4 items-center pt-1 text-xs">
                       <span className="font-semibold text-primary uppercase tracking-wider text-[10px]">Payment Reference</span>
                       <div className="flex items-center justify-end gap-2">
-                        <span className="font-mono font-extrabold text-primary bg-primary/100/5 border border-rose-500/10 px-2 py-0.5 rounded-md">{paymentData?.reference}</span>
+                        <span className="font-mono font-extrabold text-primary bg-primary/100/5 border border-primary/ px-2 py-0.5 rounded-md">{paymentData?.reference}</span>
                         <Button 
                           variant="ghost" 
                           size="icon" 
@@ -751,7 +751,7 @@ export function FractionalPaymentDialog({
                   placeholder="Enter the transaction reference, SWIFT receipt ID, or hash..." 
                   value={hash} 
                   onChange={(e) => setHash(e.target.value)} 
-                  className="h-13 rounded-xl border-border bg-accent/40 focus:bg-background transition-all font-bold text-sm focus-visible:ring-rose-600/40"
+                  className="h-13 rounded-xl border-border bg-accent/40 focus:bg-background transition-all font-bold text-sm focus-visible:ring-primary/"
                 />
                 <p className="text-[10px] text-muted-foreground">Please double check that transaction reference matches your financial receipt.</p>
               </div>
@@ -770,7 +770,7 @@ export function FractionalPaymentDialog({
                 />
                 
                 {proofUrl ? (
-                  <div className="relative rounded-2xl border border-rose-600/30 overflow-hidden group shadow-sm bg-accent/20">
+                  <div className="relative rounded-2xl border border-primary/ overflow-hidden group shadow-sm bg-accent/20">
                     <div className="aspect-[16/9] w-full flex items-center justify-center p-3">
                       {proofUrl.endsWith('.pdf') ? (
                         <div className="flex flex-col items-center gap-2">
@@ -782,7 +782,7 @@ export function FractionalPaymentDialog({
                       )}
                     </div>
                     <div className="absolute inset-0 bg-background/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="outline" className="rounded-xl font-semibold border-rose-600/30 hover:bg-primary/5 text-xs h-10" onClick={() => fileInputRef.current?.click()}>
+                      <Button variant="outline" className="rounded-xl font-semibold border-primary/ hover:bg-primary/5 text-xs h-10" onClick={() => fileInputRef.current?.click()}>
                         Replace Verification Document
                       </Button>
                     </div>
@@ -795,7 +795,7 @@ export function FractionalPaymentDialog({
                     onClick={() => fileInputRef.current?.click()}
                     className={cn(
                       "w-full h-44 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer select-none",
-                      isDragOver ? "border-rose-600 bg-primary/100/5 scale-[1.01]" : "border-border hover:border-rose-600/40 hover:bg-accent/40",
+                      isDragOver ? "border-primary bg-primary/100/5 scale-[1.01]" : "border-border hover:border-primary/ hover:bg-accent/40",
                       uploadingProof && "pointer-events-none opacity-50"
                     )}
                   >
@@ -827,7 +827,7 @@ export function FractionalPaymentDialog({
               </div>
               
               <div className="space-y-2 max-w-sm mx-auto">
-                <span className="text-[10px] uppercase tracking-wider text-primary bg-primary/100/5 border border-rose-500/10 px-2 py-0.5 rounded font-extrabold">
+                <span className="text-[10px] uppercase tracking-wider text-primary bg-primary/100/5 border border-primary/ px-2 py-0.5 rounded font-extrabold">
                   Status: payment_under_review
                 </span>
                 <h3 className="font-serif text-2xl font-bold text-foreground pt-1.5">Onboarding Initialized</h3>

@@ -261,7 +261,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'verified': return "bg-rose-500/10 text-rose-700 border-rose-500/20";
+      case 'verified': return "bg-primary/ text-primary border-primary/";
       case 'available':
       case 'delivered': return "bg-blue-500/10 text-blue-700 border-blue-500/20";
       case 'pending':
@@ -312,7 +312,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                   <h3 className="font-serif text-xl font-bold mb-4">Pending Signature</h3>
                   {requiredDocs.length === 0 ? (
                     <div className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center shadow-soft">
-                      <CheckCircle2 className="h-10 w-10 text-rose-500 mb-3" />
+                      <CheckCircle2 className="h-10 w-10 text-primary mb-3" />
                       <p className="font-bold text-slate-800">All caught up!</p>
                       <p className="text-sm text-muted-foreground mt-1">You have no pending documents to sign.</p>
                     </div>
@@ -331,7 +331,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                           </div>
                           <Button
                             onClick={() => { setSelectedDocType(doc.type); setSignModalOpen(true); }}
-                            className="w-full sm:w-auto rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold"
+                            className="w-full sm:w-auto rounded-xl bg-primary hover:bg-primary text-white font-bold"
                           >
                             Review & Sign
                           </Button>
@@ -361,7 +361,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <p className="text-xs text-muted-foreground mt-0.5">Signed on {new Date(doc.signed_at).toLocaleString()}</p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-500/20 shrink-0 font-bold">
+                          <Badge variant="outline" className="bg-primary/ text-primary border-primary/ shrink-0 font-bold">
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Legally Binding
                           </Badge>
                         </div>
@@ -458,7 +458,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             <div className="absolute top-[9px] left-3 right-3 h-[2px] bg-slate-200 -z-0" />
 
                             <div className="flex flex-col items-center relative z-10">
-                              <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white", isRevoked ? "bg-destructive" : "bg-rose-500")}>
+                              <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white", isRevoked ? "bg-destructive" : "bg-primary")}>
                                 {isRevoked ? "✕" : "✓"}
                               </div>
                               <span className="text-[10px] font-bold text-slate-700 mt-1">Generated</span>
@@ -468,7 +468,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
                                 doc.status === 'pending' || doc.status === 'processing'
                                   ? "bg-slate-200 text-slate-400"
-                                  : isRevoked ? "bg-destructive text-white" : "bg-rose-500 text-white"
+                                  : isRevoked ? "bg-destructive text-white" : "bg-primary text-white"
                               )}>
                                 {doc.status === 'pending' || doc.status === 'processing' ? "2" : "✓"}
                               </div>
@@ -478,7 +478,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             <div className="flex flex-col items-center relative z-10">
                               <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
                                 ['verified', 'delivered'].includes(doc.status) && !isRevoked
-                                  ? "bg-rose-500 text-white"
+                                  ? "bg-primary text-white"
                                   : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
                               )}>
                                 {['verified', 'delivered'].includes(doc.status) && !isRevoked ? "✓" : "3"}
@@ -489,7 +489,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             <div className="flex flex-col items-center relative z-10">
                               <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
                                 doc.status === 'verified' && !isRevoked
-                                  ? "bg-rose-500 text-white"
+                                  ? "bg-primary text-white"
                                   : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
                               )}>
                                 {doc.status === 'verified' && !isRevoked ? "✓" : "4"}
@@ -575,13 +575,13 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {certificates.map((cert: any) => (
-                  <div key={cert.id} className="p-5 rounded-2xl border border-rose-500/20 bg-rose-500/5 hover:border-rose-500/40 transition-all flex flex-col h-full justify-between shadow-sm">
+                  <div key={cert.id} className="p-5 rounded-2xl border border-primary/ bg-primary/ hover:border-primary/ transition-all flex flex-col h-full justify-between shadow-sm">
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-full bg-rose-500/10 flex items-center justify-center">
-                          <ShieldCheck className="h-5 w-5 text-rose-600" />
+                        <div className="h-10 w-10 rounded-full bg-primary/ flex items-center justify-center">
+                          <ShieldCheck className="h-5 w-5 text-primary" />
                         </div>
-                        <Badge variant="outline" className="bg-rose-50 text-rose-700 border-rose-200 font-bold">Verified</Badge>
+                        <Badge variant="outline" className="bg-primary/5 text-primary border-primary font-bold">Verified</Badge>
                       </div>
                       <h4 className="font-bold text-lg leading-tight mb-1">{cert.investment_properties?.title || "Property Asset"}</h4>
                       <p className="text-xs text-muted-foreground mb-4">Certificate ID: <span className="font-mono text-xs">{cert.certificate_number}</span></p>
@@ -599,7 +599,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                     </div>
 
                     <Button
-                      className="w-full bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-bold"
+                      className="w-full bg-primary hover:bg-primary text-white rounded-xl font-bold"
                       onClick={() => window.open(`/certificate/${cert.id}`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" /> View Certificate
@@ -693,7 +693,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
               </div>
               <Button
                 onClick={() => window.open(`/print-document/${previewDoc?.id}`, '_blank')}
-                className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold"
+                className="bg-primary hover:bg-primary text-white rounded-lg font-bold"
               >
                 <Eye className="h-4 w-4 mr-2" /> Open Printable View
               </Button>
