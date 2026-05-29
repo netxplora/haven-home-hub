@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Plus, Pencil, Trash2, Search, Eye, Filter, Loader2, Calendar } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, Eye, Filter, Loader2, Calendar, Ban, Undo2 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,6 +93,37 @@ export function AdminInvestors() {
       toast({ title: "Error verifying investment", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Investment verified", description: "Certificate has been issued successfully." });
+      qc.invalidateQueries({ queryKey: ["admin-investments"] });
+    }
+  };
+
+  const handleReject = async (id: string) => {
+    const reason = prompt("Enter rejection reason:");
+    if (!reason) return;
+    const { error } = await (supabase.rpc as any)("reject_investment", { 
+      p_investment_id: id,
+      p_reason: reason 
+    });
+    if (error) {
+      toast({ title: "Rejection failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Investment rejected", description: "Units have been released and investor notified." });
+      qc.invalidateQueries({ queryKey: ["admin-investments"] });
+    }
+  };
+
+  const handleRefund = async (id: string) => {
+    const reason = prompt("Enter refund reason:");
+    if (!reason) return;
+    if (!confirm("This will refund the investment and release all reserved units. Continue?")) return;
+    const { error } = await (supabase.rpc as any)("refund_investment", { 
+      p_investment_id: id,
+      p_reason: reason 
+    });
+    if (error) {
+      toast({ title: "Refund failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Investment refunded", description: "Units released and investor notified." });
       qc.invalidateQueries({ queryKey: ["admin-investments"] });
     }
   };
@@ -211,6 +242,7 @@ export function AdminInvestors() {
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="confirmed">Confirmed</SelectItem>
             <SelectItem value="cancelled">Cancelled</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
             <SelectItem value="refunded">Refunded</SelectItem>
           </SelectContent>
         </Select>
@@ -279,9 +311,23 @@ export function AdminInvestors() {
                     )}
                     
                     {(i.status === "pending" || i.status === "payment_under_review") ? (
-                      <Button variant="default" size="sm" className="h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
-                        Verify & Cert
-                      </Button>
+                      <>
+                        <Button variant="default" size="sm" className="h-11 px-4 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
+                          Verify & Cert
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-11 px-3 rounded-lg text-destructive hover:bg-destructive/10 border-destructive/20 font-bold gap-1" onClick={() => handleReject(i.id)}>
+                          <Ban className="h-3.5 w-3.5" /> Reject
+                        </Button>
+                      </>
+                    ) : (i.status === "active" || i.status === "confirmed") ? (
+                      <>
+                        <Button variant="outline" size="sm" className="h-11 px-4 rounded-lg font-bold gap-1" onClick={() => setViewItem(i)}>
+                          <Eye className="h-4 w-4" /> View
+                        </Button>
+                        <Button variant="outline" size="sm" className="h-11 px-3 rounded-lg text-amber-600 hover:bg-amber-50 border-amber-200 font-bold gap-1" onClick={() => handleRefund(i.id)}>
+                          <Undo2 className="h-3.5 w-3.5" /> Refund
+                        </Button>
+                      </>
                     ) : (
                       <Button variant="outline" size="sm" className="h-11 px-4 rounded-lg font-bold gap-1" onClick={() => setViewItem(i)}>
                         <Eye className="h-4 w-4" /> View
@@ -353,9 +399,23 @@ export function AdminInvestors() {
                     <td className="p-4 text-right">
                       <div className="flex justify-end gap-1">
                         {(i.status === "pending" || i.status === "payment_under_review") ? (
-                        <Button variant="default" size="sm" className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
-                          Verify & Issue Cert
-                        </Button>
+                        <>
+                          <Button variant="default" size="sm" className="h-8 rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground font-bold" onClick={() => handleVerify(i.id)}>
+                            Verify & Issue Cert
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 rounded-lg text-destructive hover:bg-destructive/10 border-destructive/20 font-bold gap-1" onClick={() => handleReject(i.id)}>
+                            <Ban className="h-3.5 w-3.5" /> Reject
+                          </Button>
+                        </>
+                      ) : (i.status === "active" || i.status === "confirmed") ? (
+                        <>
+                          <Button variant="ghost" size="sm" className="h-8 rounded-lg" onClick={() => setViewItem(i)}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm" className="h-8 rounded-lg text-amber-600 hover:bg-amber-50 border-amber-200 font-bold gap-1" onClick={() => handleRefund(i.id)}>
+                            <Undo2 className="h-3 w-3" /> Refund
+                          </Button>
+                        </>
                       ) : (
                         <Button variant="ghost" size="sm" className="h-8 rounded-lg" onClick={() => setViewItem(i)}>
                           <Eye className="h-4 w-4" />

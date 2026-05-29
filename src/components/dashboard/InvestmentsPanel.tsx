@@ -66,22 +66,16 @@ export function InvestmentsPanel() {
     e.stopPropagation();
     setCancellingId(id);
     try {
-      const { error } = await supabase
-        .from("user_investments")
-        .update({ status: "cancelled", updated_at: new Date().toISOString() })
-        .eq("id", id);
+      // Use atomic RPC that cancels investment, releases units, cancels payments,
+      // and sends notification in a single database transaction
+      const { error } = await (supabase.rpc as any)("cancel_investment", {
+        p_investment_id: id,
+      });
       if (error) throw error;
-      
-      // Also cancel associated pending payments
-      await supabase
-        .from("payments")
-        .update({ status: "cancelled", updated_at: new Date().toISOString() } as any)
-        .eq("investment_id", id)
-        .eq("status", "pending");
 
       toast({
         title: "Investment Cancelled",
-        description: "Your investment commitment has been successfully cancelled."
+        description: "Your investment commitment has been cancelled and reserved units released."
       });
       refetch();
     } catch (err: any) {

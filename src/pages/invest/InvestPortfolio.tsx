@@ -17,23 +17,27 @@ export default function InvestPortfolio() {
   const { data, isLoading } = useQuery({
     queryKey: ["portfolio", user.id],
     queryFn: async () => {
-      const [invs, rets, pays] = await Promise.all([
+      const [invs, rets, pays, stats] = await Promise.all([
         supabase.from("user_investments").select("*, investment_properties(title, slug, cover_image_url, currency, projected_return_min, projected_return_max)").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("returns").select("*, investment_properties(title, slug, currency)").eq("user_id", user.id).order("distribution_date", { ascending: false }),
         supabase.from("payments").select("*").eq("user_id", user.id).eq("payment_type", "investment").order("created_at", { ascending: false }),
+        supabase.rpc("calculate_portfolio_roi", { p_user_id: user.id } as any)
       ]);
       return {
         investments: invs.data ?? [],
         returns: rets.data ?? [],
         payments: pays.data ?? [],
+        stats: stats.data ?? null,
       };
     },
   });
 
-  const invested = (data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active")
-    .reduce((s: number, i: any) => s + Number(i.total_amount ?? i.amount_invested ?? 0), 0);
-  const earned = (data?.returns ?? []).reduce((s: number, r: any) => s + Number(r.amount_received), 0);
-  const active = (data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active").length;
+  const invested = data?.stats?.total_invested ?? ((data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active").reduce((s: number, i: any) => s + Number(i.total_amount ?? i.amount_invested ?? 0), 0));
+  const earned = data?.stats?.total_returns ?? ((data?.returns ?? []).reduce((s: number, r: any) => s + Number(r.amount_received), 0));
+  const active = data?.stats?.active_investments ?? ((data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active").length);
+  const pending = data?.stats?.pending_investments ?? 0;
+  const projectedMin = data?.stats?.projected_return_min ?? 0;
+  const projectedMax = data?.stats?.projected_return_max ?? 0;
 
   return (
     <SiteLayout>

@@ -377,9 +377,19 @@ export function AdminKYC() {
                                         window.open(path, '_blank');
                                         return;
                                       }
+                                      const newWindow = window.open('about:blank', '_blank');
+                                      if (!newWindow) {
+                                        toast({ title: "Popup Blocked", description: "Please allow popups to view documents.", variant: "destructive" });
+                                        return;
+                                      }
                                       const { data, error } = await supabase.storage.from("kyc_documents").createSignedUrl(path, 60);
-                                      if (error) toast({ title: "Failed to open document", description: error.message, variant: "destructive" });
-                                      else if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                                      if (error) {
+                                        newWindow.close();
+                                        toast({ title: "Failed to open document", description: error.message, variant: "destructive" });
+                                      }
+                                      else if (data?.signedUrl) {
+                                        newWindow.location.href = data.signedUrl;
+                                      }
                                     }}
                                   >
                                     <Eye className="h-4 w-4" />
@@ -408,9 +418,19 @@ export function AdminKYC() {
                                         window.open(path, '_blank');
                                         return;
                                       }
+                                      const newWindow = window.open('about:blank', '_blank');
+                                      if (!newWindow) {
+                                        toast({ title: "Popup Blocked", description: "Please allow popups to view documents.", variant: "destructive" });
+                                        return;
+                                      }
                                       const { data, error } = await supabase.storage.from("kyc_documents").createSignedUrl(path, 60);
-                                      if (error) toast({ title: "Failed to open document", description: error.message, variant: "destructive" });
-                                      else if (data?.signedUrl) window.open(data.signedUrl, '_blank');
+                                      if (error) {
+                                        newWindow.close();
+                                        toast({ title: "Failed to open document", description: error.message, variant: "destructive" });
+                                      }
+                                      else if (data?.signedUrl) {
+                                        newWindow.location.href = data.signedUrl;
+                                      }
                                     }}
                                   >
                                     <Eye className="h-4 w-4" />

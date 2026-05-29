@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Layers, Search, ArrowUpDown, ChevronLeft, ChevronRight, Map } from "lucide-react";
+import { Plus, Pencil, Trash2, Layers, Search, ArrowUpDown, ChevronLeft, ChevronRight, Map, Pause, Play } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -92,6 +92,18 @@ export function AdminInvest() {
     const { error } = await (supabase as any).from("investment_properties").delete().eq("id", id);
     if (error) toast({ title: "Delete failed", description: error.message, variant: "destructive" });
     else qc.invalidateQueries({ queryKey: ["admin-invest"] });
+  }
+
+  async function pauseCampaign(id: string) {
+    const { error } = await (supabase.rpc as any)("pause_investment_campaign", { p_property_id: id });
+    if (error) toast({ title: "Pause failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "Campaign paused" }); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }
+  }
+
+  async function resumeCampaign(id: string) {
+    const { error } = await (supabase.rpc as any)("resume_investment_campaign", { p_property_id: id });
+    if (error) toast({ title: "Resume failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "Campaign resumed" }); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }
   }
 
   return (
@@ -201,6 +213,16 @@ export function AdminInvest() {
                     </div>
 
                     <div className="pt-3 border-t border-border/50 flex gap-2 justify-end">
+                      {p.status === 'open' && (
+                        <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-amber-600 border-amber-200 hover:bg-amber-50" onClick={() => pauseCampaign(p.id)}>
+                          <Pause className="h-4 w-4" /> Pause
+                        </Button>
+                      )}
+                      {p.status === 'paused' && (
+                        <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-green-600 border-green-200 hover:bg-green-50" onClick={() => resumeCampaign(p.id)}>
+                          <Play className="h-4 w-4" /> Resume
+                        </Button>
+                      )}
                       <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4" onClick={() => { setEditing(p); setOpen(true); }}>
                         <Pencil className="h-4 w-4" /> Edit
                       </Button>
@@ -255,6 +277,16 @@ export function AdminInvest() {
                       </td>
                       <td className="p-4 text-right">
                         <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {p.status === 'open' && (
+                            <Button size="icon" variant="ghost" onClick={() => pauseCampaign(p.id)} className="h-8 w-8 rounded-lg text-amber-600 hover:bg-amber-50" title="Pause Campaign">
+                              <Pause className="h-4 w-4" />
+                            </Button>
+                          )}
+                          {p.status === 'paused' && (
+                            <Button size="icon" variant="ghost" onClick={() => resumeCampaign(p.id)} className="h-8 w-8 rounded-lg text-green-600 hover:bg-green-50" title="Resume Campaign">
+                              <Play className="h-4 w-4" />
+                            </Button>
+                          )}
                           <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }} className="h-8 w-8 rounded-lg">
                             <Pencil className="h-4 w-4" />
                           </Button>
