@@ -34,43 +34,49 @@ CREATE TABLE IF NOT EXISTS public.extraction_jobs (
 -- RLS
 ALTER TABLE public.extraction_jobs ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Admins can insert extraction jobs" ON public.extraction_jobs;
 CREATE POLICY "Admins can insert extraction jobs"
     ON public.extraction_jobs
     FOR INSERT
     WITH CHECK (
         EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE id = auth.uid() AND role = 'admin'
+            SELECT 1 FROM public.user_roles
+            WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'admin'
         )
     );
 
+DROP POLICY IF EXISTS "Admins can select extraction jobs" ON public.extraction_jobs;
 CREATE POLICY "Admins can select extraction jobs"
     ON public.extraction_jobs
     FOR SELECT
     USING (
         EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE id = auth.uid() AND role = 'admin'
+            SELECT 1 FROM public.user_roles
+            WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'admin'
         )
     );
 
+DROP POLICY IF EXISTS "Admins can update extraction jobs" ON public.extraction_jobs;
 CREATE POLICY "Admins can update extraction jobs"
     ON public.extraction_jobs
     FOR UPDATE
     USING (
         EXISTS (
-            SELECT 1 FROM public.profiles
-            WHERE id = auth.uid() AND role = 'admin'
+            SELECT 1 FROM public.user_roles
+            WHERE user_roles.user_id = auth.uid() AND user_roles.role = 'admin'
         )
     );
 
 -- Enable realtime for the table
-BEGIN;
-  DROP PUBLICATION IF EXISTS supabase_realtime;
-  CREATE PUBLICATION supabase_realtime FOR ALL TABLES;
-COMMIT;
-
-ALTER PUBLICATION supabase_realtime ADD TABLE public.extraction_jobs;
+-- Enable realtime for the table safely
+DO $$
+BEGIN
+    ALTER PUBLICATION supabase_realtime ADD TABLE public.extraction_jobs;
+EXCEPTION
+    WHEN OTHERS THEN
+        -- If publication is FOR ALL TABLES, this throws an error we can safely ignore
+        NULL;
+END $$;
 
 -- Update trigger
 CREATE OR REPLACE FUNCTION update_extraction_jobs_updated_at()
