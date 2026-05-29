@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
-import { Link2, Sparkles, CheckCircle2, AlertTriangle, Eye, Upload, Save, X } from "lucide-react";
+import { Link2, Sparkles, CheckCircle2, AlertTriangle, Eye, Upload, Save, X, Loader2 } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { ChipInput } from "@/components/ui/chip-input";
 
@@ -17,7 +17,11 @@ export function AdminPropertyImport() {
   const { user } = useAuth();
   const qc = useQueryClient();
   const [url, setUrl] = useState("");
+  const [jobId, setJobId] = useState<string | null>(null);
+  const [jobStatus, setJobStatus] = useState<string>("pending");
+  const [jobLogs, setJobLogs] = useState<any[]>([]);
   const [extractedData, setExtractedData] = useState<any | null>(null);
+  const [confidenceScores, setConfidenceScores] = useState<any | null>(null);
   const [isEditMode, setIsEditMode] = useState(true);
 
   const [showDebug, setShowDebug] = useState(false);
@@ -28,6 +32,48 @@ export function AdminPropertyImport() {
     return data as any;
   };
 
+  // Setup realtime subscription when jobId exists
+  useEffect(() => {
+    if (!jobId) return;
+
+    const channel = supabase
+      .channel(`job_${jobId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'extraction_jobs',
+          filter: `id=eq.${jobId}`
+        },
+        (payload: any) => {
+          const newStatus = payload.new.status;
+          setJobStatus(newStatus);
+          if (payload.new.logs) setJobLogs(payload.new.logs);
+
+          if (newStatus === 'completed') {
+            toast({ title: "Extraction complete!", description: "Review the extracted schema below." });
+            setExtractedData(payload.new.extracted_data);
+            setConfidenceScores(payload.new.confidence_scores);
+            setIsEditMode(true);
+            setJobId(null); // Stop listening
+          } else if (newStatus === 'failed') {
+            toast({ 
+              title: "Extraction Failed", 
+              description: payload.new.error_message || "Unknown error occurred", 
+              variant: "destructive" 
+            });
+            setJobId(null);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [jobId]);
+
   const extractMutation = useMutation({
     mutationFn: async () => {
       if (!url) throw new Error("Please enter a valid URL");
@@ -37,64 +83,25 @@ export function AdminPropertyImport() {
         throw new Error(`Property already exists: ${duplicate.title}`);
       }
 
-      const { data, error } = await supabase.functions.invoke("extract-property", {
-        body: { url }
-      });
+      // Insert job into the queue
+      const { data, error } = await supabase
+        .from('extraction_jobs')
+        .insert([{ url, status: 'pending' }])
+        .select()
+        .single();
 
       if (error) throw error;
-      if (!data?.success) throw new Error(data?.error || "Extraction failed");
-      if (!data?.data || Object.keys(data.data).length === 0) throw new Error("Received empty payload from extraction");
-      
-      return data.data;
+      return data;
     },
     onSuccess: (data) => {
-      toast({ title: "Extraction complete!", description: "Review the extracted schema below." });
-      
-      // EXPLICIT SCHEMA MAPPING LAYER
-      // Normalize external fields (beds, sqft) to platform schema (bedrooms, size_sqm)
-      const mappedProperty = {
-        title: data.title || "",
-        description: data.description || "",
-        // DB Schema: property_type = buy/rent/land (ENUM)
-        // DB Schema: property_category = house/apartment/etc (TEXT)
-        property_type: (data.property_type && ["buy", "rent", "land"].includes(data.property_type)) ? data.property_type : 
-                      (data.property_category && ["buy", "rent", "land"].includes(data.property_category)) ? data.property_category : "buy",
-        
-        property_category: (data.property_category && !["buy", "rent", "land"].includes(data.property_category)) ? data.property_category :
-                          (data.property_type && !["buy", "rent", "land"].includes(data.property_type)) ? data.property_type : "house",
-        
-        price: data.price || 0,
-        currency: data.currency || "USD",
-        bedrooms: data.bedrooms || data.beds || 0,
-        bathrooms: data.bathrooms || data.baths || 0,
-        size_sqm: data.size_sqm || data.sqft || 0,
-        address: data.address || "",
-        city: data.city || "",
-        state: data.state || "",
-        country: data.country || "",
-        interior_features: Array.isArray(data.interior_features) ? data.interior_features : [],
-        exterior_features: Array.isArray(data.exterior_features) ? data.exterior_features : [],
-        cover_image_url: data.cover_image_url || "",
-        gallery_images: Array.isArray(data.gallery_images) ? data.gallery_images : [],
-        
-        // System defaults
-        external_url: url,
-        status: data.status || "available",
-        featured: data.featured || false,
-        
-        // Retain original raw payload for debugging
-        _rawPayload: data
-      };
-
-      setExtractedData(mappedProperty);
-      setIsEditMode(true);
+      setJobId(data.id);
+      setJobStatus(data.status);
+      toast({ title: "Extraction started", description: "Your job has been queued." });
     },
     onError: (error: any) => {
-      const msg = error.message || "Unknown error";
-      const isMissingKey = msg.includes("No Scraper API key");
       toast({ 
-        title: isMissingKey ? "Configuration Required" : "Extraction Failed", 
-        description: msg, 
+        title: "Failed to start extraction", 
+        description: error.message || "Unknown error", 
         variant: "destructive" 
       });
     }
@@ -174,7 +181,7 @@ export function AdminPropertyImport() {
         </div>
       </div>
 
-      {!extractedData && (
+      {!extractedData && !jobId && (
         <div className="max-w-2xl bg-card border border-border p-6 rounded-xl shadow-sm space-y-6">
           <div className="space-y-4">
             <Label>External Property URL</Label>
@@ -193,12 +200,29 @@ export function AdminPropertyImport() {
                 disabled={!url || extractMutation.isPending}
                 className="gap-2"
               >
-                {extractMutation.isPending ? "Extracting..." : "Run AI Extraction"}
+                {extractMutation.isPending ? "Queuing..." : "Run Extraction"}
                 <Sparkles className="h-4 w-4" />
               </Button>
             </div>
             <p className="text-xs text-muted-foreground">
-              Supports most property listing sites including Zillow, Realtor.com, and Trulia. Uses ScraperAPI for bot-protected sites with JS rendering. The AI will normalize the schema to match platform standards.
+              Supports Zillow, Realtor.com, Trulia, and more. This uses our advanced background worker infrastructure with stealth browser extraction and intelligent anti-bot routing.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {jobId && (
+        <div className="max-w-2xl bg-card border border-border p-6 rounded-xl shadow-sm space-y-6">
+          <div className="flex flex-col items-center justify-center py-8 space-y-4">
+            <Loader2 className="h-10 w-10 text-primary animate-spin" />
+            <h3 className="text-xl font-medium">Extracting Property Data...</h3>
+            <div className="flex items-center gap-2">
+              <Badge variant="outline" className="capitalize px-3 py-1 bg-muted">
+                Status: {jobStatus.replace(/_/g, ' ')}
+              </Badge>
+            </div>
+            <p className="text-sm text-muted-foreground text-center max-w-md">
+              Our background workers are navigating bot protections, extracting structured data, and normalizing the schema. This may take up to 60 seconds for heavily protected sites.
             </p>
           </div>
         </div>
@@ -221,7 +245,14 @@ export function AdminPropertyImport() {
 
               <div className="p-6 space-y-6">
                 <div className="space-y-2">
-                  <Label>Property Title</Label>
+                  <div className="flex justify-between items-center">
+                    <Label>Property Title</Label>
+                    {confidenceScores?.title && (
+                      <Badge variant={confidenceScores.title > 80 ? "default" : "secondary"} className="text-[10px]">
+                        {confidenceScores.title}% Confidence
+                      </Badge>
+                    )}
+                  </div>
                   <Input 
                     value={extractedData.title || ""} 
                     onChange={(e) => handleFieldChange("title", e.target.value)}
@@ -278,7 +309,14 @@ export function AdminPropertyImport() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Address</Label>
+                    <div className="flex justify-between items-center">
+                      <Label>Address</Label>
+                      {confidenceScores?.address && (
+                        <Badge variant={confidenceScores.address > 80 ? "default" : "secondary"} className="text-[10px]">
+                          {confidenceScores.address}% Confidence
+                        </Badge>
+                      )}
+                    </div>
                     <Input value={extractedData.address || ""} onChange={(e) => handleFieldChange("address", e.target.value)} disabled={!isEditMode} />
                   </div>
                   <div className="grid grid-cols-2 gap-2">

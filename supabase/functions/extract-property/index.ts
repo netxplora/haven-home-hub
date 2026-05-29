@@ -52,28 +52,20 @@ serve(async (req) => {
       return response;
     };
 
-    /**
-     * Detects whether fetched HTML is a bot-protection challenge page
-     * rather than real content. Covers Cloudflare, PerimeterX, DataDome,
-     * Akamai Bot Manager, and generic CAPTCHA walls.
-     */
     const isBotProtectionPage = (html: string): boolean => {
       const signatures = [
-        "Just a moment...",
+        "<title>Just a moment...</title>",
         "Enable JavaScript and cookies to continue",
         "cf-browser-verification",
         "cf-challenge-running",
         "challenge-platform",
         "_cf_chl_opt",
-        "Checking your browser",
-        "Attention Required! | Cloudflare",
-        "Pardon Our Interruption",
+        "<title>Attention Required! | Cloudflare</title>",
+        "<title>Pardon Our Interruption</title>",
         "Please verify you are a human",
-        "Access denied",
-        "captcha",
-        "px-captcha",
-        "perimeterx",
-        "datadome",
+        '<div id="px-captcha">',
+        'id="datadome-captcha"',
+        "<title>Access denied</title>"
       ];
       const lower = html.toLowerCase();
       return signatures.some(sig => lower.includes(sig.toLowerCase()));
@@ -259,11 +251,31 @@ serve(async (req) => {
       if (currMeta) propertyData.currency = currMeta;
     }
 
+    // Address Fallbacks
+    if (!propertyData.address) propertyData.address = $('meta[property="og:street-address"]').attr('content') || $('meta[name="street-address"]').attr('content') || "";
+    if (!propertyData.city) propertyData.city = $('meta[property="og:locality"]').attr('content') || $('meta[name="locality"]').attr('content') || "";
+    if (!propertyData.state) propertyData.state = $('meta[property="og:region"]').attr('content') || $('meta[name="region"]').attr('content') || "";
+    if (!propertyData.country) propertyData.country = $('meta[property="og:country-name"]').attr('content') || $('meta[name="country-name"]').attr('content') || "";
+
     // 3. AGGRESSIVE REGEX SCRAPING (Final Fallback for heavily obfuscated SPAs like Zillow/Redfin)
     // Sometimes data is hidden in JSON hydration blocks
     if (!propertyData.title) {
        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
        if (titleMatch) propertyData.title = titleMatch[1].trim();
+    }
+
+    // Address Parsing from Title (if still missing)
+    if (!propertyData.address || !propertyData.city) {
+      const titleStr = propertyData.title || $('title').text() || "";
+      const firstPart = titleStr.split(/\||-/)[0].trim();
+      const parts = firstPart.split(',').map((s: string) => s.trim());
+      if (parts.length >= 2) {
+        if (!propertyData.address) propertyData.address = parts[0];
+        if (!propertyData.city) propertyData.city = parts[1];
+        if (!propertyData.state && parts.length > 2) {
+            propertyData.state = parts[2].split(' ')[0]; // E.g., "CA 90210" -> "CA"
+        }
+      }
     }
     
     // Attempt to guess bedrooms if missing
@@ -293,6 +305,36 @@ serve(async (req) => {
       if (priceMatch) {
         propertyData.price = parseFloat(priceMatch[1].replace(/,/g, ''));
       }
+    }
+
+    // Features Fallbacks
+    if (propertyData.exterior_features.length === 0 || propertyData.interior_features.length === 0) {
+        const extractedFeatures: string[] = [];
+        $('li').each((_, el) => {
+            const text = $(el).text().trim();
+            // Filter likely feature strings
+            if (text.length > 3 && text.length < 60 && !text.includes('http') && !text.includes('javascript:')) {
+                extractedFeatures.push(text);
+            }
+        });
+
+        const exteriorKeywords = ['pool', 'garage', 'patio', 'deck', 'fence', 'yard', 'garden', 'roof', 'brick', 'acreage', 'lot', 'balcony', 'porch', 'exterior', 'parking', 'carport'];
+        const interiorKeywords = ['room', 'floor', 'kitchen', 'bath', 'heating', 'cooling', 'appliances', 'basement', 'carpet', 'wood', 'tile', 'window', 'closet', 'fireplace', 'laundry', 'hvac', 'ac'];
+        
+        extractedFeatures.forEach(f => {
+            const lowerF = f.toLowerCase();
+            const isExterior = exteriorKeywords.some(kw => lowerF.includes(kw));
+            const isInterior = interiorKeywords.some(kw => lowerF.includes(kw));
+            
+            if (isExterior && propertyData.exterior_features.length < 20) {
+                propertyData.exterior_features.push(f);
+            } else if (isInterior && propertyData.interior_features.length < 20) {
+                propertyData.interior_features.push(f);
+            }
+        });
+
+        propertyData.exterior_features = [...new Set(propertyData.exterior_features)];
+        propertyData.interior_features = [...new Set(propertyData.interior_features)];
     }
 
     // Extract generic images for gallery if empty
@@ -356,7 +398,7 @@ serve(async (req) => {
             model: "gpt-4o-mini",
             response_format: { type: "json_object" },
             messages: [
-              { role: "system", content: "You are a real estate parser. Clean and format the provided JSON object. Return the EXACT SAME SCHEMA. Only fix capitalization, clean up messy descriptions, format the address, and extract a list of string features for both `interior_features` and `exterior_features` separately from the description." },
+              { role: "system", content: "You are a real estate parser. Clean and format the provided JSON object. Return the EXACT SAME SCHEMA. Only fix capitalization, clean up messy descriptions, format the address (extract address, city, state, country if missing from the description or title), and extract a list of string features for both `interior_features` and `exterior_features` separately from the description. If any fields are blank, try to fill them using clues from the title or description." },
               { role: "user", content: JSON.stringify(propertyData) }
             ]
           })
@@ -369,6 +411,10 @@ serve(async (req) => {
           // Merge safely (don't override with nulls)
           propertyData.title = enhancedData.title || propertyData.title;
           propertyData.description = enhancedData.description || propertyData.description;
+          propertyData.address = enhancedData.address || propertyData.address;
+          propertyData.city = enhancedData.city || propertyData.city;
+          propertyData.state = enhancedData.state || propertyData.state;
+          propertyData.country = enhancedData.country || propertyData.country;
           if (enhancedData.interior_features && enhancedData.interior_features.length > 0) {
             propertyData.interior_features = enhancedData.interior_features;
           }
