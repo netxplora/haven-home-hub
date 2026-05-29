@@ -315,6 +315,7 @@ export function AdminAdvertisements() {
 
       {/* ── Desktop Table Layout ── */}
       <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm hidden md:block">
+        <div className="w-full overflow-x-auto pb-2">
         <table className="w-full text-sm">
           <thead className="bg-accent text-left">
             <tr>
@@ -382,6 +383,7 @@ export function AdminAdvertisements() {
             )}
           </tbody>
         </table>
+      </div>
       </div>
 
       {/* ── Pagination ── */}

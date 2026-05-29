@@ -178,7 +178,7 @@ export function AdminReferrals() {
                 </Badge>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <span className="text-[10px] text-muted-foreground uppercase font-medium block">Referrer</span>
                   <div className="flex items-center gap-2 mt-1">
@@ -205,7 +205,7 @@ export function AdminReferrals() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
                 <div>
                   <span className="text-muted-foreground block text-[10px] uppercase font-medium">Joined Date</span>
                   <span className="text-foreground block mt-0.5">{new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -223,7 +223,8 @@ export function AdminReferrals() {
       {/* Desktop Table View (hidden md:block) */}
       <div className="hidden md:block rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-secondary/20 border-b border-border/50">
                 <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Referrer</th>
@@ -281,6 +282,7 @@ export function AdminReferrals() {
               )}
             </tbody>
           </table>
+      </div>
         </div>
       </div>
     </div>

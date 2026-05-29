@@ -179,7 +179,8 @@ export function AdminMarketplace() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
+              <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="bg-accent/50 border-b border-border/40">
                     <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
@@ -234,6 +235,7 @@ export function AdminMarketplace() {
                   })}
                 </tbody>
               </table>
+      </div>
             </div>
           )}
         </div>
@@ -255,7 +257,8 @@ export function AdminMarketplace() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
+              <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="bg-accent/50 border-b border-border/40">
                     <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
@@ -292,6 +295,7 @@ export function AdminMarketplace() {
                   })}
                 </tbody>
               </table>
+      </div>
             </div>
           )}
         </div>

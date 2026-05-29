@@ -342,7 +342,7 @@ export function AdminReservations() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
                   <div>
                     <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Type</span>
                     <Badge variant="outline" className="text-[10px] font-bold capitalize gap-1 py-0 px-1.5">
@@ -371,7 +371,8 @@ export function AdminReservations() {
 
         {/* ── Desktop Table Layout ── */}
         <div className="overflow-x-auto hidden md:block">
-          <table className="w-full text-sm text-left">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
@@ -424,6 +425,7 @@ export function AdminReservations() {
               ))}
             </tbody>
           </table>
+      </div>
         </div>
 
         {/* Pagination */}
@@ -467,7 +469,7 @@ export function AdminReservations() {
               <DialogTitle className="font-serif text-2xl">Request Review</DialogTitle>
             </DialogHeader>
             <DialogBody className="space-y-6 py-6">
-              <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 <div className="p-4 rounded-xl bg-accent/50 border border-border/50">
                   <p className="text-muted-foreground font-bold uppercase tracking-widest text-[9px] mb-1">User</p>
                   <p className="font-bold text-sm">{selected.profiles?.full_name || "Unknown"}</p>

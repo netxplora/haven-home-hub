@@ -84,7 +84,7 @@ export function AdminWallets() {
             </DialogHeader>
             <form onSubmit={save} className="flex flex-col h-full overflow-hidden">
               <DialogBody className="space-y-6 py-6">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest ml-1">Symbol (e.g. BTC)</Label>
                     <Input name="symbol" defaultValue={editing?.symbol} required className="h-12 rounded-xl bg-accent/50 focus:bg-background transition-all" />

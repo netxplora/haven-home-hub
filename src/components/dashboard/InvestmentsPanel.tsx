@@ -328,7 +328,8 @@ export function InvestmentsPanel() {
             {/* ── Desktop: Full Table ── */}
             <div className="hidden md:block overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left border-collapse">
+                <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left border-collapse">
                   <thead>
                     <tr className="bg-accent/50 border-b border-border/40">
                       <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
@@ -440,6 +441,7 @@ export function InvestmentsPanel() {
                     })}
                   </tbody>
                 </table>
+      </div>
               </div>
             </div>
           </div>
@@ -490,7 +492,7 @@ function InvestmentGridCard({ investment, dividends = 0, onSelect }: { investmen
              <Progress value={pct} className="h-1.5" />
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-border/40">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-border/40">
              <div>
                 <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-1">Purchase Price</p>
                 <p className="font-semibold text-sm">{formatMoney(total)}</p>

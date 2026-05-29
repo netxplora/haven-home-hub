@@ -87,7 +87,7 @@ export function AdminProviders() {
             <DialogHeader><DialogTitle className="font-serif text-xl">{editing ? "Edit Provider" : "Add New Provider"}</DialogTitle></DialogHeader>
             <form onSubmit={save} className="flex flex-col h-full">
               <DialogBody className="space-y-6 py-6">
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Provider Name</Label>
                     <Input name="name" defaultValue={editing?.name} required className="rounded-xl h-12 bg-accent border-border/50 focus:bg-background transition-all" placeholder="e.g. MoonPay" />
@@ -116,7 +116,7 @@ export function AdminProviders() {
                   <Textarea name="description" defaultValue={editing?.description} className="rounded-xl resize-none h-24 bg-accent border-border/50 focus:bg-background transition-all" placeholder="Display message for users..." />
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Supported Assets (JSON Array)</Label>
                     <Input name="supported_assets" defaultValue={JSON.stringify(editing?.supported_assets || ["USDT", "BTC", "ETH"])} required className="rounded-xl h-12 bg-accent border-border/50 font-mono text-xs focus:bg-background transition-all" />
@@ -127,7 +127,7 @@ export function AdminProviders() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Display Order</Label>
                     <Input name="display_order" type="number" defaultValue={editing?.display_order || 0} className="rounded-xl h-12 bg-accent border-border/50 focus:bg-background transition-all" />

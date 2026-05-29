@@ -163,7 +163,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
 
                     {/* Property Specifications */}
                     {(meta.bedrooms || meta.bathrooms || meta.size_sqm || meta.features || meta.interior_features || meta.exterior_features) && (
-                      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm pt-4 border-t border-gray-100">
+                      <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-4 gap-3 text-sm pt-4 border-t border-gray-100">
                         {meta.bedrooms && (
                           <div>
                             <p className="text-gray-400 text-[10px] uppercase tracking-widest font-bold mb-0.5">Bedrooms</p>
@@ -214,7 +214,8 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             <div className="mb-8">
               <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider mb-3">Financial Breakdown</h3>
               <div className="border border-gray-200 rounded-lg overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
                   <thead className="bg-gray-50 text-xs uppercase text-gray-500 font-bold border-b border-gray-200">
                     <tr>
                       <th className="px-5 py-3">Description</th>
@@ -283,6 +284,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                     </tr>
                   </tfoot>
                 </table>
+      </div>
               </div>
             </div>
 

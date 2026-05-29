@@ -103,7 +103,7 @@ export function WithdrawalDialog({
           </div>
 
           <Tabs value={method} onValueChange={(v) => setMethod(v as "bank_transfer" | "digital_currency")} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 p-1 bg-accent rounded-xl mb-4">
+            <TabsList className="grid w-full grid-cols-1 md:grid-cols-2 p-1 bg-accent rounded-xl mb-4">
               <TabsTrigger value="bank_transfer" className="rounded-lg data-[state=active]:bg-background">Bank transfer</TabsTrigger>
               <TabsTrigger value="digital_currency" className="rounded-lg data-[state=active]:bg-background">Digital Currency</TabsTrigger>
             </TabsList>

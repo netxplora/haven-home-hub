@@ -126,7 +126,8 @@ export function ReferralsPanel({ userId }: { userId: string }) {
 
                {/* ── Desktop Table Layout ── */}
                <div className="overflow-x-auto hidden md:block">
-                 <table className="w-full text-left border-collapse">
+                 <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-left border-collapse">
                      <thead>
                        <tr className="bg-accent/50 border-b border-border/40">
                            <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">User</th>
@@ -167,6 +168,7 @@ export function ReferralsPanel({ userId }: { userId: string }) {
                        ))}
                      </tbody>
                  </table>
+      </div>
                </div>
             </div>
          </div>

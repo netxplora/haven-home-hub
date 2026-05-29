@@ -218,7 +218,7 @@ export function AdminPayments() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
                   <div>
                     <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Method</span>
                     <div className="flex items-center gap-1.5">
@@ -247,7 +247,8 @@ export function AdminPayments() {
 
         {/* ── Desktop Table Layout ── */}
         <div className="overflow-x-auto hidden md:block">
-          <table className="w-full text-sm text-left">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
@@ -292,6 +293,7 @@ export function AdminPayments() {
               ))}
             </tbody>
           </table>
+      </div>
         </div>
 
         {/* Pagination */}
@@ -335,7 +337,7 @@ export function AdminPayments() {
               <DialogTitle className="font-serif text-2xl">Payment Review</DialogTitle>
             </DialogHeader>
             <DialogBody className="space-y-6 py-6">
-              <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                 <div className="p-4 rounded-xl bg-accent/50 border border-border/50">
                   <p className="text-muted-foreground font-bold uppercase tracking-widest text-[9px] mb-1">User</p>
                   <p className="font-bold text-sm">{selectedPayment.profiles?.full_name}</p>
@@ -356,7 +358,7 @@ export function AdminPayments() {
                     )}
                   </div>
                   
-                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border/50">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 border-t border-border/50">
                     <div>
                       <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-widest">Linked Listing</p>
                       <p className="text-sm font-bold truncate">

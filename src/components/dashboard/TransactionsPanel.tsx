@@ -190,7 +190,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
 
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
                     <div>
                       <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Date</span>
                       <span className="font-semibold text-foreground">{new Date(t.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
@@ -241,7 +241,8 @@ export function TransactionsPanel({ userId }: { userId: string }) {
           {/* ── Desktop Table Layout ── */}
           <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft hidden md:block">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
+              <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="bg-accent/50 border-b border-border/40">
                     <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
@@ -337,6 +338,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                   })}
                 </tbody>
               </table>
+      </div>
             </div>
           </div>
         </>

@@ -299,6 +299,7 @@ export function AdminBroadcasts() {
 
       {/* ── Desktop Table Layout ── */}
       <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm hidden md:block">
+        <div className="w-full overflow-x-auto pb-2">
         <table className="w-full text-sm">
           <thead className="bg-accent text-left">
             <tr>
@@ -346,6 +347,7 @@ export function AdminBroadcasts() {
             )}
           </tbody>
         </table>
+      </div>
       </div>
 
       {/* ── Pagination ── */}
@@ -528,7 +530,7 @@ function BroadcastForm({ initial, userId, onClose }: BroadcastFormProps) {
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
             Visibility (where it appears)
           </Label>
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-3 gap-3">
             {VISIBILITY_OPTIONS.map((v) => (
               <label
                 key={v.value}

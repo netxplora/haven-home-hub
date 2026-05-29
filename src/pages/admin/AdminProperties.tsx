@@ -254,7 +254,7 @@ export function AdminProperties() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
                   <div>
                     <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Features</span>
                     <div className="flex gap-2.5 text-muted-foreground">
@@ -284,7 +284,8 @@ export function AdminProperties() {
 
         {/* ── Desktop Table Layout ── */}
         <div className="overflow-x-auto hidden md:block">
-          <table className="w-full text-sm">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm">
             <thead className="bg-accent text-left">
               <tr>
                 <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px]">System ID / Title</th>
@@ -349,6 +350,7 @@ export function AdminProperties() {
               )}
             </tbody>
           </table>
+      </div>
         </div>
 
         {/* Pagination */}

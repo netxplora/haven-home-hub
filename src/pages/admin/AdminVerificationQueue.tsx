@@ -203,7 +203,7 @@ export function AdminVerificationQueue() {
                   </Badge>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
                   <div>
                     <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Context</span>
                     <span className="font-semibold text-foreground">{item.context || "N/A"}</span>
@@ -238,7 +238,8 @@ export function AdminVerificationQueue() {
 
         {/* ── Desktop Table Layout ── */}
         <div className="overflow-x-auto hidden md:block">
-          <table className="w-full text-sm text-left">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Date</th>
@@ -312,6 +313,7 @@ export function AdminVerificationQueue() {
               )}
             </tbody>
           </table>
+      </div>
         </div>
       </div>
     </div>

@@ -586,7 +586,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                       <h4 className="font-bold text-lg leading-tight mb-1">{cert.investment_properties?.title || "Property Asset"}</h4>
                       <p className="text-xs text-muted-foreground mb-4">Certificate ID: <span className="font-mono text-xs">{cert.certificate_number}</span></p>
 
-                      <div className="grid grid-cols-2 gap-2 mb-6">
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mb-6">
                         <div className="bg-background rounded-lg p-3 border border-border/50">
                           <p className="text-[10px] uppercase text-muted-foreground font-bold mb-1">Units Owned</p>
                           <p className="font-semibold">{cert.units_owned}</p>

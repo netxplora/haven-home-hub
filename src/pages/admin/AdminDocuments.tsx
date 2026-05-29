@@ -617,7 +617,8 @@ export function AdminDocuments() {
           ) : (
             <div className="border border-border/40 rounded-2xl bg-card overflow-hidden shadow-soft">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
                   <thead className="bg-secondary/30 text-muted-foreground font-bold border-b border-border/40">
                     <tr>
                       <th className="px-6 py-4">Document Details</th>
@@ -721,6 +722,7 @@ export function AdminDocuments() {
                     )}
                   </tbody>
                 </table>
+      </div>
               </div>
             </div>
           )}
@@ -832,7 +834,8 @@ export function AdminDocuments() {
           ) : (
             <div className="border border-border/40 rounded-2xl bg-card overflow-hidden shadow-soft">
               <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
+                <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
                   <thead className="bg-secondary/30 text-muted-foreground font-bold border-b border-border/40">
                     <tr>
                       <th className="px-6 py-4">Action</th>
@@ -884,6 +887,7 @@ export function AdminDocuments() {
                     )}
                   </tbody>
                 </table>
+      </div>
               </div>
             </div>
           )}
@@ -1029,7 +1033,7 @@ export function AdminDocuments() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-xs uppercase font-bold text-slate-500">Signature Align</label>
                   <Select value={templateSignatureX} onValueChange={setTemplateSignatureX}>

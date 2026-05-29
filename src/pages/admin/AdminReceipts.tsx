@@ -87,7 +87,7 @@ export function AdminReceipts() {
                     <Badge variant="outline" className="capitalize text-[10px]">{r.type}</Badge>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
                     <div>
                       <span className="text-muted-foreground block text-[10px] uppercase font-medium">Customer</span>
                       <p className="font-medium text-foreground mt-0.5">{r.user_name || "Unknown"}</p>
@@ -112,7 +112,8 @@ export function AdminReceipts() {
 
           {/* Desktop Table View (hidden md:block) */}
           <div className="hidden md:block overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-            <table className="w-full text-sm text-left">
+            <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
               <thead className="bg-secondary/40 border-b border-border/50">
                 <tr>
                   <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Receipt ID & Date</th>
@@ -159,6 +160,7 @@ export function AdminReceipts() {
                 )}
               </tbody>
             </table>
+      </div>
           </div>
         </>
       )}

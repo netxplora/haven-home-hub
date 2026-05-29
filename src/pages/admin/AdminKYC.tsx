@@ -228,7 +228,8 @@ export function AdminKYC() {
         </div>
       ) : (
         <div className="overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-          <table className="w-full text-sm text-left">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
             <thead className="border-b border-border/50 bg-secondary/40 hidden md:table-header-group">
               <tr>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">
@@ -547,6 +548,7 @@ export function AdminKYC() {
               })}
             </tbody>
           </table>
+      </div>
         </div>
       )}
     </div>

@@ -80,7 +80,7 @@ export function AdminReviews() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
                 <div>
                   <span className="text-muted-foreground block text-[10px] uppercase font-medium">Target</span>
                   {r.agent_id && (
@@ -133,7 +133,8 @@ export function AdminReviews() {
       {/* Desktop Table View (hidden md:block) */}
       <div className="hidden md:block bg-card border border-border rounded-xl overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
             <thead className="bg-muted/50 text-muted-foreground text-xs uppercase font-semibold">
               <tr>
                 <th className="px-6 py-4">Status</th>
@@ -205,6 +206,7 @@ export function AdminReviews() {
               )}
             </tbody>
           </table>
+      </div>
         </div>
       </div>
     </div>

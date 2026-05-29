@@ -288,7 +288,7 @@ export function AdminInvestors() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2 text-xs pt-3 border-t border-border/30">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs pt-3 border-t border-border/30">
                     <div>
                       <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[9px] mb-0.5">Total</span>
                       <span className="font-mono font-semibold text-foreground">{formatMoney(getTotalAmount(i), i.investment_properties?.currency || "USD")}</span>
@@ -352,7 +352,8 @@ export function AdminInvestors() {
 
           {/* ── Desktop Table Layout ── */}
           <div className="overflow-x-auto hidden md:block">
-            <table className="w-full text-sm text-left">
+            <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
               <thead className="bg-secondary/40 border-b border-border/50">
                 <tr>
                   <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
@@ -432,6 +433,7 @@ export function AdminInvestors() {
                 ))}
               </tbody>
             </table>
+      </div>
           </div>
         </div>
       )}
@@ -571,7 +573,7 @@ export function AdminInvestors() {
 
                 <div>
                   <h3 className="font-semibold text-lg flex items-center gap-2 mb-4 border-b pb-2"><Calendar className="h-5 w-5 text-primary" /> Investment Details</h3>
-                  <div className="grid grid-cols-2 gap-y-4 text-sm">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 text-sm">
                     <div><span className="text-muted-foreground block text-xs">Start Date</span> <span className="font-medium">{new Date(getStartDate(viewItem)).toLocaleDateString()}</span></div>
                     <div><span className="text-muted-foreground block text-xs">Investment Type</span> <span className="font-medium capitalize">{getInvestmentType(viewItem)}</span></div>
                     <div><span className="text-muted-foreground block text-xs">Units Owned</span> <span className="font-medium">{viewItem.units_owned}</span></div>

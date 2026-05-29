@@ -145,7 +145,7 @@ export function AdminInstallments() {
                       <p className="font-medium text-primary text-sm">{i.investment_properties?.title}</p>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
                       <div>
                         <span className="text-muted-foreground block text-[10px] uppercase font-medium">Total Price</span>
                         <span className="font-mono font-semibold text-foreground">{formatMoney(total, currency)}</span>
@@ -192,7 +192,8 @@ export function AdminInstallments() {
 
           {/* Desktop Table View (hidden md:block) */}
           <div className="hidden md:block overflow-x-auto rounded-xl border border-border/50 bg-card shadow-sm">
-            <table className="w-full text-sm text-left">
+            <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
               <thead className="bg-secondary/40 border-b border-border/50">
                 <tr>
                   <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Investor</th>
@@ -271,6 +272,7 @@ export function AdminInstallments() {
                 })}
               </tbody>
             </table>
+      </div>
           </div>
         </>
       )}
@@ -292,7 +294,7 @@ export function AdminInstallments() {
             </DialogHeader>
 
             <DialogBody className="space-y-6">
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-4 gap-4">
                 <MiniStat label="Total Amount" value={formatMoney(Number(viewItem.total_amount ?? 0), viewItem.investment_properties?.currency)} />
                 <MiniStat label="Initial Payment" value={formatMoney(Number(viewItem.down_payment_amount ?? 0), viewItem.investment_properties?.currency)} />
                 <MiniStat label="Amount Paid" value={formatMoney(Number(viewItem.amount_paid ?? 0), viewItem.investment_properties?.currency)} accent />
@@ -307,7 +309,7 @@ export function AdminInstallments() {
                 <Progress value={Number(viewItem.completion_percentage ?? 0)} className="h-2" />
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+              <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                 <div>
                   <p className="text-xs text-muted-foreground">Monthly Payment</p>
                   <p className="font-semibold mt-0.5">{formatMoney(Number(viewItem.monthly_installment_amount ?? 0), viewItem.investment_properties?.currency)}</p>

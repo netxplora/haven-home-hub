@@ -231,7 +231,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
             )}
 
             {isInstallment && (
-                <div className="grid grid-cols-3 gap-4 text-center mt-4 pt-4 border-t border-border/50">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-center mt-4 pt-4 border-t border-border/50">
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Initial Payment</p>
                     <p className="font-mono font-semibold mt-1">{formatMoney(Number(investment.down_payment_amount ?? 0), currency)}</p>
@@ -346,7 +346,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
             {/* Investment Details List */}
             <div className="pt-6 border-t border-border/50">
               <h4 className="font-bold mb-4">Investment Summary</h4>
-              <div className="grid grid-cols-2 gap-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4">
                 <div>
                   <p className="text-muted-foreground text-xs uppercase tracking-wider mb-1">Units Owned</p>
                   <p className="font-medium">{investment.units_owned} {investment.units_owned === 1 ? 'Unit' : 'Units'}</p>

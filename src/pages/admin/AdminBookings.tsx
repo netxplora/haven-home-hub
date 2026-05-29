@@ -70,7 +70,7 @@ export function AdminBookings() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="flex items-center gap-3">
                     <div className="h-9 w-9 rounded-lg bg-accent flex items-center justify-center text-muted-foreground">
                       <User className="h-4 w-4" />

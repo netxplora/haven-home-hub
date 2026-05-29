@@ -335,7 +335,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
             {/* ── OVERVIEW TAB ── */}
             {activeTab === "overview" && (
               <div className="space-y-6">
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   <StatCard 
                     title="Total Invested" 
                     value={formatMoney(activityData?.investments?.reduce((sum: number, i: any) => sum + Number(i.total_amount || i.amount_invested || 0), 0) || 0)} 
@@ -439,7 +439,8 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
             {/* ── INVESTMENTS TAB ── */}
             {activeTab === "investments" && (
               <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-sm text-left">
+                <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
                   <thead className="bg-secondary/40 border-b">
                     <tr>
                       <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Property</th>
@@ -465,13 +466,15 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                     )}
                   </tbody>
                 </table>
+      </div>
               </div>
             )}
 
             {/* ── PAYMENTS TAB ── */}
             {activeTab === "payments" && (
               <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-sm text-left">
+                <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
                   <thead className="bg-secondary/40 border-b">
                     <tr>
                       <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Property</th>
@@ -497,13 +500,15 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                     )}
                   </tbody>
                 </table>
+      </div>
               </div>
             )}
 
             {/* ── RESERVATIONS TAB ── */}
             {activeTab === "reservations" && (
               <div className="bg-card border border-border/50 rounded-xl overflow-hidden shadow-sm">
-                <table className="w-full text-sm text-left">
+                <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
                   <thead className="bg-secondary/40 border-b">
                     <tr>
                       <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Property</th>
@@ -529,6 +534,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                     )}
                   </tbody>
                 </table>
+      </div>
               </div>
             )}
             
@@ -841,7 +847,8 @@ function GlobalInvestorDirectory({ onSelectUser }: { onSelectUser: (id: string) 
               <Skeleton className="h-12 w-full" />
             </div>
           ) : (
-            <table className="w-full text-sm text-left whitespace-nowrap">
+            <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="bg-secondary/40 border-b">
                 <tr>
                   <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground">Investor</th>
@@ -906,6 +913,7 @@ function GlobalInvestorDirectory({ onSelectUser }: { onSelectUser: (id: string) 
                 )}
               </tbody>
             </table>
+      </div>
           )}
         </div>
 

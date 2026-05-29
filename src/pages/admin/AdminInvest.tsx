@@ -193,7 +193,7 @@ export function AdminInvest() {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs border-t border-border/50 pt-3">
                       <div>
                         <span className="text-muted-foreground block text-[10px] uppercase font-medium">Units Sold</span>
                         <span className="font-medium text-foreground block mt-0.5">{p.units_sold} <span className="text-[10px] text-muted-foreground/50">/</span> {p.total_units}</span>
@@ -237,7 +237,8 @@ export function AdminInvest() {
 
             {/* Desktop Table View (hidden md:block) */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-sm">
+              <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm">
                 <thead className="bg-accent text-left">
                   <tr>
                     <th className="p-4 font-serif font-semibold text-muted-foreground uppercase tracking-tighter text-[10px] whitespace-nowrap">Title</th>
@@ -304,6 +305,7 @@ export function AdminInvest() {
                   )}
                 </tbody>
               </table>
+      </div>
             </div>
 
             {/* Pagination */}

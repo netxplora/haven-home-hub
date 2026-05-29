@@ -113,7 +113,8 @@ export function AdminCMS() {
 
           {/* ── Desktop Table Layout ── */}
           <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm hidden md:block">
-            <table className="w-full text-sm">
+            <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm">
               <thead className="bg-accent text-left">
                 <tr>
                   <th className="p-3 whitespace-nowrap">Title</th>
@@ -155,6 +156,7 @@ export function AdminCMS() {
                 )}
               </tbody>
             </table>
+      </div>
           </div>
         </TabsContent>
 
@@ -268,7 +270,8 @@ function CategoriesTab({ categories, qc }: any) {
 
         {/* ── Desktop Table Layout ── */}
         <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm hidden md:block">
-          <table className="w-full text-sm">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm">
             <thead className="bg-accent text-left">
               <tr>
                 <th className="p-3 whitespace-nowrap">Name</th>
@@ -299,6 +302,7 @@ function CategoriesTab({ categories, qc }: any) {
               )}
             </tbody>
           </table>
+      </div>
         </div>
       </div>
     </div>

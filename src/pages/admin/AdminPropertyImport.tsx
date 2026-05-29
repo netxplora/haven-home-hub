@@ -288,7 +288,7 @@ export function AdminPropertyImport() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 md:grid-cols-4 gap-4">
                   <div className="space-y-2">
                     <Label>Price</Label>
                     <Input type="number" value={extractedData.price || 0} onChange={(e) => handleFieldChange("price", Number(e.target.value))} disabled={!isEditMode} />
@@ -319,7 +319,7 @@ export function AdminPropertyImport() {
                     </div>
                     <Input value={extractedData.address || ""} onChange={(e) => handleFieldChange("address", e.target.value)} disabled={!isEditMode} />
                   </div>
-                  <div className="grid grid-cols-2 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                     <div className="space-y-2">
                       <Label>City</Label>
                       <Input value={extractedData.city || ""} onChange={(e) => handleFieldChange("city", e.target.value)} disabled={!isEditMode} />
@@ -389,7 +389,7 @@ export function AdminPropertyImport() {
               {extractedData.gallery_images && extractedData.gallery_images.length > 0 && (
                 <div className="space-y-2">
                   <Label>Gallery ({extractedData.gallery_images.length} images)</Label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
                     {extractedData.gallery_images.slice(0, 6).map((img: string, i: number) => (
                       <img key={i} src={img} alt={`Gallery ${i}`} className="w-full aspect-square object-cover rounded-md border border-border" />
                     ))}

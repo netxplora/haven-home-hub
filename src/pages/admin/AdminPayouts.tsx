@@ -117,6 +117,7 @@ export function AdminPayouts() {
 
       {/* Desktop Table View (hidden md:block) */}
       <div className="hidden md:block overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+        <div className="w-full overflow-x-auto pb-2">
         <table className="w-full text-sm">
           <thead className="bg-accent text-left">
             <tr>
@@ -145,6 +146,7 @@ export function AdminPayouts() {
             ))}
           </tbody>
         </table>
+      </div>
       </div>
 
       <form onSubmit={add} className="h-fit space-y-4 rounded-xl border border-border/50 bg-card p-6 shadow-xl shadow-primary/5">

@@ -193,7 +193,7 @@ export function AdminUsers() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs border-t border-border/50 pt-2">
                   <div>
                     <span className="text-muted-foreground block text-[10px] uppercase font-medium">Verification</span>
                     <Badge variant={kycVariant(u.kyc_status)} className="capitalize text-[10px] gap-1 mt-0.5">
@@ -260,7 +260,8 @@ export function AdminUsers() {
 
         {/* Desktop Table View (hidden md:block) */}
         <div className="hidden md:block overflow-x-auto">
-          <table className="w-full text-sm text-left">
+          <div className="w-full overflow-x-auto pb-2">
+        <table className="w-full text-sm text-left">
             <thead className="bg-secondary/40 border-b border-border/50">
               <tr>
                 <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
@@ -350,6 +351,7 @@ export function AdminUsers() {
               ))}
             </tbody>
           </table>
+      </div>
         </div>
 
         {/* Pagination */}
