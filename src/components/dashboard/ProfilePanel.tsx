@@ -102,8 +102,8 @@ export function ProfilePanel({ userId }: { userId: string }) {
   async function handleKycUpload(e: React.ChangeEvent<HTMLInputElement>, type: 'id_document' | 'proof_of_address') {
     if (!e.target.files || e.target.files.length === 0) return;
     const file = e.target.files[0];
-    const fileExt = file.name.split('.').pop();
-    const filePath = `${userId}/${type}_${Math.random()}.${fileExt}`;
+    const originalName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const filePath = `${userId}/${type}_${Date.now()}_${originalName}`;
     
     setUploadingKyc(true);
     try {

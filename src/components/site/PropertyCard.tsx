@@ -1,8 +1,8 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { Bed, Bath, Maximize2, MapPin, Star, ArrowUpRight, Scale } from "lucide-react";
+import { Bed, Bath, Maximize2, MapPin, Star, ArrowUpRight, Scale, ShieldCheck, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { propertyTypeLabel, resolveImage } from "@/lib/format";
+import { propertyTypeLabel, resolveImage, enrichProperty } from "@/lib/format";
 import { useCompare } from "@/hooks/useCompare";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 
@@ -31,11 +31,12 @@ export interface PropertyCardData {
   created_at?: string;
 }
 
-export const PropertyCard = memo(function PropertyCard({ property }: { property: PropertyCardData }) {
+export const PropertyCard = memo(function PropertyCard({ property: rawProperty }: { property: PropertyCardData }) {
+  const property = enrichProperty(rawProperty);
   const img = resolveImage(property.cover_image_url);
   const { addToCompare, removeFromCompare, compareList } = useCompare();
   const formatPrice = useFormatPrice();
-    
+      
   const statusConfig = {
     reserved: { label: "Reserved", className: "bg-secondary/90 text-secondary-foreground" },
     sold: { label: "Sold", className: "bg-destructive text-destructive-foreground" },
@@ -61,19 +62,19 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-50 group-hover:opacity-30 transition-opacity duration-550" />
         
         {/* Glassmorphic Badges */}
-        <div className="absolute left-4 top-4 flex flex-col gap-1.5">
+        <div className="absolute left-4 top-4 flex flex-col gap-1.5 z-10">
           <div className="flex flex-wrap gap-1.5">
-            <Badge className="bg-background/90 text-foreground hover:bg-background border border-white/20 backdrop-blur-md shadow-sm text-xs font-semibold px-2.5 py-1">
+            <Badge className="bg-background/90 text-foreground hover:bg-background border border-white/20 backdrop-blur-md shadow-sm text-[10px] font-bold uppercase tracking-wider px-2.5 py-1">
               {propertyTypeLabel(property.property_type)}
             </Badge>
-            {property.featured && (
-              <Badge className="bg-primary/95 text-primary-foreground border border-primary/20 backdrop-blur-sm shadow-sm gap-1 text-xs px-2.5 py-1">
-                <Star className="h-3 w-3 fill-current" /> {"Featured"}
+            {property.isVerified && (
+              <Badge className="badge-verified-gold backdrop-blur-sm shadow-sm gap-1 text-[10px] uppercase font-bold py-1 px-2.5">
+                <ShieldCheck className="h-3.5 w-3.5" /> {"Verified"}
               </Badge>
             )}
-            {isNew && (
-              <Badge className="bg-primary/90 text-white border border-primary/ backdrop-blur-sm shadow-sm text-xs px-2.5 py-1">
-                {"New Listing"}
+            {property.featured && (
+              <Badge className="bg-primary/95 text-primary-foreground border border-primary/20 backdrop-blur-sm shadow-sm gap-1 text-[10px] uppercase font-bold px-2.5 py-1">
+                <Star className="h-3 w-3 fill-current" /> {"Featured"}
               </Badge>
             )}
           </div>
@@ -82,6 +83,19 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
               {statusConfig.label}
             </Badge>
           )}
+        </div>
+
+        {/* Telemetry Overlay (Bottom Left on Image) */}
+        <div className="absolute left-4 bottom-4 flex flex-wrap gap-1.5 z-10 pointer-events-none">
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/60 text-white border border-white/10 backdrop-blur-sm flex items-center gap-1">
+            <MapPin className="h-3 w-3 text-emerald-400" /> Walk Score: {property.walkScore}
+          </span>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary/90 text-primary-foreground border border-primary/20 backdrop-blur-sm">
+            Cap Rate: {property.capRate}%
+          </span>
+          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-secondary/80 text-secondary-foreground border border-border/20 backdrop-blur-sm">
+            HOA: ${property.hoaFees}/mo
+          </span>
         </div>
         
         {/* Interactive Compare button */}
@@ -135,6 +149,12 @@ export const PropertyCard = memo(function PropertyCard({ property }: { property:
               {property.city && property.country 
                 ? `${property.city}${property.state ? `, ${property.state}` : ''}, ${property.country}`
                 : property.locations?.name ?? property.address ?? "—"}
+            </span>
+          </p>
+          <p className="mt-2 text-[10px] font-semibold text-muted-foreground flex items-center justify-between">
+            <span>Listed {property.daysOnMarket}d ago</span>
+            <span className={property.daysOnMarket < 15 ? "text-green-600 dark:text-green-400 animate-pulse" : "text-muted-foreground"}>
+              {property.daysOnMarket < 15 ? "High Demand" : "Stable Demand"}
             </span>
           </p>
         </div>

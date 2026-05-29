@@ -4,6 +4,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Bed, 
   Bath, 
+  Zap,
+  Droplets,
+  Activity,
+  ClipboardCheck,
+  AlertTriangle,
   Maximize2, 
   MapPin, 
   Phone, 
@@ -32,7 +37,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from "@/components/ui/dialog";
 import { InquiryForm } from "@/components/site/InquiryForm";
 import { BookingForm } from "@/components/site/BookingForm";
-import { propertyTypeLabel, statusLabel, resolveImage } from "@/lib/format";
+import { propertyTypeLabel, statusLabel, resolveImage, enrichProperty } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { toast } from "@/hooks/use-toast";
@@ -81,7 +86,7 @@ export default function PropertyDetail() {
   });
 
   // Cast to any to avoid TypeScript errors for newly added schema fields not yet in generated types
-  const property = rawProperty as any;
+  const property = enrichProperty(rawProperty as any);
 
   const { data: related = [] } = useQuery({
     queryKey: ["related", property?.id, property?.property_type],
@@ -309,12 +314,12 @@ export default function PropertyDetail() {
                 <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                   <FileText className="h-5 w-5 text-primary mx-auto mb-2" />
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Title Status"}</p>
-                  <p className="text-sm font-bold mt-1 text-foreground">{"C of O / Deed"}</p>
+                  <p className="text-sm font-bold mt-1 text-foreground">{"Clear Title / Insured"}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                   <MapIcon className="h-5 w-5 text-primary mx-auto mb-2" />
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Topography"}</p>
-                  <p className="text-sm font-bold mt-1 text-foreground">{"Dry Land"}</p>
+                  <p className="text-sm font-bold mt-1 text-foreground">{"Surveyed & Cleared"}</p>
                 </div>
               </div>
             ) : (
@@ -354,6 +359,124 @@ export default function PropertyDetail() {
               <p className="whitespace-pre-line leading-relaxed text-foreground/80 text-lg">
                 {property.description}
               </p>
+            </div>
+          </div>
+
+          {/* Decision Intelligence Panel */}
+          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-soft">
+            <div className="px-6 py-4 bg-accent/50 border-b border-border flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                  <Activity className="h-4 w-4 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-lg font-bold text-foreground">Property Intelligence</h2>
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Assessment & Verification Data</p>
+                </div>
+              </div>
+              {property.isVerified && (
+                <Badge className="badge-verified-gold gap-1 text-[10px] uppercase font-bold py-1 px-2.5">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Verified Listing
+                </Badge>
+              )}
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Telemetry Grid */}
+              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
+                  <Activity className="h-5 w-5 text-emerald-500 mx-auto mb-2" />
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Est. Tax Rate</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{property.taxRate}<span className="text-xs font-normal text-muted-foreground">%</span></p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Annual Property Tax</p>
+                </div>
+                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
+                  <Droplets className={`h-5 w-5 mx-auto mb-2 ${property.isFloodSafe ? 'text-blue-500' : 'text-destructive'}`} />
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">FEMA Zone</p>
+                  <p className={`text-sm font-bold mt-1 ${property.isFloodSafe ? 'text-blue-600 dark:text-blue-400' : 'text-destructive'}`}>
+                    {property.isFloodSafe ? 'Zone X' : 'At Risk'}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-1">{property.floodRisk}</p>
+                </div>
+                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
+                  <MapPin className="h-5 w-5 text-amber-400 mx-auto mb-2" />
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Walk Score</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{property.walkScore}<span className="text-xs font-normal text-muted-foreground">/100</span></p>
+                  <p className="text-[10px] text-muted-foreground mt-1">Very Walkable</p>
+                </div>
+                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
+                  <Clock className="h-5 w-5 text-primary mx-auto mb-2" />
+                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Days Listed</p>
+                  <p className="text-xl font-bold text-foreground mt-1">{property.daysOnMarket}</p>
+                  <p className={`text-[10px] mt-1 font-semibold ${property.daysOnMarket < 15 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
+                    {property.daysOnMarket < 15 ? 'High Demand' : 'Stable Demand'}
+                  </p>
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Verification Audit Trail */}
+              <div>
+                <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-4">
+                  <ClipboardCheck className="h-4 w-4 text-primary" /> Verification Audit Trail
+                </h3>
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
+                    <div className="flex items-center gap-3">
+                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Title Document Verified</p>
+                        <p className="text-[10px] text-muted-foreground">Title Insurance Policy confirmed</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase">Passed</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
+                    <div className="flex items-center gap-3">
+                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Physical Inspection</p>
+                        <p className="text-[10px] text-muted-foreground">Third-party inspection report available</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase">Passed</span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
+                    <div className="flex items-center gap-3">
+                      <div className={`h-7 w-7 rounded-full flex items-center justify-center ${property.isVerified ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
+                        {property.isVerified 
+                          ? <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                          : <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
+                        }
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">State License Check</p>
+                        <p className="text-[10px] text-muted-foreground">Broker & Developer licensing active</p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold uppercase ${property.isVerified ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
+                      {property.isVerified ? 'Confirmed' : 'Pending'}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
+                    <div className="flex items-center gap-3">
+                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                        <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">Automated Valuation (AVM)</p>
+                        <p className="text-[10px] text-muted-foreground">Market-rate algorithm alignment passed</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase">Passed</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -438,29 +561,29 @@ export default function PropertyDetail() {
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
                     <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
                     <div>
-                      <p className="font-bold text-foreground">Certificate of Occupancy (C of O)</p>
-                      <p className="text-xs text-muted-foreground">Verified by state government</p>
+                      <p className="font-bold text-foreground">Title Insurance Policy</p>
+                      <p className="text-xs text-muted-foreground">Verified by national underwriters</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
                     <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
                     <div>
-                      <p className="font-bold text-foreground">Registered Survey Plan</p>
-                      <p className="text-xs text-muted-foreground">Free from government acquisition</p>
+                      <p className="font-bold text-foreground">HOA Disclosures</p>
+                      <p className="text-xs text-muted-foreground">Full CC&R packets available</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
                     <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
                     <div>
-                      <p className="font-bold text-foreground">Deed of Assignment</p>
-                      <p className="text-xs text-muted-foreground">Ready for ownership transfer</p>
+                      <p className="font-bold text-foreground">Inspection Report</p>
+                      <p className="text-xs text-muted-foreground">Recent third-party inspection cleared</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
                     <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
                     <div>
-                      <p className="font-bold text-foreground">Contract of Sale</p>
-                      <p className="text-xs text-muted-foreground">Issued immediately upon purchase</p>
+                      <p className="font-bold text-foreground">Escrow Instructions</p>
+                      <p className="text-xs text-muted-foreground">Prepared for secure digital closing</p>
                     </div>
                   </div>
                 </div>
@@ -495,7 +618,7 @@ export default function PropertyDetail() {
                     </div>
                     <div>
                       <p className="font-bold text-foreground text-lg mb-1">Development-Ready</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">Dry, flat topography. Ready for immediate allocation and physical development. Zero sandfilling required.</p>
+                      <p className="text-sm text-muted-foreground leading-relaxed">Zoned appropriately, clear title. Ready for immediate allocation and physical development. Zero encroachments.</p>
                     </div>
                   </div>
                 </div>

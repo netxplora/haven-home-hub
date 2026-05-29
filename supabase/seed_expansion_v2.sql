@@ -40,7 +40,7 @@ BEGIN
             beverly_hills_id, 
             'Bourdillon Road, Beverly Hills', 
             6, 7, 1200.00, 
-            '["Infinity Pool", "Private Cinema", "Wine Cellar", "Smart Home", "Lagoon View", "Staff Quarters"]'::jsonb, 
+            '["Infinity Pool", "Private Cinema", "Wine Cellar", "Smart Home", "Lake View", "Guest Suite"]'::jsonb, 
             sarah_id, 
             true, 
             'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?w=1200&q=80'
@@ -88,17 +88,17 @@ BEGIN
     IF austin_id IS NOT NULL AND amina_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Maitama Diplomatic Residence', 
-            'maitama-diplomatic-residence', 
-            'Exquisite 7-bedroom mansion situated in the prestigious Maitama district. Ideal for diplomatic missions or high-net-worth individuals, featuring bulletproof doors, expansive grounds, and premium imported marble floors.', 
+            'Highland Park Executive Residence', 
+            'highland-park-executive-residence', 
+            'Exquisite 7-bedroom mansion situated in the prestigious Highland Park district. Ideal for executives or high-net-worth individuals, featuring reinforced security, expansive grounds, and premium imported marble floors.', 
             5000000, 
             'USD', 
             'buy', 
             'available', 
             austin_id, 
-            'Maitama District, Austin', 
+            'Highland Park, Austin', 
             7, 8, 1500.00, 
-            '["Bulletproof Security", "Marble Floors", "Expansive Gardens", "Diplomatic Zone"]'::jsonb, 
+            '["Gated Security", "Marble Floors", "Expansive Gardens", "Private Estate"]'::jsonb, 
             amina_id, 
             true, 
             'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?w=1200&q=80'
@@ -106,15 +106,15 @@ BEGIN
 
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Asokoro Executive Home', 
-            'asokoro-executive-home', 
-            'A premium 5-bedroom home in Asokoro with excellent views of the city. Features high ceilings, multiple living rooms, and a dedicated home office. Perfect for the modern executive.', 
+            'Westlake Hills Executive Home', 
+            'westlake-hills-executive-home', 
+            'A premium 5-bedroom home in Westlake Hills with excellent views of the city. Features high ceilings, multiple living rooms, and a dedicated home office. Perfect for the modern executive.', 
             2200000, 
             'USD', 
             'buy', 
             'available', 
             austin_id, 
-            'Asokoro, Austin', 
+            'Westlake Hills, Austin', 
             5, 6, 850.00, 
             '["Home Office", "City Views", "High Ceilings", "Secure Compound"]'::jsonb, 
             amina_id, 
@@ -137,9 +137,9 @@ BEGIN
             'rent', 
             'available', 
             sv_id, 
-            'Ahmadu Bello Way, Silicon Valley', 
+            'Sand Hill Road, Silicon Valley', 
             0, 6, 1200.00, 
-            '["Grade A Commercial", "Ocean View", "High-speed Elevators", "24/7 Power"]'::jsonb, 
+            '["Grade A Commercial", "Ocean View", "High-speed Elevators", "Solar Powered"]'::jsonb, 
             david_id, 
             true, 
             'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&q=80'
@@ -187,15 +187,15 @@ BEGIN
     IF austin_id IS NOT NULL AND amina_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Wuse 2 Co-Working Hub', 
-            'wuse-2-coworking-hub', 
+            'Downtown Austin Co-Working Hub', 
+            'downtown-austin-coworking-hub', 
             'A vibrant and fully furnished co-working space offering private offices, dedicated desks, and modern conference rooms. Ideal for startups and growing enterprises.', 
             12000, 
             'USD', 
             'rent', 
             'available', 
             austin_id, 
-            'Wuse 2, Austin', 
+            'Downtown, Austin', 
             0, 4, 300.00, 
             '["Furnished Offices", "High-speed Internet", "Conference Rooms", "Cafeteria"]'::jsonb, 
             amina_id, 
@@ -207,7 +207,7 @@ BEGIN
         VALUES (
             'Downtown Austin Residential Flat', 
             'downtown-austin-residential-flat', 
-            'Comfortable 2-bedroom flat in a quiet residential area of Downtown Austin. Features a fitted kitchen, backup power generator, and close proximity to central business areas.', 
+            'Comfortable 2-bedroom flat in a quiet residential area of Downtown Austin. Features a modern kitchen, energy-efficient appliances, and close proximity to central business areas.', 
             15000, 
             'USD', 
             'rent', 
@@ -215,7 +215,7 @@ BEGIN
             austin_id, 
             'Downtown Austin, Austin', 
             2, 2, 120.00, 
-            '["Fitted Kitchen", "Backup Power", "Quiet Neighborhood", "Central Location"]'::jsonb, 
+            '["Modern Kitchen", "Energy Efficient", "Quiet Neighborhood", "Central Location"]'::jsonb, 
             amina_id, 
             false, 
             'https://images.unsplash.com/photo-1502672260266-1c1de2d93688?w=1200&q=80'
@@ -246,9 +246,9 @@ BEGIN
 
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Epe Residential Estate Land', 
+            'Hamptons Residential Estate Land', 
             'hamptons-residential-estate-land', 
-            'A full acre of dry land within a developing residential estate in Epe. Comes with global C of O and approved estate layout plans.', 
+            'A full acre of dry land within a developing residential estate in Texas. Comes with clear Title Insurance and approved estate layout plans.', 
             150000, 
             'USD', 
             'land', 
@@ -256,7 +256,7 @@ BEGIN
             manhattan_id, 
             'The Hamptons, NY', 
             0, 0, 4000.00, 
-            '["Residential Zoning", "C of O", "Estate Layout", "Dry Land"]'::jsonb, 
+            '["Residential Zoning", "Title Insurance", "Estate Layout", "Dry Land"]'::jsonb, 
             david_id, 
             false, 
             'https://images.unsplash.com/photo-1524813686514-a57563d77965?w=1200&q=80'
@@ -266,15 +266,15 @@ BEGIN
     IF austin_id IS NOT NULL AND amina_id IS NOT NULL THEN
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Guzape Hilltop Plot', 
-            'guzape-hilltop-plot', 
-            'An exclusive hilltop plot in Guzape offering breathtaking panoramic views of the entire Austin city. Ideal for building a luxury custom villa.', 
+            'Lake Travis Hilltop Plot', 
+            'lake-travis-hilltop-plot', 
+            'An exclusive hilltop plot near Lake Travis offering breathtaking panoramic views of the entire Austin area. Ideal for building a luxury custom villa.', 
             850000, 
             'USD', 
             'land', 
             'available', 
             austin_id, 
-            'Guzape, Austin', 
+            'Lake Travis, Austin', 
             0, 0, 1500.00, 
             '["Hilltop View", "Luxury Zoning", "Exclusive Area", "City Views"]'::jsonb, 
             amina_id, 
@@ -284,15 +284,15 @@ BEGIN
 
         INSERT INTO public.properties (title, slug, description, price, currency, property_type, status, location_id, address, bedrooms, bathrooms, size_sqm, features, agent_id, featured, cover_image_url)
         VALUES (
-            'Kuje Agricultural Land', 
-            'kuje-agricultural-land', 
-            '5 hectares of fertile agricultural land in Kuje. Features access to a natural stream, making it perfect for mechanized farming or a large-scale poultry project.', 
+            'Hill Country Ranch Land', 
+            'hill-country-ranch-land', 
+            '5 hectares of fertile land in the Texas Hill Country. Features access to a natural creek, making it perfect for ranching or a large-scale agricultural project.', 
             200000, 
             'USD', 
             'land', 
             'available', 
             austin_id, 
-            'Kuje, Austin', 
+            'Hill Country, Austin', 
             0, 0, 50000.00, 
             '["Agricultural Zoning", "Fertile Soil", "Water Access", "Large Acreage"]'::jsonb, 
             amina_id, 
@@ -306,7 +306,7 @@ BEGIN
         VALUES (
             'Bel Air Waterfront Plot', 
             'bel-air-waterfront-plot', 
-            'Rare waterfront plot available in the prestigious Bel Air. Complete with structural approvals and sand-filled, ready for immediate development.', 
+            'Rare waterfront plot available in the prestigious Bel Air. Complete with structural approvals and graded, ready for immediate development.', 
             4000000, 
             'USD', 
             'land', 
@@ -314,7 +314,7 @@ BEGIN
             beverly_hills_id, 
             'Bel Air, Beverly Hills', 
             0, 0, 1000.00, 
-            '["Waterfront", "Prestige Location", "Sand-filled", "Ready to Build"]'::jsonb, 
+            '["Waterfront", "Prestige Location", "Graded Lot", "Ready to Build"]'::jsonb, 
             sarah_id, 
             true, 
             'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?w=1200&q=80'
@@ -367,7 +367,7 @@ BEGIN
         'Austin Student Housing Project',
         'austin-student-housing',
         'A high-yield development project creating premium student accommodation near major universities in Austin. Offers substantial capital appreciation upon completion.',
-        'Gwarinpa, Austin',
+        'University District, Austin',
         'residential',
         'https://images.unsplash.com/photo-1555854877-bab0e564b8d5?w=1200&q=80',
         3000000, 3000, 1000, 850, 3000,

@@ -17,6 +17,7 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [gridOpen, setGridOpen] = useState(false);
+  const [dayNightMode, setDayNightMode] = useState<"day" | "night">("day");
 
   const next = useCallback(() => {
     setCurrentIndex((prev) => (prev + 1) % images.length);
@@ -48,6 +49,8 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
               alt={`${title} - View ${i + 1}`}
               onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
               className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
+                dayNightMode === "night" ? "brightness-[0.4] contrast-[1.2] saturate-[0.7] hue-rotate-[20deg]" : ""
+              } ${
                 currentIndex === i ? "opacity-100 scale-100 z-10" : "opacity-0 scale-110 z-0"
               }`}
             />
@@ -56,13 +59,18 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
           {/* Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-20 pointer-events-none" />
           
+          {/* Night Mode Window Glow Indicator Overlay */}
+          {dayNightMode === "night" && (
+            <div className="absolute inset-0 bg-yellow-500/5 mix-blend-color-dodge pointer-events-none z-15" />
+          )}
+
           <div className="absolute left-8 top-8 z-30 flex gap-3">
             <Badge className="bg-background/95 text-foreground shadow-xl px-4 py-1.5 text-xs font-bold rounded-xl backdrop-blur-md border-none">{typeLabel}</Badge>
             <Badge variant={status === "available" ? "default" : "secondary"} className="shadow-xl px-4 py-1.5 text-xs font-bold rounded-xl backdrop-blur-md border-none">{statusLabel}</Badge>
           </div>
 
           {/* Navigation Arrows */}
-          <div className="absolute inset-y-0 left-6 z-30 flex items-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[-10px] group-hover:translate-x-0">
+          <div className="absolute inset-y-0 left-6 z-30 flex items-center opacity-0 group-hover:opacity-100 transition-all duration-300 translate-x-[ -10px] group-hover:translate-x-0">
             <Button size="icon" variant="secondary" onClick={prev} className="h-14 w-14 rounded-full bg-background/90 backdrop-blur-md shadow-2xl hover:bg-primary hover:text-white transition-all border-none">
               <ChevronLeft className="h-7 w-7" />
             </Button>
@@ -86,6 +94,14 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
             </div>
 
             <div className="flex gap-3">
+              <Button 
+                variant="secondary" 
+                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDayNightMode(prev => prev === "day" ? "night" : "day"); }}
+                className="rounded-xl bg-black/40 backdrop-blur-md text-white border border-white/20 hover:bg-black/60 font-bold px-4 flex items-center gap-1.5 z-40 pointer-events-auto"
+              >
+                {dayNightMode === "day" ? "🌙 Night Preview" : "☀️ Day Preview"}
+              </Button>
+
               <Dialog open={gridOpen} onOpenChange={setGridOpen}>
                 <DialogTrigger asChild>
                   <Button variant="secondary" className="rounded-xl bg-black/40 backdrop-blur-md text-white border border-white/20 hover:bg-black/60 font-bold px-5">

@@ -1,7 +1,7 @@
 import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Building2, Users, TrendingUp, Briefcase, Banknote, MessageSquare, Calendar, MapPin, ClipboardList, Fingerprint, ArrowDownToLine, CreditCard, Layers } from "lucide-react";
+import { Building2, Users, TrendingUp, Briefcase, Banknote, MessageSquare, Calendar, MapPin, ClipboardList, Fingerprint, ArrowDownToLine, CreditCard, Layers, ShieldAlert } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -255,9 +255,45 @@ export function AdminOverview() {
         ))}
       </div>
 
+      {/* Security & Risk Monitor */}
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h3 className="font-serif text-lg font-semibold flex items-center gap-2">
+            <ShieldAlert className="h-5 w-5 text-amber-500" /> Security & Risk Management
+          </h3>
+          <Button variant="outline" size="sm" className="rounded-lg h-9">View Full Audit Log</Button>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-destructive">High Risk Alert</span>
+              <span className="text-xs text-muted-foreground">10m ago</span>
+            </div>
+            <p className="font-serif font-semibold text-foreground text-sm">Multiple failed KYC attempts</p>
+            <p className="text-xs text-muted-foreground mt-1">User ID: ...89a2 triggered automated lock after 5 mismatched ID scans.</p>
+          </div>
+          <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-amber-600">Anomaly Detected</span>
+              <span className="text-xs text-muted-foreground">2h ago</span>
+            </div>
+            <p className="font-serif font-semibold text-foreground text-sm">Rapid sequential payments</p>
+            <p className="text-xs text-muted-foreground mt-1">3 installment payments made within 60 seconds from same IP.</p>
+          </div>
+          <div className="rounded-xl border border-border/50 bg-card p-5">
+            <div className="flex justify-between items-start mb-3">
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">System Log</span>
+              <span className="text-xs text-muted-foreground">5h ago</span>
+            </div>
+            <p className="font-serif font-semibold text-foreground text-sm">Admin login from new device</p>
+            <p className="text-xs text-muted-foreground mt-1">Verified via 2FA. IP: 102.24.45.19 (Lagos, NG).</p>
+          </div>
+        </div>
+      </div>
+
       {/* Status card */}
       <div className="rounded-xl border border-border/50 p-8 text-center bg-card">
-        <div className="grid h-14 w-14 place-items-center rounded-full bg-primary/100/10 text-primary mx-auto">
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-primary/10 text-primary mx-auto">
           <TrendingUp className="h-7 w-7" />
         </div>
         <h3 className="mt-4 font-serif text-lg font-semibold text-foreground">Platform status: Active</h3>

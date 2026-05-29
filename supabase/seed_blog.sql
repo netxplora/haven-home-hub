@@ -179,15 +179,15 @@ Browse our current [investment opportunities](/invest/opportunities) to see what
     -- Post 3
     INSERT INTO public.blog_posts (title, slug, excerpt, content, cover_image_url, category_id, status, published_at) VALUES (
         '7 Things to Check Before Buying Property in the United States',
-        'things-to-check-before-buying-property-nigeria',
+        'things-to-check-before-buying-property-us',
         'Buying property in the United States requires careful due diligence. Here are 7 essential checks every buyer should complete before committing to a purchase.',
         '## 1. Verify the Title Document
 
 The most important step is confirming the seller has a valid title. Acceptable documents include:
 
-- **Certificate of Occupancy (C of O)** — issued by the state government
-- **Governor''s Consent** — required for transfer of existing C of O
-- **Deed of Assignment** — legal transfer document between parties
+- **Title Insurance** — issued by a national underwriter
+- **HOA Disclosures** — required for transfer of ownership
+- **Closing Documents** — legal transfer documents between parties
 
 Always engage a qualified lawyer to verify these documents indhamptonsndently.
 
@@ -248,16 +248,16 @@ Since launching in New York, we have consistently heard from clients looking for
 
 - **Dedicated local agents** embedded in key neighborhoods in both cities
 - **Verified property listings** across residential, commercial, and land categories
-- **Investment opportunities** in high-growth areas like Maitama, Asokoro, and GRA Phase 2
+- **Investment opportunities** in high-growth areas like Austin, Miami, and Brooklyn
 
 ## Our Austin Coverage
 
 Our Austin team covers:
 
-- Maitama and Asokoro (premium residential)
-- Wuse 2 and Downtown Austin (commercial and mid-market)
-- Gwarinpa and Kubwa (emerging residential)
-- Guzape (luxury land)
+- Austin and Miami (premium residential)
+- Downtown and SoHo (commercial and mid-market)
+- Williamsburg and Bed-Stuy (emerging residential)
+- The Hamptons (luxury land)
 
 ## Our Miami Coverage
 

@@ -331,3 +331,70 @@ html {
   margin-top: 12px;
   border-radius: 2px;
 }
+
+/* ── Premium Editorial & Asymmetric Layout System ── */
+
+/* Editorial Spacing and Density */
+.editorial-spacing {
+  letter-spacing: -0.01em;
+  line-height: 1.6;
+}
+
+.density-dense {
+  line-height: 1.4;
+  letter-spacing: -0.015em;
+}
+
+/* Asymmetric Grid Layouts */
+.asymmetric-grid-cols > :nth-child(3n + 1) {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .asymmetric-grid-cols > :nth-child(3n + 1) {
+    grid-column: span 1;
+  }
+}
+
+/* Local Real Estate & Trust Badges */
+.badge-verified-gold {
+  background: hsl(var(--primary) / 0.08);
+  border: 1px solid hsl(var(--primary) / 0.3);
+  color: hsl(var(--primary));
+  font-weight: 600;
+}
+
+.dark .badge-verified-gold {
+  background: hsl(var(--primary) / 0.12);
+  border: 1px solid hsl(var(--primary) / 0.4);
+  color: hsl(var(--accent-foreground));
+}
+
+.badge-power-grid {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: rgb(5, 150, 105);
+}
+
+.badge-power-generator {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  color: rgb(217, 119, 6);
+}
+
+.badge-flood-safe {
+  background: rgba(59, 130, 246, 0.08);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  color: rgb(37, 99, 235);
+}
+
+/* Micro-interactions & Focus guidance */
+.focus-guidance {
+  transition: border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.focus-guidance:focus-within {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.15);
+}
+

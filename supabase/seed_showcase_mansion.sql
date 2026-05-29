@@ -1,5 +1,5 @@
 -- =========================================================================
--- SHOWCASE MANSION - IKOKI LAGOON FRONT
+-- SHOWCASE MANSION - BEVERLY HILLS WATERFRONT
 -- Fully detailed property with images, POIs, and categorized features.
 -- =========================================================================
 
@@ -29,7 +29,7 @@ BEGIN
             beverly_hills_id, 'No. 12 Alexander Road, Beverly Hills, CA', 
             6, 8, 10, 1200.00, 
             2023, 'AG-IK-001', 'Private viewing by appointment only. Minimum 24-hour notice required.',
-            '["Infinity Pool", "Private Cinema", "Wine Cellar", "Smart Home", "Lagoon View", "Waterfront", "Private Dock", "Gaggenau Kitchen", "Staff Quarters", "CCTV", "Bulletproof Security", "Backup Power", "Marble Floors", "Elevator", "Home Office"]'::jsonb, 
+            '["Infinity Pool", "Private Cinema", "Wine Cellar", "Smart Home", "Waterfront View", "Waterfront", "Private Dock", "Gaggenau Kitchen", "Guest Suite", "CCTV", "Gated Security", "Solar Array", "Marble Floors", "Elevator", "Home Office"]'::jsonb, 
             sarah_id, true, 
             'https://images.unsplash.com/photo-1613490493576-7fde63acd811?w=1200&q=80',
             '[

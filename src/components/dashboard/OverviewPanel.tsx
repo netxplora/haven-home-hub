@@ -12,7 +12,13 @@ import {
   ArrowRight,
   ShieldCheck,
   TrendingDown,
-  RefreshCw
+  RefreshCw,
+  CalendarCheck,
+  Handshake,
+  PiggyBank,
+  BarChart3,
+  CircleDollarSign,
+  Home
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -290,7 +296,105 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
                  <Link to="?tab=notifications">View all updates</Link>
               </Button>
            </div>
-        </div>
+         </div>
+      </div>
+
+      {/* Role Specialization Sections */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* Buyer Intelligence Panel */}
+        {(stats?.propertiesOwnedCount ?? 0) > 0 || (stats?.activeReservationsCount ?? 0) > 0 ? (
+          <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-9 w-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+                <Home className="h-4.5 w-4.5" />
+              </div>
+              <div>
+                <h3 className="font-serif text-base font-semibold text-foreground">Buyer Dashboard</h3>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Property Acquisition Status</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
+                <div className="flex items-center gap-3">
+                  <CalendarCheck className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Inspections Completed</p>
+                    <p className="text-[10px] text-muted-foreground">Physical site visits verified</p>
+                  </div>
+                </div>
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">{stats?.propertiesOwnedCount ?? 0}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
+                <div className="flex items-center gap-3">
+                  <Handshake className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Active Negotiations</p>
+                    <p className="text-[10px] text-muted-foreground">Pending reservations and offers</p>
+                  </div>
+                </div>
+                <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{stats?.activeReservationsCount ?? 0}</span>
+              </div>
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-8 text-xs font-medium text-primary hover:bg-primary/5" onClick={() => onNavigate("reservations")}>
+                View all reservations <ArrowRight className="h-3 w-3 ml-1" />
+              </Button>
+            </div>
+          </div>
+        ) : null}
+
+        {/* Investor Analytics Panel */}
+        {(stats?.investmentCount ?? 0) > 0 ? (
+          <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
+            <div className="flex items-center gap-3 mb-5">
+              <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+                <BarChart3 className="h-4.5 w-4.5" />
+              </div>
+              <div>
+                <h3 className="font-serif text-base font-semibold text-foreground">Investor Dashboard</h3>
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Portfolio Performance</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
+                <div className="flex items-center gap-3">
+                  <PiggyBank className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Total Portfolio Value</p>
+                    <p className="text-[10px] text-muted-foreground">Active investments</p>
+                  </div>
+                </div>
+                <span className="text-sm font-bold text-foreground">{formatMoney(stats?.totalInvested ?? 0)}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
+                <div className="flex items-center gap-3">
+                  <CircleDollarSign className="h-4 w-4 text-green-600 dark:text-green-400" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">Cumulative Returns</p>
+                    <p className="text-[10px] text-muted-foreground">Total earnings distributed</p>
+                  </div>
+                </div>
+                <span className="text-sm font-bold text-green-600 dark:text-green-400">{formatMoney(stats?.totalReturns ?? 0)}</span>
+              </div>
+              <div className="flex items-center justify-between p-3 rounded-lg bg-primary/5 border border-primary/20">
+                <div className="flex items-center gap-3">
+                  <TrendingUp className="h-4 w-4 text-primary" />
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">ROI Rate</p>
+                    <p className="text-[10px] text-muted-foreground">Returns / Invested</p>
+                  </div>
+                </div>
+                <span className="text-sm font-bold text-primary">
+                  {(stats?.totalInvested ?? 0) > 0 
+                    ? `${(((stats?.totalReturns ?? 0) / (stats?.totalInvested ?? 1)) * 100).toFixed(1)}%`
+                    : '0.0%'
+                  }
+                </span>
+              </div>
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-8 text-xs font-medium text-primary hover:bg-primary/5" onClick={() => onNavigate("investments")}>
+                View portfolio details <ArrowRight className="h-3 w-3 ml-1" />
+              </Button>
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

@@ -7,6 +7,7 @@ import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
 import { PropertyMap } from "@/components/site/PropertyMap";
 import { PromoBanner } from "@/components/site/PromoBanner";
 import { SaveSearchButton } from "@/components/site/SavedSearch";
+import { enrichProperty } from "@/lib/format";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -23,7 +24,10 @@ import {
   ArrowUpDown,
   Filter,
   Map as MapIcon,
-  LayoutGrid
+  LayoutGrid,
+  ShieldCheck,
+  Zap,
+  Droplets
 } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
@@ -90,6 +94,9 @@ export default function Properties() {
   const parking = params.get("parking") ?? "any";
   const sort = params.get("sort") ?? "newest";
   const status = params.get("status") ?? "available";
+  const verifiedOnly = params.get("verified") === "true";
+  const minWalkScore = params.get("minWalkScore") ?? "";
+  const floodSafe = params.get("floodSafe") === "true";
 
   const [qLocal, setQLocal] = useState(q);
   useEffect(() => setQLocal(q), [q]);
@@ -190,6 +197,15 @@ export default function Properties() {
     },
   });
 
+  // Client-side telemetry filtering (enrichProperty-derived fields aren't in DB)
+  const filteredProperties = useMemo(() => {
+    let list = properties.map(p => enrichProperty(p));
+    if (verifiedOnly) list = list.filter((p: any) => p.isVerified);
+    if (minWalkScore) list = list.filter((p: any) => p.walkScore >= Number(minWalkScore));
+    if (floodSafe) list = list.filter((p: any) => p.isFloodSafe);
+    return list;
+  }, [properties, verifiedOnly, minWalkScore, floodSafe]);
+
   const currency = properties[0]?.currency ?? "USD";
 
   function update(key: string, value: string) {
@@ -237,13 +253,16 @@ export default function Properties() {
     if (bathrooms && bathrooms !== "any") list.push({ key: "bathrooms", label: `Bathrooms: ${bathrooms}+`, value: bathrooms });
     if (parking && parking !== "any") list.push({ key: "parking", label: `Parking: ${parking}+`, value: parking });
     if (status && status !== "available") list.push({ key: "status", label: `Status: ${status}`, value: status });
+    if (verifiedOnly) list.push({ key: "verified", label: "Verified Only", value: "true" });
+    if (minWalkScore) list.push({ key: "minWalkScore", label: `Walk Score: ${minWalkScore}+`, value: minWalkScore });
+    if (floodSafe) list.push({ key: "floodSafe", label: "Zone X (Flood-Safe)", value: "true" });
     
     const minSize = params.get("minSize");
     const maxSize = params.get("maxSize");
     if (minSize) list.push({ key: "minSize", label: `Min Size: ${minSize} sqm`, value: minSize });
     if (maxSize) list.push({ key: "maxSize", label: `Max Size: ${maxSize} sqm`, value: maxSize });
     return list;
-  }, [type, category, country, state, city, minPrice, maxPrice, bedrooms, bathrooms, parking, status, params]);
+  }, [type, category, country, state, city, minPrice, maxPrice, bedrooms, bathrooms, parking, status, verifiedOnly, minWalkScore, floodSafe, params]);
 
   const activeFilterCount = activeFilters.length;
 
@@ -387,6 +406,19 @@ export default function Properties() {
                     )}
                   </Button>
                 </SheetTrigger>
+
+                {/* Verified Only Quick Toggle */}
+                <button
+                  onClick={() => update("verified", verifiedOnly ? "" : "true")}
+                  className={`hidden lg:flex h-10 items-center gap-2 px-3 rounded-lg border text-xs font-bold uppercase tracking-tighter transition-all ${
+                    verifiedOnly 
+                      ? 'bg-primary/10 text-primary border-primary/30' 
+                      : 'bg-card text-muted-foreground border-border hover:border-primary/20 hover:text-primary'
+                  }`}
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  Verified
+                </button>
                 <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
                   <SheetHeader className="pb-6 border-b">
                     <SheetTitle className="font-serif text-2xl">Property Filters</SheetTitle>
@@ -518,6 +550,60 @@ export default function Properties() {
                         </Select>
                       </div>
                     </div>
+
+                    {/* Neighborhood Intelligence Filters */}
+                    <div className="space-y-4 pt-4 border-t">
+                      <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
+                        <Zap className="h-3.5 w-3.5 text-amber-500" /> Infrastructure & Safety
+                      </Label>
+                      
+                      {/* Verified Only */}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
+                        <div className="flex items-center gap-2">
+                          <ShieldCheck className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-semibold">Verified Only</span>
+                        </div>
+                        <button 
+                          onClick={() => update("verified", verifiedOnly ? "" : "true")}
+                          className={`relative h-6 w-11 rounded-full transition-colors ${verifiedOnly ? 'bg-primary' : 'bg-muted'}`}
+                        >
+                          <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
+                        </button>
+                      </div>
+
+                      {/* Flood Safe */}
+                      <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
+                        <div className="flex items-center gap-2">
+                          <Droplets className="h-4 w-4 text-blue-500" />
+                          <span className="text-sm font-semibold">Flood-Safe Only</span>
+                        </div>
+                        <button 
+                          onClick={() => update("floodSafe", floodSafe ? "" : "true")}
+                          className={`relative h-6 w-11 rounded-full transition-colors ${floodSafe ? 'bg-blue-500' : 'bg-muted'}`}
+                        >
+                          <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${floodSafe ? 'translate-x-5' : ''}`} />
+                        </button>
+                      </div>
+
+                      {/* Min Walk Score */}
+                      <div className="space-y-2">
+                        <span className="text-xs font-bold text-muted-foreground">Minimum Walk Score</span>
+                        <Select value={minWalkScore || "any"} onValueChange={(v) => update("minWalkScore", v === "any" ? "" : v)}>
+                          <SelectTrigger className="h-11">
+                            <div className="flex items-center gap-2">
+                              <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+                              <SelectValue placeholder="Any" />
+                            </div>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="any">Any</SelectItem>
+                            <SelectItem value="50">50+ (Somewhat Walkable)</SelectItem>
+                            <SelectItem value="70">70+ (Very Walkable)</SelectItem>
+                            <SelectItem value="90">90+ (Walker's Paradise)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                   </div>
 
                   <SheetFooter className="mt-8 pt-6 border-t gap-2 sm:flex-col">
@@ -541,7 +627,7 @@ export default function Properties() {
             {/* Sorting & Results */}
             <div className="flex items-center justify-between lg:justify-end gap-4 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-border">
               <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold text-primary">{properties.length}</span>
+                <span className="font-bold text-primary">{filteredProperties.length}</span>
                 <span className="text-muted-foreground font-medium">Properties</span>
               </div>
 
@@ -643,11 +729,11 @@ export default function Properties() {
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 animate-in fade-in duration-500">
-              {properties.map((p) => <PropertyCard key={p.id} property={p} />)}
+              {filteredProperties.map((p: any) => <PropertyCard key={p.id} property={p} />)}
             </div>
             <div className="mt-16 flex justify-center">
               <p className="text-sm text-muted-foreground bg-accent px-4 py-2 rounded-full border border-border">
-                Showing all {properties.length} results
+                Showing all {filteredProperties.length} results
               </p>
             </div>
           </>

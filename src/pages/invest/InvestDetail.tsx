@@ -311,7 +311,7 @@ export default function InvestDetail() {
                 <div className="rounded-xl bg-accent/50 p-6 border border-border/50">
                   <h4 className="font-serif font-bold text-lg mb-3">Amenities & Features</h4>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
-                    {["24/7 Smart Security", "Infinity Pool", "Fitness Center", "Co-working Space", "High-speed Fiber", "Backup Power", "Concierge Service", "Rooftop Garden"].map((a) => (
+                    {["24/7 Smart Security", "Infinity Pool", "Fitness Center", "Co-working Space", "High-speed Fiber", "EV Charging", "Concierge Service", "Rooftop Garden"].map((a) => (
                       <div key={a} className="flex items-center gap-2 text-sm text-foreground/80">
                         <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {a}
                       </div>

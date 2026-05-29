@@ -1,15 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { 
   ArrowRight, ShieldCheck, Sparkles, TrendingUp, 
   Users, Building2, CheckCircle, LineChart, 
-  Lock, PieChart, Star, Mail, MapPin, Search, Clock
+  Lock, PieChart, Star, Mail, MapPin, Search, Clock,
+  Shield, Zap, Check, CheckCircle2, Map, Smartphone, CalendarDays, MessageSquare
 } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import { SearchBar } from "@/components/site/SearchBar";
 import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,8 @@ import { OrganizationJsonLd } from "@/components/site/JsonLd";
 import { toast } from "@/hooks/use-toast";
 import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 import { PromoBanner } from "@/components/site/PromoBanner";
+import { MarketIntelligence } from "@/components/site/MarketIntelligence";
+import { AIPropertyAdvisor } from "@/components/site/AIPropertyAdvisor";
 
 const heroImages = [
   heroImg,
@@ -27,10 +29,13 @@ const heroImages = [
   "/hero_luxury_penthouse.png"
 ];
 
-
-
 export default function Home() {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [searchType, setSearchType] = useState<"buy" | "rent" | "invest">("buy");
+  const [searchLocation, setSearchLocation] = useState("");
+  const [searchBudget, setSearchBudget] = useState("");
+  const [verifiedOnly, setVerifiedOnly] = useState(true);
   
   useEffect(() => {
     const timer = setInterval(() => {
@@ -126,13 +131,39 @@ export default function Home() {
     { step: "4", title: "Earn & Track", desc: "Monitor monthly rental yields and track asset appreciation in real-time." }
   ];
 
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const params = new URLSearchParams();
+    if (searchType === "invest") {
+      navigate("/invest/opportunities");
+      return;
+    }
+    params.set("type", searchType);
+    if (searchLocation) params.set("city", searchLocation);
+    if (searchBudget) {
+      const maxPriceMap: Record<string, string> = {
+        "under500k": "500000",
+        "500k-1m": "1000000",
+        "1m-2.5m": "2500000",
+        "above2.5m": "100000000"
+      };
+      if (maxPriceMap[searchBudget]) {
+        params.set("maxPrice", maxPriceMap[searchBudget]);
+      }
+    }
+    if (verifiedOnly) {
+      params.set("verified", "true");
+    }
+    navigate(`/properties?${params.toString()}`);
+  };
+
   return (
     <SiteLayout>
       <SEO />
       <OrganizationJsonLd />
 
-      {/* 1. HERO SECTION */}
-      <section className="relative overflow-hidden min-h-[520px] sm:min-h-[600px] lg:min-h-[680px] flex items-center">
+      {/* 1. HERO SEARCH EXPERIENCE (SAFETY DOMINANT) */}
+      <section className="relative overflow-hidden min-h-[580px] sm:min-h-[660px] lg:min-h-[720px] flex items-center">
         <div className="absolute inset-0">
           {heroImages.map((img, index) => (
             <div
@@ -146,94 +177,260 @@ export default function Home() {
               />
             </div>
           ))}
-          <div className="absolute inset-0 bg-secondary/30 mix-blend-multiply z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/80 via-gray-900/30 to-gray-900/40 z-[2]" />
+          <div className="absolute inset-0 bg-secondary/35 mix-blend-multiply z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/35 to-gray-900/40 z-[2]" />
         </div>
 
-        <div className="container-wide relative z-10 py-24">
-          <div className="animate-fade-in-up">
-            <p className="mb-5 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-sm font-medium text-white/95 backdrop-blur-md border border-white/20 shadow-sm">
-              <Sparkles className="h-4 w-4 text-primary" /> {hero.badge}
+        <div className="container-wide relative z-10 py-20">
+          <div className="max-w-4xl animate-fade-in-up">
+            <p className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-md border border-white/20 shadow-sm">
+              <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Vetted Property Marketplace
             </p>
-            <h1 className="max-w-3xl font-serif text-4xl font-semibold leading-tight text-white sm:text-5xl md:text-6xl tracking-tight">
-              {hero.title}
+            <h1 className="font-serif text-4xl font-bold leading-[1.1] text-white sm:text-5xl lg:text-6xl tracking-tight">
+              Verified homes, trusted agents, smarter property decisions.
             </h1>
-            <p className="mt-5 max-w-xl text-lg text-white/80 sm:text-xl font-light leading-relaxed">
-              {hero.subtitle}
+            <p className="mt-4 max-w-xl text-base sm:text-lg text-white/80 font-light leading-relaxed">
+              Every listing undergoes physical inspection and title validation. Search transparent options across the United States.
             </p>
-          </div>
-          <div className="mt-10 max-w-3xl animate-fade-in-up" style={{ animationDelay: '150ms' }}>
-            <SearchBar />
+
+            {/* Advanced Search Form */}
+            <div className="mt-8 bg-card border border-border/40 p-4 rounded-2xl shadow-lg w-full max-w-3xl focus-guidance">
+              <div className="flex gap-4 border-b border-border/50 pb-3 mb-3">
+                {[
+                  { id: "buy", label: "Buy Property" },
+                  { id: "rent", label: "Rent Home" },
+                  { id: "invest", label: "Co-invest (Fractional)" }
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => setSearchType(tab.id as any)}
+                    className={`text-xs font-bold uppercase tracking-wider pb-1.5 transition-all relative ${
+                      searchType === tab.id ? "text-primary" : "text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {tab.label}
+                    {searchType === tab.id && (
+                      <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-sm" />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                {/* Location select */}
+                <div className="space-y-1 text-left">
+                  <label className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Region</label>
+                  <select
+                    value={searchLocation}
+                    onChange={(e) => setSearchLocation(e.target.value)}
+                    className="w-full h-10 border border-border rounded-lg bg-background text-xs px-2 focus:ring-1 focus:ring-primary focus:outline-none"
+                  >
+                    <option value="">Any Region</option>
+                    <option value="Austin">Austin, TX</option>
+                    <option value="Miami">Miami, FL</option>
+                    <option value="New York">New York, NY</option>
+                    <option value="Los Angeles">Los Angeles, CA</option>
+                    <option value="Seattle">Seattle, WA</option>
+                  </select>
+                </div>
+
+                {/* Budget selector */}
+                <div className="space-y-1 text-left">
+                  <label className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Max Budget</label>
+                  <select
+                    value={searchBudget}
+                    onChange={(e) => setSearchBudget(e.target.value)}
+                    className="w-full h-10 border border-border rounded-lg bg-background text-xs px-2 focus:ring-1 focus:ring-primary focus:outline-none"
+                  >
+                    <option value="">No Limit</option>
+                    <option value="under500k">Under $500k</option>
+                    <option value="500k-1m">$500k - $1M</option>
+                    <option value="1m-2.5m">$1M - $2.5M</option>
+                    <option value="above2.5m">Above $2.5M</option>
+                  </select>
+                </div>
+
+                {/* Verified Only Check */}
+                <div className="flex items-center gap-2 h-10 px-2 justify-start">
+                  <input
+                    type="checkbox"
+                    id="verifiedCheck"
+                    checked={verifiedOnly}
+                    onChange={(e) => setVerifiedOnly(e.target.checked)}
+                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
+                  />
+                  <label htmlFor="verifiedCheck" className="text-xs font-bold text-foreground cursor-pointer select-none">
+                    Verified Only
+                  </label>
+                </div>
+
+                {/* Search Button */}
+                <Button type="submit" size="lg" className="h-10 rounded-lg bg-primary text-white hover:bg-primary/95 font-bold text-xs uppercase tracking-wider">
+                  <Search className="mr-1.5 h-3.5 w-3.5" /> Search Checked
+                </Button>
+              </form>
+
+              {/* Location Suggestions */}
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
+                <span className="text-muted-foreground font-medium">Suggestions:</span>
+                {["Austin, TX", "Miami, FL", "Brooklyn, NY", "Seattle, WA"].map((loc) => (
+                  <button
+                    key={loc}
+                    onClick={() => setSearchLocation(loc.split(" ")[0])}
+                    className="text-primary hover:underline font-semibold"
+                  >
+                    {loc}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
 
       <PromoBanner placement="homepage_hero" className="my-6" />
 
-      {/* SUBTLE ACTIVITY FEED */}
-      <section className="border-b border-border/30 bg-background py-1">
+      {/* 2. TRUST & VERIFICATION LAYER */}
+      <section className="bg-card border-b border-border/50 py-10 relative overflow-hidden">
         <div className="container-wide">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 py-2.5 px-4 rounded-xl bg-accent/30 border border-border/40">
-            <div className="flex items-center gap-2.5 text-xs font-semibold uppercase tracking-wider text-primary shrink-0">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary/100"></span>
-              </span>
-              {"Live Activity"}
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
+              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
+                <ShieldCheck className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-sm font-semibold text-foreground">Physical Audit Checked</h4>
+                <p className="text-xs text-muted-foreground mt-1">Every listing is physically audited and photographed by our teams.</p>
+              </div>
             </div>
-            <div className="flex-1 overflow-hidden relative h-5 sm:ml-4">
-               <ActivityTicker items={ACTIVITY_FEED} />
+            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
+              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
+                <CheckCircle2 className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-sm font-semibold text-foreground">Clean Title Verified</h4>
+                <p className="text-xs text-muted-foreground mt-1">Title documents, insurance, and HOA disclosures validated.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
+              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
+                <Lock className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-sm font-semibold text-foreground">Secure Escrow Gateway</h4>
+                <p className="text-xs text-muted-foreground mt-1">Payments held in regulated escrow structures until verification.</p>
+              </div>
+            </div>
+            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
+              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
+                <Users className="h-5 w-5" />
+              </div>
+              <div>
+                <h4 className="font-serif text-sm font-semibold text-foreground">State Licensed Broker</h4>
+                <p className="text-xs text-muted-foreground mt-1">Agent status and compliance record validated prior to listing.</p>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 2. FEATURED PROPERTIES */}
+      {/* 3. VERIFIED FEATURED LISTINGS (ASYMMETRICAL LAYOUT) */}
       <section className="container-wide section-gap">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
           <div className="max-w-2xl">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{"Premium Selection"}</span>
-            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{"Featured Properties"}</h2>
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Premium Selection</span>
+            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Featured Verified Properties</h2>
             <p className="mt-3 text-muted-foreground leading-relaxed">
-              {"Explore our hand-picked selection of high-quality homes and exclusive investment opportunities."}
+              Explore hand-picked properties with confirmed legal clearance, title insurance, and verified market valuations.
             </p>
           </div>
-          <Button asChild variant="outline" className="shrink-0 group rounded-xl border-border/60 hover:bg-accent">
-            <Link to="/properties">
-              {"View all listings"} <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+          <Button asChild variant="outline" className="shrink-0 group rounded-xl border-border/60 hover:bg-accent h-11">
+            <Link to="/properties" className="font-semibold text-xs uppercase tracking-wider">
+              View all listings <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </Button>
         </div>
 
         {featuredLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 4 }).map((_, i) => (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {Array.from({ length: 3 }).map((_, i) => (
               <div key={i} className="rounded-xl border border-border/60 bg-card overflow-hidden animate-pulse">
                 <div className="aspect-[4/3] bg-muted" />
                 <div className="p-5 space-y-3">
                   <div className="h-5 bg-muted rounded w-2/3" />
                   <div className="h-4 bg-muted rounded w-full" />
-                  <div className="h-3 bg-muted rounded w-1/2" />
                 </div>
               </div>
             ))}
           </div>
         ) : featured.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featured.map((p) => (
-              <PropertyCard key={p.id} property={p} />
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {featured.slice(0, 3).map((p, idx) => (
+              <div key={p.id} className={idx === 0 ? "lg:col-span-2" : "lg:col-span-1"}>
+                <PropertyCard property={p} />
+              </div>
             ))}
           </div>
         ) : (
           <div className="rounded-2xl border-2 border-dashed border-border bg-accent/30 py-16 px-8 text-center">
             <Building2 className="mx-auto h-12 w-12 text-muted-foreground/50 mb-4" />
-            <h3 className="font-serif text-lg font-medium text-foreground">{"No featured properties"}</h3>
-            <p className="text-sm text-muted-foreground mt-2">{"Check back later or browse our full catalog."}</p>
+            <h3 className="font-serif text-lg font-medium text-foreground">No featured properties</h3>
+            <p className="text-sm text-muted-foreground mt-2">Check back later or browse our catalog.</p>
           </div>
         )}
       </section>
 
-      {/* 3. FRACTIONAL INVESTMENT BANNER */}
+      {/* 4. POPULAR LOCATIONS & LIFESTYLE ZONES (LOCAL TELEMETRY) */}
+      <section className="bg-accent/30 border-y border-border/50 py-16">
+        <div className="container-wide">
+          <div className="max-w-xl mb-10">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Region Telemetry</span>
+            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Popular Locations & Infrastructure</h2>
+            <p className="text-sm text-muted-foreground mt-2">
+              Understand Walk Score, FEMA flood risk levels, and school ratings for America's prime residential hubs.
+            </p>
+          </div>
+
+          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            {[
+              { name: "Austin, TX", walk: "82 - Very Walkable", flood: "Zone X (Low Risk)", safety: "9.2/10", image: "https://images.unsplash.com/photo-1531218150217-5afc4611c000?auto=format&fit=crop&w=400&q=80" },
+              { name: "Miami, FL", walk: "78 - Very Walkable", flood: "Zone AE (Required)", safety: "8.8/10", image: "https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?auto=format&fit=crop&w=400&q=80" },
+              { name: "Brooklyn, NY", walk: "98 - Walker's Paradise", flood: "Zone X (Low Risk)", safety: "8.5/10", image: "https://images.unsplash.com/photo-1590494480980-8636e0d37e28?auto=format&fit=crop&w=400&q=80" },
+              { name: "Seattle, WA", walk: "85 - Very Walkable", flood: "Zone X (Low Risk)", safety: "9.4/10", image: "https://images.unsplash.com/photo-1502175353174-a7a70e73b362?auto=format&fit=crop&w=400&q=80" }
+            ].map((loc) => (
+              <div key={loc.name} className="group relative overflow-hidden rounded-xl border border-border/50 bg-card hover-lift flex flex-col h-full shadow-sm">
+                <div className="h-44 overflow-hidden relative">
+                  <img src={loc.image} alt={loc.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
+                  <h3 className="absolute bottom-4 left-4 font-serif text-lg font-bold text-white">{loc.name}</h3>
+                </div>
+                <div className="p-4 space-y-2.5 text-xs flex-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Walk Score:</span>
+                      <span className="font-semibold text-foreground flex items-center gap-1"><MapPin className="h-3 w-3 text-amber-500" /> {loc.walk}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">FEMA Zone:</span>
+                      <span className="font-semibold text-foreground">{loc.flood}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Safety Index:</span>
+                      <span className="font-semibold text-primary">{loc.safety}</span>
+                    </div>
+                  </div>
+                  <Button asChild variant="ghost" size="sm" className="w-full text-xs font-semibold text-primary hover:bg-primary/5 mt-2">
+                    <Link to={`/properties?city=${encodeURIComponent(loc.name.split(" ")[0])}`}>Explore Area Listings</Link>
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 5. INVESTMENT OPPORTUNITIES (FRACTIONAL PREVIEW) */}
       <section className="container-wide section-gap">
         <div className="relative overflow-hidden rounded-2xl shadow-xl min-h-[480px] flex items-center group">
           <img
@@ -246,198 +443,65 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-transparent" />
 
           <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-2xl text-left">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/100/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary mb-6 border border-primary/30 backdrop-blur-sm">
-              <PieChart className="h-4 w-4" /> {"Fractional Ownership"}
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary mb-6 border border-primary/30 backdrop-blur-sm">
+              <PieChart className="h-4 w-4" /> Fractional Ownership
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
-              {"Build Wealth Through Premium Real Estate"}
+              Build Wealth Through Premium Real Estate
             </h2>
             <p className="mt-5 text-base sm:text-lg text-gray-300 leading-relaxed max-w-xl font-light">
-              {"Co-invest in fully-managed, high-yield properties alongside other verified investors. Earn monthly rental income and long-term appreciation with a single intuitive dashboard."}
+              Co-invest in vetted, high-yield commercial and residential properties across the Sunbelt. Receive monthly yields and monitor appreciation from a transaction-ready interface.
             </p>
             
             <div className="mt-10 flex flex-wrap items-center gap-8 sm:gap-12 max-w-lg mb-10">
               <div className="flex flex-col">
                  <div className="text-3xl font-semibold text-white">42+</div>
-                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">{"Active Units"}</div>
+                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">Active Units</div>
               </div>
               <div className="h-10 w-[1px] bg-white/20 hidden sm:block"></div>
               <div className="flex flex-col">
                  <div className="text-3xl font-semibold text-white">12%</div>
-                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">{"Avg Target ROI"}</div>
+                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">Avg Target ROI</div>
               </div>
               <div className="h-10 w-[1px] bg-white/20 hidden sm:block"></div>
               <div className="flex flex-col">
                  <div className="text-3xl font-semibold text-white">$4.2M</div>
-                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">{"Funded"}</div>
+                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">Funded Value</div>
               </div>
             </div>
 
             <div className="flex flex-col sm:flex-row items-center gap-4">
               <Button asChild size="lg" className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 shadow-lg font-medium text-base h-12 px-8">
-                <Link to="/invest">{"Start Investing"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+                <Link to="/invest">Start Investing <ArrowRight className="ml-2 h-4 w-4" /></Link>
               </Button>
               <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-white/5 text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md font-medium text-base h-12 px-8">
-                <Link to="/invest/opportunities">{"View Opportunities"}</Link>
+                <Link to="/invest/opportunities">View Opportunities</Link>
               </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 4. CATEGORIES */}
-      <section className="container-wide section-gap">
-        <div className="grid gap-6 md:grid-cols-3">
-          {[
-            { type: "buy", title: "Homes for Sale", desc: "Find your forever home in premium neighborhoods.", img: "/src/assets/property-1.jpg" },
-            { type: "rent", title: "Premium Rentals", desc: "Flexible living in beautifully managed properties.", img: "/src/assets/property-2.jpg" },
-            { type: "land", title: "Land & Plots", desc: "Build your vision on surveyed, prime locations.", img: "/src/assets/property-4.jpg" },
-          ].map((c) => (
-            <Link
-              key={c.type}
-              to={`/properties?type=${c.type}`}
-              className="group relative overflow-hidden rounded-2xl shadow-card border border-border/40 bg-card hover-lift"
-            >
-              <div className="h-[320px] w-full overflow-hidden">
-                <img src={resolveImage(c.img)} alt={c.title} loading="lazy" width={1280} height={960}
-                  className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
-              </div>
-              <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent opacity-85 group-hover:opacity-95 transition-opacity" />
-              <div className="absolute inset-0 p-8 flex flex-col justify-end text-white">
-                <h3 className="font-serif text-2xl font-semibold mb-2">{c.title}</h3>
-                <p className="text-sm text-gray-200 leading-relaxed max-w-[250px] mb-6 opacity-0 translate-y-4 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
-                  {c.desc}
-                </p>
-                <span className="inline-flex items-center gap-2 text-sm font-semibold tracking-wide uppercase text-white/90">
-                  {"Explore"} <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-1.5" />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* 5. RECENTLY ADDED PROPERTIES */}
-      <section className="bg-accent/30 border-y border-border/50 section-gap overflow-hidden">
+      {/* 6. BUYER SUCCESS STORIES (TESTIMONIALS) */}
+      <section className="bg-primary/5 border-y border-border/40 py-16">
         <div className="container-wide">
-          <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
-            <div>
-              <span className="section-label flex items-center gap-1.5"><Clock className="h-3.5 w-3.5" /> {"Fresh Inventory"}</span>
-              <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">{"Recently Added Properties"}</h2>
-            </div>
-            <Button asChild variant="ghost" className="shrink-0 text-primary hover:bg-primary/5">
-              <Link to="/properties?sort=newest">{"View all new listings"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
-            </Button>
-          </div>
-        </div>
-
-        <div className="w-full">
-          <FreshInventorySlider />
-        </div>
-      </section>
-
-      <PromoBanner placement="homepage_mid" className="mt-12 mb-4" />
-
-      {/* 6. WHY INVEST WITH US */}
-      <section className="container-wide section-gap">
-        <div className="text-center max-w-2xl mx-auto mb-16">
-          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{"Platform Trust"}</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">{"Why Investors Choose Us"}</h2>
-          <p className="mt-4 text-muted-foreground leading-relaxed">
-            {"We provide a transparent, legally compliant ecosystem that prioritizes security and operational excellence for every transaction."}
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-3 lg:grid-cols-5">
-          {WHY_INVEST.map((item, idx) => (
-            <div key={idx} className="flex flex-col items-center text-center p-6 rounded-2xl bg-card border border-border/40 shadow-soft hover-lift">
-              <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mb-4 text-primary">
-                <item.icon className="h-5.5 w-5.5" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 7. MARKET STATISTICS */}
-      <section className="bg-secondary py-16 my-16 border-y border-secondary-foreground/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(11,122,85,0.12),transparent_50%)]" />
-        <div className="container-wide relative z-10 grid grid-cols-2 md:grid-cols-5 gap-8 md:divide-x md:divide-white/10">
-          {STATS.map((stat, idx) => (
-             <div key={idx} className="flex flex-col items-center text-center px-4">
-               <div className="text-3xl md:text-4xl font-semibold text-white font-serif mb-2">{stat.value}</div>
-               <div className="text-[10px] uppercase tracking-wider text-white/60 font-medium">{stat.label}</div>
-             </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 8. EXPLORE BY CITY */}
-      {exploreLocations.length > 0 && (
-      <section className="container-wide section-gap">
-        <div className="text-center max-w-2xl mx-auto mb-8 sm:mb-10">
-          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{"Explore Locations"}</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">{"Find Properties by City"}</h2>
-        </div>
-        <div className="flex flex-wrap justify-center items-center gap-x-4 gap-y-3 sm:gap-x-6 sm:gap-y-4 max-w-4xl mx-auto font-medium">
-          {exploreLocations.map((loc: any, idx: number) => (
-            <div key={loc.id} className="flex items-center gap-x-4 sm:gap-x-6">
-              <Link
-                to={`/properties?city=${encodeURIComponent(loc.name)}`}
-                className="group text-sm sm:text-base text-muted-foreground hover:text-primary transition-colors duration-300 relative"
-              >
-                <span>{loc.name}</span>
-                <span className="absolute -bottom-1 left-0 w-full h-[1px] bg-primary scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left" />
-              </Link>
-              {idx < exploreLocations.length - 1 && (
-                <span className="text-primary/30 text-xs select-none">✦</span>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-      )}
-
-
-
-      {/* 10. INVESTMENT EDUCATION */}
-      <section className="container-wide section-gap">
-        <div className="max-w-3xl mx-auto text-center mb-16">
-          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">{"Education"}</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">{"How Fractional Ownership Works"}</h2>
-          <p className="mt-4 text-muted-foreground leading-relaxed">
-            {"We simplify real estate investing by dividing premium properties into affordable fractions, allowing you to build a diversified portfolio."}
-          </p>
-        </div>
-
-        <div className="grid gap-6 md:grid-cols-4">
-          {EDUCATION_STEPS.map((item, idx) => (
-            <div key={idx} className="relative p-6 rounded-2xl bg-card border border-border/40 shadow-soft hover-lift">
-              <div className="absolute -top-3 -left-3 h-9 w-9 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm border-2 border-background shadow-sm">
-                {item.step}
-              </div>
-              <h3 className="font-semibold text-foreground mt-4 mb-2">{item.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* 11. TESTIMONIALS */}
-      <section className="bg-primary/5 border-y border-border/40 py-20">
-        <div className="container-wide">
-          <div className="text-center mb-12">
-            <h2 className="font-serif text-3xl font-semibold text-foreground">{"What Our Clients Say"}</h2>
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Client Outcomes</span>
+            <h2 className="font-serif text-3xl font-semibold text-foreground">Buyer & Investor Success Stories</h2>
           </div>
           <div className="grid md:grid-cols-3 gap-8">
-            {TESTIMONIALS.map((item, idx) => (
-              <div key={idx} className="bg-card p-8 rounded-2xl border border-border/40 shadow-soft hover-lift">
-                <div className="flex gap-1 text-primary mb-4">
-                  {[1,2,3,4,5].map(i => <Star key={i} className="h-4 w-4 fill-current" />)}
+            {[
+              { quote: "Investing in Austin tech-hub condos fractionally has allowed me to diversify my portfolio out of equities into inflation-hedged assets. The yield reports are transparent and automatic.", author: "James T.", role: "Fractional Investor since 2024" },
+              { quote: "We bought our family home through Haven. The team handled physical showings, title insurance, and HOA clearance with zero hassle.", author: "Mrs. Sarah O.", role: "Homebuyer in Miami" },
+              { quote: "The escrow payment pathway gave me the confidence to send funds from out of state knowing the seller validation occurred before payout dispatch.", author: "Robert K.", role: "Out-of-State Buyer" }
+            ].map((item, idx) => (
+              <div key={idx} className="bg-card p-6 rounded-2xl border border-border/40 shadow-soft hover-lift flex flex-col justify-between">
+                <div>
+                  <div className="flex gap-1 text-primary mb-4">
+                    {[1,2,3,4,5].map(i => <Star key={i} className="h-3.5 w-3.5 fill-current" />)}
+                  </div>
+                  <p className="text-muted-foreground italic mb-6 leading-relaxed text-xs">"{item.quote}"</p>
                 </div>
-                <p className="text-muted-foreground italic mb-6 leading-relaxed text-sm">"{item.quote}"</p>
                 <div>
                   <h4 className="font-semibold text-foreground text-sm">{item.author}</h4>
                   <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">{item.role}</p>
@@ -448,15 +512,109 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 12. BLOG / MARKET INSIGHTS */}
-      <section className="container-wide section-gap">
-        <div className="section-header flex items-end justify-between mb-10">
-          <div>
-            <span className="section-label">{"Market Insights"}</span>
-            <h2 className="font-serif text-3xl font-semibold text-foreground">{"Latest News & Guides"}</h2>
+      {/* 7. SMART MARKET INTELLIGENCE */}
+      <section className="container-wide py-16">
+        <MarketIntelligence />
+      </section>
+
+      {/* 8. AGENT & DEVELOPER CREDIBILITY */}
+      <section className="bg-secondary py-16 text-white border-y border-secondary-foreground/10 relative overflow-hidden">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(184,134,11,0.1),transparent_50%)]" />
+        <div className="container-wide relative z-10">
+          <div className="text-center max-w-xl mx-auto mb-12">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Vetted Network</span>
+            <h2 className="font-serif text-3xl font-semibold">Agent & Developer Credibility</h2>
+            <p className="text-sm text-white/70 mt-2">We partner exclusively with licensed brokers and registered developers verified by state licensing boards.</p>
           </div>
-          <Button asChild variant="outline" className="hidden sm:inline-flex">
-            <Link to="/blog">{"View all articles"} <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            {[
+              { title: "Registered Developers", count: "18 Vetted Firms" },
+              { title: "Licensed Brokerages", count: "24 Certified Agencies" },
+              { title: "State License Cleared", count: "100% Board Audited" },
+              { title: "Escrow Secured Contracts", count: "Standard Legal Formats" }
+            ].map((c, idx) => (
+              <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-6">
+                <h4 className="text-lg font-serif font-bold">{c.count}</h4>
+                <p className="text-[10px] uppercase text-white/50 tracking-wider mt-1">{c.title}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 9. MARKETPLACE ECOSYSTEM */}
+      <section className="container-wide py-16">
+        <div className="text-center max-w-xl mx-auto mb-12">
+          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">E-Services</span>
+          <h2 className="font-serif text-3xl font-semibold text-foreground">Transaction Ecosystem Services</h2>
+        </div>
+        <div className="grid gap-6 md:grid-cols-4">
+          {[
+            { title: "Legal & Title Assistance", desc: "Expert land title searches and deed drafting support." },
+            { title: "Inspections & Audits", desc: "Independent structural, plumbing, and power audits." },
+            { title: "Facility Management", desc: "Ongoing maintenance, solar setups, and utility oversight." },
+            { title: "Moving & Logistics", desc: "Vetted moving partners to handle logistics securely." }
+          ].map((item, idx) => (
+            <div key={idx} className="p-5 border border-border/40 rounded-xl hover-lift bg-card shadow-sm">
+              <h3 className="font-serif text-base font-bold text-primary mb-2">{item.title}</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* 10. MOBILE APP & PLATFORM EXPANSION */}
+      <section className="bg-accent/25 border-y border-border/50 py-16">
+        <div className="container-wide flex flex-col lg:flex-row items-center justify-between gap-10">
+          <div className="max-w-xl text-left space-y-4">
+            <span className="text-xs font-semibold tracking-widest uppercase text-primary block">Seamless Access</span>
+            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Access Vetted Properties Anywhere</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Our platform is fully responsive and optimized for low-end Android mobile browsers and networks. Track your co-investments, schedule site tours, and download ownership certificates on the go.
+            </p>
+            <div className="flex items-center gap-4 text-xs font-bold text-foreground pt-2">
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Low-bandwidth optimize</span>
+              <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Instant PDF certificates</span>
+            </div>
+          </div>
+          <div className="w-full lg:w-96">
+            {/* Renders the AI Property Advisor directly on the page to show platform capability */}
+            <AIPropertyAdvisor />
+          </div>
+        </div>
+      </section>
+
+      {/* 11. FINAL CONVERSION CTA */}
+      <section className="container-tight section-gap">
+        <div className="glass-panel border border-border/40 rounded-3xl p-10 md:p-14 text-center shadow-lux relative overflow-hidden">
+          <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 bg-primary/10 rounded-full blur-3xl" />
+          
+          <div className="relative z-10 max-w-xl mx-auto space-y-6">
+            <h2 className="font-serif text-3xl font-semibold text-foreground">Smarter Transactions Await</h2>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Ready to schedule a physical showing, inspect legal records, or co-invest? Vetted real estate professionals are standing by.
+            </p>
+            <div className="flex flex-col sm:flex-row gap-3 justify-center">
+              <Button asChild size="lg" className="bg-primary text-white hover:bg-primary/95 px-8 font-semibold text-xs uppercase tracking-wider h-12">
+                <Link to="/properties">Explore Verified Properties</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="border-border bg-card hover:bg-secondary px-8 font-semibold text-xs uppercase tracking-wider h-12">
+                <Link to="/agents">Talk to an Advisor</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* 12. BLOG / MARKET INSIGHTS */}
+      <section className="container-wide py-12">
+        <div className="section-header flex items-end justify-between mb-8">
+          <div>
+            <span className="section-label">Market Insights</span>
+            <h2 className="font-serif text-3xl font-semibold text-foreground">Latest News & Guides</h2>
+          </div>
+          <Button asChild variant="outline" className="hidden sm:inline-flex h-10">
+            <Link to="/blog" className="font-semibold text-xs uppercase tracking-wider">View all articles</Link>
           </Button>
         </div>
         <BlogTeaser />
@@ -470,12 +628,12 @@ export default function Home() {
           
           <div className="relative z-10 max-w-xl mx-auto">
             <Mail className="h-10 w-10 text-primary mx-auto mb-6" />
-            <h2 className="font-serif text-3xl font-semibold text-foreground mb-4">{"Stay Ahead of the Market"}</h2>
+            <h2 className="font-serif text-3xl font-semibold text-foreground mb-4">Stay Ahead of the Market</h2>
             <p className="text-sm text-muted-foreground mb-8 leading-relaxed">
-              {"Subscribe to our newsletter for exclusive property alerts, investment opportunities, and professional market analysis delivered straight to your inbox."}
+              Subscribe to our newsletter for exclusive property alerts, investment opportunities, and professional market analysis.
             </p>
             <NewsletterForm />
-            <p className="text-[11px] text-muted-foreground mt-4">{"We respect your privacy. No spam, ever."}</p>
+            <p className="text-[11px] text-muted-foreground mt-4">We respect your privacy. No spam, ever.</p>
           </div>
         </div>
       </section>
@@ -483,7 +641,6 @@ export default function Home() {
       {/* 14. PARTNER / TRUST STRIP */}
       <section className="border-t border-border/50 py-10 bg-background">
          <div className="container-wide flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
-           {/* Realistic placeholders for partners */}
            <div className="font-serif text-xl font-bold tracking-tighter">SECURE<span className="font-light">PAY</span></div>
            <div className="font-sans text-xl font-black tracking-widest uppercase">VaultTrust</div>
            <div className="font-serif text-xl font-semibold flex items-center gap-1"><ShieldCheck className="h-5 w-5"/> LegalVerify</div>

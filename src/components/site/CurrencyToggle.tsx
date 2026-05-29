@@ -6,9 +6,8 @@ const CURRENCIES = [
   { code: "USD", label: "USD" },
   { code: "EUR", label: "EUR" },
   { code: "GBP", label: "GBP" },
-  { code: "NGN", label: "NGN" },
-  { code: "ZAR", label: "ZAR" },
-  { code: "AED", label: "AED" },
+  { code: "CAD", label: "CAD" },
+  { code: "AUD", label: "AUD" },
 ];
 
 export function CurrencyToggle() {

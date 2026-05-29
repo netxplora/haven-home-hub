@@ -22,7 +22,7 @@ BEGIN
             v_admin_id,
             'system',
             'Property Sold: Documents Required',
-            'User ' || COALESCE(v_user_email, 'Unknown') || ' has completed the purchase of "' || COALESCE(v_prop_title, 'Property') || '". Please prepare and upload their C of O and Deed of Assignment.',
+            'User ' || COALESCE(v_user_email, 'Unknown') || ' has completed the purchase of "' || COALESCE(v_prop_title, 'Property') || '". Please prepare and upload their Title Insurance and Escrow Instructions.',
             '/admin/documents',
             'financial',
             'high'

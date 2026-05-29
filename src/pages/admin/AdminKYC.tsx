@@ -382,13 +382,21 @@ export function AdminKYC() {
                                         toast({ title: "Popup Blocked", description: "Please allow popups to view documents.", variant: "destructive" });
                                         return;
                                       }
-                                      const { data, error } = await supabase.storage.from("kyc_documents").createSignedUrl(path, 60);
-                                      if (error) {
+                                      try {
+                                        const { data, error } = await supabase.storage.from("kyc_documents").createSignedUrl(path, 3600);
+                                        if (error) throw error;
+                                        if (data?.signedUrl) {
+                                          let finalUrl = data.signedUrl;
+                                          if (finalUrl.startsWith('/')) {
+                                            finalUrl = import.meta.env.VITE_SUPABASE_URL + finalUrl;
+                                          }
+                                          newWindow.location.href = finalUrl;
+                                        } else {
+                                          throw new Error("No URL returned");
+                                        }
+                                      } catch (err: any) {
                                         newWindow.close();
-                                        toast({ title: "Failed to open document", description: error.message, variant: "destructive" });
-                                      }
-                                      else if (data?.signedUrl) {
-                                        newWindow.location.href = data.signedUrl;
+                                        toast({ title: "Failed to open document", description: err.message || "Unknown error", variant: "destructive" });
                                       }
                                     }}
                                   >
@@ -423,13 +431,21 @@ export function AdminKYC() {
                                         toast({ title: "Popup Blocked", description: "Please allow popups to view documents.", variant: "destructive" });
                                         return;
                                       }
-                                      const { data, error } = await supabase.storage.from("kyc_documents").createSignedUrl(path, 60);
-                                      if (error) {
+                                      try {
+                                        const { data, error } = await supabase.storage.from("kyc_documents").createSignedUrl(path, 3600);
+                                        if (error) throw error;
+                                        if (data?.signedUrl) {
+                                          let finalUrl = data.signedUrl;
+                                          if (finalUrl.startsWith('/')) {
+                                            finalUrl = import.meta.env.VITE_SUPABASE_URL + finalUrl;
+                                          }
+                                          newWindow.location.href = finalUrl;
+                                        } else {
+                                          throw new Error("No URL returned");
+                                        }
+                                      } catch (err: any) {
                                         newWindow.close();
-                                        toast({ title: "Failed to open document", description: error.message, variant: "destructive" });
-                                      }
-                                      else if (data?.signedUrl) {
-                                        newWindow.location.href = data.signedUrl;
+                                        toast({ title: "Failed to open document", description: err.message || "Unknown error", variant: "destructive" });
                                       }
                                     }}
                                   >

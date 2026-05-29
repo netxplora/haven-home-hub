@@ -175,6 +175,27 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
     }
   };
 
+  const handleViewDocument = async (path: string) => {
+    if (!path) return;
+    if (path.startsWith('http')) {
+      window.open(path, '_blank');
+      return;
+    }
+    const newWindow = window.open('about:blank', '_blank');
+    if (!newWindow) {
+      toast({ title: "Popup Blocked", description: "Please allow popups to view documents.", variant: "destructive" });
+      return;
+    }
+    const { data, error } = await supabase.storage.from("kyc_documents").createSignedUrl(path, 60);
+    if (error) {
+      newWindow.close();
+      toast({ title: "Failed to open document", description: error.message, variant: "destructive" });
+    }
+    else if (data?.signedUrl) {
+      newWindow.location.href = data.signedUrl;
+    }
+  };
+
   const handleAddRole = async (role: string) => {
     if (!selectedUserId) return;
     const { error } = await supabase.from("user_roles").insert({ user_id: selectedUserId, role: role as any });
@@ -397,7 +418,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                           <span className="text-sm font-medium">Identity Document</span>
                         </div>
                         {profileData.id_document_url ? (
-                          <a href={profileData.id_document_url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1"><Eye className="h-3 w-3"/> View</a>
+                          <button onClick={() => handleViewDocument(profileData.id_document_url)} className="text-xs text-primary hover:underline flex items-center gap-1"><Eye className="h-3 w-3"/> View</button>
                         ) : <span className="text-xs text-muted-foreground">Not uploaded</span>}
                       </div>
                       <div className="flex items-center justify-between p-3 rounded-lg border bg-secondary/10">
@@ -406,7 +427,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                           <span className="text-sm font-medium">Proof of Address</span>
                         </div>
                         {profileData.proof_of_address_url ? (
-                          <a href={profileData.proof_of_address_url} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1"><Eye className="h-3 w-3"/> View</a>
+                          <button onClick={() => handleViewDocument(profileData.proof_of_address_url)} className="text-xs text-primary hover:underline flex items-center gap-1"><Eye className="h-3 w-3"/> View</button>
                         ) : <span className="text-xs text-muted-foreground">Not uploaded</span>}
                       </div>
                     </div>

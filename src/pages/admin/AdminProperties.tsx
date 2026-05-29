@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Building2, Hash, Calendar, Car, Bed, Bath, Search, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus, Pencil, Trash2, Building2, Hash, Calendar, Car, Bed, Bath, Search, ArrowUpDown, ChevronLeft, ChevronRight, ShieldAlert, Link as LinkIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -24,6 +24,9 @@ const ITEMS_PER_PAGE = 10;
 export function AdminProperties() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
+  const [importUrl, setImportUrl] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
   const [editing, setEditing] = useState<any>(null);
 
   /* Search, filter, sort state */
@@ -101,6 +104,22 @@ export function AdminProperties() {
   const paginated = filtered.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
   /* Reset page when filters change */
+  const handleImport = async () => {
+    if (!importUrl) return;
+    setIsImporting(true);
+    try {
+      const { error } = await supabase.from("extraction_jobs").insert([{ url: importUrl }]);
+      if (error) throw error;
+      toast({ title: "Import Job Queued", description: "The property is being extracted in the background. It will appear here once complete." });
+      setImportOpen(false);
+      setImportUrl("");
+    } catch (error: any) {
+      toast({ title: "Import Failed", description: error.message, variant: "destructive" });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   const handleFilterChange = (setter: Function, value: string) => {
     setter(value);
     setCurrentPage(1);
@@ -124,12 +143,28 @@ export function AdminProperties() {
           <h2 className="font-serif text-2xl font-bold">Properties</h2>
           <p className="text-sm text-muted-foreground">Manage your real estate listings and availability. {filtered.length} results.</p>
         </div>
-        <Button 
-          onClick={() => { setEditing(null); setOpen(true); }} 
-          className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all active:scale-[0.98] rounded-xl font-bold"
-        >
-          <Plus className="mr-2 h-4 w-4" /> New Property
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => handleFilterChange(setFilterStatus, "pending")}
+            className="border-amber-500/30 text-amber-600 hover:bg-amber-500/10 font-bold shadow-sm rounded-xl"
+          >
+            <ShieldAlert className="mr-2 h-4 w-4" /> Verification Queue
+          </Button>
+          <Button 
+            variant="secondary"
+            onClick={() => setImportOpen(true)} 
+            className="shadow-sm rounded-xl font-bold bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+          >
+            <LinkIcon className="mr-2 h-4 w-4" /> Import URL
+          </Button>
+          <Button 
+            onClick={() => { setEditing(null); setOpen(true); }} 
+            className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all active:scale-[0.98] rounded-xl font-bold"
+          >
+            <Plus className="mr-2 h-4 w-4" /> New Property
+          </Button>
+        </div>
       </div>
 
       {/* Search + Filter Bar */}
@@ -360,6 +395,33 @@ export function AdminProperties() {
             agents={agents} 
             onClose={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["admin-properties"] }); }} 
           />
+        </DialogContent>
+      </Dialog>
+      {/* Import via URL Dialog */}
+      <Dialog open={importOpen} onOpenChange={setImportOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Import Property via URL</DialogTitle>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Paste a link to a listing on PropertyPro, Zillow, or supported platforms. Our AI extraction engine will automatically parse the images, location, features, and price and draft a new property.
+            </p>
+            <div className="space-y-2">
+              <Label>Listing URL</Label>
+              <Input
+                placeholder="https://www.propertypro.ng/property/..."
+                value={importUrl}
+                onChange={(e) => setImportUrl(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setImportOpen(false)}>Cancel</Button>
+            <Button onClick={handleImport} disabled={!importUrl || isImporting}>
+              {isImporting ? "Queueing..." : "Start Import"}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
