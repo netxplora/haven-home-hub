@@ -22,7 +22,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl bg-[#fafafa] text-black p-0 overflow-hidden print:!transform-none print:!fixed print:!inset-0 print:!w-full print:!max-w-none print:!h-auto print:!max-h-none print:!overflow-visible print:!shadow-none print:!border-none print:!bg-white sm:rounded-xl border border-gray-200 shadow-2xl">
+      <DialogContent className="max-w-3xl bg-[#fafafa] text-black p-0 overflow-hidden max-h-[90vh] overflow-y-auto print:!transform-none print:!fixed print:!inset-0 print:!w-full print:!max-w-none print:!h-auto print:!max-h-none print:!overflow-visible print:!shadow-none print:!border-none print:!bg-white sm:rounded-xl border border-gray-200 shadow-2xl">
         <style>{`
           @media print {
             body * {
@@ -85,7 +85,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
               {/* Investor Information */}
               <div>
-                <h3 className="text-xs font-bold text-rose-800 uppercase tracking-wider border-b-2 border-rose-100 pb-2 mb-4 inline-block">Investor Information</h3>
+                <h3 className="text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20 pb-2 mb-4 inline-block">Investor Information</h3>
                 <div className="space-y-3">
                   <div>
                     <p className="text-[10px] uppercase text-gray-400 font-bold">Account Name</p>
@@ -104,20 +104,20 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
 
               {/* Payment Verification */}
               <div>
-                <h3 className="text-xs font-bold text-rose-800 uppercase tracking-wider border-b-2 border-rose-100 pb-2 mb-4 inline-block">Payment Verification</h3>
-                <div className="space-y-3 p-4 bg-rose-50/50 rounded-lg border border-rose-100/50">
+                <h3 className="text-xs font-bold text-primary uppercase tracking-wider border-b-2 border-primary/20 pb-2 mb-4 inline-block">Payment Verification</h3>
+                <div className="space-y-3 p-4 bg-primary/10/50 rounded-lg border border-primary/20/50">
                   <div className="flex justify-between items-center">
                     <p className="text-[10px] uppercase text-gray-500 font-bold">Status</p>
-                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isVerified ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>
+                    <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${isVerified ? 'bg-primary/15 text-primary' : 'bg-amber-100 text-amber-700'}`}>
                       {isVerified && <CheckCircle2 className="h-3.5 w-3.5" />}
                       {receipt.status.toUpperCase()}
                     </div>
                   </div>
-                  <div className="flex justify-between items-center border-t border-rose-100/50 pt-2">
+                  <div className="flex justify-between items-center border-t border-primary/20/50 pt-2">
                     <p className="text-[10px] uppercase text-gray-500 font-bold">Method</p>
                     <p className="text-sm font-semibold text-gray-800 capitalize">{receipt.payment_method?.replace("_", " ")}</p>
                   </div>
-                  <div className="flex justify-between items-center border-t border-rose-100/50 pt-2">
+                  <div className="flex justify-between items-center border-t border-primary/20/50 pt-2">
                     <p className="text-[10px] uppercase text-gray-500 font-bold">Reference</p>
                     <p className="text-xs font-mono font-medium text-gray-800 truncate max-w-[150px]">{receipt.transaction_reference}</p>
                   </div>
@@ -140,7 +140,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                   )}
                   <div className="flex-1 w-full">
                     <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                      <span className="text-[10px] font-bold text-rose-700 uppercase tracking-widest bg-rose-50 px-2 py-0.5 rounded border border-rose-100">
+                      <span className="text-[10px] font-bold text-primary uppercase tracking-widest bg-primary/10 px-2 py-0.5 rounded border border-primary/20">
                         {meta.purchase_type || (receipt.type === 'investment' ? 'Fractional Investment' : receipt.type === 'reservation' ? 'Reservation' : 'Asset Purchase')}
                       </span>
                       {meta.property_type && (
@@ -248,7 +248,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                     )}
                     
                     {/* The actual payment recorded */}
-                    <tr className="bg-rose-50/20">
+                    <tr className="bg-primary/10/20">
                       <td className="px-5 py-4">
                         <p className="font-semibold text-gray-800">
                           {receipt.type === 'installment' ? 'Installment Payment' : 
@@ -301,12 +301,12 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                 )}
                 
                 {meta.certificate_id && (
-                  <div className="p-4 border border-rose-200 rounded-lg bg-rose-50 flex items-start gap-3">
-                    <ShieldCheck className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+                  <div className="p-4 border border-primary/25 rounded-lg bg-primary/10 flex items-start gap-3">
+                    <ShieldCheck className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                     <div>
-                      <p className="text-[10px] font-bold text-rose-800 uppercase tracking-widest mb-1">Digital Certificate</p>
-                      <p className="text-sm font-mono font-bold text-rose-900">{meta.certificate_id}</p>
-                      <p className="text-xs text-rose-700 mt-0.5">Ownership registered</p>
+                      <p className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1">Digital Certificate</p>
+                      <p className="text-sm font-mono font-bold text-primary">{meta.certificate_id}</p>
+                      <p className="text-xs text-primary mt-0.5">Ownership registered</p>
                     </div>
                   </div>
                 )}

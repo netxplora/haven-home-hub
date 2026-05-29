@@ -85,7 +85,7 @@ export function AdminAgents() {
               </div>
               {a.user_id && (
                 <span title="Linked to user account">
-                  <Shield className="h-3 w-3 text-rose-500" />
+                  <Shield className="h-3 w-3 text-primary" />
                 </span>
               )}
             </div>

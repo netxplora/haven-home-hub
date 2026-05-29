@@ -431,7 +431,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
               <div className="pt-6 border-t border-border/50 space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold">Dividends & ROI</h4>
-                  <Badge variant="outline" className="bg-rose-500/10 text-rose-600 border-rose-500/20 font-bold">
+                  <Badge variant="outline" className="bg-primary/100/10 text-primary border-primary/20 font-bold">
                     Total: {formatMoney(propertyReturns.reduce((sum, r) => sum + Number(r.amount_received), 0), currency)}
                   </Badge>
                 </div>
@@ -446,7 +446,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
                           Received on {format(new Date(r.distribution_date), "MMM dd, yyyy")}
                         </p>
                       </div>
-                      <p className="font-semibold text-sm text-rose-600">
+                      <p className="font-semibold text-sm text-primary">
                         +{formatMoney(Number(r.amount_received), currency)}
                       </p>
                     </div>

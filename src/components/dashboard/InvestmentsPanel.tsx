@@ -284,7 +284,7 @@ export function InvestmentsPanel() {
                         {returnsByProperty[inv.property_id] > 0 && (
                           <div>
                             <p className="text-[10px] text-muted-foreground uppercase font-medium">Dividends</p>
-                            <p className="font-serif font-bold text-rose-600">
+                            <p className="font-serif font-bold text-primary">
                               {formatMoney(returnsByProperty[inv.property_id], inv.investment_properties?.currency ?? "USD")}
                             </p>
                           </div>
@@ -398,7 +398,7 @@ export function InvestmentsPanel() {
                              <p className="font-bold text-foreground">{formatMoney(total)}</p>
                              <p className="text-[10px] text-muted-foreground/60 font-medium">Expected: {inv.investment_properties?.projected_return_min}% p.a.</p>
                              {returnsByProperty[inv.property_id] > 0 && (
-                               <p className="text-[10px] text-rose-600 font-bold mt-0.5">
+                               <p className="text-[10px] text-primary font-bold mt-0.5">
                                  Dividends: {formatMoney(returnsByProperty[inv.property_id], inv.investment_properties?.currency ?? "USD")}
                                </p>
                              )}
@@ -508,7 +508,7 @@ function InvestmentGridCard({ investment, dividends = 0, onSelect }: { investmen
           </div>
 
           {dividends > 0 && (
-             <div className="bg-rose-500/5 border border-rose-500/10 rounded-xl p-3 flex justify-between items-center text-xs">
+             <div className="bg-primary/100/5 border border-rose-500/10 rounded-xl p-3 flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-medium">Dividends Received</span>
                 <span className="font-bold text-yellow-600">{formatMoney(dividends, investment.investment_properties?.currency ?? "USD")}</span>
              </div>

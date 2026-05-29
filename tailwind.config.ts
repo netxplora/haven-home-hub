@@ -64,9 +64,9 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        sans: ['"DM Sans"', 'sans-serif'],
-        serif: ['"Red Hat Display"', 'sans-serif'],
-        mono: ['"Fira Code"', 'monospace'],
+        sans: ['"Inter"', '"Roboto"', 'sans-serif'],
+        serif: ['"Poppins"', 'sans-serif'],
+        mono: ['"Roboto Mono"', 'monospace'],
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',

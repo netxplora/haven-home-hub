@@ -55,9 +55,9 @@ function getPoiColorAndIcon(type: string) {
   }
   if (t.includes("hospital") || t.includes("clinic") || t.includes("medical") || t.includes("health")) {
     return {
-      bg: "bg-rose-600",
-      text: "text-rose-600",
-      border: "border-rose-200",
+      bg: "bg-primary",
+      text: "text-primary",
+      border: "border-primary/25",
       fill: "hsl(346, 77%, 50%)",
       icon: "ShieldAlert"
     };

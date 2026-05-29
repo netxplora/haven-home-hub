@@ -290,16 +290,16 @@ export function FractionalPaymentDialog({
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-2xl p-0 overflow-hidden border-none bg-background shadow-lux flex flex-col max-h-[95vh] rounded-2xl md:max-h-[90vh]">
+      <DialogContent className="max-w-4xl p-0 overflow-hidden border border-border bg-background shadow-lux max-h-[90vh] overflow-y-auto flex flex-col rounded-2xl md:max-h-[90vh]">
         {/* Header Block with Premium Aesthetics */}
         <DialogHeader className="p-6 md:p-8 bg-gradient-to-br from-rose-500/5 via-primary/5 to-background border-b border-border/40 shrink-0">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-xl bg-rose-600/10 flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5 text-rose-600" />
+              <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                <ShieldCheck className="h-5 w-5 text-primary" />
               </div>
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-rose-600 font-bold">Secure Gate</span>
+                <span className="text-[10px] uppercase tracking-wider text-primary font-bold">Secure Gate</span>
                 <DialogTitle className="font-serif text-2xl font-bold text-foreground">
                   {step === "summary" && "Investment Summary"}
                   {step === "acknowledgement" && "Terms Agreement"}
@@ -319,15 +319,15 @@ export function FractionalPaymentDialog({
                     <span 
                       className={cn(
                         "h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-300",
-                        i < activeIdx ? "bg-rose-600 text-white" :
-                        i === activeIdx ? "bg-rose-600 text-white shadow-sm font-extrabold ring-4 ring-rose-600/15" :
+                        i < activeIdx ? "bg-primary text-white" :
+                        i === activeIdx ? "bg-primary text-white shadow-sm font-extrabold ring-4 ring-rose-600/15" :
                         "bg-muted text-muted-foreground"
                       )}
                     >
                       {i < activeIdx ? <Check className="h-3 w-3" /> : i + 1}
                     </span>
                     {i < 4 && (
-                      <span className={cn("h-[2px] w-4 transition-all duration-300", i < activeIdx ? "bg-rose-600" : "bg-muted")} />
+                      <span className={cn("h-[2px] w-4 transition-all duration-300", i < activeIdx ? "bg-primary" : "bg-muted")} />
                     )}
                   </div>
                 ))}
@@ -336,7 +336,7 @@ export function FractionalPaymentDialog({
             {step !== "confirm" && (
               <div className="md:hidden flex items-center justify-between text-xs border border-border bg-accent/40 rounded-xl p-2.5">
                 <span className="font-medium text-muted-foreground">Progress Checklist</span>
-                <span className="font-bold text-rose-600 bg-rose-500/5 px-2 py-0.5 rounded-lg border border-rose-500/10">Step {activeIdx + 1} of 5</span>
+                <span className="font-bold text-primary bg-primary/100/5 px-2 py-0.5 rounded-lg border border-rose-500/10">Step {activeIdx + 1} of 5</span>
               </div>
             )}
           </div>
@@ -348,8 +348,8 @@ export function FractionalPaymentDialog({
           {/* STEP 1: SUMMARY */}
           {step === "summary" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-xl">
-                <p className="text-xs md:text-sm text-rose-800 dark:text-rose-300 leading-relaxed">
+              <div className="p-4 bg-primary/100/5 border border-rose-500/10 rounded-xl">
+                <p className="text-xs md:text-sm text-primary dark:text-rose-300 leading-relaxed">
                   You are about to make a fractional ownership investment payment for <strong className="font-semibold">{property.title}</strong>. 
                   Purchased fractional units grant legal ownership. Projected ROI yields begin accumulating post-subscription completion. 
                   All updates will propagate live to your dashboard.
@@ -362,10 +362,10 @@ export function FractionalPaymentDialog({
                     <img src={property.cover_image_url} alt={property.title} className="h-full w-full object-cover" />
                   </div>
                   <div>
-                    <span className="text-[9px] uppercase tracking-wider bg-rose-600/10 text-rose-600 px-2 py-0.5 rounded-md font-bold">{property.property_category || "Fractional Real Estate"}</span>
+                    <span className="text-[9px] uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">{property.property_category || "Fractional Real Estate"}</span>
                     <h3 className="font-serif font-bold text-lg text-foreground mt-1 line-clamp-1">{property.title}</h3>
                     <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                      <span className="h-1.5 w-1.5 rounded-full bg-rose-600" />
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" />
                       {property.location}, {property.city}
                     </p>
                   </div>
@@ -382,7 +382,7 @@ export function FractionalPaymentDialog({
                   </div>
                   <div>
                     <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Expected Return</span>
-                    <span className="font-bold text-rose-600 text-base mt-0.5 block">{property.projected_return_min}% - {property.projected_return_max}% p.a.</span>
+                    <span className="font-bold text-primary text-base mt-0.5 block">{property.projected_return_min}% - {property.projected_return_max}% p.a.</span>
                   </div>
                   <div>
                     <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Total Purchase Value</span>
@@ -410,7 +410,7 @@ export function FractionalPaymentDialog({
                     <span className="font-bold text-foreground">{pct}% subscribed</span>
                   </div>
                   <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
-                    <div className="h-full bg-rose-600 rounded-full" style={{ width: `${pct}%` }} />
+                    <div className="h-full bg-primary rounded-full" style={{ width: `${pct}%` }} />
                   </div>
                   <div className="flex justify-between items-center text-[10px] text-muted-foreground mt-1.5 font-medium">
                     <span>{remainingUnits.toLocaleString()} units remaining</span>
@@ -439,25 +439,25 @@ export function FractionalPaymentDialog({
                 
                 <div className="p-5 space-y-4 max-h-[30vh] overflow-y-auto text-xs text-muted-foreground leading-relaxed custom-scrollbar divide-y divide-border/60">
                   <div className="pb-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Fractional Asset Allocation</strong>: I understand I am purchasing legal fractional titles inside the property coordinates. Units are distributed based on capital contribution records.
                     </p>
                   </div>
                   <div className="py-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Capital Hold and Illiquidity</strong>: I acknowledge that fractional assets represent long-term holdings of {property.holding_period_months} months. Early redemption options are restricted and subject to secondary market regulations.
                     </p>
                   </div>
                   <div className="py-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Pending Administrative Verification</strong>: Payments undergo strict human audit. Accounts remain in a `payment_under_review` (Pending Confirmation) state until transaction receipts are cleared.
                     </p>
                   </div>
                   <div className="pt-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Growth Dynamics</strong>: Property valuations are dynamic. Rental returns fluctuate with market updates and management efficiency.
                     </p>
@@ -468,14 +468,14 @@ export function FractionalPaymentDialog({
               <label 
                 className={cn(
                   "flex items-start gap-3.5 p-4 border rounded-2xl cursor-pointer hover:bg-accent/40 transition-all",
-                  ackChecked ? "border-rose-600 bg-rose-500/5 shadow-sm" : "border-border"
+                  ackChecked ? "border-rose-600 bg-primary/100/5 shadow-sm" : "border-border"
                 )}
               >
                 <Checkbox 
                   id="modal-terms-ack" 
                   checked={ackChecked} 
                   onCheckedChange={(c) => setAckChecked(!!c)} 
-                  className="mt-1 border-muted-foreground/40 data-[state=checked]:bg-rose-600 data-[state=checked]:border-rose-600" 
+                  className="mt-1 border-muted-foreground/40 data-[state=checked]:bg-primary data-[state=checked]:border-rose-600" 
                 />
                 <div>
                   <p className="font-bold text-sm text-foreground">I acknowledge and authorize terms</p>
@@ -493,12 +493,12 @@ export function FractionalPaymentDialog({
               {/* Buy Digital Currency assistance section */}
               {method === "third_party_provider" && (
                 <div className="space-y-4 animate-in fade-in duration-300">
-                  <div className="p-4 bg-rose-500/5 border border-rose-500/10 rounded-xl">
-                    <h5 className="font-bold text-xs text-rose-800 dark:text-rose-300 flex items-center gap-1.5">
+                  <div className="p-4 bg-primary/100/5 border border-rose-500/10 rounded-xl">
+                    <h5 className="font-bold text-xs text-primary dark:text-rose-300 flex items-center gap-1.5">
                       <Wallet className="h-4 w-4" />
                       Buy Digital Currency Assistance Flow
                     </h5>
-                    <p className="text-[11px] text-rose-800/80 leading-relaxed mt-1">
+                    <p className="text-[11px] text-primary/80 leading-relaxed mt-1">
                       If you do not hold digital currency in a personal wallet, purchase cryptocurrency instantly with your credit/debit card from our licensed partners. Once purchased, send the assets directly to the address provided on the next step.
                     </p>
                   </div>
@@ -508,7 +508,7 @@ export function FractionalPaymentDialog({
                       <div>
                         <div className="flex justify-between items-start">
                           <span className="font-bold text-sm text-foreground">MoonPay</span>
-                          <span className="text-[9px] bg-rose-600/10 text-rose-600 px-1.5 py-0.5 rounded font-bold">Recommended</span>
+                          <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">Recommended</span>
                         </div>
                         <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
                           Supported cards: Visa, Mastercard, Apple Pay, Google Pay. Global support covering 150+ countries. Fast clearance times.
@@ -544,22 +544,22 @@ export function FractionalPaymentDialog({
                     <span className="text-xs font-bold text-foreground block tracking-wider uppercase">How to Purchase & Complete Investment:</span>
                     <div className="relative pl-5 border-l border-border/80 space-y-4 text-xs text-muted-foreground">
                       <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-rose-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">1</span>
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">1</span>
                         <p className="font-semibold text-foreground">Choose preferred provider</p>
                         <p className="text-[10px] mt-0.5">Click "Visit Provider" above to start purchase flow on their verified portal.</p>
                       </div>
                       <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-rose-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">2</span>
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">2</span>
                         <p className="font-semibold text-foreground">Purchase digital assets with credit/debit card</p>
                         <p className="text-[10px] mt-0.5">Buy the exact amount needed: {paymentConfigs.supported_currency || 'USDT'}.</p>
                       </div>
                       <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-rose-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">3</span>
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">3</span>
                         <p className="font-semibold text-foreground">Transfer digital currency to platform wallet</p>
                         <p className="text-[10px] mt-0.5">Input the platform wallet address displayed on the next step as destination.</p>
                       </div>
                       <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-rose-600 border border-background flex items-center justify-center text-[8px] text-white font-bold">4</span>
+                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">4</span>
                         <p className="font-semibold text-foreground">Return here and submit details</p>
                         <p className="text-[10px] mt-0.5">Enter hash/reference key and upload screenshot confirmation receipt.</p>
                       </div>
@@ -611,11 +611,11 @@ export function FractionalPaymentDialog({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs transition-all hover:bg-rose-600/5 hover:border-rose-600/40"
+                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs transition-all hover:bg-primary/5 hover:border-rose-600/40"
                           onClick={() => handleCopyText(String(paymentData?.cryptoAmount), "crypto_amount")}
                         >
                           {copyStates["crypto_amount"] ? (
-                            <><Check className="h-4 w-4 text-rose-600" /> Copied</>
+                            <><Check className="h-4 w-4 text-primary" /> Copied</>
                           ) : (
                             <><Copy className="h-3.5 w-3.5" /> Copy Amount</>
                           )}
@@ -635,11 +635,11 @@ export function FractionalPaymentDialog({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs shrink-0 transition-all hover:bg-rose-600/5 hover:border-rose-600/40"
+                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs shrink-0 transition-all hover:bg-primary/5 hover:border-rose-600/40"
                           onClick={() => handleCopyText(String(paymentData?.address), "crypto_address")}
                         >
                           {copyStates["crypto_address"] ? (
-                            <><Check className="h-4 w-4 text-rose-600" /> Copied</>
+                            <><Check className="h-4 w-4 text-primary" /> Copied</>
                           ) : (
                             <><Copy className="h-3.5 w-3.5" /> Copy Address</>
                           )}
@@ -679,7 +679,7 @@ export function FractionalPaymentDialog({
                           className="h-8 w-8 rounded-lg"
                           onClick={() => handleCopyText(paymentConfigs.account_number, "bank_acc")}
                         >
-                          {copyStates["bank_acc"] ? <Check className="h-4 w-4 text-rose-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                          {copyStates["bank_acc"] ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
                         </Button>
                       </div>
                     </div>
@@ -694,22 +694,22 @@ export function FractionalPaymentDialog({
                           className="h-8 w-8 rounded-lg"
                           onClick={() => handleCopyText(paymentConfigs.routing_number || paymentConfigs.swift_code, "bank_routing")}
                         >
-                          {copyStates["bank_routing"] ? <Check className="h-4 w-4 text-rose-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                          {copyStates["bank_routing"] ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
                         </Button>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-[1fr_2fr] gap-4 items-center pt-1 text-xs">
-                      <span className="font-semibold text-rose-600 uppercase tracking-wider text-[10px]">Payment Reference</span>
+                      <span className="font-semibold text-primary uppercase tracking-wider text-[10px]">Payment Reference</span>
                       <div className="flex items-center justify-end gap-2">
-                        <span className="font-mono font-extrabold text-rose-600 bg-rose-500/5 border border-rose-500/10 px-2 py-0.5 rounded-md">{paymentData?.reference}</span>
+                        <span className="font-mono font-extrabold text-primary bg-primary/100/5 border border-rose-500/10 px-2 py-0.5 rounded-md">{paymentData?.reference}</span>
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           className="h-8 w-8 rounded-lg"
                           onClick={() => handleCopyText(paymentData?.reference || "", "bank_ref")}
                         >
-                          {copyStates["bank_ref"] ? <Check className="h-4 w-4 text-rose-600" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
+                          {copyStates["bank_ref"] ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-3.5 w-3.5 text-muted-foreground" />}
                         </Button>
                       </div>
                     </div>
@@ -722,19 +722,19 @@ export function FractionalPaymentDialog({
                 <h5 className="font-bold text-xs text-foreground tracking-wider uppercase">Onboarding Checklist:</h5>
                 <div className="space-y-3.5 text-xs text-muted-foreground leading-normal">
                   <div className="flex gap-3.5 items-start">
-                    <span className="h-5.5 w-5.5 bg-rose-600/15 text-rose-600 border border-rose-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">1</span>
+                    <span className="h-5.5 w-5.5 bg-primary/15 text-primary border border-primary/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">1</span>
                     <p>Initiate transfer with exact balance: <strong className="text-foreground">{formatMoney(currentAmount, property.currency)}</strong>.</p>
                   </div>
                   <div className="flex gap-3.5 items-start">
-                    <span className="h-5.5 w-5.5 bg-rose-600/15 text-rose-600 border border-rose-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">2</span>
+                    <span className="h-5.5 w-5.5 bg-primary/15 text-primary border border-primary/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">2</span>
                     <p>Ensure wire transfers contain the payment reference code: <strong className="font-mono text-foreground font-bold">{paymentData?.reference}</strong> inside the transfer narrative field.</p>
                   </div>
                   <div className="flex gap-3.5 items-start">
-                    <span className="h-5.5 w-5.5 bg-rose-600/15 text-rose-600 border border-rose-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">3</span>
+                    <span className="h-5.5 w-5.5 bg-primary/15 text-primary border border-primary/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">3</span>
                     <p>Capture screenshot or export PDF receipt once transaction is finalized.</p>
                   </div>
                   <div className="flex gap-3.5 items-start">
-                    <span className="h-5.5 w-5.5 bg-rose-600/15 text-rose-600 border border-rose-500/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">4</span>
+                    <span className="h-5.5 w-5.5 bg-primary/15 text-primary border border-primary/20 rounded-full flex items-center justify-center font-bold shrink-0 text-[10px]">4</span>
                     <p>Click "I have made the payment" to upload confirmation documentation.</p>
                   </div>
                 </div>
@@ -774,7 +774,7 @@ export function FractionalPaymentDialog({
                     <div className="aspect-[16/9] w-full flex items-center justify-center p-3">
                       {proofUrl.endsWith('.pdf') ? (
                         <div className="flex flex-col items-center gap-2">
-                          <Eye className="h-10 w-10 text-rose-600" />
+                          <Eye className="h-10 w-10 text-primary" />
                           <span className="font-bold text-xs text-foreground">PDF Receipt Loaded</span>
                         </div>
                       ) : (
@@ -782,7 +782,7 @@ export function FractionalPaymentDialog({
                       )}
                     </div>
                     <div className="absolute inset-0 bg-background/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Button variant="outline" className="rounded-xl font-semibold border-rose-600/30 hover:bg-rose-600/5 text-xs h-10" onClick={() => fileInputRef.current?.click()}>
+                      <Button variant="outline" className="rounded-xl font-semibold border-rose-600/30 hover:bg-primary/5 text-xs h-10" onClick={() => fileInputRef.current?.click()}>
                         Replace Verification Document
                       </Button>
                     </div>
@@ -795,19 +795,19 @@ export function FractionalPaymentDialog({
                     onClick={() => fileInputRef.current?.click()}
                     className={cn(
                       "w-full h-44 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-2 transition-all cursor-pointer select-none",
-                      isDragOver ? "border-rose-600 bg-rose-500/5 scale-[1.01]" : "border-border hover:border-rose-600/40 hover:bg-accent/40",
+                      isDragOver ? "border-rose-600 bg-primary/100/5 scale-[1.01]" : "border-border hover:border-rose-600/40 hover:bg-accent/40",
                       uploadingProof && "pointer-events-none opacity-50"
                     )}
                   >
                     {uploadingProof ? (
                       <>
-                        <Loader2 className="h-8 w-8 text-rose-600 animate-spin" />
+                        <Loader2 className="h-8 w-8 text-primary animate-spin" />
                         <p className="font-bold text-xs mt-2 text-foreground">Uploading document proof...</p>
                       </>
                     ) : (
                       <>
-                        <div className="h-12 w-12 rounded-full bg-rose-600/10 flex items-center justify-center">
-                          <Upload className="h-6 w-6 text-rose-600" />
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <Upload className="h-6 w-6 text-primary" />
                         </div>
                         <p className="font-bold text-xs mt-1 text-foreground">Drag and drop file or click to browse</p>
                         <p className="text-[10px] text-muted-foreground">Supported file formats: JPEG, PNG, or PDF</p>
@@ -822,12 +822,12 @@ export function FractionalPaymentDialog({
           {/* STEP 6: PENDING CONFIRMATION STATE */}
           {step === "confirm" && (
             <div className="py-8 flex flex-col items-center text-center space-y-6 animate-in fade-in zoom-in duration-500">
-              <div className="h-20 w-20 rounded-full bg-rose-600/10 flex items-center justify-center animate-bounce [animation-duration:1500ms]">
-                <CheckCircle2 className="h-10 w-10 text-rose-600" />
+              <div className="h-20 w-20 rounded-full bg-primary/10 flex items-center justify-center animate-bounce [animation-duration:1500ms]">
+                <CheckCircle2 className="h-10 w-10 text-primary" />
               </div>
               
               <div className="space-y-2 max-w-sm mx-auto">
-                <span className="text-[10px] uppercase tracking-wider text-rose-600 bg-rose-500/5 border border-rose-500/10 px-2 py-0.5 rounded font-extrabold">
+                <span className="text-[10px] uppercase tracking-wider text-primary bg-primary/100/5 border border-rose-500/10 px-2 py-0.5 rounded font-extrabold">
                   Status: payment_under_review
                 </span>
                 <h3 className="font-serif text-2xl font-bold text-foreground pt-1.5">Onboarding Initialized</h3>
@@ -838,15 +838,15 @@ export function FractionalPaymentDialog({
 
               <div className="rounded-2xl border border-border bg-accent/10 p-5 max-w-md text-xs text-left space-y-3.5">
                 <div className="flex gap-3">
-                  <Clock className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <Clock className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                   <p><strong>Verification Timelines</strong>: Human audit takes approximately 1-2 business days. Fractional blocks remain reserved.</p>
                 </div>
                 <div className="flex gap-3">
-                  <Building2 className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <Building2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                   <p><strong>Dashboard Status Update</strong>: Your Unified Dashboard updates automatically to `confirmed` status post verification.</p>
                 </div>
                 <div className="flex gap-3">
-                  <CheckCircle2 className="h-4.5 w-4.5 text-rose-600 shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
                   <p><strong>Confirmation Correspondence</strong>: You will receive direct email receipt confirmation and institutional ownership certificate links immediately upon clearance.</p>
                 </div>
               </div>
@@ -858,7 +858,7 @@ export function FractionalPaymentDialog({
         {/* Sticky Mobile Footer Controls */}
         <DialogFooter className="p-6 md:p-8 bg-accent/20 border-t border-border/40 shrink-0 flex flex-row items-center gap-3">
           {step === "summary" && (
-            <Button className="w-full h-13 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white" onClick={() => setStep("acknowledgement")}>
+            <Button className="w-full h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" onClick={() => setStep("acknowledgement")}>
               Continue to Terms <ChevronRight className="ml-1 h-4 w-4" />
             </Button>
           )}
@@ -867,7 +867,7 @@ export function FractionalPaymentDialog({
               <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("summary")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white" disabled={!ackChecked} onClick={() => setStep("method")}>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" disabled={!ackChecked} onClick={() => setStep("method")}>
                 I Understand <ChevronRight className="ml-1 h-4 w-4" />
               </Button>
             </div>
@@ -877,7 +877,7 @@ export function FractionalPaymentDialog({
               <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("acknowledgement")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white" disabled={loading} onClick={handleCreateInvestment}>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" disabled={loading} onClick={handleCreateInvestment}>
                 {loading ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : <>Confirm Method <ChevronRight className="ml-1 h-4 w-4" /></>}
               </Button>
             </div>
@@ -887,7 +887,7 @@ export function FractionalPaymentDialog({
               <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("method")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white" onClick={() => setStep("proof")}>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" onClick={() => setStep("proof")}>
                 I have made the payment
               </Button>
             </div>
@@ -897,13 +897,13 @@ export function FractionalPaymentDialog({
               <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("instructions")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white" disabled={loading || !hash || !proofUrl} onClick={handleSubmitProof}>
+              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" disabled={loading || !hash || !proofUrl} onClick={handleSubmitProof}>
                 {loading ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : "Submit Verification proof"}
               </Button>
             </div>
           )}
           {step === "confirm" && (
-            <Button className="w-full h-13 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white" onClick={() => {
+            <Button className="w-full h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" onClick={() => {
               onClose();
               window.location.href = "/dashboard?tab=investments";
             }}>
@@ -926,7 +926,7 @@ export function FractionalPaymentDialog({
             <p>Wallet Address Network: <strong>{paymentConfigs.wallet_network}</strong></p>
             <p className="font-mono mt-1 font-bold text-foreground break-all">{paymentData?.address}</p>
           </div>
-          <Button className="w-full h-11 text-xs font-semibold rounded-xl mt-4 bg-rose-600 hover:bg-rose-700 text-white" onClick={() => setQrZoomed(false)}>
+          <Button className="w-full h-11 text-xs font-semibold rounded-xl mt-4 bg-primary hover:bg-primary/90 text-white" onClick={() => setQrZoomed(false)}>
             Close Zoomed View
           </Button>
         </DialogContent>

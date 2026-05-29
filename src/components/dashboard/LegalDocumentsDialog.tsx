@@ -61,8 +61,8 @@ export function LegalDocumentsDialog({ open, onClose, propertyId, propertyTitle,
       <DialogContent className="max-w-xl">
         <DialogHeader className="bg-primary/5 pb-4">
           <div className="flex items-center gap-3">
-            <div className="h-10 w-10 rounded-full bg-rose-500/20 flex items-center justify-center">
-              <ShieldCheck className="h-5 w-5 text-rose-600" />
+            <div className="h-10 w-10 rounded-full bg-primary/100/20 flex items-center justify-center">
+              <ShieldCheck className="h-5 w-5 text-primary" />
             </div>
             <div>
               <DialogTitle className="font-serif text-xl">Legal Ownership Documents</DialogTitle>
@@ -92,7 +92,7 @@ export function LegalDocumentsDialog({ open, onClose, propertyId, propertyTitle,
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <h4 className="font-bold text-foreground">{reqDoc.title}</h4>
                       {isVerified ? (
-                         <Badge variant="outline" className="bg-rose-500/10 text-rose-700 border-rose-500/20 gap-1 px-2 py-0.5 text-[10px]">
+                         <Badge variant="outline" className="bg-primary/100/10 text-primary border-primary/20 gap-1 px-2 py-0.5 text-[10px]">
                            <CheckCircle2 className="h-3 w-3" /> Verified
                          </Badge>
                       ) : isReady ? (

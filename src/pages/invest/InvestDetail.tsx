@@ -538,7 +538,7 @@ export default function InvestDetail() {
                 "mt-6 w-full text-white shadow-sm h-14 font-semibold text-lg rounded-xl flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]",
                 (avail === 0 || data.status !== "open") 
                   ? "bg-muted text-muted-foreground cursor-not-allowed" 
-                  : "bg-rose-600 hover:bg-rose-700 active:bg-rose-800"
+                  : "bg-primary hover:bg-primary/90 active:bg-primary/80"
               )}
               size="lg"
               disabled={btnLoading || avail === 0 || data.status !== "open"}
@@ -618,8 +618,8 @@ export default function InvestDetail() {
       <Dialog open={authWarningOpen} onOpenChange={setAuthWarningOpen}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-none rounded-2xl bg-background shadow-lux">
           <DialogHeader className="p-8 pb-4 text-center sm:text-center shrink-0">
-            <div className="h-14 w-14 rounded-full bg-rose-500/10 flex items-center justify-center mx-auto mb-4">
-              <Lock className="h-6 w-6 text-rose-600" />
+            <div className="h-14 w-14 rounded-full bg-primary/100/10 flex items-center justify-center mx-auto mb-4">
+              <Lock className="h-6 w-6 text-primary" />
             </div>
             <DialogTitle className="text-2xl font-bold font-serif">Investor Access Required</DialogTitle>
             <DialogDescription className="text-muted-foreground mt-2 text-sm">
@@ -632,7 +632,7 @@ export default function InvestDetail() {
             </p>
           </DialogBody>
           <DialogFooter className="p-8 pt-4 bg-accent/20 border-t border-border/40 shrink-0 flex flex-col sm:flex-col gap-3">
-            <Button className="w-full h-12 text-sm font-semibold rounded-xl bg-rose-600 hover:bg-rose-700 text-white" asChild>
+            <Button className="w-full h-12 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" asChild>
               <Link to="/auth">Sign In or Register</Link>
             </Button>
             <Button variant="ghost" className="w-full h-12 text-sm font-semibold rounded-xl" onClick={() => setAuthWarningOpen(false)}>

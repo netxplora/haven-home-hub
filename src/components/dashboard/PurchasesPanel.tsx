@@ -113,7 +113,7 @@ export function PurchasesPanel({ userId }: { userId: string }) {
       case "confirmed":
       case "success":
       case "completed":
-      case "rented": return "bg-rose-500/10 text-rose-700 border-rose-500/20";
+      case "rented": return "bg-primary/100/10 text-primary border-primary/20";
       case "installment_active": return "bg-blue-500/10 text-blue-700 border-blue-500/20";
       default: return "bg-accent text-accent-foreground";
     }
@@ -298,7 +298,7 @@ export function PurchasesPanel({ userId }: { userId: string }) {
                             <FileText className="mr-2 h-4 w-4" /> Legal Docs
                           </Button>
                         )}
-                        <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold text-rose-700 hover:text-rose-800 hover:bg-rose-50 border-rose-200" onClick={() => handleViewReceipt(r)}>
+                        <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold text-primary hover:text-primary hover:bg-primary/10 border-primary/25" onClick={() => handleViewReceipt(r)}>
                           <Receipt className="mr-2 h-4 w-4" /> Receipt
                         </Button>
                         <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold shadow-sm" asChild>

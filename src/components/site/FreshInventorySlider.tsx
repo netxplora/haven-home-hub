@@ -451,7 +451,7 @@ function SliderCard({ property, isDragging, onGallerySwipe }: SliderCardProps) {
             {propertyTypeLabel(property.property_type)}
           </Badge>
           {isNew && (
-            <Badge className="bg-rose-500 text-white border-none shadow-sm text-xs font-medium px-2.5 py-1">
+            <Badge className="bg-primary/100 text-white border-none shadow-sm text-xs font-medium px-2.5 py-1">
               New Listing
             </Badge>
           )}
@@ -464,7 +464,7 @@ function SliderCard({ property, isDragging, onGallerySwipe }: SliderCardProps) {
 
         {/* Availability badge */}
         <div className="absolute top-3 right-3 pointer-events-none">
-          <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-500/90 text-white text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 shadow-sm backdrop-blur-sm">
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/90 text-white text-[10px] font-semibold uppercase tracking-wider px-2.5 py-1 shadow-sm backdrop-blur-sm">
             <span className="h-1.5 w-1.5 rounded-full bg-white animate-pulse" />
             Available
           </span>

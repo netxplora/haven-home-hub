@@ -128,7 +128,7 @@ export default function PrintDocument() {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
-        <Loader2 className="h-10 w-10 animate-spin text-rose-600 mb-4" />
+        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
         <p className="text-sm font-medium text-muted-foreground">Loading secure legal document...</p>
       </div>
     );
@@ -166,10 +166,10 @@ export default function PrintDocument() {
           <ArrowLeft className="mr-2 h-4 w-4" /> Dashboard
         </Button>
         <div className="flex items-center gap-2">
-          <span className="text-xs font-semibold text-rose-700 bg-rose-50 px-2.5 py-1 rounded-full border border-rose-100 flex items-center gap-1.5 capitalize">
+          <span className="text-xs font-semibold text-primary bg-primary/10 px-2.5 py-1 rounded-full border border-primary/20 flex items-center gap-1.5 capitalize">
             <ShieldCheck className="h-3.5 w-3.5" /> {doc.status}
           </span>
-          <Button onClick={handlePrint} className="bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold">
+          <Button onClick={handlePrint} className="bg-primary hover:bg-primary/90 text-white rounded-lg font-bold">
             <Printer className="mr-2 h-4 w-4" /> Print / Save PDF
           </Button>
         </div>

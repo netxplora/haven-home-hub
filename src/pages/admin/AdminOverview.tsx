@@ -257,7 +257,7 @@ export function AdminOverview() {
 
       {/* Status card */}
       <div className="rounded-xl border border-border/50 p-8 text-center bg-card">
-        <div className="grid h-14 w-14 place-items-center rounded-full bg-rose-500/10 text-rose-600 mx-auto">
+        <div className="grid h-14 w-14 place-items-center rounded-full bg-primary/100/10 text-primary mx-auto">
           <TrendingUp className="h-7 w-7" />
         </div>
         <h3 className="mt-4 font-serif text-lg font-semibold text-foreground">Platform status: Active</h3>

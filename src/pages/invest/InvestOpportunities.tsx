@@ -174,7 +174,7 @@ export default function InvestOpportunities() {
             </p>
             
             <div className="relative max-w-xl group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-rose-500/50 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-primary/50 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
               <form
                 onSubmit={(e) => { e.preventDefault(); update("q", qLocal); }}
                 className="relative flex items-center bg-white rounded-xl shadow-xl overflow-hidden"

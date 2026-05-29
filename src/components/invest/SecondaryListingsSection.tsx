@@ -125,7 +125,7 @@ export function SecondaryListingsSection({ propertyId, propertyTitle, currency }
                     {user ? (
                       <Button
                         size="sm"
-                        className="rounded-xl h-10 px-5 font-bold bg-rose-600 hover:bg-rose-700 text-white transition-all hover:scale-105 active:scale-95"
+                        className="rounded-xl h-10 px-5 font-bold bg-primary hover:bg-primary/90 text-white transition-all hover:scale-105 active:scale-95"
                         onClick={() => handleBuy(listing)}
                       >
                         Buy <ArrowRight className="h-3.5 w-3.5 ml-1.5" />

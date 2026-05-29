@@ -501,7 +501,7 @@ export function AdminDocuments() {
             </Button>
           )}
           {activeSubTab === "templates" && (
-            <Button onClick={() => { setEditingTemplate(null); setTemplateName(""); setTemplateHtml(""); setTemplateModalOpen(true); }} className="rounded-xl bg-rose-600 hover:bg-rose-700 text-white">
+            <Button onClick={() => { setEditingTemplate(null); setTemplateName(""); setTemplateHtml(""); setTemplateModalOpen(true); }} className="rounded-xl bg-primary hover:bg-primary/90 text-white">
               <Plus className="h-4 w-4 mr-2" /> Add Template
             </Button>
           )}
@@ -659,7 +659,7 @@ export function AdminDocuments() {
                             <div className="space-y-1.5">
                               <Badge variant="outline" className={
                                 doc.status === 'available' || doc.status === 'delivered' || doc.status === 'verified' 
-                                  ? "bg-rose-500/10 text-rose-700 border-rose-500/20 capitalize font-bold" 
+                                  ? "bg-primary/100/10 text-primary border-primary/20 capitalize font-bold" 
                                   : doc.status === 'revoked' 
                                     ? "bg-destructive/10 text-destructive border-destructive/20 capitalize font-bold"
                                     : doc.status === 'deleted'
@@ -706,7 +706,7 @@ export function AdminDocuments() {
                               </Button>
                               {doc.status !== 'revoked' && (
                                 <Button variant="ghost" size="icon" className="rounded-lg hover:bg-destructive/10" title="Revoke Validity" onClick={() => handleRevoke(doc.id)}>
-                                  <ShieldAlert className="h-4 w-4 text-rose-700" />
+                                  <ShieldAlert className="h-4 w-4 text-primary" />
                                 </Button>
                               )}
                               <Button variant="ghost" size="icon" className="rounded-lg text-destructive hover:bg-destructive/10" title="Delete" onClick={() => handleDeleteDoc(doc)}>
@@ -779,7 +779,7 @@ export function AdminDocuments() {
                 <div key={sig.id} className="p-5 rounded-2xl border border-border/40 bg-card shadow-soft flex flex-col justify-between relative group hover:border-primary/25 transition-all">
                   <div className="absolute top-4 right-4">
                     <Badge className={
-                      sig.is_active ? "bg-rose-500/10 text-rose-700 border-rose-500/20 font-bold" : "bg-secondary text-muted-foreground font-bold"
+                      sig.is_active ? "bg-primary/100/10 text-primary border-primary/20 font-bold" : "bg-secondary text-muted-foreground font-bold"
                     }>
                       {sig.is_active ? "Active" : "Inactive"}
                     </Badge>
@@ -801,7 +801,7 @@ export function AdminDocuments() {
                       variant="outline" 
                       size="sm" 
                       onClick={() => handleToggleSignature(sig)} 
-                      className={`rounded-lg font-bold text-xs h-8 ${sig.is_active ? 'text-slate-500' : 'text-rose-700 hover:text-rose-800'}`}
+                      className={`rounded-lg font-bold text-xs h-8 ${sig.is_active ? 'text-slate-500' : 'text-primary hover:text-primary'}`}
                     >
                       {sig.is_active ? "Deactivate" : "Set Active"}
                     </Button>
@@ -958,7 +958,7 @@ export function AdminDocuments() {
               />
             </div>
 
-            <Button onClick={handleUploadDoc} disabled={submitting} className="w-full mt-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold">
+            <Button onClick={handleUploadDoc} disabled={submitting} className="w-full mt-4 rounded-xl bg-primary hover:bg-primary/90 text-white font-bold">
               {submitting ? "Uploading..." : "Upload & Deploy Document"}
             </Button>
           </div>
@@ -970,7 +970,7 @@ export function AdminDocuments() {
         <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full overflow-hidden rounded-none sm:rounded-2xl border-border/40 p-0 flex flex-col">
           <DialogHeader className="p-6 border-b border-border/40 shrink-0 bg-slate-50">
             <DialogTitle className="font-serif text-2xl flex items-center gap-3">
-              <Edit3 className="h-6 w-6 text-rose-700" />
+              <Edit3 className="h-6 w-6 text-primary" />
               {editingTemplate ? "Live Document Editor" : "New Document Template"}
             </DialogTitle>
           </DialogHeader>
@@ -1015,7 +1015,7 @@ export function AdminDocuments() {
                   placeholder="<h1>Document Title</h1><p>This certifies that {{investor_name}}...</p>" 
                   value={templateHtml}
                   onChange={(e) => setTemplateHtml(e.target.value)}
-                  className="font-mono text-[11px] min-h-[350px] h-full resize-none rounded-xl bg-slate-900 text-green-400 focus-visible:ring-rose-500 p-4 leading-relaxed"
+                  className="font-mono text-[11px] min-h-[350px] h-full resize-none rounded-xl bg-slate-900 text-green-400 focus-visible:ring-primary p-4 leading-relaxed"
                   spellCheck={false}
                 />
               </div>
@@ -1102,7 +1102,7 @@ export function AdminDocuments() {
           {/* Action Bar Footer */}
           <div className="p-4 border-t border-border/40 bg-card flex justify-end gap-3 shrink-0">
             <Button variant="outline" onClick={() => setTemplateModalOpen(false)}>Cancel</Button>
-            <Button onClick={handleSaveTemplate} disabled={submitting} className="min-w-[150px] rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold">
+            <Button onClick={handleSaveTemplate} disabled={submitting} className="min-w-[150px] rounded-xl bg-primary hover:bg-primary/90 text-white font-bold">
               {submitting ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving...</> : editingTemplate ? "Deploy Revision " + (editingTemplate.version + 1) : "Deploy Template"}
             </Button>
           </div>
