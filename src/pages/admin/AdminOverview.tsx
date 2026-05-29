@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Building2, Users, TrendingUp, Briefcase, Banknote, MessageSquare, Calendar, MapPin, ClipboardList, Fingerprint, ArrowDownToLine, CreditCard, Layers, ShieldAlert } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "recharts";
+import { Button } from "@/components/ui/button";
 
 export function AdminOverview() {
   const { data: counts } = useQuery({
