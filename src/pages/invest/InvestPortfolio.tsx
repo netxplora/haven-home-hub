@@ -15,12 +15,11 @@ export default function InvestPortfolio() {
   const { user, loading } = useAuth();
   const [selectedInv, setSelectedInv] = useState<any>(null);
 
-  if (loading) return <SiteLayout><div className="container-wide py-12"><Skeleton className="h-80" /></div></SiteLayout>;
-  if (!user) return <Navigate to="/auth" replace />;
 
   const { data, isLoading } = useQuery({
-    queryKey: ["portfolio", user.id],
+    queryKey: ["portfolio", user?.id],
     queryFn: async () => {
+      if (!user) return null;
       const [invs, rets, pays, stats] = await Promise.all([
         supabase.from("user_investments").select("*, investment_properties(title, slug, cover_image_url, currency, projected_return_min, projected_return_max)").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("returns").select("*, investment_properties(title, slug, currency)").eq("user_id", user.id).order("distribution_date", { ascending: false }),
@@ -34,7 +33,11 @@ export default function InvestPortfolio() {
         stats: stats.data ?? null,
       };
     },
+    enabled: !!user
   });
+
+  if (loading) return <SiteLayout><div className="container-wide py-12"><Skeleton className="h-80" /></div></SiteLayout>;
+  if (!user) return <Navigate to="/auth" replace />;
 
   const invested = data?.stats?.total_invested ?? 0;
   const portfolioValue = data?.stats?.current_portfolio_value ?? 0;
