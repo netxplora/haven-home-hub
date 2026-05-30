@@ -139,7 +139,7 @@ export default function Home() {
       return;
     }
     params.set("type", searchType);
-    if (searchLocation) params.set("city", searchLocation);
+    if (searchLocation) params.set("location_id", searchLocation);
     if (searchBudget) {
       const maxPriceMap: Record<string, string> = {
         "under500k": "500000",
@@ -227,11 +227,9 @@ export default function Home() {
                     className="w-full h-10 border border-border rounded-lg bg-background text-xs px-2 focus:ring-1 focus:ring-primary focus:outline-none"
                   >
                     <option value="">Any Region</option>
-                    <option value="Austin">Austin, TX</option>
-                    <option value="Miami">Miami, FL</option>
-                    <option value="New York">New York, NY</option>
-                    <option value="Los Angeles">Los Angeles, CA</option>
-                    <option value="Seattle">Seattle, WA</option>
+                    {exploreLocations.map((loc: any) => (
+                      <option key={loc.id} value={loc.id}>{loc.name}</option>
+                    ))}
                   </select>
                 </div>
 
@@ -274,13 +272,14 @@ export default function Home() {
               {/* Location Suggestions */}
               <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
                 <span className="text-muted-foreground font-medium">Suggestions:</span>
-                {["Austin, TX", "Miami, FL", "Brooklyn, NY", "Seattle, WA"].map((loc) => (
+                {exploreLocations.slice(0, 4).map((loc: any) => (
                   <button
-                    key={loc}
-                    onClick={() => setSearchLocation(loc.split(" ")[0])}
+                    key={loc.id}
+                    type="button"
+                    onClick={() => setSearchLocation(loc.id)}
                     className="text-primary hover:underline font-semibold"
                   >
-                    {loc}
+                    {loc.name}
                   </button>
                 ))}
               </div>

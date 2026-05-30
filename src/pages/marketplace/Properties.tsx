@@ -97,6 +97,7 @@ export default function Properties() {
   const verifiedOnly = params.get("verified") === "true";
   const minWalkScore = params.get("minWalkScore") ?? "";
   const floodSafe = params.get("floodSafe") === "true";
+  const location_id = params.get("location_id") ?? "all";
 
   const [qLocal, setQLocal] = useState(q);
   useEffect(() => setQLocal(q), [q]);
@@ -138,7 +139,7 @@ export default function Properties() {
 
   /* ── Main Properties Query ────────────────────────────────── */
   const { data: properties = [], isLoading } = useQuery({
-    queryKey: ["properties", type, category, q, country, state, city, minPrice, maxPrice, bedrooms, bathrooms, parking, sort, status, params.get("minSize"), params.get("maxSize")],
+    queryKey: ["properties", type, category, q, country, state, city, location_id, minPrice, maxPrice, bedrooms, bathrooms, parking, sort, status, params.get("minSize"), params.get("maxSize")],
     queryFn: async () => {
       let query = supabase
         .from("properties" as any)
@@ -164,6 +165,7 @@ export default function Properties() {
       if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%,address.ilike.%${q}%,city.ilike.%${q}%,state.ilike.%${q}%`);
 
       // Location
+      if (location_id !== "all") query = query.eq("location_id", location_id);
       if (country !== "all") query = query.eq("country", country);
       if (state !== "all") query = query.eq("state", state);
       if (city !== "all") query = query.eq("city", city);
