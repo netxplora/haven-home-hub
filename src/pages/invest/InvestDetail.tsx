@@ -58,8 +58,7 @@ export default function InvestDetail() {
 
   useEffect(() => {
     if (data) {
-      const minUnits = Math.ceil(Number(data.min_investment || data.unit_price) / Number(data.unit_price));
-      setUnits(minUnits);
+      setUnits(1);
       if ((data as any).installment_available) {
         setDownPaymentPct(Number((data as any).min_down_payment_pct ?? 20));
       }
@@ -93,7 +92,7 @@ export default function InvestDetail() {
   
   // Allow up to all available units
   const maxAllowedUnits = avail;
-  const currentMinUnits = Math.ceil(Number(data.min_investment || data.unit_price) / Number(data.unit_price));
+  const currentMinUnits = 1;
   
   const minOk = units >= currentMinUnits && units <= maxAllowedUnits && Number.isInteger(units);
   const canInvest = minOk && riskAck && avail > 0 && data.status === "open";
@@ -536,12 +535,12 @@ export default function InvestDetail() {
             <Button
               className={cn(
                 "mt-6 w-full text-white shadow-sm h-14 font-semibold text-lg rounded-xl flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]",
-                (avail === 0 || data.status !== "open") 
+                (avail === 0 || data.status !== "open" || !riskAck) 
                   ? "bg-muted text-muted-foreground cursor-not-allowed" 
                   : "bg-primary hover:bg-primary/90 active:bg-primary/80"
               )}
               size="lg"
-              disabled={btnLoading || avail === 0 || data.status !== "open"}
+              disabled={btnLoading || avail === 0 || data.status !== "open" || !riskAck}
               onClick={handleInvest}
             >
               {btnLoading ? (
