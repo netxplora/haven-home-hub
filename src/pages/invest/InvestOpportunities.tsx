@@ -148,7 +148,11 @@ export default function InvestOpportunities() {
 
   return (
     <SiteLayout>
-      <SEO title="Investment Opportunities" description="Browse premium income-generating property investments with high returns and flexible entry." />
+      <SEO 
+        title="Investment Opportunities" 
+        description="Browse premium income-generating property investments with high returns and flexible entry." 
+        canonicalUrl="https://haven-home-hub.vercel.app/invest/opportunities" 
+      />
 
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-black min-h-[480px] sm:min-h-[520px] flex items-center">

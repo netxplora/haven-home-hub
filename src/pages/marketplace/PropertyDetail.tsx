@@ -219,7 +219,12 @@ export default function PropertyDetail() {
 
   return (
     <SiteLayout>
-      <SEO title={property.title} description={property.description?.slice(0, 160)} image={resolveImage(property.cover_image_url)} />
+      <SEO 
+        title={property.title} 
+        description={property.description?.slice(0, 160)} 
+        image={resolveImage(property.cover_image_url)} 
+        canonicalUrl={`https://haven-home-hub.vercel.app/properties/${property.slug}`}
+      />
       <PropertyJsonLd property={property} />
       
       <div className="container-wide pt-8 pb-4">

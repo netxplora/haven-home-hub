@@ -2,30 +2,100 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#B8860B" />
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-    <meta name="apple-mobile-web-app-title" content="Haven Home Hub" />
-    <title>Haven Home Hub</title>
-    <meta name="description" content="Premium real estate listings and property management platform." />
+
+    <!-- App identity -->
     <meta name="author" content="Haven Home Hub" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Haven Home Hub" />
+
+    <!-- SEO -->
+    <meta name="description" content="Find verified property listings across the United States — buy, rent, or invest with trusted agents on Haven Home Hub." />
+    <link rel="canonical" href="https://haven-home-hub.vercel.app/" />
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="Haven Home Hub" />
+    <meta property="og:description" content="Find verified property listings across the United States — buy, rent, or invest with trusted agents on Haven Home Hub." />
+    <meta property="og:image" content="https://haven-home-hub.vercel.app/og-image.jpg" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Haven Home Hub — Find your next property in the United States" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:image" content="https://haven-home-hub.vercel.app/og-image.jpg" />
+
+    <title>Haven Home Hub</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@500;600;700;800&family=Roboto:wght@400;500&display=swap" rel="stylesheet" />
-
-    <meta property="og:title" content="Haven Home Hub" />
-    <meta property="og:description" content="Premium real estate listings and property management platform." />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="/og-image.jpg" />
-
-    <meta name="twitter:card" content="summary_large_image" />
   </head>
 
   <body>
-    <div id="root"></div>
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    <div id="root">
+      <div id="app-skeleton" style="
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+        background: #ffffff;
+        font-family: sans-serif;
+      ">
+        <!-- Skeleton navbar -->
+        <div style="
+          height: 64px;
+          background: #ffffff;
+          border-bottom: 1px solid #E5E7EB;
+          display: flex;
+          align-items: center;
+          padding: 0 1.5rem;
+          gap: 1rem;
+        ">
+          <div style="width: 130px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
+          <div style="flex: 1;"></div>
+          <div style="width: 72px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
+          <div style="width: 72px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
+          <div style="width: 72px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
+          <div style="width: 90px; height: 36px; background: #E8D5A3; border-radius: 8px;"></div>
+        </div>
+
+        <!-- Skeleton hero -->
+        <div style="
+          height: 480px;
+          background: linear-gradient(135deg, #f5ead4 0%, #ede0b8 100%);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-direction: column;
+          gap: 16px;
+          padding: 2rem;
+        ">
+          <div style="width: 240px; height: 40px; background: rgba(0,0,0,0.08); border-radius: 8px;"></div>
+          <div style="width: 360px; height: 22px; background: rgba(0,0,0,0.06); border-radius: 6px;"></div>
+          <div style="width: 280px; height: 22px; background: rgba(0,0,0,0.05); border-radius: 6px;"></div>
+          <div style="width: 440px; height: 52px; background: rgba(255,255,255,0.6); border-radius: 10px; margin-top: 16px;"></div>
+        </div>
+
+        <!-- Skeleton cards row -->
+        <div style="
+          display: flex;
+          gap: 16px;
+          padding: 2rem 1.5rem;
+          max-width: 1200px;
+          margin: 0 auto;
+          width: 100%;
+        ">
+          <div style="flex: 1; height: 280px; background: #F3F4F6; border-radius: 12px;"></div>
+          <div style="flex: 1; height: 280px; background: #F3F4F6; border-radius: 12px;"></div>
+          <div style="flex: 1; height: 280px; background: #F3F4F6; border-radius: 12px;"></div>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

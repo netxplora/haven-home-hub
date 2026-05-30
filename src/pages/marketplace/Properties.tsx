@@ -270,7 +270,11 @@ export default function Properties() {
 
   return (
     <SiteLayout>
-      <SEO title={content.title} description={content.desc} />
+      <SEO 
+        title={content.title} 
+        description={content.desc} 
+        canonicalUrl="https://haven-home-hub.vercel.app/properties" 
+      />
 
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-black min-h-[480px] sm:min-h-[560px] flex items-center">

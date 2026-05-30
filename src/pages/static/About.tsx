@@ -37,7 +37,11 @@ const values = [
 export default function About() {
   return (
     <SiteLayout>
-      <SEO title="About Us" description="Learn about Haven Home Hub — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States." />
+      <SEO 
+        title="About Us" 
+        description="Learn about Haven Home Hub — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States." 
+        canonicalUrl="https://haven-home-hub.vercel.app/about" 
+      />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[550px] flex items-center bg-black">
         <img 

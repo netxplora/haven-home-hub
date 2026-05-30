@@ -41,7 +41,11 @@ export default function InvestHome() {
 
   return (
     <SiteLayout>
-      <SEO title="Invest in Real Estate" description="Co-invest in professionally managed, income-generating properties. Start with fractional ownership and earn scheduled distributions from rental income." />
+      <SEO 
+        title="Invest in Real Estate" 
+        description="Co-invest in professionally managed, income-generating properties. Start with fractional ownership and earn scheduled distributions from rental income." 
+        canonicalUrl="https://haven-home-hub.vercel.app/invest" 
+      />
       {/* Hero */}
       <section className="relative isolate min-h-[480px] sm:min-h-[560px] lg:min-h-[600px] flex items-center">
         <div className="absolute inset-0 -z-10">

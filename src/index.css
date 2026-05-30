@@ -157,9 +157,16 @@
     @apply text-xl leading-snug;
   }
 
-  /* Smoother focus rings — gold tint */
+  /* Visible focus ring using brand color */
   :focus-visible {
-    @apply outline-none ring-2 ring-ring/40 ring-offset-2 ring-offset-background;
+    outline: 2px solid #B8860B;
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  /* Remove focus ring on mouse click but keep it for keyboard */
+  :focus:not(:focus-visible) {
+    outline: none;
   }
 
   /* Selection color — gold tint */
@@ -400,5 +407,24 @@ html {
 .focus-guidance:focus-within {
   border-color: hsl(var(--primary));
   box-shadow: 0 0 0 2px hsl(var(--primary) / 0.15);
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1rem;
+  z-index: 9999;
+  background: #B8860B;
+  color: #ffffff;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0 0 6px 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 0;
 }
 

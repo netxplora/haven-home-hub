@@ -1,11 +1,13 @@
 {
   "name": "Haven Home Hub",
-  "short_name": "Haven Home",
-  "description": "Your trusted partner in global real estate and property investments.",
+  "short_name": "Haven",
+  "description": "Find verified property listings across the United States.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#0d9488",
+  "theme_color": "#B8860B",
+  "orientation": "portrait-primary",
+  "lang": "en",
   "icons": [
     {
       "src": "/favicon.ico",
@@ -13,14 +15,16 @@
       "type": "image/x-icon"
     },
     {
-      "src": "/icon-192.png",
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
-      "sizes": "192x192"
+      "purpose": "maskable any"
     },
     {
-      "src": "/icon-512.png",
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
       "type": "image/png",
-      "sizes": "512x512"
+      "purpose": "maskable any"
     }
   ]
 }
