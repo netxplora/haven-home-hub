@@ -195,27 +195,7 @@ export default function Home() {
 
             {/* Advanced Search Form */}
             <div className="mt-8 bg-card border border-border/40 p-4 rounded-2xl shadow-lg w-full max-w-3xl focus-guidance">
-              <div className="flex gap-4 border-b border-border/50 pb-3 mb-3">
-                {[
-                  { id: "buy", label: "Buy Property" },
-                  { id: "rent", label: "Rent Home" },
-                  { id: "invest", label: "Co-invest (Fractional)" }
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    type="button"
-                    onClick={() => setSearchType(tab.id as any)}
-                    className={`text-xs font-bold uppercase tracking-wider pb-1.5 transition-all relative ${
-                      searchType === tab.id ? "text-primary" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {tab.label}
-                    {searchType === tab.id && (
-                      <span className="absolute bottom-0 left-0 right-0 h-[2px] bg-primary rounded-t-sm" />
-                    )}
-                  </button>
-                ))}
-              </div>
+
 
               <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
                 {/* Location select */}

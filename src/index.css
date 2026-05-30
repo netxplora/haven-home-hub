@@ -358,16 +358,20 @@ html {
 
 /* Local Real Estate & Trust Badges */
 .badge-verified-gold {
-  background: hsl(var(--primary) / 0.08);
-  border: 1px solid hsl(var(--primary) / 0.3);
-  color: hsl(var(--primary));
+  background: rgba(22, 163, 74, 0.10);
+  border: 1px solid rgba(22, 163, 74, 0.30);
+  color: rgb(22, 163, 74);
   font-weight: 600;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .dark .badge-verified-gold {
-  background: hsl(var(--primary) / 0.12);
-  border: 1px solid hsl(var(--primary) / 0.4);
-  color: hsl(var(--accent-foreground));
+  background: rgba(34, 197, 94, 0.14);
+  border: 1px solid rgba(34, 197, 94, 0.35);
+  color: rgb(74, 222, 128);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .badge-power-grid {

@@ -7,7 +7,7 @@ UPDATE public.investment_properties SET property_category = 'residential' WHERE 
 
 -- 2. Clean up location data
 -- Handle cases where location might be a single string without comma
-UPDATE public.properties SET country = 'USA' WHERE country IS NULL AND (address ILIKE '%USA%' OR address ILIKE '%United States%');
+UPDATE public.properties SET country = 'United States' WHERE country IS NULL AND (address ILIKE '%USA%' OR address ILIKE '%United States%');
 UPDATE public.properties SET country = 'UK' WHERE country IS NULL AND (address ILIKE '%UK%' OR address ILIKE '%United Kingdom%');
 
 -- 3. Standardize listing types
