@@ -42,12 +42,12 @@ export function AdminWithdrawals() {
 
     switch (action) {
       case "process":
-        newStatus = "processing";
-        updatePayload.status = "processing";
+        newStatus = "approved";
+        updatePayload.status = "approved";
         updatePayload.reviewed_by = admin?.id ?? null;
         updatePayload.reviewed_at = new Date().toISOString();
-        notifTitle = "Withdrawal in progress";
-        notifBody = "Your withdrawal request is now being processed.";
+        notifTitle = "Withdrawal approved";
+        notifBody = "Your withdrawal request has been approved and will be processed shortly.";
         notifType = "withdrawal_approved";
         break;
       case "reject":
@@ -67,7 +67,7 @@ export function AdminWithdrawals() {
         updatePayload.status = "completed";
         updatePayload.completed_at = new Date().toISOString();
         if (extra.transaction_reference) updatePayload.transaction_reference = extra.transaction_reference;
-        notifTitle = "Withdrawal completed";
+        notifTitle = "Withdrawal paid";
         notifBody = "Your withdrawal has been sent successfully.";
         notifType = "withdrawal_completed";
         break;
@@ -122,6 +122,7 @@ export function AdminWithdrawals() {
           <SelectContent className="rounded-xl">
             <SelectItem value="all">All requests</SelectItem>
             <SelectItem value="pending">Pending</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
             <SelectItem value="processing">Processing</SelectItem>
             <SelectItem value="completed">Completed</SelectItem>
             <SelectItem value="rejected">Declined</SelectItem>
@@ -199,11 +200,11 @@ export function AdminWithdrawals() {
                 <div className="flex flex-col gap-2 w-full sm:w-[160px]">
                   {w.status === "pending" && (
                     <>
-                      <Button size="sm" onClick={() => act(w.id, "process")} className="w-full bg-primary text-primary-foreground font-bold hover:scale-[1.02] transition-transform shadow-md shadow-primary/20">Review & Process</Button>
+                      <Button size="sm" onClick={() => act(w.id, "process")} className="w-full bg-primary text-primary-foreground font-bold hover:scale-[1.02] transition-transform shadow-md shadow-primary/20">Approve & Process</Button>
                       <Button size="sm" variant="ghost" className="w-full text-destructive hover:bg-destructive/10" onClick={() => { const r = prompt("Reason for declining?"); if (r) act(w.id, "reject", { rejection_reason: r }); }}>Decline Request</Button>
                     </>
                   )}
-                  {w.status === "processing" && (
+                  {(w.status === "approved" || w.status === "processing") && (
                     <>
                       <Button size="sm" onClick={() => { const ref = prompt("Transaction reference / tx hash?") ?? ""; act(w.id, "complete", { transaction_reference: ref }); }} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold shadow-md">Mark Paid</Button>
                       <Button size="sm" variant="ghost" className="w-full text-destructive hover:bg-destructive/10" onClick={() => { const r = prompt("Failure reason?") ?? ""; act(w.id, "fail", { rejection_reason: r }); }}>Mark Failed</Button>

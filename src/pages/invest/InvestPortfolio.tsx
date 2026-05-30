@@ -1,4 +1,5 @@
 import { Navigate, Link } from "react-router-dom";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { useAuth } from "@/hooks/useAuth";
@@ -8,9 +9,12 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/invest";
 import { ArrowRight, PiggyBank, TrendingUp, Wallet } from "lucide-react";
 import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
+import { UserInvestmentDetailDialog } from "@/components/invest/UserInvestmentDetailDialog";
 
 export default function InvestPortfolio() {
   const { user, loading } = useAuth();
+  const [selectedInv, setSelectedInv] = useState<any>(null);
+
   if (loading) return <SiteLayout><div className="container-wide py-12"><Skeleton className="h-80" /></div></SiteLayout>;
   if (!user) return <Navigate to="/auth" replace />;
 
@@ -21,7 +25,7 @@ export default function InvestPortfolio() {
         supabase.from("user_investments").select("*, investment_properties(title, slug, cover_image_url, currency, projected_return_min, projected_return_max)").eq("user_id", user.id).order("created_at", { ascending: false }),
         supabase.from("returns").select("*, investment_properties(title, slug, currency)").eq("user_id", user.id).order("distribution_date", { ascending: false }),
         supabase.from("payments").select("*").eq("user_id", user.id).eq("payment_type", "investment").order("created_at", { ascending: false }),
-        supabase.rpc("calculate_portfolio_roi", { p_user_id: user.id } as any)
+        supabase.from("user_portfolio_stats").select("*").eq("user_id", user.id).maybeSingle()
       ]);
       return {
         investments: invs.data ?? [],
@@ -32,12 +36,15 @@ export default function InvestPortfolio() {
     },
   });
 
-  const invested = data?.stats?.total_invested ?? ((data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active").reduce((s: number, i: any) => s + Number(i.total_amount ?? i.amount_invested ?? 0), 0));
-  const earned = data?.stats?.total_returns ?? ((data?.returns ?? []).reduce((s: number, r: any) => s + Number(r.amount_received), 0));
-  const active = data?.stats?.active_investments ?? ((data?.investments ?? []).filter((i: any) => i.status === "confirmed" || i.status === "active").length);
-  const pending = data?.stats?.pending_investments ?? 0;
-  const projectedMin = data?.stats?.projected_return_min ?? 0;
-  const projectedMax = data?.stats?.projected_return_max ?? 0;
+  const invested = data?.stats?.total_invested ?? 0;
+  const portfolioValue = data?.stats?.current_portfolio_value ?? 0;
+  const earned = data?.stats?.total_roi_earned ?? 0;
+  const pendingRoi = data?.stats?.pending_roi ?? 0;
+  const withdrawable = data?.stats?.total_withdrawable_balance ?? 0;
+  
+  const active = data?.stats?.active_investments ?? 0;
+  const matured = data?.stats?.matured_investments ?? 0;
+  const completed = data?.stats?.completed_investments ?? 0;
 
   return (
     <SiteLayout>
@@ -52,22 +59,54 @@ export default function InvestPortfolio() {
         <div className="absolute inset-0 bg-gradient-to-t from-secondary/90 to-secondary/40 z-[1]" />
         
         <div className="container-wide relative z-10 text-white py-14">
-          <p className="mb-2 text-xs font-medium tracking-wider uppercase text-primary">My Portfolio</p>
-          <h1 className="font-serif text-3xl font-semibold sm:text-4xl text-white">
-            Investment Portfolio
-          </h1>
-          <p className="mt-2 max-w-lg text-base text-white/70">
-            Track your active investments, payouts, and history.
-          </p>
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-6">
+            <div>
+              <p className="mb-2 text-xs font-medium tracking-wider uppercase text-primary">My Portfolio</p>
+              <h1 className="font-serif text-3xl font-semibold sm:text-4xl text-white">
+                Investment Portfolio
+              </h1>
+              <p className="mt-2 max-w-lg text-base text-white/70">
+                Track your active investments, portfolio value, and accumulated ROI.
+              </p>
+            </div>
+            <Link to="/invest/withdrawals" className="inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground shadow-sm hover:bg-primary/90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-all duration-200">
+              <Wallet className="h-4 w-4" /> Withdraw Funds
+            </Link>
+          </div>
         </div>
       </div>
 
       <div className="container-wide py-10 space-y-8">
         {/* KPI Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <KPI label="Total Invested" value={formatMoney(invested)} icon={PiggyBank} />
+          <KPI label="Portfolio Value" value={formatMoney(portfolioValue)} icon={TrendingUp} />
+          <KPI label="Total ROI Earned" value={formatMoney(earned)} icon={Wallet} />
+          <div className="rounded-xl border border-primary/40 bg-primary/5 p-6 shadow-soft relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-3 opacity-20"><ArrowRight className="h-20 w-20 text-primary" /></div>
+            <div className="relative z-10">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-xs font-bold text-primary uppercase tracking-wider">Withdrawable Balance</p>
+              </div>
+              <p className="font-serif text-3xl font-bold text-foreground">{formatMoney(withdrawable)}</p>
+              <p className="text-xs font-medium text-muted-foreground mt-2">Pending ROI: {formatMoney(pendingRoi)}</p>
+            </div>
+          </div>
+        </div>
+
         <div className="grid gap-4 sm:grid-cols-3">
-          <KPI label="Total invested" value={formatMoney(invested)} icon={Wallet} />
-          <KPI label="Total payouts" value={formatMoney(earned)} icon={TrendingUp} />
-          <KPI label="Active investments" value={String(active)} icon={PiggyBank} />
+          <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase">Active Investments</span>
+            <span className="font-serif text-xl font-bold">{active}</span>
+          </div>
+          <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase">Matured Investments</span>
+            <span className="font-serif text-xl font-bold text-amber-600">{matured}</span>
+          </div>
+          <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
+            <span className="text-xs font-medium text-muted-foreground uppercase">Completed</span>
+            <span className="font-serif text-xl font-bold text-green-600">{completed}</span>
+          </div>
         </div>
 
         {/* Portfolio Analytics Charts */}
@@ -98,7 +137,7 @@ export default function InvestPortfolio() {
                 const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
 
                 return (
-                  <Link key={i.id} to={`/invest/${i.investment_properties?.slug}`} className="flex items-center gap-4 rounded-xl border border-border/50 bg-card p-5 transition-all duration-200 hover:shadow-card hover:border-border">
+                  <button key={i.id} onClick={() => setSelectedInv(i)} className="w-full text-left flex items-center gap-4 rounded-xl border border-border/50 bg-card p-5 transition-all duration-200 hover:shadow-card hover:border-border">
                     <div className="h-16 w-24 overflow-hidden rounded-lg bg-muted shrink-0">
                       {i.investment_properties?.cover_image_url && <img src={i.investment_properties.cover_image_url} alt="" className="h-full w-full object-cover" />}
                     </div>
@@ -135,9 +174,9 @@ export default function InvestPortfolio() {
                           {formatMoney(Number(i.remaining_balance ?? 0), i.investment_properties?.currency ?? "USD")} left
                         </p>
                       )}
-                      <Badge variant={i.status === "confirmed" || i.status === "active" ? "default" : i.status === "completed" ? "secondary" : "destructive"} className="mt-1 text-[10px]">{i.status}</Badge>
+                      <Badge variant={i.status === "confirmed" || i.status === "active" ? "default" : i.status === "completed" ? "secondary" : "destructive"} className="mt-1 text-[10px] capitalize">{i.status.replace(/_/g, " ")}</Badge>
                     </div>
-                  </Link>
+                  </button>
                 );
               })}
           </div>
@@ -187,6 +226,12 @@ export default function InvestPortfolio() {
           </div>
         </section>
       </div>
+
+      <UserInvestmentDetailDialog 
+        open={!!selectedInv} 
+        onClose={() => setSelectedInv(null)} 
+        investment={selectedInv} 
+      />
     </SiteLayout>
   );
 }

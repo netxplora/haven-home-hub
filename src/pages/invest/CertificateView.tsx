@@ -13,11 +13,12 @@ export default function CertificateView() {
   const { id } = useParams();
   const navigate = useNavigate();
 
-  const { data: cert, isLoading } = useQuery({
+  const { data: cert, isLoading, error } = useQuery({
     queryKey: ["investment-certificate-full", id],
     enabled: !!id,
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
+      // Try 1: Direct lookup by certificate table UUID
+      const { data: directHit, error: directError } = await (supabase as any)
         .from("investment_certificates")
         .select(`
           *,
@@ -25,10 +26,37 @@ export default function CertificateView() {
           profiles(full_name, email)
         `)
         .eq("id", id)
-        .single();
+        .maybeSingle();
       
-      if (error) throw error;
-      return data as any;
+      if (directHit) return directHit as any;
+
+      // Try 2: Lookup by investment_id (user navigated from portfolio)
+      const { data: byInvestment, error: invError } = await (supabase as any)
+        .from("investment_certificates")
+        .select(`
+          *,
+          investment_properties(title, slug, location, description),
+          profiles(full_name, email)
+        `)
+        .eq("investment_id", id)
+        .maybeSingle();
+      
+      if (byInvestment) return byInvestment as any;
+
+      // Try 3: Lookup by certificate_id text field
+      const { data: byCertId, error: certIdError } = await (supabase as any)
+        .from("investment_certificates")
+        .select(`
+          *,
+          investment_properties(title, slug, location, description),
+          profiles(full_name, email)
+        `)
+        .eq("certificate_id", id)
+        .maybeSingle();
+      
+      if (byCertId) return byCertId as any;
+
+      return null;
     }
   });
 
@@ -42,9 +70,24 @@ export default function CertificateView() {
 
   if (!cert) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center">
-        <h2 className="text-2xl font-bold mb-4">Certificate Not Found</h2>
-        <Button onClick={() => navigate("/dashboard?tab=investments")}>Return to Dashboard</Button>
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+        <div className="rounded-2xl border border-border bg-card p-12 max-w-md text-center shadow-lg">
+          <div className="mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-6">
+            <ShieldCheck className="h-8 w-8 text-amber-600" />
+          </div>
+          <h2 className="font-serif text-2xl font-bold mb-3">Certificate Not Available</h2>
+          <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+            This certificate has not been issued yet. Certificates are generated after your investment payment has been verified by our team. This process typically takes 1-3 business days.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button onClick={() => navigate("/invest/portfolio")} className="w-full font-semibold">
+              Return to Portfolio
+            </Button>
+            <Button variant="outline" onClick={() => navigate(-1)} className="w-full font-semibold">
+              <ArrowLeft className="h-4 w-4 mr-2" /> Go Back
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

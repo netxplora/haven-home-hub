@@ -371,9 +371,9 @@ export default function Home() {
 
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {[
-              { name: "Austin, TX", walk: "82 - Very Walkable", flood: "Zone X (Low Risk)", safety: "9.2/10", image: "https://images.unsplash.com/photo-1531218150217-5afc4611c000?auto=format&fit=crop&w=400&q=80" },
+              { name: "Austin, TX", walk: "82 - Very Walkable", flood: "Zone X (Low Risk)", safety: "9.2/10", image: "https://images.unsplash.com/photo-1554629947-334ff61d85dc?auto=format&fit=crop&w=400&q=80" },
               { name: "Miami, FL", walk: "78 - Very Walkable", flood: "Zone AE (Required)", safety: "8.8/10", image: "https://images.unsplash.com/photo-1533106497176-45ae19e68ba2?auto=format&fit=crop&w=400&q=80" },
-              { name: "Brooklyn, NY", walk: "98 - Walker's Paradise", flood: "Zone X (Low Risk)", safety: "8.5/10", image: "https://images.unsplash.com/photo-1590494480980-8636e0d37e28?auto=format&fit=crop&w=400&q=80" },
+              { name: "Brooklyn, NY", walk: "98 - Walker's Paradise", flood: "Zone X (Low Risk)", safety: "8.5/10", image: "https://images.unsplash.com/photo-1502899576159-f224dc2349fa?auto=format&fit=crop&w=400&q=80" },
               { name: "Seattle, WA", walk: "85 - Very Walkable", flood: "Zone X (Low Risk)", safety: "9.4/10", image: "https://images.unsplash.com/photo-1502175353174-a7a70e73b362?auto=format&fit=crop&w=400&q=80" }
             ].map((loc) => (
               <div key={loc.name} className="group relative overflow-hidden rounded-xl border border-border/50 bg-card hover-lift flex flex-col h-full shadow-sm">
@@ -543,15 +543,25 @@ export default function Home() {
       {/* 10. MOBILE APP & PLATFORM EXPANSION */}
       <section className="bg-accent/25 border-y border-border/50 py-16">
         <div className="container-wide flex flex-col lg:flex-row items-center justify-between gap-10">
-          <div className="max-w-xl text-left space-y-4">
+          <div className="max-w-xl text-left space-y-5">
             <span className="text-xs font-semibold tracking-widest uppercase text-primary block">Seamless Access</span>
-            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Access Vetted Properties Anywhere</h2>
+            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Manage Your Portfolio Anywhere</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Our platform is fully responsive and optimized for low-end Android mobile browsers and networks. Track your co-investments, schedule site tours, and download ownership certificates on the go.
+              Whether you are at your desk or on the move, Haven Home Hub provides a consistent, secure, and responsive experience across all your devices.
             </p>
-            <div className="flex items-center gap-4 text-xs font-bold text-foreground pt-2">
-              <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Low-bandwidth optimize</span>
-              <span className="flex items-center gap-1.5"><Check className="h-4 w-4 text-primary" /> Instant PDF certificates</span>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              Instantly review property disclosures, sign legal agreements, and communicate directly with your dedicated real estate advisors. Track your fractional co-investments and monitor monthly performance metrics without interruption.
+            </p>
+            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-4 pt-2">
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Check className="h-4 w-4 text-primary" /> Secure document vault
+              </div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Check className="h-4 w-4 text-primary" /> Real-time syncing
+              </div>
+              <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
+                <Check className="h-4 w-4 text-primary" /> Direct advisor chat
+              </div>
             </div>
           </div>
           <div className="w-full lg:w-96">
