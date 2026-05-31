@@ -699,7 +699,7 @@ function HighlightItem({ icon: Icon, title, desc }: { icon: any; title: string; 
 
 function DocumentLink({ title, size, date }: { title: string; size: string; date: string }) {
   return (
-    <button className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 transition-all w-full text-left group">
+    <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 transition-all w-full text-left group">
       <div className="flex items-center gap-4">
         <div className="p-2.5 rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
           <FileText className="h-5 w-5" />
@@ -709,10 +709,10 @@ function DocumentLink({ title, size, date }: { title: string; size: string; date
           <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{date} · {size}</p>
         </div>
       </div>
-      <Button variant="ghost" size="icon" className="rounded-lg h-9 w-9">
+      <Button variant="ghost" size="icon" className="rounded-lg h-9 w-9 pointer-events-none">
         <Info className="h-4 w-4 opacity-40" />
       </Button>
-    </button>
+    </a>
   );
 }
 

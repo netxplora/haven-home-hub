@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer, ShieldCheck, CheckCircle2, Download, ExternalLink, CalendarClock, ChartLine } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
@@ -23,6 +23,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-3xl bg-[#fafafa] text-black p-0 overflow-hidden max-h-[90vh] overflow-y-auto print:!transform-none print:!fixed print:!inset-0 print:!w-full print:!max-w-none print:!h-auto print:!max-h-none print:!overflow-visible print:!shadow-none print:!border-none print:!bg-white sm:rounded-xl border border-gray-200 shadow-2xl">
+        <DialogTitle className="sr-only">Receipt Details</DialogTitle>
         <style>{`
           @media print {
             body * {
