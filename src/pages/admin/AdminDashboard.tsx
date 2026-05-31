@@ -45,8 +45,7 @@ import { AdminReferrals } from "./AdminReferrals";
 import { AdminDocuments } from "./AdminDocuments";
 import { AdminInvestor360 } from "./AdminInvestor360";
 import { AdminInvestmentOrders } from "./AdminInvestmentOrders";
-import { AdminActivityFeed } from "./AdminActivityFeed";
-import { Award, CreditCard, ClipboardList, Megaphone } from "lucide-react";
+import { Award, CreditCard, ClipboardList } from "lucide-react";
 
 const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
@@ -68,7 +67,6 @@ const navItems: NavItem[] = [
   { id: "referrals", label: "Referral Program", icon: Award },
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
   { id: "investor-360", label: "Investor 360", icon: UserSearch },
-  { id: "activity-feed", label: "Activity Feed", icon: Megaphone },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -119,7 +117,6 @@ export default function Admin() {
         {activeTab === "payment-methods" && <AdminPaymentMethods />}
         {activeTab === "investor-360" && <AdminInvestor360 initialUserId={investor360Id} onBack={() => setActiveTab("overview")} />}
         {activeTab === "invest-orders" && <AdminInvestmentOrders />}
-        {activeTab === "activity-feed" && <AdminActivityFeed />}
         {activeTab === "settings" && <AdminSettings />}
       </div>
     </DashboardShell>

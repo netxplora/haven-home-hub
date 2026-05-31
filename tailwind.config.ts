@@ -60,28 +60,26 @@ export default {
       },
       borderRadius: {
         sm: "4px",
-        md: "8px",
+        md: "12px",
         lg: "16px",
         xl: "24px",
         pill: "9999px",
         DEFAULT: "8px",
       },
       fontFamily: {
-        sans: ['"DM Sans"', '"Inter"', 'sans-serif'],
-        serif: ['"Poppins"', 'sans-serif'],
-        mono: ['"Fira Code"', 'monospace'],
+        sans: ['"Nunito"', '-apple-system', '"Segoe UI"', 'Helvetica', 'sans-serif'],
+        serif: ['"Alike"', 'serif'],
+        mono: ['"Source Code Pro"', 'monospace'],
       },
       backgroundImage: {
         'gradient-hero': 'var(--gradient-hero)',
         'gradient-hero-rose': 'var(--gradient-hero-rose)',
       },
       boxShadow: {
-        'glass': '0 8px 32px rgba(0, 0, 0, 0.08)',
-        'md': '0 4px 16px rgba(0, 0, 0, 0.10)',
-        'lg': '0 12px 40px rgba(0, 0, 0, 0.15)',
-        'color': '0 8px 24px rgba(225, 29, 72, 0.25)',
-        'focus': '0 0 0 3px rgba(37, 99, 235, 0.35)',
-        'DEFAULT': '0 4px 16px rgba(0, 0, 0, 0.10)',
+        'sm': '0 1px 3px rgba(146, 64, 14, 0.06)',
+        'md': '0 4px 16px rgba(146, 64, 14, 0.10)',
+        'lg': '0 8px 32px rgba(146, 64, 14, 0.14)',
+        'DEFAULT': '0 2px 8px rgba(146, 64, 14, 0.08)',
       },
       keyframes: {
         "accordion-down": {

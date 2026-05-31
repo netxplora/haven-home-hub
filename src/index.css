@@ -10,118 +10,67 @@
 
 @layer base {
   :root {
-    /* Surface Base (White) */
-    --background: 0 0% 100%;
-    /* Dark text for contrast */
-    --foreground: 222 47% 11%;
+    /* HomeNest Design System */
+    --background: 48 96% 89%;      /* #FEF3C7 (Cream) */
+    --foreground: 20 10% 10%;      /* #1C1917 */
 
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
+    --card: 48 100% 96%;           /* #FFFBEB */
+    --card-foreground: 20 10% 10%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
+    --popover: 48 100% 96%;
+    --popover-foreground: 20 10% 10%;
 
-    /* Primary Color: #E11D48 (Rose) */
-    --primary: 347 77% 50%;
+    /* Brand Colors */
+    --primary: 22 83% 31%;         /* #92400E (Warm Brown) */
     --primary-foreground: 0 0% 100%;
-    --primary-glow: 347 77% 50%;
 
-    /* Secondary Color: #2563EB (Blue) */
-    --secondary: 221 83% 53%;
+    --secondary: 84 81% 44%;       /* #84CC16 (Sage) */
     --secondary-foreground: 0 0% 100%;
 
-    /* Tertiary / Accent Color: #FACC15 (Yellow) */
-    --accent: 48 96% 53%;
-    --accent-foreground: 222 47% 11%;
+    --accent: 48 100% 96%;         /* #FFFBEB */
+    --accent-foreground: 22 83% 31%;
 
-    --muted: 45 30% 95%;
-    --muted-foreground: 222 10% 46%;
+    --muted: 60 5% 96%;            /* #F5F5F4 */
+    --muted-foreground: 20 5% 45%; /* #78716C */
 
-    /* Status colors */
-    --destructive: 0 72% 51%; /* #DC2626 */
+    /* Status Colors */
+    --destructive: 0 72% 51%;      /* #DC2626 */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%; /* #16A34A */
+    --success: 142 76% 36%;        /* #16A34A */
     --success-foreground: 0 0% 100%;
 
-    --warning: 32 95% 44%; /* #D97706 */
+    --warning: 32 95% 44%;         /* #D97706 */
     --warning-foreground: 0 0% 100%;
 
-    --info: 221 83% 53%; /* #2563EB */
+    --info: 200 98% 39%;           /* #0284C7 */
     --info-foreground: 0 0% 100%;
 
-    --border: 214 32% 91%; /* #E5E7EB */
-    --input: 214 32% 91%;
-    --ring: 221 83% 53%; /* #2563EB */
+    /* Borders */
+    --border: 20 6% 90%;           /* #E7E5E4 */
+    --input: 20 6% 90%;          
+    --ring: 22 83% 31%;            /* #92400E */
 
-    --radius: 0.5rem;
+    --radius: 8px;
 
-    --gradient-hero: linear-gradient(180deg, rgba(15, 23, 42, 0.50) 0%, rgba(15, 23, 42, 0.10) 50%, rgba(15, 23, 42, 0.60) 100%);
-    --gradient-hero-rose: linear-gradient(135deg, rgba(184, 134, 11, 0.75) 0%, rgba(15, 23, 42, 0.70) 100%);
+    --gradient-hero: linear-gradient(180deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.40) 50%, rgba(15, 23, 42, 0.95) 100%);
+    --gradient-hero-rose: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(15, 23, 42, 0.90) 100%);
 
     --sidebar-background: 60 100% 97%;
     --sidebar-foreground: 222 47% 11%;
     --sidebar-primary: 43 91% 38%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 43 80% 92%;
-    --sidebar-accent-foreground: 43 91% 28%;
-    --sidebar-border: 43 20% 88%;
-    --sidebar-ring: 43 91% 38%;
-  }
-
-  .dark {
-    /* Navy background */
-    --background: 222 47% 11%;
-    /* Ivory foreground */
-    --foreground: 60 100% 97%;
-
-    --card: 222 35% 16%;
-    --card-foreground: 60 100% 97%;
-
-    --popover: 222 35% 16%;
-    --popover-foreground: 60 100% 97%;
-
-    /* Primary Gold (stays gold in dark mode) */
-    --primary: 43 91% 42%;
-    --primary-foreground: 222 47% 11%;
-    --primary-glow: 43 91% 42%;
-
-    /* Secondary - lighter navy */
-    --secondary: 222 25% 25%;
-    --secondary-foreground: 60 100% 97%;
-
-    /* Accent */
-    --accent: 43 50% 20%;
-    --accent-foreground: 43 91% 70%;
-
-    --muted: 222 35% 16%;
-    --muted-foreground: 222 15% 65%;
-
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
-
-    --success: 142 64% 32%;
-    --success-foreground: 0 0% 100%;
-
-    --warning: 48 96% 50%;
-    --warning-foreground: 222 47% 11%;
-
-    --info: 201 96% 45%;
-    --info-foreground: 0 0% 100%;
-
-    --border: 222 25% 22%;
-    --input: 222 25% 22%;
-    --ring: 43 91% 42%;
-
-    --sidebar-background: 222 47% 11%;
-    --sidebar-foreground: 60 100% 97%;
-    --sidebar-primary: 43 91% 42%;
+    --sidebar-background: 217 33% 17%;
+    --sidebar-foreground: 210 40% 96%;
+    --sidebar-primary: 142 71% 45%;
     --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 43 50% 20%;
-    --sidebar-accent-foreground: 43 91% 70%;
-    --sidebar-border: 222 25% 22%;
-    --sidebar-ring: 43 91% 42%;
+    --sidebar-accent: 215 25% 27%;
+    --sidebar-accent-foreground: 210 40% 96%;
+    --sidebar-border: 215 25% 27%;
+    --sidebar-ring: 142 71% 45%;
   }
+
+
 }
 
 @layer base {
@@ -140,8 +89,9 @@
   h2,
   h3,
   h4,
-  h5 {
-    @apply font-serif tracking-tight;
+  h5,
+  h6 {
+    @apply font-serif font-bold tracking-tight;
   }
 
   /* ── Typography Scale ── */

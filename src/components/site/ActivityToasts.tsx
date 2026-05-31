@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, Key, Building2, MapPin, BadgePercent, Star } from "lucide-react";
@@ -23,6 +23,7 @@ export function ActivityToasts() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
+  const location = useLocation();
 
   // Fetch settings
   const { data: config } = useQuery({
@@ -34,8 +35,16 @@ export function ActivityToasts() {
         .eq("key", "activity_toasts")
         .single();
       
-      if (error || !data) return { enabled: false, interval_seconds: 15, display_count: 20 };
-      return data.value;
+      const defaultConfig = { 
+        enabled: false, 
+        interval_seconds: 15, 
+        display_count: 20,
+        display_duration_seconds: 5,
+        display_pages: "all" // "all", "invest", "properties", "home"
+      };
+
+      if (error || !data) return defaultConfig;
+      return { ...defaultConfig, ...data.value };
     }
   });
 
@@ -63,12 +72,31 @@ export function ActivityToasts() {
   useEffect(() => {
     if (!config?.enabled || toasts.length === 0 || isPaused) return;
 
+    // Check if we should display on current page
+    const shouldDisplayOnPage = () => {
+      const pages = config.display_pages || "all";
+      if (pages === "all") return true;
+      
+      const path = location.pathname;
+      if (pages === "home" && path === "/") return true;
+      if (pages === "invest" && path.startsWith("/invest")) return true;
+      if (pages === "properties" && path.startsWith("/properties")) return true;
+      
+      return false;
+    };
+
+    if (!shouldDisplayOnPage()) {
+      setIsVisible(false);
+      return;
+    }
+
     // Show current toast
     setIsVisible(true);
 
-    // Hide it 3 seconds before the interval ends so it can fade out smoothly
     const intervalMs = (config.interval_seconds || 15) * 1000;
-    const hideTimeMs = Math.max(3000, intervalMs - 2000); // Wait at least 3s
+    // How long the toast stays visible
+    const displayMs = (config.display_duration_seconds || 5) * 1000;
+    const hideTimeMs = Math.min(displayMs, intervalMs - 1000); // Ensure it hides before next one
 
     const hideTimer = setTimeout(() => {
       setIsVisible(false);
@@ -83,7 +111,7 @@ export function ActivityToasts() {
       clearTimeout(hideTimer);
       clearTimeout(nextTimer);
     };
-  }, [currentIndex, toasts, config, isPaused]);
+  }, [currentIndex, toasts, config, isPaused, location.pathname]);
 
   if (!config?.enabled || toasts.length === 0) return null;
 

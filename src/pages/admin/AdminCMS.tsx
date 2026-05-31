@@ -15,6 +15,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { AdminBroadcasts } from "./AdminBroadcasts";
 import { AdminAdvertisements } from "./AdminAdvertisements";
+import { AdminActivityFeed } from "./AdminActivityFeed";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -50,7 +51,7 @@ export function AdminCMS() {
       <div className="mb-4 flex justify-between items-center">
         <div>
           <h2 className="text-xl font-serif font-semibold">Content Management System</h2>
-          <p className="text-sm text-muted-foreground">Manage blog posts, broadcasts, advertisements, and homepage content.</p>
+          <p className="text-sm text-muted-foreground">Manage blog posts, broadcasts, advertisements, activity feed, and homepage content.</p>
         </div>
       </div>
 
@@ -61,6 +62,7 @@ export function AdminCMS() {
           <TabsTrigger value="homepage">Homepage Content</TabsTrigger>
           <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
           <TabsTrigger value="advertisements">Advertisements</TabsTrigger>
+          <TabsTrigger value="activity-feed">Activity Feed</TabsTrigger>
         </TabsList>
 
         <TabsContent value="posts">
@@ -174,6 +176,10 @@ export function AdminCMS() {
 
         <TabsContent value="advertisements">
           <AdminAdvertisements />
+        </TabsContent>
+
+        <TabsContent value="activity-feed">
+          <AdminActivityFeed />
         </TabsContent>
       </Tabs>
 
