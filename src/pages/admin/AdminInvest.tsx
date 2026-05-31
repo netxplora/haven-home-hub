@@ -105,9 +105,32 @@ export function AdminInvest() {
     if (error) toast({ title: "Resume failed", description: error.message, variant: "destructive" });
     else { toast({ title: "Campaign resumed" }); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }
   }
+  const totalFunding = properties.reduce((sum: number, p: any) => sum + Number(p.current_funding || 0), 0);
+  const totalUnitsSold = properties.reduce((sum: number, p: any) => sum + Number(p.units_sold || 0), 0);
+  const activeCampaigns = properties.filter((p: any) => p.status === "open").length;
 
   return (
     <div className="space-y-6">
+      {/* Overview Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Total Properties</p>
+          <p className="text-2xl font-bold mt-1">{properties.length}</p>
+        </div>
+        <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Active Campaigns</p>
+          <p className="text-2xl font-bold mt-1 text-emerald-600">{activeCampaigns}</p>
+        </div>
+        <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Funding Raised</p>
+          <p className="text-2xl font-bold mt-1 text-primary">{formatMoney(totalFunding)}</p>
+        </div>
+        <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Units Sold</p>
+          <p className="text-2xl font-bold mt-1">{totalUnitsSold}</p>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h2 className="font-serif text-2xl font-bold">Investments</h2>
@@ -147,10 +170,14 @@ export function AdminInvest() {
               <SelectContent className="rounded-xl">
                 <SelectItem value="all">All Statuses</SelectItem>
                 <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="upcoming">Upcoming</SelectItem>
                 <SelectItem value="open">Open</SelectItem>
-                <SelectItem value="funded">Funded</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="under_review">Under Review</SelectItem>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="funded">Fully Funded</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>
+                <SelectItem value="paused">Suspended</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
               </SelectContent>
             </Select>
             <Select value={sortBy} onValueChange={(v) => handleFilterChange(setSortBy, v)}>

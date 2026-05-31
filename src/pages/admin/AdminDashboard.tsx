@@ -44,13 +44,16 @@ import { AdminUsers } from "./AdminUsers";
 import { AdminReferrals } from "./AdminReferrals";
 import { AdminDocuments } from "./AdminDocuments";
 import { AdminInvestor360 } from "./AdminInvestor360";
-import { Award, CreditCard } from "lucide-react";
+import { AdminInvestmentOrders } from "./AdminInvestmentOrders";
+import { AdminActivityFeed } from "./AdminActivityFeed";
+import { Award, CreditCard, ClipboardList, Megaphone } from "lucide-react";
 
 const navItems: NavItem[] = [
   { id: "overview", label: "Overview", icon: LayoutDashboard },
   { id: "properties", label: "Properties", icon: Home },
   { id: "property-import", label: "AI Property Import", icon: Sparkles },
   { id: "invest", label: "Investments Map", icon: TrendingUp },
+  { id: "invest-orders", label: "Investment Orders", icon: ClipboardList },
   { id: "finance", label: "Finance Center", icon: Landmark },
   { id: "agents", label: "Agents", icon: Users },
   { id: "locations", label: "Locations", icon: MapPin },
@@ -65,6 +68,7 @@ const navItems: NavItem[] = [
   { id: "referrals", label: "Referral Program", icon: Award },
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
   { id: "investor-360", label: "Investor 360", icon: UserSearch },
+  { id: "activity-feed", label: "Activity Feed", icon: Megaphone },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -114,6 +118,8 @@ export default function Admin() {
         {activeTab === "referrals" && <AdminReferrals />}
         {activeTab === "payment-methods" && <AdminPaymentMethods />}
         {activeTab === "investor-360" && <AdminInvestor360 initialUserId={investor360Id} onBack={() => setActiveTab("overview")} />}
+        {activeTab === "invest-orders" && <AdminInvestmentOrders />}
+        {activeTab === "activity-feed" && <AdminActivityFeed />}
         {activeTab === "settings" && <AdminSettings />}
       </div>
     </DashboardShell>
