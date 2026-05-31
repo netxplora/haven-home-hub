@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ShieldCheck, ShieldAlert, ClipboardList, User, Phone, Mail, Upload, CheckCircle2, ChevronRight, FileText, Clock, Copy, CalendarDays, BadgeCheck, Info } from "lucide-react";
+import { ShieldCheck, ShieldAlert, ClipboardList, User, Phone, Mail, Upload, CheckCircle2, ChevronRight, FileText, Clock, Copy, CalendarDays, BadgeCheck, Info, Camera, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -25,7 +25,13 @@ export function ProfilePanel({ userId }: { userId: string }) {
   const [form, setForm] = useState({ full_name: "", phone: "" });
   const [saving, setSaving] = useState(false);
   const [uploadingKyc, setUploadingKyc] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [kycStep, setKycStep] = useState(1);
+
+  // Resolve avatar public URL
+  const avatarPublicUrl = profile?.avatar_url
+    ? supabase.storage.from("avatars").getPublicUrl(profile.avatar_url).data.publicUrl
+    : null;
 
   // Restore values from LocalStorage drafts if they exist
   useEffect(() => {
@@ -73,6 +79,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
     !!profile?.full_name,
     !!profile?.phone,
     !!user?.email,
+    !!profile?.avatar_url,
     profile?.kyc_status === "approved",
     !!profile?.id_document_url,
     !!profile?.proof_of_address_url,
@@ -80,6 +87,48 @@ export function ProfilePanel({ userId }: { userId: string }) {
   const completenessScore = Math.round(
     (completenessFields.filter(Boolean).length / completenessFields.length) * 100
   );
+
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    if (!e.target.files || e.target.files.length === 0) return;
+    const file = e.target.files[0];
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({ title: "Invalid file type", description: "Please upload a JPG, PNG, or WebP image.", variant: "destructive" });
+      return;
+    }
+
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+      toast({ title: "File too large", description: "Profile picture must be under 2MB.", variant: "destructive" });
+      return;
+    }
+
+    const ext = file.name.split('.').pop();
+    const filePath = `${userId}/avatar_${Date.now()}.${ext}`;
+
+    setUploadingAvatar(true);
+    try {
+      // Delete old avatar if it exists
+      if (profile?.avatar_url) {
+        await supabase.storage.from("avatars").remove([profile.avatar_url]);
+      }
+
+      const { error: uploadError } = await supabase.storage.from("avatars").upload(filePath, file);
+      if (uploadError) throw uploadError;
+
+      const { error: updateError } = await supabase.from("profiles").update({ avatar_url: filePath }).eq("id", userId);
+      if (updateError) throw updateError;
+
+      toast({ title: "Profile picture updated" });
+      qc.invalidateQueries({ queryKey: ["profile", userId] });
+    } catch (error: any) {
+      toast({ title: "Upload failed", description: error.message, variant: "destructive" });
+    } finally {
+      setUploadingAvatar(false);
+    }
+  }
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -162,8 +211,35 @@ export function ProfilePanel({ userId }: { userId: string }) {
         {/* Profile Form Card */}
         <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
           <div className="flex items-center gap-4 mb-6">
-             <div className="h-14 w-14 rounded-lg bg-primary/8 text-primary flex items-center justify-center font-semibold text-xl">
-                {profile?.full_name?.charAt(0) || "U"}
+             {/* Profile Picture */}
+             <div className="relative group">
+               <div className="h-16 w-16 rounded-full overflow-hidden border-2 border-border bg-muted flex items-center justify-center">
+                 {avatarPublicUrl ? (
+                   <img
+                     src={avatarPublicUrl}
+                     alt={profile?.full_name || "Profile"}
+                     className="h-full w-full object-cover"
+                   />
+                 ) : (
+                   <span className="font-serif font-semibold text-xl text-primary">
+                     {profile?.full_name?.charAt(0) || "U"}
+                   </span>
+                 )}
+               </div>
+               <label className="absolute inset-0 rounded-full flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                 {uploadingAvatar ? (
+                   <Loader2 className="h-5 w-5 text-white animate-spin" />
+                 ) : (
+                   <Camera className="h-5 w-5 text-white" />
+                 )}
+                 <input
+                   type="file"
+                   accept="image/jpeg,image/png,image/webp"
+                   className="sr-only"
+                   onChange={handleAvatarUpload}
+                   disabled={uploadingAvatar}
+                 />
+               </label>
              </div>
              <div>
                 <h2 className="font-serif text-xl font-semibold">{profile?.full_name || "User Account"}</h2>
@@ -275,6 +351,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
           <Progress value={completenessScore} className="h-2" />
           <div className="space-y-2">
             {[
+              { label: "Profile Picture", done: !!profile?.avatar_url },
               { label: "Full Name", done: !!profile?.full_name },
               { label: "Phone Number", done: !!profile?.phone },
               { label: "Email Address", done: !!user?.email },
