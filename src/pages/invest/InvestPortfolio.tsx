@@ -93,6 +93,7 @@ import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
           </div>
         </div>
 
+        <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase">Active Investments</span>
             <span className="font-serif text-xl font-bold">{active}</span>
