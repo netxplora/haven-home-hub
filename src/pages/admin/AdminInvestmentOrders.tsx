@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,8 @@ export function AdminInvestmentOrders() {
         .select(`
           *,
           profiles(full_name, email, phone),
-          investment_properties(title, currency, projected_return_min, projected_return_max)
+          investment_properties(title, currency, projected_return_min, projected_return_max),
+          payments(*)
         `)
         .order("created_at", { ascending: false });
       
@@ -44,6 +45,23 @@ export function AdminInvestmentOrders() {
       o.investment_properties?.title?.toLowerCase().includes(term)
     );
   }, [orders, searchTerm]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-investment-orders-changes')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'user_investments' },
+        () => {
+          qc.invalidateQueries({ queryKey: ["admin-investment-orders"] });
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [qc]);
 
   const handleApprove = async () => {
     if (!selectedOrder) return;
@@ -250,6 +268,47 @@ export function AdminInvestmentOrders() {
                     <span className="text-xs uppercase font-medium">{selectedOrder.investment_type}</span>
                   </div>
                 </div>
+
+                {selectedOrder.payments && selectedOrder.payments.length > 0 && (
+                  <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
+                    <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Payment Proof</h4>
+                    
+                    {selectedOrder.payments.map((payment: any, index: number) => (
+                      <div key={payment.id || index} className="mb-4 last:mb-0">
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs text-muted-foreground">Provider</span>
+                          <span className="font-mono font-medium text-xs uppercase">{payment.provider}</span>
+                        </div>
+                        <div className="flex justify-between items-center mb-2">
+                          <span className="text-xs text-muted-foreground">Reference</span>
+                          <span className="font-mono text-xs">{payment.reference}</span>
+                        </div>
+                        {payment.crypto_currency && (
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs text-muted-foreground">Crypto Amount</span>
+                            <span className="font-mono text-xs">{payment.crypto_amount} {payment.crypto_currency}</span>
+                          </div>
+                        )}
+                        {payment.transaction_hash && (
+                          <div className="flex justify-between items-center mb-2">
+                            <span className="text-xs text-muted-foreground">Hash</span>
+                            <span className="font-mono text-[10px] truncate max-w-[150px]">{payment.transaction_hash}</span>
+                          </div>
+                        )}
+                        {payment.proof_url && (
+                          <div className="mt-3">
+                            <Button variant="outline" size="sm" className="w-full text-xs h-8" asChild>
+                              <a href={payment.proof_url} target="_blank" rel="noopener noreferrer">
+                                <ExternalLink className="h-3 w-3 mr-2" />
+                                View Uploaded Receipt
+                              </a>
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="space-y-4">

@@ -30,6 +30,7 @@ const InvestHome = lazy(() => import("./pages/invest/InvestHome"));
 const InvestOpportunities = lazy(() => import("./pages/invest/InvestOpportunities"));
 const InvestDetail = lazy(() => import("./pages/invest/InvestDetail"));
 const InvestPortfolio = lazy(() => import("./pages/invest/InvestPortfolio"));
+const InvestPortfolioDetail = lazy(() => import("./pages/invest/InvestPortfolioDetail"));
 const Withdrawals = lazy(() => import("./pages/invest/Withdrawals"));
 const PaymentStatus = lazy(() => import("./pages/invest/PaymentStatus"));
 const CertificateView = lazy(() => import("./pages/invest/CertificateView"));
@@ -134,6 +135,7 @@ const App = () => (
               <Route path="/invest" element={<InvestHome />} />
               <Route path="/invest/opportunities" element={<InvestOpportunities />} />
               <Route path="/invest/portfolio" element={<InvestPortfolio />} />
+              <Route path="/invest/portfolio/:id" element={<InvestPortfolioDetail />} />
               <Route path="/invest/withdrawals" element={<Withdrawals />} />
               <Route path="/invest/:slug" element={<InvestDetail />} />
               <Route path="/payments/:id" element={<PaymentStatus />} />

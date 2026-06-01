@@ -9,11 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/invest";
 import { ArrowRight, PiggyBank, TrendingUp, Wallet } from "lucide-react";
 import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
-import { UserInvestmentDetailDialog } from "@/components/invest/UserInvestmentDetailDialog";
-
-export default function InvestPortfolio() {
-  const { user, loading } = useAuth();
-  const [selectedInv, setSelectedInv] = useState<any>(null);
+import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
 
 
   const { data, isLoading } = useQuery({
@@ -97,7 +93,6 @@ export default function InvestPortfolio() {
           </div>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-3">
           <div className="rounded-xl border border-border/50 bg-card p-4 flex items-center justify-between">
             <span className="text-xs font-medium text-muted-foreground uppercase">Active Investments</span>
             <span className="font-serif text-xl font-bold">{active}</span>
@@ -134,52 +129,68 @@ export default function InvestPortfolio() {
                   </Link>
                 </div>
               ) : data!.investments.map((i: any) => {
-                const isInstallment = i.investment_type === "installment";
                 const total = Number(i.total_amount ?? i.amount_invested ?? 0);
+                const isInstallment = i.investment_type === "installment";
                 const paid = Number(i.amount_paid ?? (isInstallment ? 0 : total));
                 const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
-
+                
                 return (
-                  <button key={i.id} onClick={() => setSelectedInv(i)} className="w-full text-left flex items-center gap-4 rounded-xl border border-border/50 bg-card p-5 transition-all duration-200 hover:shadow-card hover:border-border">
-                    <div className="h-16 w-24 overflow-hidden rounded-lg bg-muted shrink-0">
-                      {i.investment_properties?.cover_image_url && <img src={i.investment_properties.cover_image_url} alt="" className="h-full w-full object-cover" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-serif text-base font-semibold text-foreground truncate">{i.investment_properties?.title}</p>
-                      <div className="flex items-center gap-2 mt-1.5">
-                        <Badge variant="outline" className={`text-[10px] font-medium px-2 py-0.5 ${isInstallment ? "text-secondary border-secondary/20" : "text-primary border-primary/20"}`}>
-                          {isInstallment ? "Installment" : "Full Payment"}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {i.units_owned} Units · {i.investment_properties?.projected_return_min}–{i.investment_properties?.projected_return_max}% p.a.
-                        </span>
+                  <Link key={i.id} to={`/invest/portfolio/${i.id}`} className="block w-full text-left rounded-2xl border border-border/50 bg-card overflow-hidden transition-all duration-300 hover:shadow-lux hover:border-primary/20 group">
+                    <div className="flex flex-col sm:flex-row gap-0 sm:gap-6">
+                      <div className="w-full sm:w-48 h-40 sm:h-auto shrink-0 relative overflow-hidden bg-muted">
+                        {i.investment_properties?.cover_image_url && <img src={i.investment_properties.cover_image_url} alt="" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />}
+                        <div className="absolute top-3 left-3">
+                          <Badge variant={i.status === 'active' ? 'default' : 'secondary'} className="uppercase tracking-wider text-[10px] shadow-sm">
+                            {i.status.replace(/_/g, " ")}
+                          </Badge>
+                        </div>
                       </div>
-                      {isInstallment && (
-                        <div className="mt-2.5 flex items-center gap-3">
-                          <div className="flex-1 max-w-[180px]">
-                            <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
-                              <div className="h-full rounded-full bg-primary transition-all" style={{ width: `${pct}%` }} />
+                      
+                      <div className="flex-1 p-5 sm:py-5 sm:pr-6">
+                        <div className="flex justify-between items-start gap-4 mb-4">
+                          <div>
+                            <h3 className="font-serif text-lg font-bold text-foreground group-hover:text-primary transition-colors">{i.investment_properties?.title}</h3>
+                            <p className="text-xs text-muted-foreground uppercase tracking-wider font-semibold mt-1">
+                              {i.investment_type} · {i.units_owned} Units
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-serif font-bold text-lg">{formatMoney(total)}</p>
+                            <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Invested</p>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4 mt-6">
+                          <div>
+                            <div className="flex justify-between items-end mb-1">
+                              <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Property Funding</span>
+                            </div>
+                            <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                              <div className="h-full bg-primary" style={{ width: `${Math.min(100, Math.round(((i.investment_properties?.units_sold || 0) / (i.investment_properties?.total_units || 1)) * 100))}%` }} />
                             </div>
                           </div>
-                          <span className="text-[11px] font-medium text-muted-foreground">{pct}% Paid</span>
-                          {i.next_payment_due && i.status !== "completed" && (
-                            <span className="text-[11px] font-medium text-amber-600 bg-amber-50 px-2 py-0.5 rounded">
-                              Due: {new Date(i.next_payment_due).toLocaleDateString()}
-                            </span>
+                          
+                          {i.status === 'active' && i.maturity_date ? (
+                            <div>
+                              <div className="flex justify-between items-end mb-1">
+                                <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Maturity Timeline</span>
+                              </div>
+                              <div className="h-1.5 w-full bg-muted rounded-full overflow-hidden">
+                                <div className="h-full bg-green-500" style={{ 
+                                  width: `${Math.min(100, ((new Date().getTime() - new Date(i.start_date).getTime()) / (new Date(i.maturity_date).getTime() - new Date(i.start_date).getTime())) * 100)}%` 
+                                }} />
+                              </div>
+                            </div>
+                          ) : (
+                            <div>
+                              <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold mb-1">ROI Status</p>
+                              <p className="text-xs font-medium text-foreground">{i.status === 'confirmed' ? "Awaiting 100% Funding" : "Pending Verification"}</p>
+                            </div>
                           )}
                         </div>
-                      )}
+                      </div>
                     </div>
-                    <div className="text-right shrink-0">
-                      <p className="font-serif text-lg font-semibold text-foreground">{formatMoney(total, i.investment_properties?.currency ?? "USD")}</p>
-                      {isInstallment && (
-                        <p className="text-[11px] text-amber-600 mt-0.5">
-                          {formatMoney(Number(i.remaining_balance ?? 0), i.investment_properties?.currency ?? "USD")} left
-                        </p>
-                      )}
-                      <Badge variant={i.status === "confirmed" || i.status === "active" ? "default" : i.status === "completed" ? "secondary" : "destructive"} className="mt-1 text-[10px] capitalize">{i.status.replace(/_/g, " ")}</Badge>
-                    </div>
-                  </button>
+                  </Link>
                 );
               })}
           </div>
