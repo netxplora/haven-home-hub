@@ -71,8 +71,20 @@ export function AdminVerificationQueue() {
   const handleVerify = async (item: any) => {
     try {
       if (item.type === "investment") {
-        const { error } = await (supabase.rpc as any)("verify_investment", { p_investment_id: item.id });
-        if (error) throw error;
+        const { data: session } = await supabase.auth.getSession();
+        const adminId = session.session?.user.id;
+        const { error } = await (supabase.rpc as any)("verify_investment", { 
+            p_investment_id: item.id,
+            p_admin_id: adminId
+        });
+        if (error) {
+          if (error.message.includes("function verify_investment") && error.message.includes("does not exist")) {
+             const { error: fallbackError } = await (supabase.rpc as any)("verify_investment", { p_investment_id: item.id });
+             if (fallbackError) throw fallbackError;
+          } else {
+             throw error;
+          }
+        }
         toast({ title: "Investment Verified", description: "Certificate has been issued successfully." });
       } else {
         // Generic payment verification
@@ -119,7 +131,10 @@ export function AdminVerificationQueue() {
   const handleReject = async (item: any) => {
     try {
       if (item.type === "investment") {
-        const { error } = await supabase.from("user_investments").update({ status: "cancelled" }).eq("id", item.id);
+        const { error } = await supabase.rpc("reject_investment", {
+          p_investment_id: item.id,
+          p_reason: "Rejected by administrator during verification."
+        });
         if (error) throw error;
       } else {
         const { error } = await (supabase.from("payments") as any).update({ status: "failed" }).eq("id", item.id);

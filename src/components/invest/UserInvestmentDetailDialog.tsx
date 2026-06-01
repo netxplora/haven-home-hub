@@ -3,8 +3,12 @@ import { formatMoney } from "@/lib/invest";
 import { InvestmentTimeline } from "./InvestmentTimeline";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ExternalLink, FileText, Download } from "lucide-react";
+import { ExternalLink, FileText, Download, AlertCircle } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "@/hooks/use-toast";
+import { useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface UserInvestmentDetailDialogProps {
   open: boolean;
@@ -13,6 +17,9 @@ interface UserInvestmentDetailDialogProps {
 }
 
 export function UserInvestmentDetailDialog({ open, onClose, investment }: UserInvestmentDetailDialogProps) {
+  const qc = useQueryClient();
+  const [isCancelling, setIsCancelling] = useState(false);
+
   if (!investment) return null;
 
   const property = investment.investment_properties;
@@ -22,6 +29,23 @@ export function UserInvestmentDetailDialog({ open, onClose, investment }: UserIn
   const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
   
   const accruedEarnings = Number(investment.accrued_earnings || 0);
+  const isCancellable = investment.status === "pending" || investment.status === "payment_under_review" || investment.status === "awaiting_payment";
+
+  const handleCancel = async () => {
+    if (!confirm("Are you sure you want to cancel this investment? Your reserved units will be released.")) return;
+    setIsCancelling(true);
+    try {
+      const { error } = await supabase.rpc("cancel_investment", { p_investment_id: investment.id });
+      if (error) throw error;
+      toast({ title: "Investment Cancelled", description: "Your investment has been cancelled and units released." });
+      qc.invalidateQueries({ queryKey: ["portfolio"] });
+      onClose();
+    } catch (err: any) {
+      toast({ title: "Cancellation Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
@@ -98,7 +122,18 @@ export function UserInvestmentDetailDialog({ open, onClose, investment }: UserIn
           
         </div>
         
-        <div className="p-6 border-t border-border/40 bg-accent/20 shrink-0 flex justify-end gap-3">
+        <div className="p-6 border-t border-border/40 bg-accent/20 shrink-0 flex justify-end gap-3 items-center">
+          {isCancellable && (
+            <Button 
+              variant="destructive" 
+              onClick={handleCancel} 
+              disabled={isCancelling}
+              className="rounded-xl font-semibold mr-auto"
+            >
+              <AlertCircle className="mr-2 h-4 w-4" /> 
+              {isCancelling ? "Cancelling..." : "Cancel Investment"}
+            </Button>
+          )}
           <Button variant="outline" onClick={onClose} className="rounded-xl font-semibold">
             Close Panel
           </Button>

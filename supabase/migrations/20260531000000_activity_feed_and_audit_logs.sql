@@ -70,8 +70,8 @@ DECLARE
     user_initial TEXT;
     property_name TEXT;
 BEGIN
-    -- We only want to generate toasts when a new investment is approved or completed
-    IF NEW.status = 'approved' AND (OLD.status = 'pending' OR OLD.status = 'payment_under_review') THEN
+    -- We only want to generate toasts when a new investment is verified (confirmed/active)
+    IF (NEW.status = 'confirmed' OR NEW.status = 'active') AND (OLD.status = 'pending' OR OLD.status = 'payment_under_review') THEN
         
         -- Get user's first letter for privacy (obscured)
         SELECT 

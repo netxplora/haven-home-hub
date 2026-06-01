@@ -16,6 +16,7 @@ export function AdminInvestmentOrders() {
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
+  const [adjustUnits, setAdjustUnits] = useState("");
 
   const { data: orders = [], isLoading } = useQuery({
     queryKey: ["admin-investment-orders"],
@@ -47,17 +48,27 @@ export function AdminInvestmentOrders() {
   const handleApprove = async () => {
     if (!selectedOrder) return;
     try {
-      // Approve investment logic
-      const { error } = await (supabase as any).from("user_investments").update({
-        status: "approved",
-        admin_notes: adminNotes,
-        approved_at: new Date().toISOString()
-      }).eq("id", selectedOrder.id);
+      // Approve investment using the hardened RPC
+      const { data: session } = await supabase.auth.getSession();
+      const adminId = session.session?.user.id;
       
-      if (error) throw error;
+      const { error } = await supabase.rpc("verify_investment", {
+        p_investment_id: selectedOrder.id,
+        p_admin_id: adminId,
+        p_notes: adminNotes
+      });
       
-      // Update property funding progress (simplified logic)
-      const prop = selectedOrder.investment_properties;
+      if (error) {
+        // Fallback if the RPC signature expects only p_investment_id
+        if (error.message.includes("function verify_investment(uuid, uuid, text) does not exist")) {
+            const { error: fallbackError } = await supabase.rpc("verify_investment", {
+                p_investment_id: selectedOrder.id
+            });
+            if (fallbackError) throw fallbackError;
+        } else {
+            throw error;
+        }
+      }
       
       toast({ title: "Order Approved", description: `Investment approved for ${selectedOrder.profiles.full_name}` });
       setSelectedOrder(null);
@@ -75,11 +86,11 @@ export function AdminInvestmentOrders() {
     }
     
     try {
-      const { error } = await (supabase as any).from("user_investments").update({
-        status: "rejected",
-        rejection_reason: rejectionReason,
-        admin_notes: adminNotes
-      }).eq("id", selectedOrder.id);
+      // Reject investment using the hardened RPC
+      const { error } = await supabase.rpc("reject_investment", {
+        p_investment_id: selectedOrder.id,
+        p_reason: rejectionReason
+      });
       
       if (error) throw error;
       
@@ -88,6 +99,27 @@ export function AdminInvestmentOrders() {
       qc.invalidateQueries({ queryKey: ["admin-investment-orders"] });
     } catch (err: any) {
       toast({ title: "Rejection Failed", description: err.message, variant: "destructive" });
+    }
+  };
+
+  const handleAdjust = async () => {
+    if (!selectedOrder) return;
+    const units = parseInt(adjustUnits, 10);
+    if (isNaN(units) || units <= 0) {
+      return toast({ title: "Invalid Units", description: "Please enter a valid positive number.", variant: "destructive" });
+    }
+    try {
+      const { error } = await supabase.rpc("admin_adjust_investment_allocation", {
+        p_investment_id: selectedOrder.id,
+        p_new_units: units,
+        p_reason: adminNotes || "Manual allocation adjustment"
+      });
+      if (error) throw error;
+      toast({ title: "Allocation Adjusted", description: `Units adjusted to ${units}.` });
+      setSelectedOrder(null);
+      qc.invalidateQueries({ queryKey: ["admin-investment-orders"] });
+    } catch (err: any) {
+      toast({ title: "Adjustment Failed", description: err.message, variant: "destructive" });
     }
   };
 
@@ -147,7 +179,7 @@ export function AdminInvestmentOrders() {
                   <td className="px-6 py-4 text-center">
                     <Badge 
                       variant={
-                        order.status === "approved" || order.status === "active" ? "default" :
+                        order.status === "confirmed" || order.status === "active" ? "default" :
                         order.status === "pending" || order.status === "payment_under_review" ? "secondary" :
                         order.status === "rejected" ? "destructive" : "outline"
                       }
@@ -165,6 +197,7 @@ export function AdminInvestmentOrders() {
                         setSelectedOrder(order);
                         setAdminNotes(order.admin_notes || "");
                         setRejectionReason(order.rejection_reason || "");
+                        setAdjustUnits(order.units_owned?.toString() || "");
                       }}
                     >
                       Review
@@ -242,8 +275,24 @@ export function AdminInvestmentOrders() {
                   </div>
                 )}
                 
+                {selectedOrder.status !== 'rejected' && selectedOrder.status !== 'cancelled' && (
+                  <div className="space-y-2 pt-2 border-t border-border/50">
+                    <label className="text-xs font-semibold">Adjust Allocation</label>
+                    <div className="flex gap-2">
+                      <Input 
+                        type="number"
+                        value={adjustUnits}
+                        onChange={(e) => setAdjustUnits(e.target.value)}
+                        placeholder="New Unit Count"
+                        className="text-xs h-9"
+                      />
+                      <Button onClick={handleAdjust} variant="outline" className="h-9 text-xs">Update</Button>
+                    </div>
+                  </div>
+                )}
+                
                 <div className="flex flex-col gap-2 pt-2">
-                  {selectedOrder.status !== 'approved' && selectedOrder.status !== 'active' && (
+                  {selectedOrder.status !== 'confirmed' && selectedOrder.status !== 'active' && (
                     <Button onClick={handleApprove} className="w-full bg-emerald-600 hover:bg-emerald-700 font-bold">
                       <Check className="mr-2 h-4 w-4" /> Approve & Allocate
                     </Button>
