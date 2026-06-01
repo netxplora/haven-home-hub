@@ -9,10 +9,7 @@ export function Footer() {
         {/* Brand */}
         <div>
           <Link to="/" className="flex items-center gap-2.5 font-serif text-lg font-semibold text-white">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Building2 className="h-4 w-4" />
-            </span>
-            Haven Home Hub
+            <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto" />
           </Link>
           <p className="mt-4 text-sm text-white/50 leading-relaxed max-w-xs">
             {"A trusted, agency-led real estate platform. Every property is hand-curated and verified by our professional team."}

@@ -58,10 +58,7 @@ export default function Auth() {
       {/* Left Panel — Brand */}
       <div className="hidden bg-secondary lg:flex lg:flex-col lg:justify-between lg:p-14">
         <Link to="/" className="flex items-center gap-2.5 font-serif text-lg font-semibold text-white">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground">
-            <Building2 className="h-4 w-4" />
-          </span>
-          Haven Home Hub
+          <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto invert" />
         </Link>
         <div className="max-w-md">
           <h2 className="font-serif text-3xl font-semibold leading-snug text-white">
@@ -79,10 +76,7 @@ export default function Auth() {
         <div className="mx-auto w-full max-w-[420px]">
           {/* Mobile Logo */}
           <Link to="/" className="lg:hidden flex items-center gap-2 font-serif text-lg font-semibold text-foreground mb-10">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary text-primary-foreground">
-              <Building2 className="h-4 w-4" />
-            </span>
-            Haven Home Hub
+            <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto" />
           </Link>
 
           <h1 className="font-serif text-2xl font-semibold text-foreground">Welcome</h1>

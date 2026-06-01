@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/site/NotificationBell";
 import { CurrencyToggle } from "@/components/site/CurrencyToggle";
-import logo from "@/assets/logo-rose.png";
 
 export function Header() {
   const { user, isAdmin, isAgent, signOut } = useAuth();
@@ -97,7 +96,7 @@ export function Header() {
       <div className="container-wide flex h-[64px] items-center justify-between gap-6">
         {/* Logo */}
         <Link to="/" className="flex items-center shrink-0" aria-label="Haven Home Hub home">
-          <img src={logo} alt="Haven Home Hub" width={144} height={48} className="h-8 w-auto" />
+          <img src="/logo.png" alt="Haven Home Hub" className="h-12 w-auto" />
         </Link>
 
         {/* Desktop Nav */}

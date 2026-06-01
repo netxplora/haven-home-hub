@@ -117,8 +117,8 @@ export default function CertificateView() {
           
           {/* Header */}
           <div className="bg-primary/5 p-12 text-center border-b border-primary/10">
-            <div className="mx-auto w-20 h-20 bg-primary rounded-full flex items-center justify-center mb-6">
-              <ShieldCheck className="h-10 w-10 text-primary-foreground" />
+            <div className="mx-auto w-24 mb-6">
+              <img src="/logo.png" alt="Haven Home Hub" className="w-full h-auto" />
             </div>
             <h1 className="font-serif text-5xl font-bold tracking-tight mb-4">Official Investment Certificate</h1>
             <p className="text-lg text-muted-foreground uppercase tracking-widest font-bold">Haven Home Hub Real Estate Trust</p>
@@ -175,7 +175,7 @@ export default function CertificateView() {
           <div className="bg-muted/50 p-12 flex items-center justify-between border-t border-border">
             <div className="space-y-1">
               <div className="w-48 border-b-2 border-primary/50 pb-2">
-                <span className="font-serif text-xl italic font-bold">Haven Home Hub Auth</span>
+                <img src="/logo.png" alt="Haven Home Hub Auth" className="h-8 w-auto opacity-50 grayscale" />
               </div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mt-2">Authorized Signature</p>
             </div>

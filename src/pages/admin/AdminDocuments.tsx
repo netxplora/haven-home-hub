@@ -1078,7 +1078,7 @@ export function AdminDocuments() {
                           <span className="text-white font-serif font-bold text-2xl tracking-tighter">H</span>
                         </div>
                         <div>
-                          <h1 className="font-serif text-2xl font-black tracking-tight text-slate-900 uppercase leading-none">Haven Home Hub</h1>
+                          <img src="/logo.png" alt="Haven Home Hub" className="h-8 w-auto" />
                           <p className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mt-1">Certified Legal Documentation</p>
                         </div>
                       </div>

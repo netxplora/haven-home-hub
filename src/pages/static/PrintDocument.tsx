@@ -188,11 +188,8 @@ export default function PrintDocument() {
           {/* Header & Logo */}
           <div className="flex justify-between items-start border-b-[3px] border-double border-slate-800 pb-6 mb-10">
             <div className="flex items-center gap-4">
-              <div className="h-14 w-14 bg-slate-900 rounded-sm flex items-center justify-center shrink-0">
-                <span className="text-white font-serif font-bold text-3xl tracking-tighter">H</span>
-              </div>
               <div>
-                <h1 className="font-serif text-3xl font-black tracking-tight text-slate-900 uppercase">Haven Home Hub</h1>
+                <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto" />
                 <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Certified Legal Documentation Service</p>
               </div>
             </div>

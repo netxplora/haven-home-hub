@@ -31,8 +31,7 @@ export default function ForgotPassword() {
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="hidden bg-foreground lg:flex lg:flex-col lg:justify-between lg:p-12 lg:text-primary-foreground">
         <Link to="/" className="flex items-center gap-2.5 font-serif text-xl font-semibold ">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground "><Building2 className="h-4 w-4" /></span>
-          Haven Home Hub
+          <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto invert" />
         </Link>
         <div>
           <h2 className="font-serif text-4xl font-semibold leading-tight">Secure account recovery.</h2>

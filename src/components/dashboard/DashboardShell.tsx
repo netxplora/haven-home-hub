@@ -67,10 +67,7 @@ export function DashboardShell({
       {/* Logo */}
       <div className="flex h-[68px] items-center px-6 border-b border-border/50">
         <Link to="/" className="flex items-center gap-2.5 font-serif text-lg font-semibold text-foreground">
-          <span className="grid h-9 w-9 place-items-center rounded-lg bg-primary text-primary-foreground shadow-sm">
-            <Building2 className="h-4 w-4" />
-          </span>
-          <span className="hidden lg:block">Haven Home Hub</span>
+          <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto" />
         </Link>
       </div>
 
@@ -145,10 +142,7 @@ export function DashboardShell({
         {/* Mobile Header */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border/50 bg-background/90 backdrop-blur-md px-4 lg:hidden">
           <Link to="/" className="flex items-center gap-2 font-serif text-base font-semibold text-foreground">
-            <span className="grid h-7 w-7 place-items-center rounded-md bg-primary text-primary-foreground">
-              <Building2 className="h-3.5 w-3.5" />
-            </span>
-            Haven Home Hub
+            <img src="/logo.png" alt="Haven Home Hub" className="h-8 w-auto" />
           </Link>
           
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>

@@ -65,12 +65,9 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-gray-200 pb-8 mb-8">
               <div className="flex items-start gap-4">
-                <div className="h-14 w-14 bg-primary text-white rounded-lg flex items-center justify-center font-bold font-serif text-2xl shadow-sm shrink-0">
-                  VE
-                </div>
+                <img src="/logo.png" alt="Haven Home Hub" className="h-12 w-auto" />
                 <div>
-                  <h1 className="text-3xl font-serif font-bold text-gray-900 tracking-tight leading-none mb-2">Haven Home Hub</h1>
-                  <p className="text-sm font-medium text-gray-500 uppercase tracking-widest">Official Transaction Receipt</p>
+                  <p className="text-sm font-medium text-gray-500 uppercase tracking-widest mt-1">Official Transaction Receipt</p>
                   <p className="text-xs text-gray-400 mt-1">123 Premium Blvd, Financial District</p>
                 </div>
               </div>
