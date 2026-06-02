@@ -64,10 +64,12 @@ export default function PropertyDetail() {
   const { slug } = useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
-    const [bookingOpen, setBookingOpen] = useState(false);
+  const [bookingOpen, setBookingOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<any>("digital_currency");
+  const [paymentMode, setPaymentMode] = useState<"full" | "installment">("full");
+  const [durationMonths, setDurationMonths] = useState<number>(24);
   const formatPrice = useFormatPrice();
   const { compareList, addToCompare, removeFromCompare } = useCompare();
 
@@ -216,6 +218,13 @@ export default function PropertyDetail() {
   const interior_features: string[] = Array.isArray(property.interior_features) ? property.interior_features as string[] : [];
   const exterior_features: string[] = Array.isArray(property.exterior_features) ? property.exterior_features as string[] : [];
   const nearbyPois: any[] = Array.isArray(property.nearby_pois) ? property.nearby_pois : [];
+
+  const remainingBalance = property ? Number(property.price) - 500 : 0;
+  const installmentEnabled = property ? !!(property as any).installment_available : false;
+  const minDownPct = property ? Number((property as any).min_down_payment_pct ?? 20) : 20;
+  const downPaymentAmount = remainingBalance * (minDownPct / 100);
+  const monthlyInstallment = durationMonths > 0 ? (remainingBalance - downPaymentAmount) / durationMonths : 0;
+  const payAmount = paymentMode === "installment" ? downPaymentAmount : remainingBalance;
 
   return (
     <SiteLayout>
@@ -914,12 +923,46 @@ export default function PropertyDetail() {
             
             {userReservation?.status === 'approved' || userReservation?.status === 'confirmed' ? (
               <div className="space-y-5 mt-5">
-                <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
-                  <span className="text-xs font-medium text-primary">{"Remaining Balance"}</span>
-                  <span className="text-lg font-semibold text-primary font-serif">
-                    {formatPrice(Number(property.price) - 500, property.currency, property.property_type)}
-                  </span>
-                </div>
+                {installmentEnabled && (
+                  <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-secondary/50 border border-border/50">
+                    <button 
+                      onClick={() => setPaymentMode("full")}
+                      className={`py-2 rounded-lg text-sm font-bold transition-all ${paymentMode === "full" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Pay Full
+                    </button>
+                    <button 
+                      onClick={() => setPaymentMode("installment")}
+                      className={`py-2 rounded-lg text-sm font-bold transition-all ${paymentMode === "installment" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                    >
+                      Installments
+                    </button>
+                  </div>
+                )}
+
+                {paymentMode === "full" ? (
+                  <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
+                    <span className="text-xs font-medium text-primary">{"Remaining Balance"}</span>
+                    <span className="text-lg font-semibold text-primary font-serif">
+                      {formatPrice(remainingBalance, property.currency, property.property_type)}
+                    </span>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
+                      <span className="text-xs font-medium text-primary">{`Down Payment (${minDownPct}%)`}</span>
+                      <span className="text-lg font-semibold text-primary font-serif">
+                        {formatPrice(downPaymentAmount, property.currency, property.property_type)}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between p-3.5 rounded-lg bg-secondary/20 border border-border/50">
+                      <span className="text-xs font-medium text-muted-foreground">{`Monthly (${durationMonths} months)`}</span>
+                      <span className="text-sm font-semibold text-foreground font-serif">
+                        {formatPrice(monthlyInstallment, property.currency, property.property_type)} / mo
+                      </span>
+                    </div>
+                  </div>
+                )}
                 
                 <div className="rounded-xl border border-border/50 bg-secondary/5 p-4 space-y-3">
                   <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
@@ -929,7 +972,7 @@ export default function PropertyDetail() {
                   className="w-full h-11 bg-primary text-primary-foreground font-medium rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
                   onClick={() => setPaymentModalOpen(true)}
                 >
-                  {"Complete Purchase"}
+                  {paymentMode === "installment" ? "Start Installment Plan" : "Complete Purchase"}
                 </Button>
               </div>
             ) : (
@@ -1016,7 +1059,12 @@ export default function PropertyDetail() {
             setPaymentModalOpen(false);
             qc.invalidateQueries({ queryKey: ["property", slug] });
           }}
-          amount={Number(property.price) - 500}
+          amount={payAmount}
+          isInstallment={paymentMode === "installment"}
+          installmentConfig={paymentMode === "installment" ? {
+            monthlyAmount: monthlyInstallment,
+            durationMonths: durationMonths
+          } : undefined}
           currency={property.currency}
           paymentType="purchase"
           targetId={property.id}

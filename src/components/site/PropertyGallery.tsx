@@ -82,8 +82,9 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
           </div>
 
           {/* Controls */}
-          <div className="absolute bottom-8 left-8 right-8 z-30 flex items-center justify-between">
-            <div className="flex gap-2">
+          <div className="absolute bottom-6 left-8 right-8 z-30 flex items-center justify-between pointer-events-none">
+            {/* Left: Pagination Dots */}
+            <div className="flex gap-2 pointer-events-auto">
               {images.slice(0, 5).map((_, i) => (
                 <div 
                   key={i} 
@@ -93,11 +94,12 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
               {images.length > 5 && <div className="h-1.5 w-1.5 rounded-full bg-white/40" />}
             </div>
 
-            <div className="flex gap-3">
+            {/* Center: Action Buttons */}
+            <div className="absolute left-1/2 -translate-x-1/2 flex gap-3 pointer-events-auto">
               <Button 
                 variant="secondary" 
                 onClick={(e) => { e.preventDefault(); e.stopPropagation(); setDayNightMode(prev => prev === "day" ? "night" : "day"); }}
-                className="rounded-xl bg-black/40 backdrop-blur-md text-white border border-white/20 hover:bg-black/60 font-bold px-4 flex items-center gap-1.5 z-40 pointer-events-auto"
+                className="rounded-xl bg-black/40 backdrop-blur-md text-white border border-white/20 hover:bg-black/60 font-bold px-4 flex items-center gap-1.5 z-40"
               >
                 {dayNightMode === "day" ? "🌙 Night Preview" : "☀️ Day Preview"}
               </Button>
@@ -138,10 +140,11 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
                   </DialogBody>
                 </DialogContent>
               </Dialog>
+            </div>
 
-              <div className="rounded-xl bg-black/40 backdrop-blur-md px-5 py-2 text-sm font-bold text-white border border-white/20">
-                {currentIndex + 1} / {images.length}
-              </div>
+            {/* Right: Counter */}
+            <div className="rounded-xl bg-black/40 backdrop-blur-md px-5 py-2 text-sm font-bold text-white border border-white/20 pointer-events-auto">
+              {currentIndex + 1} / {images.length}
             </div>
           </div>
         </div>

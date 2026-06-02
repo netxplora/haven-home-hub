@@ -9,10 +9,10 @@ import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/invest";
 import { ArrowRight, PiggyBank, TrendingUp, Wallet } from "lucide-react";
 import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
-import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
 
-
-  const { data, isLoading } = useQuery({
+export default function InvestPortfolio() {
+  const { user, loading } = useAuth();
+  const [selectedInv, setSelectedInv] = useState<any>(null);  const { data, isLoading } = useQuery({
     queryKey: ["portfolio", user?.id],
     queryFn: async () => {
       if (!user) return null;
@@ -241,12 +241,6 @@ import { PortfolioCharts } from "@/components/invest/PortfolioCharts";
           </div>
         </section>
       </div>
-
-      <UserInvestmentDetailDialog 
-        open={!!selectedInv} 
-        onClose={() => setSelectedInv(null)} 
-        investment={selectedInv} 
-      />
     </SiteLayout>
   );
 }

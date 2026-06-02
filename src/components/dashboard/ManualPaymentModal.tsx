@@ -30,6 +30,11 @@ interface ManualPaymentModalProps {
     property_type: string;
     location?: string;
   };
+  isInstallment?: boolean;
+  installmentConfig?: {
+    monthlyAmount: number;
+    durationMonths: number;
+  };
 }
 
 interface CryptoAsset {
