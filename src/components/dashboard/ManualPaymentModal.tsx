@@ -48,7 +48,7 @@ interface CryptoAsset {
 type Step = "method_select" | "asset" | "buy_crypto" | "pay_manual" | "pay_bank" | "proof" | "confirm";
 
 export function ManualPaymentModal({ 
-  open, onClose, method, amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess, propertyData
+  open, onClose, method, amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess, propertyData, isInstallment, installmentConfig
 }: ManualPaymentModalProps) {
   const { user } = useAuth();
   
@@ -286,7 +286,7 @@ export function ManualPaymentModal({
       booking_id: paymentType === 'booking' ? bookingId : null,
       reservation_id: (paymentType === 'reservation' || paymentType === 'purchase') ? bookingId : null,
       hold_hours: holdHours || (paymentType === 'reservation' ? 168 : null),
-      metadata: { manual: true, method: activeMethod || method, ...metadata }
+      metadata: { manual: true, method: activeMethod || method, is_installment: isInstallment, installment_config: installmentConfig, ...metadata }
     });
     if (error) throw error;
     return reference;

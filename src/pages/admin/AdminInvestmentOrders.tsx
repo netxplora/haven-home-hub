@@ -244,7 +244,7 @@ export function AdminInvestmentOrders() {
           </DialogHeader>
           
           {selectedOrder && (
-            <div className="grid grid-cols-2 gap-6 mt-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 mt-4">
               <div className="space-y-4">
                 <div className="bg-muted/30 p-4 rounded-xl border border-border/50">
                   <h4 className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-2">Investor Details</h4>

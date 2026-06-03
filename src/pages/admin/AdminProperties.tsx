@@ -138,12 +138,12 @@ export function AdminProperties() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="font-serif text-2xl font-bold">Properties</h2>
           <p className="text-sm text-muted-foreground">Manage your real estate listings and availability. {filtered.length} results.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant="outline"
             onClick={() => handleFilterChange(setFilterStatus, "pending")}
