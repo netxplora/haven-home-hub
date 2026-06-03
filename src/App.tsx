@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -29,7 +29,7 @@ const Admin = lazy(() => import("./pages/admin/AdminDashboard"));
 const InvestHome = lazy(() => import("./pages/invest/InvestHome"));
 const InvestOpportunities = lazy(() => import("./pages/invest/InvestOpportunities"));
 const InvestDetail = lazy(() => import("./pages/invest/InvestDetail"));
-const InvestPortfolio = lazy(() => import("./pages/invest/InvestPortfolio"));
+
 const InvestPortfolioDetail = lazy(() => import("./pages/invest/InvestPortfolioDetail"));
 const Withdrawals = lazy(() => import("./pages/invest/Withdrawals"));
 const PaymentStatus = lazy(() => import("./pages/invest/PaymentStatus"));
@@ -134,7 +134,7 @@ const App = () => (
               {/* Invest */}
               <Route path="/invest" element={<InvestHome />} />
               <Route path="/invest/opportunities" element={<InvestOpportunities />} />
-              <Route path="/invest/portfolio" element={<InvestPortfolio />} />
+              <Route path="/invest/portfolio" element={<Navigate to="/dashboard?tab=investments" replace />} />
               <Route path="/invest/portfolio/:id" element={<InvestPortfolioDetail />} />
               <Route path="/invest/withdrawals" element={<Withdrawals />} />
               <Route path="/invest/:slug" element={<InvestDetail />} />

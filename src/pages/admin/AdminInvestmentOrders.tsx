@@ -9,11 +9,13 @@ import { formatMoney } from "@/lib/invest";
 import { Check, X, Search, FileText, Download, ExternalLink, CalendarClock } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
+import { AdminManageInvestmentDialog } from "@/components/admin/AdminManageInvestmentDialog";
 
 export function AdminInvestmentOrders() {
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
+  const [manageOrder, setManageOrder] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [rejectionReason, setRejectionReason] = useState("");
   const [adjustUnits, setAdjustUnits] = useState("");
@@ -26,8 +28,7 @@ export function AdminInvestmentOrders() {
         .select(`
           *,
           profiles(full_name, email, phone),
-          investment_properties(title, currency, projected_return_min, projected_return_max),
-          payments(*)
+          investment_properties(title, currency, projected_return_min, projected_return_max)
         `)
         .order("created_at", { ascending: false });
       
@@ -163,7 +164,78 @@ export function AdminInvestmentOrders() {
       </div>
 
       <div className="bg-card rounded-xl border border-border/50 shadow-sm overflow-hidden">
-        <div className="overflow-x-auto custom-scrollbar">
+        
+        {/* ── Mobile Card Layout ── */}
+        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          {filtered.map((order: any) => (
+            <div key={order.id} className="rounded-xl border border-border/45 bg-card p-4 shadow-sm space-y-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-foreground line-clamp-1">{order.profiles?.full_name || "Unknown"}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{order.profiles?.email}</p>
+                </div>
+                <Badge 
+                  variant={
+                    order.status === "confirmed" || order.status === "active" ? "default" :
+                    order.status === "pending" || order.status === "payment_under_review" ? "secondary" :
+                    order.status === "rejected" ? "destructive" : "outline"
+                  }
+                  className="capitalize text-[9px] tracking-wider shrink-0"
+                >
+                  {order.status ? order.status.replace(/_/g, " ") : "Processing"}
+                </Badge>
+              </div>
+              
+              <div className="pt-3 border-t border-border/30">
+                <p className="font-medium text-sm text-foreground line-clamp-1 mb-0.5">{order.investment_properties?.title}</p>
+                <p className="text-[10px] uppercase text-muted-foreground tracking-wider">{order.investment_type}</p>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 text-xs pt-3 border-t border-border/30">
+                <div>
+                  <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Amount</span>
+                  <span className="font-mono font-medium">{formatMoney(order.amount_invested || order.total_amount, order.investment_properties?.currency)}</span>
+                </div>
+                <div className="text-right">
+                  <span className="block text-muted-foreground font-medium uppercase tracking-wider text-[10px] mb-0.5">Units</span>
+                  <span className="font-mono font-medium">{order.units_owned}</span>
+                </div>
+              </div>
+
+              <div className="pt-3 border-t border-border/30 flex justify-end">
+                <div className="flex gap-2 w-full sm:w-auto">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    className="h-10 text-xs font-bold rounded-lg flex-1 sm:flex-none"
+                    onClick={() => {
+                      setSelectedOrder(order);
+                      setAdminNotes(order.admin_notes || "");
+                      setRejectionReason(order.rejection_reason || "");
+                      setAdjustUnits(order.units_owned?.toString() || "");
+                    }}
+                  >
+                    <Check className="h-4 w-4 mr-2" /> Review
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="default" 
+                    className="h-10 text-xs font-bold rounded-lg flex-1 sm:flex-none bg-primary text-primary-foreground hover:bg-primary/90"
+                    onClick={() => setManageOrder(order)}
+                  >
+                    <FileText className="h-4 w-4 mr-2" /> Manage
+                  </Button>
+                </div>
+              </div>
+            </div>
+          ))}
+          {filtered.length === 0 && (
+            <div className="p-8 text-center text-muted-foreground italic">No investment orders found.</div>
+          )}
+        </div>
+
+        {/* ── Desktop Table Layout ── */}
+        <div className="overflow-x-auto custom-scrollbar hidden md:block">
           <table className="w-full text-sm text-left">
             <thead className="text-xs uppercase bg-muted/50 border-b border-border/50">
               <tr>
@@ -203,23 +275,33 @@ export function AdminInvestmentOrders() {
                       }
                       className="capitalize text-[10px] tracking-wider"
                     >
-                      {order.status.replace(/_/g, " ")}
+                      {order.status ? order.status.replace(/_/g, " ") : "Processing"}
                     </Badge>
                   </td>
                   <td className="px-6 py-4 text-right">
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="h-8 text-xs font-semibold rounded-lg"
-                      onClick={() => {
-                        setSelectedOrder(order);
-                        setAdminNotes(order.admin_notes || "");
-                        setRejectionReason(order.rejection_reason || "");
-                        setAdjustUnits(order.units_owned?.toString() || "");
-                      }}
-                    >
-                      Review
-                    </Button>
+                    <div className="flex justify-end gap-2">
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className="h-8 text-xs font-semibold rounded-lg"
+                        onClick={() => {
+                          setSelectedOrder(order);
+                          setAdminNotes(order.admin_notes || "");
+                          setRejectionReason(order.rejection_reason || "");
+                          setAdjustUnits(order.units_owned?.toString() || "");
+                        }}
+                      >
+                        Review
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="default" 
+                        className="h-8 text-xs font-semibold rounded-lg bg-primary text-primary-foreground hover:bg-primary/90"
+                        onClick={() => setManageOrder(order)}
+                      >
+                        Manage
+                      </Button>
+                    </div>
                   </td>
                 </tr>
               ))}
@@ -367,6 +449,12 @@ export function AdminInvestmentOrders() {
           )}
         </DialogContent>
       </Dialog>
+
+      <AdminManageInvestmentDialog 
+        open={!!manageOrder} 
+        onOpenChange={(v) => !v && setManageOrder(null)} 
+        investment={manageOrder} 
+      />
     </div>
   );
 }

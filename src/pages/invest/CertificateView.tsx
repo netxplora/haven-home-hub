@@ -80,7 +80,7 @@ export default function CertificateView() {
             This certificate has not been issued yet. Certificates are generated after your investment payment has been verified by our team. This process typically takes 1-3 business days.
           </p>
           <div className="flex flex-col gap-3">
-            <Button onClick={() => navigate("/invest/portfolio")} className="w-full font-semibold">
+            <Button onClick={() => navigate("/dashboard?tab=investments")} className="w-full font-semibold">
               Return to Portfolio
             </Button>
             <Button variant="outline" onClick={() => navigate(-1)} className="w-full font-semibold">

@@ -140,7 +140,7 @@ export default function PaymentStatus() {
 
             <div className="mt-5 flex gap-2">
               <Button asChild variant="outline"><Link to="/dashboard">Back to dashboard</Link></Button>
-              {data.payment_type === "investment" && <Button asChild><Link to="/invest/portfolio">View portfolio</Link></Button>}
+              {data.payment_type === "investment" && <Button asChild><Link to="/dashboard?tab=investments">View portfolio</Link></Button>}
             </div>
           </div>
         </div>

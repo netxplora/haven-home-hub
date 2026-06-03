@@ -76,7 +76,7 @@ export default function InvestHome() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-primary-foreground/30 bg-background/5 text-primary-foreground hover:bg-background/15">
-              <Link to="/invest/portfolio">My portfolio</Link>
+              <Link to="/dashboard?tab=investments">My portfolio</Link>
             </Button>
           </div>
         </div>

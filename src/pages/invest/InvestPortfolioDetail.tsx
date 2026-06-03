@@ -9,7 +9,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { formatMoney } from "@/lib/invest";
 import { ArrowLeft, ExternalLink, FileText, CheckCircle, Clock, TrendingUp, AlertCircle, RefreshCw, BarChart3, LineChart, ShieldCheck } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
-import { FractionalPaymentDialog } from "@/components/invest/FractionalPaymentDialog";
+import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
 import { useState, useEffect, useMemo } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 
@@ -17,8 +17,8 @@ export default function InvestPortfolioDetail() {
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
-  const [isBuyModalOpen, setIsBuyModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
+  const [isSellModalOpen, setIsSellModalOpen] = useState(false);
 
   const { data: investment, isLoading, error } = useQuery({
     queryKey: ["portfolio-detail", id],
@@ -27,9 +27,7 @@ export default function InvestPortfolioDetail() {
         .from("user_investments")
         .select(`
           *,
-          investment_properties (*),
-          signed_documents (id, document_type, signed_at),
-          payments (id, amount, status, proof_url, provider)
+          investment_properties (*)
         `)
         .eq("id", id)
         .single();
@@ -52,6 +50,20 @@ export default function InvestPortfolioDetail() {
       return data;
     },
     enabled: !!investment?.property_id
+  });
+
+  const { data: documents } = useQuery({
+    queryKey: ["portfolio-documents", investment?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("signed_documents")
+        .select("*")
+        .eq("reference_id", investment?.id)
+        .order("signed_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!investment?.id
   });
 
   // Real-time sync
@@ -108,7 +120,7 @@ export default function InvestPortfolioDetail() {
     );
   }
 
-  if (error || !investment) {
+  if (error || !investment || !prop) {
     return (
       <SiteLayout>
         <div className="container-wide py-20 text-center">
@@ -123,12 +135,12 @@ export default function InvestPortfolioDetail() {
 
   const isFunded = prop.status === 'funded' || (prop.units_sold >= prop.total_units);
   const unitsAvailable = Math.max(0, prop.total_units - prop.units_sold);
-  const fundingPct = Math.min(100, Math.round((prop.units_sold / prop.total_units) * 100));
+  const fundingPct = Math.min(100, Math.round((prop.units_sold / (prop.total_units || 1)) * 100));
 
   const totalInv = Number(investment.total_amount ?? investment.amount_invested ?? 0);
   const accruedEarnings = Number(investment.accrued_earnings || 0);
   const currentValue = totalInv + accruedEarnings;
-  const ownershipPct = ((investment.units_owned / prop.total_units) * 100).toFixed(2);
+  const ownershipPct = ((investment.units_owned / (prop.total_units || 1)) * 100).toFixed(2);
   const expectedReturnAmt = totalInv * (Number(prop.projected_return_min) / 100);
 
   // Maturity calculations
@@ -171,7 +183,7 @@ export default function InvestPortfolioDetail() {
               <div>
                 <div className="flex items-center gap-3 mb-2">
                   <Badge variant={investment.status === 'active' || investment.status === 'confirmed' ? 'default' : 'secondary'} className="uppercase tracking-wider text-[10px]">
-                    {investment.status.replace(/_/g, " ")}
+                    {investment.status ? investment.status.replace(/_/g, " ") : "Processing"}
                   </Badge>
                   {isFunded && (
                     <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-50 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
@@ -477,24 +489,24 @@ export default function InvestPortfolioDetail() {
                   )}
                 </div>
 
-                {investment.payments && investment.payments.map((p: any) => p.proof_url && (
-                  <div key={p.id} className="flex items-center justify-between p-5 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
+                {documents?.map((doc: any) => (
+                  <div key={doc.id} className="flex items-center justify-between p-5 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
                     <div className="flex items-center gap-4">
-                      <div className="p-3 bg-green-500/10 rounded-xl text-green-600">
-                        <CheckCircle className="w-6 h-6" />
+                      <div className="p-3 bg-blue-500/10 rounded-xl text-blue-600">
+                        <FileText className="w-6 h-6" />
                       </div>
                       <div>
-                        <p className="text-base font-semibold text-foreground">Payment Receipt</p>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Provider: {p.provider}</p>
+                        <p className="text-base font-semibold text-foreground capitalize">{doc.document_type.replace(/_/g, " ")}</p>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Uploaded: {new Date(doc.signed_at).toLocaleDateString()}</p>
                       </div>
                     </div>
                     <Button variant="outline" className="font-semibold" asChild>
-                      <a href={p.proof_url} target="_blank" rel="noopener noreferrer">View Receipt <ExternalLink className="w-4 h-4 ml-2" /></a>
+                      <a href={doc.signature_data} target="_blank" rel="noopener noreferrer">View File <ExternalLink className="w-4 h-4 ml-2" /></a>
                     </Button>
                   </div>
                 ))}
 
-                {(!investment.payments || investment.payments.filter((p: any) => p.proof_url).length === 0) && (
+                {documents?.length === 0 && (
                    <p className="text-sm text-muted-foreground">No additional documents available yet.</p>
                 )}
               </div>
@@ -508,25 +520,38 @@ export default function InvestPortfolioDetail() {
                   <h4 className="font-serif text-xl font-bold text-foreground">Secondary Market Liquidity</h4>
                   <p className="text-sm text-muted-foreground mt-1">Liquidate your units by selling them to other investors on the open market.</p>
                 </div>
-                <Button className="shrink-0" size="lg" disabled={investment.status !== 'confirmed' && investment.status !== 'active'} onClick={() => toast({ title: 'Secondary Market', description: 'Secondary market is currently disabled for this asset.' })}>
-                  Sell Units Now
+                <Button 
+                  className="shrink-0" 
+                  size="lg" 
+                  disabled={!investment.secondary_market_enabled || (investment.status !== 'confirmed' && investment.status !== 'active' && investment.status !== 'completed')} 
+                  onClick={() => setIsSellModalOpen(true)}
+                >
+                  {investment.secondary_market_enabled ? "Sell Units Now" : "Market Locked"}
                 </Button>
               </div>
 
-              <div className="p-6 bg-muted/30 border border-border/50 rounded-xl text-center">
-                 <TrendingUp className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                 <p className="font-semibold text-foreground">No Active Sell Orders</p>
-                 <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">You have not listed any units for sale. You can list your units at a premium to lock in your capital appreciation early.</p>
-              </div>
+              {!investment.secondary_market_enabled ? (
+                <div className="p-6 bg-red-500/5 border border-red-500/20 rounded-xl text-center">
+                   <AlertCircle className="w-12 h-12 text-red-500/50 mx-auto mb-3" />
+                   <p className="font-semibold text-foreground text-red-600">Trading Locked by Administration</p>
+                   <p className="text-sm text-red-500/80 mt-1 max-w-sm mx-auto">This asset is currently locked from secondary market trading. Contact support or your account manager for more information.</p>
+                </div>
+              ) : (
+                <div className="p-6 bg-muted/30 border border-border/50 rounded-xl text-center">
+                   <TrendingUp className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+                   <p className="font-semibold text-foreground">No Active Sell Orders</p>
+                   <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">You have not listed any units for sale. You can list your units at a premium to lock in your capital appreciation early.</p>
+                </div>
+              )}
             </div>
           </TabsContent>
         </Tabs>
       </div>
 
-      <FractionalPaymentDialog 
-        open={isBuyModalOpen} 
-        onClose={() => setIsBuyModalOpen(false)} 
-        property={prop} 
+      <SellUnitsDialog 
+        open={isSellModalOpen} 
+        onOpenChange={setIsSellModalOpen} 
+        investment={investment} 
       />
     </SiteLayout>
   );

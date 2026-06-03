@@ -32,7 +32,9 @@ export function InvestmentsPanel() {
             currency, 
             projected_return_min, 
             projected_return_max, 
-            cover_image_url
+            cover_image_url,
+            total_units,
+            units_sold
           )
         `)
         .eq("user_id", user!.id)
@@ -46,52 +48,62 @@ export function InvestmentsPanel() {
     },
   });
 
-  const { data: returns = [] } = useQuery({
-    queryKey: ["my-returns", user?.id],
+  // Live portfolio summary from DB RPC
+  const { data: portfolioSummary } = useQuery({
+    queryKey: ["portfolio-summary", user?.id],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
-        .from("returns")
-        .select("amount_received, distribution_date, property_id, investment_properties(title)")
-        .eq("user_id", user!.id)
-        .order("distribution_date", { ascending: false });
-      return data ?? [];
+      const { data, error } = await supabase.rpc("get_investor_portfolio_summary", { p_user_id: user!.id });
+      if (error) {
+        console.error("Portfolio summary RPC error:", error);
+        return null;
+      }
+      return data as any;
     },
   });
 
-  const returnsByProperty = returns.reduce((acc: Record<string, number>, r: any) => {
-    if (r.property_id) {
-      acc[r.property_id] = (acc[r.property_id] || 0) + Number(r.amount_received || 0);
-    }
-    return acc;
-  }, {});
+  // Live chart data from DB RPC
+  const { data: chartData = [] } = useQuery({
+    queryKey: ["portfolio-growth", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_portfolio_growth_history", { p_user_id: user!.id });
+      if (error) {
+        console.error("Portfolio growth RPC error:", error);
+        return [];
+      }
+      return (data || []).map((d: any) => ({
+        name: d.month,
+        value: Number(d.value || 0),
+      }));
+    },
+  });
 
-  const activeInvestments = investments.filter((i: any) => ["confirmed", "active", "completed"].includes(i.status));
-  const totalInvested = activeInvestments.reduce((s: number, i: any) => s + Number(i.amount_invested || 0), 0);
-  const totalReturns = returns.reduce((s: number, r: any) => s + Number(r.amount_received || 0), 0);
-  const totalAccrued = activeInvestments.reduce((s: number, i: any) => s + Number(i.accrued_earnings || 0), 0);
-  
-  // NAV (Net Asset Value)
-  const nav = totalInvested + totalAccrued + totalReturns;
-  const averageYield = totalInvested > 0 ? (((totalAccrued + totalReturns) / totalInvested) * 100).toFixed(2) : "0.00";
+  // Recent portfolio activity from DB
+  const { data: recentActivity = [] } = useQuery({
+    queryKey: ["portfolio-activity", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("portfolio_audit_logs")
+        .select("*")
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false })
+        .limit(5);
+      if (error) return [];
+      return data || [];
+    },
+  });
 
-  // Mock historical data for the chart (6 months trailing)
-  const chartData = useMemo(() => {
-    if (totalInvested === 0) return [];
-    const data = [];
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const randomGrowth = (Math.random() * 0.02) + 0.98; // Simulated variance
-      const val = nav * Math.pow(randomGrowth, i);
-      data.push({
-        name: d.toLocaleString('default', { month: 'short' }),
-        value: val > nav && i === 0 ? nav : val
-      });
-    }
-    data[5].value = nav; // Guarantee exact current NAV at end
-    return data;
-  }, [nav, totalInvested]);
+  // All metrics sourced from the DB RPC
+  const nav = Number(portfolioSummary?.nav || 0);
+  const totalInvested = Number(portfolioSummary?.total_invested || 0);
+  const totalEarnings = Number(portfolioSummary?.total_earnings || 0);
+  const averageYield = portfolioSummary?.roi_percent?.toString() || "0.00";
+  const activeCount = Number(portfolioSummary?.active_investments || 0);
+  const pendingCount = Number(portfolioSummary?.pending_investments || 0);
+  const completedCount = Number(portfolioSummary?.completed_investments || 0);
+  const totalUnits = Number(portfolioSummary?.total_units_owned || 0);
 
   const handleInvestmentClick = (inv: any) => {
     navigate(`/invest/portfolio/${inv.id}`);
@@ -130,7 +142,7 @@ export function InvestmentsPanel() {
                  <ArrowUpRight className="w-3 h-3 mr-1" /> +{averageYield}% All-time
                </Badge>
              </div>
-             <p className="text-xs text-muted-foreground relative z-10">Total Earnings: <span className="font-semibold text-foreground">{formatMoney(totalReturns + totalAccrued)}</span></p>
+             <p className="text-xs text-muted-foreground relative z-10">Total Earnings: <span className="font-semibold text-foreground">{formatMoney(totalEarnings)}</span></p>
           </div>
         </div>
 
@@ -239,7 +251,7 @@ export function InvestmentsPanel() {
                       </div>
                       <div className="min-w-0 flex-1">
                         <p className="font-serif font-semibold text-foreground line-clamp-1">{inv.investment_properties?.title ?? "Unknown Asset"}</p>
-                        <p className="text-xs text-muted-foreground">{inv.units ?? 1} Units Owned</p>
+                        <p className="text-xs text-muted-foreground">{inv.units_owned ?? 1} Units Owned</p>
                       </div>
                     </div>
 
@@ -310,7 +322,7 @@ export function InvestmentsPanel() {
                                  </div>
                                  <div>
                                     <p className="font-semibold text-foreground line-clamp-1">{inv.investment_properties?.title ?? "Unknown Asset"}</p>
-                                    <p className="text-[10px] text-muted-foreground/60 font-medium">{inv.units ?? 1} Units Owned</p>
+                                    <p className="text-[10px] text-muted-foreground/60 font-medium">{inv.units_owned ?? 1} Units Owned</p>
                                  </div>
                               </div>
                             </td>
