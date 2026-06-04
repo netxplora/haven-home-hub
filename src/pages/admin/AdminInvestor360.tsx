@@ -4,7 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   User, ShieldCheck, ShieldAlert, Clock, Mail, Phone, CalendarDays,
   LayoutDashboard, TrendingUp, CreditCard, Calendar, ArrowLeftRight, Settings,
-  CheckCircle2, Search, Building2, Eye, ExternalLink, X, MapPin, ChevronRight, ChevronLeft, ArrowUpDown, Settings2
+  CheckCircle2, Search, Building2, Eye, ExternalLink, X, MapPin, ChevronRight, ChevronLeft, ArrowUpDown, Settings2,
+  FileText
 } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 import { Button } from "@/components/ui/button";
