@@ -812,9 +812,12 @@ function GlobalInvestorDirectory({ onSelectUser }: { onSelectUser: (id: string) 
                     <tr key={u.id} className="hover:bg-secondary/10 transition-colors">
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-xs">
-                            {u.full_name ? u.full_name[0].toUpperCase() : "U"}
-                          </div>
+                          <Avatar className="h-9 w-9 shrink-0">
+                            <AvatarImage src={getAvatarUrl(u.avatar_url)} className="object-cover" />
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
+                              {u.full_name ? u.full_name[0].toUpperCase() : "U"}
+                            </AvatarFallback>
+                          </Avatar>
                           <div>
                             <p className="font-medium">{u.full_name || 'Unnamed'}</p>
                             <p className="text-[10px] text-muted-foreground font-mono">{u.id.substring(0,8)}...</p>

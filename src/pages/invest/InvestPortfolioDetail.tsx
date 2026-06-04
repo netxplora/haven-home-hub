@@ -12,7 +12,8 @@ import {
   ArrowLeft, ExternalLink, FileText, CheckCircle, Clock, TrendingUp,
   AlertCircle, RefreshCw, BarChart3, LineChart, ShieldCheck, MapPin,
   Calendar, Wallet, Target, Activity, DollarSign, Building2,
-  CreditCard, ArrowUpRight, Percent, Timer, ChevronRight
+  CreditCard, ArrowUpRight, Percent, Timer, ChevronRight,
+  Download, PenLine, Eye, Stamp, Scale, Lock, Award
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
@@ -610,83 +611,349 @@ export default function InvestPortfolioDetail() {
 
           {/* ═══ DOCUMENTS TAB ═══ */}
           <TabsContent value="documents" className="animate-in fade-in space-y-8 outline-none">
-            <div className="bg-card border border-border/50 rounded-2xl shadow-sm p-8 max-w-4xl">
-              <h4 className="font-serif text-xl font-bold text-foreground mb-6">Document Hub</h4>
-              <div className="space-y-4">
-                
-                {/* Ownership Certificate */}
-                <div className="flex items-center justify-between p-5 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center gap-4">
-                    <div className="p-3 bg-primary/10 rounded-xl text-primary">
-                      <FileText className="w-6 h-6" />
+            {/* Document Summary Header */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-primary/10 rounded-lg"><FileText className="w-3.5 h-3.5 text-primary" /></div>
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Total Documents</p>
+                </div>
+                <p className="text-2xl font-bold font-serif text-foreground">{1 + documents.length + propertyDocuments.length}</p>
+              </div>
+              <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-blue-500/10 rounded-lg"><PenLine className="w-3.5 h-3.5 text-blue-600" /></div>
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Signed</p>
+                </div>
+                <p className="text-2xl font-bold font-serif text-foreground">{documents.length}</p>
+              </div>
+              <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-emerald-500/10 rounded-lg"><Building2 className="w-3.5 h-3.5 text-emerald-600" /></div>
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Property Docs</p>
+                </div>
+                <p className="text-2xl font-bold font-serif text-foreground">{propertyDocuments.length}</p>
+              </div>
+              <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="p-1.5 bg-amber-500/10 rounded-lg"><ShieldCheck className="w-3.5 h-3.5 text-amber-600" /></div>
+                  <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Status</p>
+                </div>
+                <p className="text-sm font-bold text-foreground">
+                  {investment.status === 'confirmed' || investment.status === 'active' || investment.status === 'completed' ? (
+                    <span className="text-green-600 flex items-center gap-1.5"><CheckCircle className="w-4 h-4" /> Verified</span>
+                  ) : (
+                    <span className="text-amber-600 flex items-center gap-1.5"><Clock className="w-4 h-4" /> Pending</span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            {/* ── Ownership Certificate ── */}
+            <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+              <div className="bg-gradient-to-r from-primary/5 via-primary/3 to-transparent border-b border-border/50 px-8 py-5 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 bg-primary/10 rounded-xl border border-primary/20">
+                    <Award className="w-7 h-7 text-primary" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-foreground">Ownership Certificate</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Official asset ownership documentation issued by Haven Home Hub</p>
+                  </div>
+                </div>
+                <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 font-bold uppercase tracking-wider text-[9px] px-3 py-1 flex items-center gap-1.5">
+                  <Scale className="w-3 h-3" /> Legal Document
+                </Badge>
+              </div>
+              <div className="p-8">
+                <div className="grid md:grid-cols-2 gap-6 mb-6">
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Certificate ID</span>
+                      <span className="font-mono font-semibold text-foreground">{investment.id.split('-')[0].toUpperCase()}-CERT</span>
                     </div>
-                    <div>
-                      <p className="text-base font-semibold text-foreground">Ownership Certificate</p>
-                      <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Legal Asset Issuance</p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Property</span>
+                      <span className="font-semibold text-foreground">{prop.title}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Units Owned</span>
+                      <span className="font-semibold text-foreground">{investment.units_owned}</span>
                     </div>
                   </div>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Issue Date</span>
+                      <span className="font-semibold text-foreground">{new Date(investment.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Amount Invested</span>
+                      <span className="font-semibold text-foreground">{formatMoney(Number(investment.total_amount ?? investment.amount_invested ?? 0), prop.currency)}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Ownership</span>
+                      <span className="font-semibold text-foreground">{ownershipPct}%</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-3">
                   {investment.status === 'confirmed' || investment.status === 'active' || investment.status === 'completed' ? (
-                    <Button variant="outline" className="font-semibold" asChild>
-                      <Link to={`/invest/certificate/${investment.id}`}>View Certificate <ExternalLink className="w-4 h-4 ml-2" /></Link>
-                    </Button>
+                    <>
+                      <Button className="shadow-sm font-semibold" asChild>
+                        <Link to={`/invest/certificate/${investment.id}`}>
+                          <Eye className="w-4 h-4 mr-2" /> View Certificate
+                        </Link>
+                      </Button>
+                      <Button variant="outline" className="font-semibold" asChild>
+                        <Link to={`/invest/certificate/${investment.id}`}>
+                          <Download className="w-4 h-4 mr-2" /> Download PDF
+                        </Link>
+                      </Button>
+                    </>
                   ) : (
-                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200">Pending Verification</Badge>
+                    <div className="flex items-center gap-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 w-full">
+                      <Clock className="w-5 h-5 text-amber-600 shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-500">Certificate Pending</p>
+                        <p className="text-xs text-amber-600/80 dark:text-amber-500/70 mt-0.5">Your ownership certificate will be issued once your investment is verified and confirmed.</p>
+                      </div>
+                    </div>
                   )}
                 </div>
+              </div>
+            </div>
 
-                {/* Signed Documents */}
-                {documents.length > 0 && (
-                  <>
-                    <h5 className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground mt-6 mb-2">Signed Documents</h5>
-                    {documents.map((doc: any) => (
-                      <div key={doc.id} className="flex items-center justify-between p-5 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-600">
+            {/* ── Core Investment Documents Tracker ── */}
+            <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+              <div className="border-b border-border/50 px-8 py-5 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                    <Scale className="w-5 h-5 text-blue-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-foreground">Core Investment Documents</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Standard legal and transactional records for your investment</p>
+                  </div>
+                </div>
+              </div>
+              <div className="divide-y divide-border/50">
+                {[
+                  { id: 'contract_of_sale', title: 'Contract of Sale', desc: 'Binding agreement outlining the terms of the property purchase.', icon: PenLine },
+                  { id: 'deed_of_assignment', title: 'Grant Deed', desc: 'Official document transferring property ownership rights.', icon: Building2 },
+                  { id: 'purchase_receipt', title: 'Purchase Receipt', desc: 'Confirmation of your completed investment payment.', icon: DollarSign },
+                  { id: 'allocation_letter', title: 'Allocation Letter', desc: 'Formal assignment of your specific property units.', icon: Stamp }
+                ].map((coreDoc) => {
+                  const matchedSigned = documents.find((d: any) => d.document_type === coreDoc.id || d.document_type.replace(/_/g, " ").toLowerCase() === coreDoc.title.toLowerCase());
+                  const matchedProp = propertyDocuments.find((d: any) => d.title?.toLowerCase() === coreDoc.title.toLowerCase() || d.document_type === coreDoc.id);
+                  const isAvailable = !!(matchedSigned || matchedProp);
+                  
+                  return (
+                    <div key={coreDoc.id} className="p-5 md:px-8 hover:bg-muted/20 transition-colors flex flex-col md:flex-row md:items-center justify-between gap-4">
+                      <div className="flex items-start gap-4">
+                        <div className={`p-3 rounded-xl shrink-0 ${isAvailable ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                          <coreDoc.icon className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className={`text-sm font-semibold ${isAvailable ? 'text-foreground' : 'text-muted-foreground'}`}>{coreDoc.title}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{coreDoc.desc}</p>
+                          {matchedSigned && (
+                             <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-2">
+                               <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-50 dark:bg-green-500/10 font-bold uppercase tracking-wider text-[9px] flex items-center gap-1">
+                                 <CheckCircle className="w-3 h-3" /> Executed
+                               </Badge>
+                               <span className="text-[10px] text-muted-foreground font-mono">
+                                 {new Date(matchedSigned.signed_at).toLocaleDateString()}
+                               </span>
+                             </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="shrink-0 flex items-center gap-3">
+                        {isAvailable ? (
+                          matchedSigned ? (
+                            <Button variant="outline" size="sm" className="font-semibold text-xs h-9" asChild>
+                              <a href={matchedSigned.signature_data} target="_blank" rel="noopener noreferrer">
+                                <Eye className="w-3.5 h-3.5 mr-1.5" /> View
+                              </a>
+                            </Button>
+                          ) : (
+                            <Button variant="outline" size="sm" className="font-semibold text-xs h-9" asChild>
+                              <a href={matchedProp?.url} target="_blank" rel="noopener noreferrer">
+                                <Download className="w-3.5 h-3.5 mr-1.5" /> Download
+                              </a>
+                            </Button>
+                          )
+                        ) : (
+                          <div className="flex items-center gap-2 text-amber-600 bg-amber-50 dark:bg-amber-500/10 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-500/20">
+                            <Clock className="w-3.5 h-3.5" />
+                            <span className="text-[10px] font-bold uppercase tracking-wider">Pending Generation</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* ── Other Signed Legal Documents ── */}
+            {documents.filter((d: any) => !['contract_of_sale', 'grant_deed', 'purchase_receipt', 'allocation_letter'].includes(d.document_type)).length > 0 && (
+              <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+                <div className="border-b border-border/50 px-8 py-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-blue-500/10 rounded-xl border border-blue-500/20">
+                      <PenLine className="w-5 h-5 text-blue-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-serif text-lg font-bold text-foreground">Additional Signed Documents</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">Other legally binding agreements executed with your digital signature</p>
+                    </div>
+                  </div>
+                  <Badge variant="secondary" className="font-bold uppercase tracking-wider text-[9px] flex items-center gap-1.5">
+                    <Lock className="w-3 h-3" /> Tamper-proof
+                  </Badge>
+                </div>
+                <div className="divide-y divide-border/50">
+                  {documents.filter((d: any) => !['contract_of_sale', 'grant_deed', 'purchase_receipt', 'allocation_letter'].includes(d.document_type)).map((doc: any) => (
+                    <div key={doc.id} className="p-6 md:px-8 hover:bg-muted/20 transition-colors">
+                      <div className="flex flex-col md:flex-row md:items-start justify-between gap-4 mb-4">
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 bg-blue-500/10 rounded-xl text-blue-600 shrink-0 mt-0.5">
                             <FileText className="w-6 h-6" />
                           </div>
                           <div>
                             <p className="text-base font-semibold text-foreground capitalize">{doc.document_type.replace(/_/g, " ")}</p>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">Signed: {new Date(doc.signed_at).toLocaleDateString()}</p>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+                              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                <Calendar className="w-3 h-3" /> Signed: {new Date(doc.signed_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
+                              </span>
+                              <span className="text-xs text-muted-foreground flex items-center gap-1.5">
+                                <Clock className="w-3 h-3" /> {new Date(doc.signed_at).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                              </span>
+                            </div>
+                            <Badge variant="outline" className="mt-2 border-green-500/30 text-green-600 bg-green-50 dark:bg-green-500/10 font-bold uppercase tracking-wider text-[9px] flex items-center gap-1 w-fit">
+                              <CheckCircle className="w-3 h-3" /> Executed
+                            </Badge>
                           </div>
                         </div>
-                        <Button variant="outline" className="font-semibold" asChild>
-                          <a href={doc.signature_data} target="_blank" rel="noopener noreferrer">View File <ExternalLink className="w-4 h-4 ml-2" /></a>
-                        </Button>
-                      </div>
-                    ))}
-                  </>
-                )}
-
-                {/* Property Documents */}
-                {propertyDocuments.length > 0 && (
-                  <>
-                    <h5 className="text-[11px] uppercase font-bold tracking-wider text-muted-foreground mt-6 mb-2">Property Documents</h5>
-                    {propertyDocuments.map((doc: any) => (
-                      <div key={doc.id} className="flex items-center justify-between p-5 rounded-xl bg-muted/30 border border-border/50 hover:bg-muted/50 transition-colors">
-                        <div className="flex items-center gap-4">
-                          <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600">
-                            <Building2 className="w-6 h-6" />
-                          </div>
-                          <div>
-                            <p className="text-base font-semibold text-foreground capitalize">{doc.name || doc.document_type?.replace(/_/g, " ")}</p>
-                            <p className="text-xs text-muted-foreground uppercase tracking-wider mt-1">
-                              {doc.uploaded_at ? `Uploaded: ${new Date(doc.uploaded_at).toLocaleDateString()}` : 'Property Document'}
-                            </p>
-                          </div>
-                        </div>
-                        {doc.file_url && (
-                          <Button variant="outline" className="font-semibold" asChild>
-                            <a href={doc.file_url} target="_blank" rel="noopener noreferrer">View File <ExternalLink className="w-4 h-4 ml-2" /></a>
+                        <div className="flex gap-2 shrink-0">
+                          <Button variant="outline" size="sm" className="font-semibold text-xs h-9" asChild>
+                            <a href={doc.signature_data} target="_blank" rel="noopener noreferrer">
+                              <Eye className="w-3.5 h-3.5 mr-1.5" /> View
+                            </a>
                           </Button>
-                        )}
+                        </div>
                       </div>
-                    ))}
-                  </>
-                )}
 
-                {documents.length === 0 && propertyDocuments.length === 0 && (
-                  <p className="text-sm text-muted-foreground">No additional documents available yet.</p>
-                )}
+                      {/* Signature Display */}
+                      {doc.signature_data && (
+                        <div className="mt-4 border border-border/50 rounded-xl overflow-hidden">
+                          <div className="bg-muted/30 px-5 py-2.5 border-b border-border/50 flex items-center justify-between">
+                            <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground flex items-center gap-1.5">
+                              <Stamp className="w-3 h-3" /> Digital Signature
+                            </span>
+                            <span className="text-[10px] text-muted-foreground font-mono">
+                              Ref: {investment.id.split('-')[0].toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="bg-white dark:bg-background p-6 flex items-center justify-center min-h-[100px]">
+                            {doc.signature_data.startsWith('data:image') ? (
+                              <img 
+                                src={doc.signature_data} 
+                                alt="Digital Signature" 
+                                className="max-h-24 w-auto object-contain"
+                              />
+                            ) : (
+                              <p className="font-serif text-2xl italic text-foreground/80 select-none">{doc.signature_data}</p>
+                            )}
+                          </div>
+                          <div className="bg-muted/20 px-5 py-2 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground">
+                            <span>Digitally signed and verified</span>
+                            <span className="font-mono">{new Date(doc.signed_at).toISOString()}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Document Snapshot Preview */}
+                      {doc.document_snapshot && (
+                        <details className="mt-4 group">
+                          <summary className="cursor-pointer text-xs font-semibold text-primary hover:underline flex items-center gap-1.5 select-none">
+                            <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
+                            View Agreed Terms
+                          </summary>
+                          <div className="mt-3 border border-border/50 rounded-xl p-5 bg-muted/20 prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed text-muted-foreground max-h-64 overflow-y-auto">
+                            <div dangerouslySetInnerHTML={{ __html: doc.document_snapshot }} />
+                          </div>
+                        </details>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* ── Additional Property Documents ── */}
+            {propertyDocuments.filter((d: any) => !['contract_of_sale', 'grant_deed', 'purchase_receipt', 'allocation_letter'].includes(d.document_type) && !['contract of sale', 'grant deed', 'purchase receipt', 'allocation letter'].includes(d.title?.toLowerCase())).length > 0 && (
+              <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+                <div className="border-b border-border/50 px-8 py-5 flex items-center gap-3">
+                  <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
+                    <Building2 className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <div>
+                    <h4 className="font-serif text-lg font-bold text-foreground">Additional Property Documents</h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">Supporting documents, reports, and filings for {prop.title}</p>
+                  </div>
+                </div>
+                <div className="divide-y divide-border/50">
+                  {propertyDocuments.filter((d: any) => !['contract_of_sale', 'grant_deed', 'purchase_receipt', 'allocation_letter'].includes(d.document_type) && !['contract of sale', 'grant deed', 'purchase receipt', 'allocation letter'].includes(d.title?.toLowerCase())).map((doc: any) => (
+                    <div key={doc.id} className="flex items-center justify-between p-5 md:px-8 hover:bg-muted/20 transition-colors">
+                      <div className="flex items-center gap-4">
+                        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600 shrink-0">
+                          <FileText className="w-5 h-5" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground capitalize">{doc.title || doc.document_type?.replace(/_/g, " ") || "Document"}</p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1">
+                            <Badge variant="outline" className="text-[9px] uppercase font-bold tracking-wider">{doc.document_type?.replace(/_/g, " ") || "General"}</Badge>
+                            <span className="text-[10px] text-muted-foreground">
+                              {doc.created_at ? new Date(doc.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }) : ''}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      {doc.url && (
+                        <Button variant="outline" size="sm" className="font-semibold text-xs h-9 shrink-0" asChild>
+                          <a href={doc.url} target="_blank" rel="noopener noreferrer">
+                            <Download className="w-3.5 h-3.5 mr-1.5" /> Download
+                          </a>
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {documents.length === 0 && propertyDocuments.length === 0 && (
+              <div className="bg-card border border-dashed border-border/60 rounded-2xl p-12 text-center">
+                <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-muted/50 mb-4">
+                  <FileText className="h-7 w-7 text-muted-foreground/40" />
+                </div>
+                <p className="font-serif text-lg font-semibold text-foreground">No Additional Documents</p>
+                <p className="text-sm text-muted-foreground mt-2 max-w-sm mx-auto">Legal documents will appear here once your investment is processed and agreements are signed.</p>
+              </div>
+            )}
+
+            {/* Legal Disclaimer */}
+            <div className="bg-muted/20 border border-border/40 rounded-xl p-5 flex items-start gap-3">
+              <ShieldCheck className="w-5 h-5 text-muted-foreground shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-semibold text-muted-foreground mb-1">Document Security Notice</p>
+                <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
+                  All documents displayed on this page are securely stored and encrypted. Digital signatures are legally binding 
+                  under applicable electronic signature laws. Documents are timestamped and cannot be altered after execution. 
+                  For any document-related inquiries, contact our legal team at support@havenhomehub.com.
+                </p>
               </div>
             </div>
           </TabsContent>
