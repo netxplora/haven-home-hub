@@ -5,15 +5,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatMoney } from "@/lib/invest";
-import { Check, X, Search, FileText, Download, ExternalLink, CalendarClock } from "lucide-react";
+import { Check, X, Search, FileText, Download, ExternalLink, CalendarClock, ArrowUpDown, Filter } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { AdminManageInvestmentDialog } from "@/components/admin/AdminManageInvestmentDialog";
+import { format } from "date-fns";
 
 export function AdminInvestmentOrders() {
   const qc = useQueryClient();
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sortBy, setSortBy] = useState("newest");
   const [selectedOrder, setSelectedOrder] = useState<any>(null);
   const [manageOrder, setManageOrder] = useState<any>(null);
   const [adminNotes, setAdminNotes] = useState("");
@@ -38,14 +42,39 @@ export function AdminInvestmentOrders() {
   });
 
   const filtered = useMemo(() => {
-    if (!searchTerm.trim()) return orders;
-    const term = searchTerm.toLowerCase();
-    return orders.filter((o: any) => 
-      o.profiles?.full_name?.toLowerCase().includes(term) ||
-      o.profiles?.email?.toLowerCase().includes(term) ||
-      o.investment_properties?.title?.toLowerCase().includes(term)
-    );
-  }, [orders, searchTerm]);
+    let result = [...orders];
+    
+    // Search filter
+    if (searchTerm.trim()) {
+      const term = searchTerm.toLowerCase();
+      result = result.filter((o: any) => 
+        o.profiles?.full_name?.toLowerCase().includes(term) ||
+        o.profiles?.email?.toLowerCase().includes(term) ||
+        o.investment_properties?.title?.toLowerCase().includes(term)
+      );
+    }
+    
+    // Status filter
+    if (statusFilter !== "all") {
+      result = result.filter((o: any) => o.status === statusFilter);
+    }
+    
+    // Sorting
+    switch (sortBy) {
+      case "oldest":
+        result.sort((a: any, b: any) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case "highest":
+        result.sort((a: any, b: any) => Number(b.total_amount || b.amount_invested || 0) - Number(a.total_amount || a.amount_invested || 0));
+        break;
+      case "newest":
+      default:
+        result.sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+    }
+    
+    return result;
+  }, [orders, searchTerm, statusFilter, sortBy]);
 
   useEffect(() => {
     const channel = supabase
@@ -152,14 +181,43 @@ export function AdminInvestmentOrders() {
           <p className="text-muted-foreground text-sm mt-1">Approve, reject, and manage incoming investment requests.</p>
         </div>
         
-        <div className="relative w-full sm:w-64">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search investors or properties..." 
-            className="pl-9 rounded-xl"
-          />
+        <div className="flex flex-wrap gap-3 w-full sm:w-auto">
+          <div className="relative flex-1 sm:w-48 sm:flex-none">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search..." 
+              className="pl-9 rounded-xl"
+            />
+          </div>
+          <Select value={statusFilter} onValueChange={setStatusFilter}>
+            <SelectTrigger className="w-[140px] rounded-xl">
+              <Filter className="h-3.5 w-3.5 mr-1.5" />
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Statuses</SelectItem>
+              <SelectItem value="pending">Pending</SelectItem>
+              <SelectItem value="payment_under_review">Under Review</SelectItem>
+              <SelectItem value="confirmed">Confirmed</SelectItem>
+              <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="completed">Completed</SelectItem>
+              <SelectItem value="rejected">Rejected</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[130px] rounded-xl">
+              <ArrowUpDown className="h-3.5 w-3.5 mr-1.5" />
+              <SelectValue placeholder="Sort" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="newest">Newest</SelectItem>
+              <SelectItem value="oldest">Oldest</SelectItem>
+              <SelectItem value="highest">Highest Value</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
@@ -244,6 +302,7 @@ export function AdminInvestmentOrders() {
                 <th className="px-6 py-4 font-semibold text-right">Amount</th>
                 <th className="px-6 py-4 font-semibold text-right">Units</th>
                 <th className="px-6 py-4 font-semibold text-center">Status</th>
+                <th className="px-6 py-4 font-semibold text-center">Date</th>
                 <th className="px-6 py-4 font-semibold text-right">Actions</th>
               </tr>
             </thead>
@@ -278,6 +337,9 @@ export function AdminInvestmentOrders() {
                       {order.status ? order.status.replace(/_/g, " ") : "Processing"}
                     </Badge>
                   </td>
+                  <td className="px-6 py-4 text-center text-xs text-muted-foreground">
+                    {format(new Date(order.created_at), "MMM d, yyyy")}
+                  </td>
                   <td className="px-6 py-4 text-right">
                     <div className="flex justify-end gap-2">
                       <Button 
@@ -307,7 +369,7 @@ export function AdminInvestmentOrders() {
               ))}
               {filtered.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-muted-foreground text-sm">
+                  <td colSpan={7} className="px-6 py-12 text-center text-muted-foreground text-sm">
                     No investment orders found.
                   </td>
                 </tr>
@@ -394,6 +456,14 @@ export function AdminInvestmentOrders() {
               </div>
               
               <div className="space-y-4">
+                {/* System dates for approved orders */}
+                {selectedOrder.approved_at && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-green-700 mb-1">Approved</p>
+                    <p className="text-xs font-mono text-green-600">{format(new Date(selectedOrder.approved_at), "MMM d, yyyy 'at' h:mm a")}</p>
+                  </div>
+                )}
+
                 <div className="space-y-2">
                   <label className="text-xs font-semibold">Admin Notes (Internal)</label>
                   <Textarea 

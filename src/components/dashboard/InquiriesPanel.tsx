@@ -1,4 +1,3 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { MessageSquare, Clock, CheckCircle2, AlertCircle, ArrowUpRight, Reply, Search } from "lucide-react";

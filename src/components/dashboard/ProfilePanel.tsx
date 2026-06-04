@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { ShieldCheck, ShieldAlert, ClipboardList, User, Phone, Mail, Upload, CheckCircle2, ChevronRight, FileText, Clock, Copy, CalendarDays, BadgeCheck, Info, Camera, Loader2 } from "lucide-react";
@@ -10,10 +10,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { getAvatarUrl } from "@/lib/utils";
 
 export function ProfilePanel({ userId }: { userId: string }) {
   const qc = useQueryClient();
-  const { user, roles } = useAuth();
+  const { user, roles, refreshProfile } = useAuth();
   const { data: profile, isLoading } = useQuery({
     queryKey: ["profile", userId],
     queryFn: async () => {
@@ -29,9 +30,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
   const [kycStep, setKycStep] = useState(1);
 
   // Resolve avatar public URL
-  const avatarPublicUrl = profile?.avatar_url
-    ? supabase.storage.from("avatars").getPublicUrl(profile.avatar_url).data.publicUrl
-    : null;
+  const avatarPublicUrl = getAvatarUrl(profile?.avatar_url);
 
   // Restore values from LocalStorage drafts if they exist
   useEffect(() => {
@@ -123,6 +122,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
 
       toast({ title: "Profile picture updated" });
       qc.invalidateQueries({ queryKey: ["profile", userId] });
+      await refreshProfile();
     } catch (error: any) {
       toast({ title: "Upload failed", description: error.message, variant: "destructive" });
     } finally {

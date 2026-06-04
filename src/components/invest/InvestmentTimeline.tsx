@@ -1,4 +1,3 @@
-import React from "react";
 import { Check, Clock, CircleDot, AlertCircle, ArrowRight } from "lucide-react";
 import { cn } from "@/lib/utils";
 

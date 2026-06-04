@@ -1,7 +1,8 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Users, User, Calendar, DollarSign, Award, ArrowUpRight, Settings, Save, Loader2 } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import { formatMoney } from "@/lib/invest";
 import { Input } from "@/components/ui/input";
@@ -9,10 +10,12 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarUrl } from "@/lib/utils";
 
 export function AdminReferrals() {
-  const [isSaving, setIsSaving] = React.useState(false);
-  const [settings, setSettings] = React.useState<any>({
+  const [isSaving, setIsSaving] = useState(false);
+  const [settings, setSettings] = useState<any>({
     bonus_percentage: 5,
     min_investment_required: 1000,
     max_bonus_cap: 500
@@ -56,8 +59,8 @@ export function AdminReferrals() {
         .from("referrals")
         .select(`
           *,
-          referrer:referrer_id(full_name, email),
-          referred:referred_id(full_name, email)
+          referrer:referrer_id(full_name, email, avatar_url),
+          referred:referred_id(full_name, email, avatar_url)
         `)
         .order("created_at", { ascending: false });
       return data ?? [];
@@ -182,9 +185,12 @@ export function AdminReferrals() {
                 <div>
                   <span className="text-[10px] text-muted-foreground uppercase font-medium block">Referrer</span>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="h-7 w-7 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold shrink-0">
-                      {r.referrer?.full_name?.charAt(0) ?? "U"}
-                    </div>
+                    <Avatar className="h-7 w-7 shrink-0 rounded-full border border-border/50">
+                      <AvatarImage src={getAvatarUrl(r.referrer?.avatar_url)} />
+                      <AvatarFallback className="bg-secondary text-[10px] font-bold">
+                        {r.referrer?.full_name?.charAt(0) ?? "U"}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="overflow-hidden">
                       <p className="text-xs font-bold text-foreground truncate">{r.referrer?.full_name}</p>
                       <p className="text-[9px] text-muted-foreground truncate">{r.referrer?.email}</p>
@@ -194,9 +200,12 @@ export function AdminReferrals() {
                 <div>
                   <span className="text-[10px] text-muted-foreground uppercase font-medium block">Referred</span>
                   <div className="flex items-center gap-2 mt-1">
-                    <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold shrink-0">
-                      {r.referred?.full_name?.charAt(0) ?? "U"}
-                    </div>
+                    <Avatar className="h-7 w-7 shrink-0 rounded-full border border-border/50">
+                      <AvatarImage src={getAvatarUrl(r.referred?.avatar_url)} />
+                      <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                        {r.referred?.full_name?.charAt(0) ?? "U"}
+                      </AvatarFallback>
+                    </Avatar>
                     <div className="overflow-hidden">
                       <p className="text-xs font-bold text-foreground truncate">{r.referred?.full_name}</p>
                       <p className="text-[9px] text-muted-foreground truncate">{r.referred?.email}</p>
@@ -224,65 +233,71 @@ export function AdminReferrals() {
       <div className="hidden md:block rounded-xl border border-border/50 bg-card overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
           <div className="w-full overflow-x-auto pb-2">
-        <table className="w-full text-left border-collapse">
-            <thead>
-              <tr className="bg-secondary/20 border-b border-border/50">
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Referrer</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Referred User</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Status</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Date Joined</th>
-                <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right whitespace-nowrap">Bonus</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/30">
-              {referrals.map((r: any) => (
-                <tr key={r.id} className="hover:bg-secondary/10 transition-colors group">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-secondary flex items-center justify-center text-[10px] font-bold">
-                        {r.referrer?.full_name?.charAt(0) ?? "U"}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{r.referrer?.full_name}</p>
-                        <p className="text-[10px] text-muted-foreground">{r.referrer?.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-8 w-8 rounded-full bg-primary/10 text-primary flex items-center justify-center text-[10px] font-bold">
-                        {r.referred?.full_name?.charAt(0) ?? "U"}
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold text-foreground">{r.referred?.full_name}</p>
-                        <p className="text-[10px] text-muted-foreground">{r.referred?.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <Badge variant={r.status === 'invested' ? 'default' : 'secondary'} className={`text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md ${r.status === 'registered' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : ''}`}>
-                      {r.status}
-                    </Badge>
-                  </td>
-                  <td className="px-6 py-4 text-[11px] text-muted-foreground font-medium">
-                    {new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-bold text-right text-primary">
-                    {formatMoney(r.bonus_earned)}
-                  </td>
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-secondary/20 border-b border-border/50">
+                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Referrer</th>
+                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Referred User</th>
+                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Status</th>
+                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground whitespace-nowrap">Date Joined</th>
+                  <th className="px-6 py-4 text-xs font-medium uppercase tracking-wider text-muted-foreground text-right whitespace-nowrap">Bonus</th>
                 </tr>
-              ))}
-              {referrals.length === 0 && !isLoading && (
-                <tr>
-                  <td colSpan={5} className="px-6 py-20 text-center text-muted-foreground italic bg-secondary/5">
-                    <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                    <p className="text-sm">No referral data found.</p>
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-      </div>
+              </thead>
+              <tbody className="divide-y divide-border/30">
+                {referrals.map((r: any) => (
+                  <tr key={r.id} className="hover:bg-secondary/10 transition-colors group">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 shrink-0 rounded-full border border-border/50">
+                          <AvatarImage src={getAvatarUrl(r.referrer?.avatar_url)} />
+                          <AvatarFallback className="bg-secondary text-[10px] font-bold">
+                            {r.referrer?.full_name?.charAt(0) ?? "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-bold text-foreground">{r.referrer?.full_name}</p>
+                          <p className="text-[10px] text-muted-foreground">{r.referrer?.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-8 w-8 shrink-0 rounded-full border border-border/50">
+                          <AvatarImage src={getAvatarUrl(r.referred?.avatar_url)} />
+                          <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                            {r.referred?.full_name?.charAt(0) ?? "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-sm font-bold text-foreground">{r.referred?.full_name}</p>
+                          <p className="text-[10px] text-muted-foreground">{r.referred?.email}</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge variant={r.status === 'invested' ? 'default' : 'secondary'} className={`text-[9px] uppercase tracking-widest font-bold px-2 py-0.5 rounded-md ${r.status === 'registered' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : ''}`}>
+                        {r.status}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4 text-[11px] text-muted-foreground font-medium">
+                      {new Date(r.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-bold text-right text-primary">
+                      {formatMoney(r.bonus_earned)}
+                    </td>
+                  </tr>
+                ))}
+                {referrals.length === 0 && !isLoading && (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-20 text-center text-muted-foreground italic bg-secondary/5">
+                      <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                      <p className="text-sm">No referral data found.</p>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

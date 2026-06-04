@@ -11,6 +11,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { toast } from "@/hooks/use-toast";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { format } from "date-fns";
+import { getAvatarUrl } from "@/lib/utils";
 
 const reviewSchema = z.object({
   rating: z.number().int().min(1).max(5),
@@ -76,8 +79,19 @@ export function Reviews({ target }: { target: Target }) {
         )}
         {reviews.map((r: any) => (
           <article key={r.id} className="rounded-xl border border-border bg-card p-4 shadow-soft">
-            <div className="flex items-center justify-between">
-              <Stars value={r.rating} />
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Avatar className="h-8 w-8 rounded-full border border-border/50">
+                  <AvatarImage src={getAvatarUrl(r.profiles?.avatar_url)} />
+                  <AvatarFallback className="bg-primary/10 text-primary text-[10px] font-bold">
+                    {r.profiles?.full_name?.charAt(0) || "U"}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-xs font-semibold">{r.profiles?.full_name || "Anonymous User"}</p>
+                  <Stars value={r.rating} />
+                </div>
+              </div>
               <time className="text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</time>
             </div>
             {r.title && <h3 className="mt-2 font-medium">{r.title}</h3>}

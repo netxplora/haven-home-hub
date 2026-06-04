@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { getAvatarUrl } from "@/lib/utils";
 import { MessageSquare, Send, ArrowLeft } from "lucide-react";
 
 /** Start or open a conversation with an agent about a property */
@@ -338,11 +340,12 @@ export function ConversationList() {
     <div className="space-y-2">
       {conversations.map((c: any) => (
         <div key={c.id} className="flex items-center gap-3 rounded-xl border border-border/50 bg-card p-4 hover:border-border transition-all cursor-pointer">
-          <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-sm font-bold text-primary">
+          <Avatar className="h-10 w-10 shrink-0 rounded-full border border-border/50">
+            <AvatarImage src={getAvatarUrl(c.otherUser?.avatar_url)} />
+            <AvatarFallback className="bg-primary/10 text-primary font-bold">
               {c.otherUser?.full_name?.charAt(0) || "?"}
-            </span>
-          </div>
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium truncate">{c.otherUser?.full_name || "User"}</p>

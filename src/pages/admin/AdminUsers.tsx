@@ -1,12 +1,14 @@
-import React, { useState, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Search, ShieldCheck, ShieldAlert, Clock, User, ArrowUpDown, ChevronLeft, ChevronRight } from "lucide-react";
+import { getAvatarUrl } from "@/lib/utils";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -184,9 +186,12 @@ export function AdminUsers() {
             paginated.map((u: any) => (
               <div key={u.id} className="rounded-xl border border-border/50 bg-card p-4 shadow-sm space-y-4">
                 <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
-                    {u.full_name ? u.full_name[0] : "U"}
-                  </div>
+                  <Avatar className="h-10 w-10 shrink-0 rounded-full border border-border/50">
+                    <AvatarImage src={getAvatarUrl(u.avatar_url)} />
+                    <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm uppercase">
+                      {u.full_name ? u.full_name[0] : "U"}
+                    </AvatarFallback>
+                  </Avatar>
                   <div>
                     <h4 className="font-semibold text-foreground">{u.full_name || "Unnamed User"}</h4>
                     <p className="text-[10px] text-muted-foreground font-mono">{u.id.slice(0, 12)}...</p>
@@ -261,45 +266,48 @@ export function AdminUsers() {
         {/* Desktop Table View (hidden md:block) */}
         <div className="hidden md:block overflow-x-auto">
           <div className="w-full overflow-x-auto pb-2">
-        <table className="w-full text-sm text-left">
-            <thead className="bg-secondary/40 border-b border-border/50">
-              <tr>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Verification</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Roles</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Joined</th>
-                <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border/50">
-              {paginated.length === 0 ? (
+            <table className="w-full text-sm text-left">
+              <thead className="bg-secondary/40 border-b border-border/50">
                 <tr>
-                  <td colSpan={5} className="p-12 text-center text-muted-foreground">
-                    <User className="h-10 w-10 mx-auto opacity-30" />
-                    <p className="mt-3 text-sm">No users match your filters.</p>
-                  </td>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">User</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Verification</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Roles</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground whitespace-nowrap">Joined</th>
+                  <th className="p-4 font-semibold uppercase tracking-wider text-[10px] text-muted-foreground text-right whitespace-nowrap">Actions</th>
                 </tr>
-              ) : paginated.map((u: any) => (
-                <tr key={u.id} className="transition-colors hover:bg-secondary/10">
-                  <td className="p-4">
-                    <div className="flex items-center gap-3">
-                      <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm uppercase">
-                        {u.full_name ? u.full_name[0] : "U"}
+              </thead>
+              <tbody className="divide-y divide-border/50">
+                {paginated.length === 0 ? (
+                  <tr>
+                    <td colSpan={5} className="p-12 text-center text-muted-foreground">
+                      <User className="h-10 w-10 mx-auto opacity-30" />
+                      <p className="mt-3 text-sm">No users match your filters.</p>
+                    </td>
+                  </tr>
+                ) : paginated.map((u: any) => (
+                  <tr key={u.id} className="transition-colors hover:bg-secondary/10">
+                    <td className="p-4">
+                      <div className="flex items-center gap-3">
+                        <Avatar className="h-9 w-9 shrink-0 rounded-full border border-border/50">
+                          <AvatarImage src={getAvatarUrl(u.avatar_url)} />
+                          <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm uppercase">
+                            {u.full_name ? u.full_name[0] : "U"}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{u.full_name || "Unnamed User"}</p>
+                          <p className="text-[10px] text-muted-foreground font-mono">{u.id.slice(0, 12)}...</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium">{u.full_name || "Unnamed User"}</p>
-                        <p className="text-[10px] text-muted-foreground font-mono">{u.id.slice(0, 12)}...</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="p-4">
-                    <Badge variant={kycVariant(u.kyc_status)} className="capitalize text-[10px] gap-1">
-                      {kycIcon(u.kyc_status)}
-                      {u.kyc_status === "approved" ? "Verified" : 
-                       u.kyc_status === "pending" ? "Reviewing" : 
-                       u.kyc_status === "rejected" ? "Declined" : "Unverified"}
-                    </Badge>
-                  </td>
+                    </td>
+                    <td className="p-4">
+                      <Badge variant={kycVariant(u.kyc_status)} className="capitalize text-[10px] gap-1">
+                        {kycIcon(u.kyc_status)}
+                        {u.kyc_status === "approved" ? "Verified" : 
+                         u.kyc_status === "pending" ? "Reviewing" : 
+                         u.kyc_status === "rejected" ? "Declined" : "Unverified"}
+                      </Badge>
+                    </td>
                   <td className="p-4">
                     <div className="flex flex-wrap gap-1.5">
                       {u.roles.length === 0 ? (
@@ -351,41 +359,41 @@ export function AdminUsers() {
               ))}
             </tbody>
           </table>
-      </div>
         </div>
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-accent/30">
-            <p className="text-xs text-muted-foreground">
-              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
-            </p>
-            <div className="flex items-center gap-2">
-              <Button 
-                size="icon" 
-                variant="outline" 
-                className="h-8 w-8 rounded-lg" 
-                disabled={currentPage === 1} 
-                onClick={() => setCurrentPage(p => p - 1)}
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <span className="text-xs font-medium text-foreground min-w-[60px] text-center">
-                Page {currentPage} of {totalPages}
-              </span>
-              <Button 
-                size="icon" 
-                variant="outline" 
-                className="h-8 w-8 rounded-lg" 
-                disabled={currentPage === totalPages} 
-                onClick={() => setCurrentPage(p => p + 1)}
-              >
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* Pagination */}
+      {totalPages > 1 && (
+        <div className="flex items-center justify-between px-4 py-3 border-t border-border/50 bg-accent/30">
+          <p className="text-xs text-muted-foreground">
+            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filtered.length)} of {filtered.length}
+          </p>
+          <div className="flex items-center gap-2">
+            <Button 
+              size="icon" 
+              variant="outline" 
+              className="h-8 w-8 rounded-lg" 
+              disabled={currentPage === 1} 
+              onClick={() => setCurrentPage(p => p - 1)}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-xs font-medium text-foreground min-w-[60px] text-center">
+              Page {currentPage} of {totalPages}
+            </span>
+            <Button 
+              size="icon" 
+              variant="outline" 
+              className="h-8 w-8 rounded-lg" 
+              disabled={currentPage === totalPages} 
+              onClick={() => setCurrentPage(p => p + 1)}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
-  );
+  </div>
+);
 }

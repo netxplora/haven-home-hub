@@ -12,9 +12,12 @@ import {
 } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/site/NotificationBell";
 import { CurrencyToggle } from "@/components/site/CurrencyToggle";
+import { getAvatarUrl } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export function Header() {
-  const { user, isAdmin, isAgent, signOut } = useAuth();
+  const { user, profile, isAdmin, isAgent, signOut } = useAuth();
   const navigate = useNavigate();
     const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -58,6 +61,8 @@ export function Header() {
   const closeProperties = useCallback(() => {
     hoverTimeoutRef.current = setTimeout(() => setPropertiesOpen(false), 150);
   }, []);
+
+  const avatarUrl = getAvatarUrl(profile?.avatar_url);
 
   // Compute the dynamic top value
   const topOffset = isScrolled ? 0 : announcementHeight;
@@ -168,9 +173,14 @@ export function Header() {
               <NotificationBell />
               <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 rounded-lg h-9 border-border/60 hover:bg-accent/50">
-                  <UserIcon className="h-4 w-4" />
-                  {"Account"}
+                <Button variant="outline" size="sm" className="gap-2 rounded-lg h-9 border-border/60 hover:bg-accent/50 p-1 pr-3">
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={avatarUrl || ""} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                      {user.email?.charAt(0).toUpperCase() || <UserIcon className="h-3 w-3" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium">Account</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56">

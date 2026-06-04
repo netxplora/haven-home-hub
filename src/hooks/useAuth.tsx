@@ -8,7 +8,9 @@ interface AuthContextValue {
   user: User | null;
   session: Session | null;
   roles: AppRole[];
+  profile: any | null;
   loading: boolean;
+  refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
   isAdmin: boolean;
   isAgent: boolean;
@@ -20,6 +22,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [profile, setProfile] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,9 +32,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(sess?.user ?? null);
       if (sess?.user) {
         // Defer to avoid deadlocks
-        setTimeout(() => fetchRoles(sess.user.id), 0);
+        setTimeout(() => {
+          fetchRoles(sess.user.id);
+          fetchProfile(sess.user.id);
+        }, 0);
       } else {
         setRoles([]);
+        setProfile(null);
       }
     });
 
@@ -40,7 +47,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
-        await fetchRoles(sess.user.id);
+        await Promise.all([
+          fetchRoles(sess.user.id),
+          fetchProfile(sess.user.id)
+        ]);
       }
       setLoading(false);
     });
@@ -59,12 +69,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  async function fetchProfile(userId?: string) {
+    const idToFetch = userId || user?.id;
+    if (!idToFetch) return;
+    try {
+      const { data, error } = await supabase.from("profiles").select("*").eq("id", idToFetch).maybeSingle();
+      if (error) throw error;
+      setProfile(data);
+    } catch (err) {
+      console.error("Error fetching profile:", err);
+      setProfile(null);
+    }
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
   }
 
   const value: AuthContextValue = {
-    user, session, roles, loading, signOut,
+    user, session, roles, profile, loading, refreshProfile: () => fetchProfile(), signOut,
     isAdmin: roles.includes("admin"),
     isAgent: roles.includes("agent"),
   };

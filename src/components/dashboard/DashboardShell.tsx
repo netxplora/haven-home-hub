@@ -25,6 +25,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { getAvatarUrl } from "@/lib/utils";
 import { useAuth } from "@/hooks/useAuth";
 import { 
   Sheet, 
@@ -33,6 +36,8 @@ import {
   SheetHeader,
   SheetTitle
 } from "@/components/ui/sheet";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 
 export interface NavItem {
   id: string;
@@ -59,8 +64,10 @@ export function DashboardShell({
   title,
   description 
 }: DashboardShellProps) {
-  const { user, signOut, isAdmin, isAgent } = useAuth();
+  const { user, profile, signOut, isAdmin, isAgent } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const avatarUrl = getAvatarUrl(profile?.avatar_url);
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-background border-r border-border/50">
@@ -109,9 +116,12 @@ export function DashboardShell({
       <div className="border-t border-border/50 p-4">
         <div className="rounded-lg bg-accent/50 p-3.5 mb-3">
           <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center text-sm font-semibold">
-              {user?.email?.charAt(0).toUpperCase() || "U"}
-            </div>
+            <Avatar className="h-9 w-9 rounded-lg">
+              <AvatarImage src={avatarUrl || ""} className="object-cover" />
+              <AvatarFallback className="bg-primary/10 text-primary rounded-lg text-sm font-semibold">
+                {user?.email?.charAt(0).toUpperCase() || "U"}
+              </AvatarFallback>
+            </Avatar>
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-foreground">{user?.email?.split('@')[0] || "User"}</p>
               <p className="truncate text-[11px] text-muted-foreground">{isAdmin ? 'Administrator' : isAgent ? 'Agent' : 'Member'}</p>

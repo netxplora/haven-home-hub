@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 
 // For demo/free usage, we can mock or use a free public API
 const EXCHANGE_RATE_API = "https://open.er-api.com/v6/latest/USD";

@@ -1,4 +1,3 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TrendingUp, CreditCard, ArrowLeftRight, ShieldAlert, CheckCircle2, Eye, Building2 } from "lucide-react";

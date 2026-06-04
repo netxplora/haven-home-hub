@@ -1,4 +1,3 @@
-import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Building2, Users, TrendingUp, Briefcase, Banknote, MessageSquare, Calendar, MapPin, ClipboardList, Fingerprint, ArrowDownToLine, CreditCard, Layers, ShieldAlert } from "lucide-react";
@@ -141,6 +140,19 @@ export function AdminOverview() {
     { icon: MapPin, label: "Locations", value: String(counts?.locations ?? "—") },
   ];
 
+  // Recent audit logs
+  const { data: auditLogs } = useQuery({
+    queryKey: ["admin-recent-audit-logs"],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("portfolio_audit_logs")
+        .select("id, action_type, field_changed, old_value, new_value, created_at, user_id")
+        .order("created_at", { ascending: false })
+        .limit(3);
+      return data ?? [];
+    }
+  });
+
   const maxMonthly = Math.max(...(revenueStats?.monthlyData ?? []).map((m: any) => m.total), 1);
 
   return (
@@ -265,30 +277,32 @@ export function AdminOverview() {
           <Button variant="outline" size="sm" className="rounded-lg h-9">View Full Audit Log</Button>
         </div>
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-5">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-destructive">High Risk Alert</span>
-              <span className="text-xs text-muted-foreground">10m ago</span>
+          {auditLogs && auditLogs.length > 0 ? (
+            auditLogs.map((log: any) => (
+              <div key={log.id} className="rounded-xl border border-border/50 bg-card p-5">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                    {log.action_type}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date(log.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+                <p className="font-serif font-semibold text-foreground text-sm">
+                  {log.field_changed ? `Changed ${log.field_changed}` : `System Event`}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  User ID: {log.user_id ? log.user_id.slice(0, 8) + '...' : 'System'}
+                  {log.field_changed && ` (${log.old_value || 'none'} → ${log.new_value || 'none'})`}
+                </p>
+              </div>
+            ))
+          ) : (
+            <div className="col-span-3 rounded-xl border border-border/50 bg-card p-8 text-center">
+              <ShieldAlert className="h-8 w-8 text-muted-foreground/30 mx-auto mb-3" />
+              <p className="text-sm font-medium text-muted-foreground">No recent security or audit events.</p>
             </div>
-            <p className="font-serif font-semibold text-foreground text-sm">Multiple failed KYC attempts</p>
-            <p className="text-xs text-muted-foreground mt-1">User ID: ...89a2 triggered automated lock after 5 mismatched ID scans.</p>
-          </div>
-          <div className="rounded-xl border border-amber-500/20 bg-amber-500/5 p-5">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-amber-600">Anomaly Detected</span>
-              <span className="text-xs text-muted-foreground">2h ago</span>
-            </div>
-            <p className="font-serif font-semibold text-foreground text-sm">Rapid sequential payments</p>
-            <p className="text-xs text-muted-foreground mt-1">3 installment payments made within 60 seconds from same IP.</p>
-          </div>
-          <div className="rounded-xl border border-border/50 bg-card p-5">
-            <div className="flex justify-between items-start mb-3">
-              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">System Log</span>
-              <span className="text-xs text-muted-foreground">5h ago</span>
-            </div>
-            <p className="font-serif font-semibold text-foreground text-sm">Admin login from new device</p>
-            <p className="text-xs text-muted-foreground mt-1">Verified via 2FA. IP: 102.24.45.19 (Austin, TX).</p>
-          </div>
+          )}
         </div>
       </div>
 

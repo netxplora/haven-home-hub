@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { TrendingUp, Activity, BarChart3, MapPin, Building2, Percent } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 

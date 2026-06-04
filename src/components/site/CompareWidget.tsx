@@ -1,4 +1,3 @@
-import React from "react";
 import { Link } from "react-router-dom";
 import { useCompare } from "@/hooks/useCompare";
 import { X, Scale, Trash2 } from "lucide-react";

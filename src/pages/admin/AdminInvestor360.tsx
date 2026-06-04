@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { 
   User, ShieldCheck, ShieldAlert, Clock, Mail, Phone, CalendarDays,
   LayoutDashboard, TrendingUp, CreditCard, Calendar, ArrowLeftRight, Settings,
-  CheckCircle2, Search, Building2, Eye, ExternalLink, X, MapPin, ChevronRight, ChevronLeft, ArrowUpDown
+  CheckCircle2, Search, Building2, Eye, ExternalLink, X, MapPin, ChevronRight, ChevronLeft, ArrowUpDown, Settings2
 } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 import { Button } from "@/components/ui/button";
@@ -18,7 +18,10 @@ import { format } from "date-fns";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PortfolioOverviewTab } from "@/components/dashboard/PortfolioOverviewTab";
+import { AdminManageInvestmentDialog } from "@/components/admin/AdminManageInvestmentDialog";
+import { getAvatarUrl } from "@/lib/utils";
 
 // Admin Note persistence using localStorage since no DB table exists yet
 const getNotes = (id: string) => localStorage.getItem(`admin_notes_${id}`) || "";
@@ -35,6 +38,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
   const [selectedUserId, setSelectedUserId] = useState<string | null>(initialUserId || null);
   const [activeTab, setActiveTab] = useState("overview");
   const [search, setSearch] = useState("");
+  const [manageInvestmentId, setManageInvestmentId] = useState<any>(null);
 
   useEffect(() => {
     if (initialUserId) {
@@ -133,7 +137,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
     ].filter(Boolean).length / 5) * 100
   ) : 0;
 
-  // Local state for admin controls (since DB tables might not exist for these yet)
+  // Local state for admin controls
   const [adminNotes, setAdminNotesState] = useState("");
   const [isFlagged, setIsFlagged] = useState(false);
   const [isSuspended, setIsSuspended] = useState(false);
@@ -268,9 +272,12 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
             )}
             
             <div className="flex flex-col md:flex-row gap-6 items-start md:items-center">
-              <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center text-primary font-bold text-2xl uppercase shrink-0 ring-4 ring-background shadow-sm">
-                {profileData.full_name ? profileData.full_name[0] : "U"}
-              </div>
+              <Avatar className="h-20 w-20 shrink-0 rounded-2xl ring-4 ring-background shadow-sm">
+                <AvatarImage src={getAvatarUrl(profileData.avatar_url)} className="object-cover rounded-2xl" />
+                <AvatarFallback className="bg-primary/10 text-primary font-bold text-2xl uppercase rounded-2xl">
+                  {profileData.full_name ? profileData.full_name[0] : "U"}
+                </AvatarFallback>
+              </Avatar>
               
               <div className="flex-1 space-y-2">
                 <div className="flex flex-wrap items-center gap-3">
@@ -355,10 +362,10 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                   <thead className="bg-secondary/40 border-b">
                     <tr>
                       <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Property</th>
-                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount</th>
-                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Type</th>
-                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
-                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Date</th>
+                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Amount / ROI</th>
+                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">Dates</th>
+                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider text-center">Status</th>
+                      <th className="p-4 text-xs font-medium text-muted-foreground uppercase tracking-wider text-right">Actions</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/50">
@@ -367,11 +374,42 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                     ) : (
                       activityData?.investments?.map((inv: any) => (
                         <tr key={inv.id} className="hover:bg-secondary/10">
-                          <td className="p-4 font-medium">{inv.investment_properties?.title}</td>
-                          <td className="p-4 font-mono">{formatMoney(Number(inv.total_amount || inv.amount_invested || 0), inv.investment_properties?.currency || 'USD')}</td>
-                          <td className="p-4"><Badge variant="outline" className="uppercase text-[9px]">{inv.investment_type || 'full'}</Badge></td>
-                          <td className="p-4"><Badge variant={inv.status === 'active' || inv.status === 'confirmed' ? 'default' : 'secondary'} className="uppercase text-[9px]">{inv.status}</Badge></td>
-                          <td className="p-4 text-muted-foreground text-xs">{format(new Date(inv.created_at), "MMM d, yyyy")}</td>
+                          <td className="p-4">
+                            <p className="font-medium">{inv.investment_properties?.title}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">{inv.units_owned} units · {inv.investment_type || 'full'} pay</p>
+                          </td>
+                          <td className="p-4">
+                            <p className="font-mono font-medium">{formatMoney(Number(inv.total_amount || inv.amount_invested || 0), inv.investment_properties?.currency || 'USD')}</p>
+                            <p className="text-xs text-green-600 font-mono mt-0.5">+{formatMoney(Number(inv.accrued_earnings || 0), inv.investment_properties?.currency || 'USD')}</p>
+                          </td>
+                          <td className="p-4">
+                            <div className="flex flex-col gap-1">
+                              {inv.start_date ? (
+                                <span className="text-[10px] text-muted-foreground flex justify-between w-32">
+                                  <span>Start:</span>
+                                  <span className="font-mono">{format(new Date(inv.start_date), "MMM d, yy")}</span>
+                                </span>
+                              ) : (
+                                <span className="text-[10px] text-muted-foreground italic">No start date</span>
+                              )}
+                              {inv.maturity_date && (
+                                <span className="text-[10px] text-muted-foreground flex justify-between w-32">
+                                  <span>End:</span>
+                                  <span className="font-mono">{format(new Date(inv.maturity_date), "MMM d, yy")}</span>
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="p-4 text-center">
+                            <Badge variant={inv.status === 'active' || inv.status === 'confirmed' ? 'default' : 'secondary'} className="uppercase text-[9px]">
+                              {inv.status}
+                            </Badge>
+                          </td>
+                          <td className="p-4 text-right">
+                            <Button variant="outline" size="sm" onClick={() => setManageInvestmentId(inv)}>
+                              <Settings2 className="w-3.5 h-3.5 mr-1.5" /> Manage
+                            </Button>
+                          </td>
                         </tr>
                       ))
                     )}
@@ -575,6 +613,14 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
           </div>
         </>
       ) : null}
+
+      {manageInvestmentId && (
+        <AdminManageInvestmentDialog
+          open={!!manageInvestmentId}
+          onOpenChange={(open) => !open && setManageInvestmentId(null)}
+          investment={manageInvestmentId}
+        />
+      )}
     </div>
   );
 }
