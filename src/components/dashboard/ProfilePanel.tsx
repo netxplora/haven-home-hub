@@ -433,7 +433,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
             </div>
           ) : (
             <div className="space-y-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 relative">
+              <div className="grid grid-cols-3 gap-3 relative">
                  {[1, 2, 3].map(step => (
                     <div key={step} className="space-y-3 relative z-10">
                        <div className={`h-1.5 rounded-full transition-all duration-500 ${kycStep >= step ? 'bg-primary' : 'bg-secondary'}`} />
@@ -524,9 +524,9 @@ export function ProfilePanel({ userId }: { userId: string }) {
                     )}
                   </div>
 
-                  <div className="flex gap-4 pt-4">
-                    <Button onClick={() => setKycStep(1)} variant="ghost" className="rounded-lg flex-1 h-11 font-medium">Previous Step</Button>
-                    <Button onClick={() => setKycStep(3)} disabled={!profile?.proof_of_address_url} className="rounded-lg flex-[2] h-11 font-medium bg-primary hover:bg-primary/90">
+                  <div className="flex flex-col sm:flex-row gap-3 pt-4">
+                    <Button onClick={() => setKycStep(1)} variant="ghost" className="rounded-lg w-full sm:flex-1 h-11 font-medium">Previous Step</Button>
+                    <Button onClick={() => setKycStep(3)} disabled={!profile?.proof_of_address_url} className="rounded-lg w-full sm:flex-[2] h-11 font-medium bg-primary hover:bg-primary/90">
                       Final Confirmation <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
@@ -540,7 +540,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
                         <ShieldCheck className="h-5 w-5 text-primary" />
                      </div>
                      <div>
-                         <h4 className="font-semibold">Protocol Confirmation</h4>
+                          <h4 className="font-semibold">Protocol Confirmation</h4>
                         <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                            By submitting these documents, you confirm that all provided information is authentic and represents your legal identity for investment purposes. Haven Home Hub reserves the right to request additional documentation for AML/KYC compliance.
                         </p>
@@ -551,9 +551,9 @@ export function ProfilePanel({ userId }: { userId: string }) {
                      </div>
                   </div>
 
-                  <div className="flex gap-4">
-                    <Button onClick={() => setKycStep(2)} variant="ghost" className="rounded-lg flex-1 h-11 font-medium">Review Documents</Button>
-                    <Button onClick={submitKyc} disabled={saving} className="rounded-lg flex-[2] h-11 font-medium bg-primary shadow-sm">
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <Button onClick={() => setKycStep(2)} variant="ghost" className="rounded-lg w-full sm:flex-1 h-11 font-medium">Review Documents</Button>
+                    <Button onClick={submitKyc} disabled={saving} className="rounded-lg w-full sm:flex-[2] h-11 font-medium bg-primary shadow-sm">
                       {saving ? "Finalizing..." : "Submit for Verification"}
                     </Button>
                   </div>

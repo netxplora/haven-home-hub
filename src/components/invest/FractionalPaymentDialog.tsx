@@ -371,7 +371,7 @@ export function FractionalPaymentDialog({
                   </div>
                 </div>
 
-                <div className="p-5 grid grid-cols-2 gap-y-4 gap-x-6 bg-card text-sm">
+                <div className="p-5 grid grid-cols-1 xs:grid-cols-2 gap-y-4 gap-x-6 bg-card text-sm">
                   <div>
                     <span className="text-[10px] text-muted-foreground uppercase font-semibold block tracking-wider">Fractional Units</span>
                     <span className="font-bold text-foreground text-base mt-0.5 block">{units.toLocaleString()} Units</span>
@@ -390,7 +390,7 @@ export function FractionalPaymentDialog({
                   </div>
 
                   {investMode === "installment" && (
-                    <div className="col-span-2 border-t border-dashed border-border pt-3 grid grid-cols-2 gap-4">
+                    <div className="col-span-1 xs:col-span-2 border-t border-dashed border-border pt-3 grid grid-cols-1 xs:grid-cols-2 gap-4">
                       <div>
                         <span className="text-[10px] text-amber-600 uppercase font-semibold block tracking-wider">Down Payment Due</span>
                         <span className="font-bold text-amber-600 text-base mt-0.5 block">{formatMoney(downPaymentAmount, property.currency)}</span>
@@ -601,7 +601,7 @@ export function FractionalPaymentDialog({
 
                     <div className="p-5 bg-card space-y-4">
                       {/* Copy Crypto Amount Card */}
-                      <div className="border border-border/80 bg-accent/15 rounded-xl p-3.5 flex justify-between items-center">
+                      <div className="border border-border/80 bg-accent/15 rounded-xl p-3.5 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                         <div>
                           <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block">Exact Cryptocurrency Amount</span>
                           <span className="font-mono text-base font-extrabold text-foreground mt-0.5 block">
@@ -611,7 +611,7 @@ export function FractionalPaymentDialog({
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs transition-all hover:bg-primary/5 hover:border-primary/"
+                          className="h-10 px-4 rounded-lg flex items-center justify-center gap-1 font-semibold text-xs transition-all hover:bg-primary/5 hover:border-primary/ w-full sm:w-auto shrink-0"
                           onClick={() => handleCopyText(String(paymentData?.cryptoAmount), "crypto_amount")}
                         >
                           {copyStates["crypto_amount"] ? (
@@ -623,19 +623,19 @@ export function FractionalPaymentDialog({
                       </div>
 
                       {/* Copy Crypto Wallet Address Card */}
-                      <div className="border border-border/80 bg-accent/15 rounded-xl p-3.5 flex justify-between items-center gap-4">
+                      <div className="border border-border/80 bg-accent/15 rounded-xl p-3.5 flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3">
                         <div className="min-w-0">
                           <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block">
                             {paymentConfigs.supported_currency} Address ({paymentConfigs.wallet_network})
                           </span>
-                          <span className="font-mono text-xs font-semibold text-foreground mt-1 block break-all truncate">
+                          <span className="font-mono text-xs font-semibold text-foreground mt-1 block break-all">
                             {paymentData?.address}
                           </span>
                         </div>
                         <Button 
                           variant="outline" 
                           size="sm" 
-                          className="h-10 px-4 rounded-lg flex items-center gap-1 font-semibold text-xs shrink-0 transition-all hover:bg-primary/5 hover:border-primary/"
+                          className="h-10 px-4 rounded-lg flex items-center justify-center gap-1 font-semibold text-xs shrink-0 transition-all hover:bg-primary/5 hover:border-primary/ w-full sm:w-auto"
                           onClick={() => handleCopyText(String(paymentData?.address), "crypto_address")}
                         >
                           {copyStates["crypto_address"] ? (

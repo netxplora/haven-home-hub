@@ -232,7 +232,7 @@ export default function InvestHome() {
           <p className="text-sm font-medium tracking-wider text-primary uppercase">How it works</p>
           <h2 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">A simple way to invest in rental properties</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
           {steps.map((s, i) => (
             <div key={s.title} className="relative rounded-xl border border-border bg-card p-6 shadow-soft">
               <span className="absolute right-5 top-5 font-serif text-4xl text-primary/25">0{i + 1}</span>
@@ -251,7 +251,7 @@ export default function InvestHome() {
             <p className="text-sm font-medium tracking-wider text-primary uppercase">Why investors choose us</p>
             <h2 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">Structured, transparent, patient.</h2>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {benefits.map((b) => (
               <div key={b.title} className="rounded-xl bg-card p-6 shadow-soft">
                 <span className="grid h-10 w-10 place-items-center rounded-lg bg-primary text-primary-foreground ">
@@ -277,7 +277,7 @@ export default function InvestHome() {
               <Link to="/invest/opportunities">See all <ArrowRight className="ml-1 h-4 w-4" /></Link>
             </Button>
           </div>
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {featured.map((p) => (
               <InvestmentCard key={p.id} p={p} />
             ))}

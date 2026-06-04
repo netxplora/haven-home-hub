@@ -384,7 +384,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                 <h3 className="font-serif text-xl font-bold">Ownership Records</h3>
                 <p className="text-sm text-muted-foreground">Title Insurance, Grant Deeds, and survey documentation.</p>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
                 <input
                   type="text"
                   placeholder="Search documents..."
@@ -392,7 +392,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                   value={docSearch}
                   onChange={(e) => setDocSearch(e.target.value)}
                 />
-                <Button onClick={() => setRequestModalOpen(true)} disabled={requestingDoc} variant="outline" className="rounded-xl font-bold">
+                <Button onClick={() => setRequestModalOpen(true)} disabled={requestingDoc} variant="outline" className="rounded-xl font-bold w-full sm:w-auto">
                   {requestingDoc ? "Sending..." : <><Send className="h-4 w-4 mr-2" /> Request Documentation</>}
                 </Button>
               </div>
@@ -428,9 +428,9 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
                           <div className="flex gap-4">
                             <div className={cn(
-                              "h-12 w-12 rounded-xl flex items-center justify-center shrink-0",
-                              isRevoked ? "bg-red-50 text-red-500 border border-red-100" : "bg-primary/5 text-primary"
-                            )}>
+                               "h-12 w-12 rounded-xl flex items-center justify-center shrink-0",
+                               isRevoked ? "bg-red-50 text-red-500 border border-red-100" : "bg-primary/5 text-primary"
+                             )}>
                               <FileText className="h-6 w-6" />
                             </div>
                             <div>
@@ -500,7 +500,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                         </div>
 
                         {/* Interactive Buttons */}
-                        <div className="flex flex-wrap items-center justify-end gap-2 pt-2 border-t border-border/30">
+                        <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 pt-2 border-t border-border/30 w-full">
                           {isReady && !isRevoked && doc.file_path.startsWith('generated://') && (
                             <Button
                               onClick={() => {
@@ -509,7 +509,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               }}
                               variant="ghost"
                               size="sm"
-                              className="rounded-lg font-bold text-xs"
+                              className="rounded-lg font-bold text-xs w-full sm:w-auto h-9"
                             >
                               <Eye className="h-4 w-4 mr-2" /> Live Preview
                             </Button>
@@ -519,7 +519,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             variant="outline"
                             size="sm"
                             disabled={!isReady}
-                            className="rounded-lg font-bold text-xs shrink-0 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all"
+                            className="rounded-lg font-bold text-xs shrink-0 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all w-full sm:w-auto h-9"
                           >
                             <Download className="h-4 w-4 mr-2" /> {doc.file_path.startsWith('generated://') ? 'View / Print PDF' : 'Download Securely'}
                           </Button>
@@ -528,7 +528,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             variant="secondary"
                             size="sm"
                             disabled={!isReady || isRevoked || sendingEmailId === doc.id}
-                            className="rounded-lg font-bold text-xs bg-secondary/60 hover:bg-secondary shrink-0"
+                            className="rounded-lg font-bold text-xs bg-secondary/60 hover:bg-secondary shrink-0 w-full sm:w-auto h-9"
                           >
                             {sendingEmailId === doc.id ? (
                               <><RefreshCw className="h-3.5 w-3.5 mr-2 animate-spin" /> Dispatching...</>
@@ -540,7 +540,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             onClick={() => handleDeleteDoc(doc)}
                             variant="destructive"
                             size="sm"
-                            className="rounded-lg font-bold text-xs shrink-0"
+                            className="rounded-lg font-bold text-xs shrink-0 w-full sm:w-auto h-9"
                           >
                             <XCircle className="h-3.5 w-3.5 mr-2" /> Delete Permanently
                           </Button>

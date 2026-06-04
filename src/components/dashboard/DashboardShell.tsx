@@ -89,7 +89,7 @@ export function DashboardShell({
                 setIsMobileOpen(false);
               }}
               className={cn(
-                "group flex w-full items-center justify-between rounded-lg px-3.5 py-2.5 text-sm font-medium transition-colors",
+                "group flex w-full items-center justify-between rounded-lg px-3.5 py-3 lg:py-2.5 text-sm font-medium transition-colors",
                 activeTab === item.id 
                   ? "bg-primary/8 text-primary" 
                   : "text-muted-foreground hover:bg-accent hover:text-foreground"
@@ -130,7 +130,7 @@ export function DashboardShell({
         </div>
         <Button 
           variant="ghost" 
-          className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg h-9 text-sm font-medium"
+          className="w-full justify-start text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg h-11 lg:h-9 text-sm font-medium"
           onClick={() => signOut()}
         >
           <LogOut className="mr-2.5 h-4 w-4" />
@@ -157,7 +157,7 @@ export function DashboardShell({
           
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
             <SheetTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-lg h-9 w-9">
+              <Button variant="ghost" size="icon" className="rounded-lg h-11 w-11">
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
@@ -186,18 +186,18 @@ export function DashboardShell({
                     <Button 
                       variant="outline" 
                       size="icon" 
-                      className="rounded-lg h-9 w-9 border-border/60 relative"
+                      className="rounded-lg h-11 w-11 sm:h-9 sm:w-9 border-border/60 relative"
                       onClick={() => onTabChange("notifications")}
                     >
                       <Bell className="h-4 w-4 text-muted-foreground" />
                       {hasUnread && (
-                        <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary border-2 border-background"></span>
+                        <span className="absolute top-2.5 right-2.5 sm:top-1.5 sm:right-1.5 h-2 w-2 rounded-full bg-primary border-2 border-background"></span>
                       )}
                     </Button>
                   );
                 })()}
                 <Link to="/properties">
-                  <Button size="sm" className="h-9 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm">
+                  <Button size="sm" className="h-11 sm:h-9 px-4 sm:px-3 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-medium shadow-sm">
                     Browse Properties
                   </Button>
                 </Link>

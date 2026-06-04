@@ -155,7 +155,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
         <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
           <div className="flex items-center justify-between mb-4">
             <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Properties Owned</p>
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/100/10 text-primary">
+            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
               <Heart className="h-4 w-4" />
             </span>
           </div>
@@ -217,7 +217,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
           </div>
           <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={stats?.chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
+              <AreaChart data={stats?.chartData} margin={{ top: 5, right: 5, left: -10, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorEarnings" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.12}/>

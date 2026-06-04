@@ -316,20 +316,20 @@ export default function InvestPortfolioDetail() {
       {/* ═══ CONTENT ═══ */}
       <div className="container-wide py-10">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-          <TabsList className="bg-muted/50 p-1 w-full flex overflow-x-auto justify-start md:w-auto border border-border/50 rounded-xl h-auto">
-            <TabsTrigger value="overview" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+          <TabsList className="bg-muted/50 p-1 w-full flex overflow-x-auto justify-start md:w-auto border border-border/50 rounded-xl h-auto scrollbar-none">
+            <TabsTrigger value="overview" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm shrink-0">
               <BarChart3 className="w-4 h-4" /> Overview
             </TabsTrigger>
-            <TabsTrigger value="journey" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="journey" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm shrink-0">
               <LineChart className="w-4 h-4" /> Journey
             </TabsTrigger>
-            <TabsTrigger value="documents" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="documents" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm shrink-0">
               <ShieldCheck className="w-4 h-4" /> Documents
             </TabsTrigger>
-            <TabsTrigger value="liquidity" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="liquidity" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm shrink-0">
               <TrendingUp className="w-4 h-4" /> Liquidity
             </TabsTrigger>
-            <TabsTrigger value="activity" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm">
+            <TabsTrigger value="activity" className="flex items-center gap-2 rounded-lg py-2.5 px-5 font-semibold text-sm data-[state=active]:bg-background data-[state=active]:shadow-sm shrink-0">
               <Activity className="w-4 h-4" /> Activity
             </TabsTrigger>
           </TabsList>
@@ -337,7 +337,7 @@ export default function InvestPortfolioDetail() {
           {/* ═══ OVERVIEW TAB ═══ */}
           <TabsContent value="overview" className="animate-in fade-in space-y-8 outline-none">
             {/* Investment Summary Cards */}
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
               <SummaryCard icon={DollarSign} label="Amount Invested" value={formatMoney(totalInv, prop.currency)} />
               <SummaryCard icon={Wallet} label="Current Value" value={formatMoney(currentValue, prop.currency)} highlight />
               <SummaryCard icon={ArrowUpRight} label="Earned ROI" value={formatMoney(accruedEarnings, prop.currency)} positive />
@@ -392,7 +392,7 @@ export default function InvestPortfolioDetail() {
                 {/* Funding Progress Center */}
                 <div className="bg-card border border-border/50 rounded-2xl shadow-sm p-6">
                   <h3 className="font-serif text-lg font-bold text-foreground mb-5">Funding Progress</h3>
-                  <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-6">
                     <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
                       <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Total Units</p>
                       <p className="text-xl font-bold font-serif text-foreground">{prop.total_units}</p>
@@ -409,14 +409,14 @@ export default function InvestPortfolioDetail() {
                       <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Your Units</p>
                       <p className="text-xl font-bold font-serif text-foreground">{investment.units_owned}</p>
                     </div>
-                    <div className="bg-primary/5 rounded-xl p-4 border border-primary/20 col-span-2 md:col-span-1">
+                    <div className="bg-primary/5 rounded-xl p-4 border border-primary/20 col-span-2 sm:col-span-1">
                       <p className="text-[10px] uppercase font-bold tracking-wider text-primary mb-1">Amount Raised</p>
                       <p className="text-xl font-bold font-serif text-primary truncate" title={formatMoney(exactRaisedAmount, prop.currency)}>{formatMoney(exactRaisedAmount, prop.currency)}</p>
                     </div>
                   </div>
                   <div>
                     <div className="flex justify-between items-end mb-2">
-                      <span className="text-sm font-semibold text-muted-foreground">
+                       <span className="text-sm font-semibold text-muted-foreground">
                         {formatMoney(exactRaisedAmount, prop.currency)} <span className="font-normal opacity-70">raised out of</span> {formatMoney(prop.total_value, prop.currency)}
                       </span>
                       <span className="text-sm font-bold text-foreground">{fundingPct}%</span>
@@ -434,7 +434,7 @@ export default function InvestPortfolioDetail() {
                     <h3 className="font-serif text-lg font-bold text-foreground mb-5 flex items-center gap-2">
                       <CreditCard className="w-5 h-5 text-primary" /> Installment Progress
                     </h3>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                    <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
                       <div className="bg-muted/30 rounded-xl p-4 border border-border/50">
                         <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Amount Paid</p>
                         <p className="text-lg font-bold font-serif text-green-600">{formatMoney(Number(investment.amount_paid || 0), prop.currency)}</p>
@@ -546,7 +546,7 @@ export default function InvestPortfolioDetail() {
                   </div>
                 ) : (
                   <div className="space-y-6">
-                    <div className="grid grid-cols-3 gap-4 text-center">
+                    <div className="grid grid-cols-1 xs:grid-cols-3 gap-4 text-center">
                       <div className="bg-muted/30 rounded-xl p-3 border border-border/50">
                         <p className="font-semibold text-foreground text-sm">
                           {investment.start_date ? new Date(investment.start_date).toLocaleDateString() : '—'}
@@ -698,7 +698,7 @@ export default function InvestPortfolioDetail() {
           {/* ═══ DOCUMENTS TAB ═══ */}
           <TabsContent value="documents" className="animate-in fade-in space-y-8 outline-none">
             {/* Document Summary Header */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-4 gap-4">
               <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
                   <div className="p-1.5 bg-primary/10 rounded-lg"><FileText className="w-3.5 h-3.5 text-primary" /></div>

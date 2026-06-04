@@ -349,9 +349,9 @@ export function InvestmentsPanel() {
                             <td className="px-6 py-5 text-right">
                                <p className="font-bold text-foreground">{formatMoney(total)}</p>
                                <p className="text-[10px] text-muted-foreground/60 font-medium">Expected: {inv.investment_properties?.projected_return_min}% p.a.</p>
-                               {returnsByProperty[inv.property_id] > 0 && (
+                               {Number(inv.accrued_earnings || 0) > 0 && (
                                  <p className="text-[10px] text-primary font-bold mt-0.5">
-                                   Dividends: {formatMoney(returnsByProperty[inv.property_id], inv.investment_properties?.currency ?? "USD")}
+                                   Dividends: {formatMoney(Number(inv.accrued_earnings || 0), inv.investment_properties?.currency ?? "USD")}
                                  </p>
                                )}
                             </td>

@@ -159,12 +159,12 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
           <img
             src={ad.image_url}
             alt={ad.title}
-            className={cn("w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]", isVerticalCompact ? "h-64" : "h-48 sm:h-56 md:h-64")}
+            className={cn("w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]", isVerticalCompact ? "h-64" : "h-60 xs:h-52 sm:h-56 md:h-64")}
             loading="lazy"
             onError={() => setImgError(true)}
           />
         ) : (
-          <div className={cn("w-full bg-accent/30 flex items-center justify-center", isVerticalCompact ? "h-64" : "h-48 sm:h-56 md:h-64")}>
+          <div className={cn("w-full bg-accent/30 flex items-center justify-center", isVerticalCompact ? "h-64" : "h-60 xs:h-52 sm:h-56 md:h-64")}>
             <ImageIcon className="h-12 w-12 text-muted-foreground/20" />
           </div>
         )}

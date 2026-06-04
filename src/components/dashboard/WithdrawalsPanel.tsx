@@ -63,10 +63,10 @@ export function WithdrawalsPanel({ userId }: { userId: string }) {
           )}
           <p className="mt-2 text-xs text-muted-foreground max-w-sm">Withdrawal requests are processed within 24-48 hours via your preferred payout method.</p>
         </div>
-        <div>
+        <div className="w-full sm:w-auto">
           <Button
             size="lg"
-            className="rounded-lg bg-primary text-primary-foreground h-11 px-6 font-medium shadow-sm hover:bg-primary/90 disabled:opacity-50"
+            className="w-full sm:w-auto rounded-lg bg-primary text-primary-foreground h-11 px-6 font-medium shadow-sm hover:bg-primary/90 disabled:opacity-50"
             disabled={balance <= 0 || isBalanceLoading}
             onClick={() => setOpen(true)}
           >

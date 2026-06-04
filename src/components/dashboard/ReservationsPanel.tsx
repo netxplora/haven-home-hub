@@ -288,37 +288,37 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                   {r.expires_at ? new Date(r.expires_at).toLocaleDateString() : "No Expiry"}
                                </p>
                             </div>
-                            <div className="sm:col-span-2 flex justify-end gap-2 items-center flex-wrap">
+                             <div className="sm:col-span-2 flex flex-col sm:flex-row justify-end gap-2 items-stretch sm:items-center w-full sm:w-auto">
                                {item?.slug ? (
-                                 <Button asChild variant="outline" size="sm" className="rounded-xl border-border/40 text-[11px] font-bold h-9">
-                                    <Link to={`/${pathPrefix}/${item.slug}`}>
+                                 <Button asChild variant="outline" size="sm" className="rounded-xl border-border/40 text-[11px] font-bold h-9 w-full sm:w-auto">
+                                    <Link to={`/${pathPrefix}/${item.slug}`} className="justify-center">
                                        Property Details <ExternalLink className="ml-1.5 h-3 w-3" />
                                     </Link>
                                  </Button>
                                ) : (
-                                 <Button variant="outline" size="sm" disabled className="rounded-xl border-border/40 text-[11px] font-bold h-9">
+                                 <Button variant="outline" size="sm" disabled className="rounded-xl border-border/40 text-[11px] font-bold h-9 w-full sm:w-auto">
                                     Listing Unavailable
                                  </Button>
                                )}
                                  {r.status === 'pending' && (
-                                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1">
+                                    <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1 justify-center w-full sm:w-auto">
                                       Under Review
                                     </Badge>
                                   )}
                                  {r.status === 'information_requested' && (
-                                   <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1">
+                                   <Badge variant="outline" className="bg-amber-50 text-amber-600 border-amber-200 text-[10px] py-1 justify-center w-full sm:w-auto">
                                      Information Requested
                                    </Badge>
                                  )}
                                 {(r.status === 'approved' || r.status === 'confirmed' || r.status === 'success') && (
                                   item?.slug ? (
-                                    <Button asChild size="sm" className="rounded-xl px-5 text-[11px] font-bold h-9 bg-primary hover:bg-primary/90">
-                                       <Link to={isInvestment ? `/invest/${item.slug}` : `/properties/${item.slug}`}>
+                                    <Button asChild size="sm" className="rounded-xl px-5 text-[11px] font-bold h-9 bg-primary hover:bg-primary/90 w-full sm:w-auto">
+                                       <Link to={isInvestment ? `/invest/${item.slug}` : `/properties/${item.slug}`} className="justify-center">
                                           Complete Purchase
                                        </Link>
                                     </Button>
                                   ) : (
-                                    <Button size="sm" disabled className="rounded-xl px-5 text-[11px] font-bold h-9 bg-primary/50 text-white">
+                                    <Button size="sm" disabled className="rounded-xl px-5 text-[11px] font-bold h-9 bg-primary/50 text-white w-full sm:w-auto">
                                        Property Unavailable
                                     </Button>
                                   )
@@ -326,7 +326,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                 {r.status === 'awaiting_reservation_fee' && (
                                   <Button 
                                     size="sm" 
-                                    className="rounded-xl px-5 text-[11px] font-bold h-11 sm:h-9 bg-amber-600 hover:bg-amber-700 text-white shrink-0"
+                                    className="rounded-xl px-5 text-[11px] font-bold h-11 sm:h-9 bg-amber-600 hover:bg-amber-700 text-white shrink-0 w-full sm:w-auto"
                                     onClick={() => setSelectedReservation(r)}
                                   >
                                     Complete Payment Submission
@@ -336,7 +336,7 @@ export function ReservationsPanel({ userId }: { userId: string }) {
                                   <Button 
                                     variant="outline" 
                                     size="sm" 
-                                    className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 text-[11px] font-bold h-9 gap-1.5"
+                                    className="rounded-xl border-red-200 text-red-600 hover:bg-red-50 text-[11px] font-bold h-9 gap-1.5 w-full sm:w-auto"
                                     onClick={() => handleCancelReservation(r.id)}
                                     disabled={cancellingResId === r.id}
                                   >
