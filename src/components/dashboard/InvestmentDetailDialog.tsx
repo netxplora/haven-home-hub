@@ -220,11 +220,11 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
                     <ShieldCheck className="h-6 w-6 text-primary" />
                   </div>
                   <div>
-                    <h4 className="font-bold">Official Investment Certificate</h4>
-                    <p className="text-sm text-muted-foreground">ID: {certificate.certificate_id}</p>
+                    <h4 className="font-bold text-sm sm:text-base">Official Investment Certificate</h4>
+                    <p className="text-xs text-muted-foreground">ID: {certificate.certificate_id}</p>
                   </div>
                 </div>
-                <Button variant="outline" className="shrink-0" onClick={() => window.open(`/certificate/${certificate.id}`, '_blank')}>
+                <Button variant="outline" className="shrink-0 w-full sm:w-auto h-11 sm:h-9" onClick={() => window.open(`/certificate/${certificate.id}`, '_blank')}>
                   <FileText className="h-4 w-4 mr-2" /> View Certificate
                 </Button>
               </div>
@@ -263,12 +263,12 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
                    <div className="pt-2">
                      <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
                    </div>
-                   <div className="flex items-center justify-between pt-4 border-t border-primary/10">
+                   <div className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-center sm:justify-between pt-4 border-t border-primary/10">
                      <div>
                        <p className="font-bold text-foreground">Total Due: {formatMoney(total - paid, currency)}</p>
                        <p className="text-xs text-muted-foreground mt-1">Pay the full amount to activate your investment.</p>
                      </div>
-                     <Button onClick={() => handlePayFull()} className="rounded-lg px-6 font-bold">
+                     <Button onClick={() => handlePayFull()} className="rounded-lg px-6 font-bold w-full sm:w-auto h-11 sm:h-9">
                        Pay Now
                      </Button>
                    </div>
@@ -431,7 +431,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
               <div className="pt-6 border-t border-border/50 space-y-4">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold">Dividends & ROI</h4>
-                  <Badge variant="outline" className="bg-primary/100/10 text-primary border-primary/20 font-bold">
+                  <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-bold">
                     Total: {formatMoney(propertyReturns.reduce((sum, r) => sum + Number(r.amount_received), 0), currency)}
                   </Badge>
                 </div>

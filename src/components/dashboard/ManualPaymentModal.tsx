@@ -461,7 +461,7 @@ export function ManualPaymentModal({
               )}
 
               {propertyData?.property_type === 'land' && (
-                <div className="bg-primary/100/5 rounded-xl p-5 border border-primary/20 shadow-sm">
+                <div className="bg-primary/5 rounded-xl p-5 border border-primary/20 shadow-sm">
                   <h4 className="text-sm font-semibold mb-2 text-primary flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Included Ownership Documentation
                   </h4>

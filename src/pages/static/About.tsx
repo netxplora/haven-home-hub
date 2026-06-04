@@ -138,7 +138,7 @@ export default function About() {
               </p>
             </div>
             <div className="rounded-xl border border-border bg-background p-8 shadow-soft">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/100/10 text-primary mb-6">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-primary/10 text-primary mb-6">
                 <ShieldCheck className="h-6 w-6" />
               </div>
               <h3 className="font-serif text-lg font-semibold">Structured investments</h3>

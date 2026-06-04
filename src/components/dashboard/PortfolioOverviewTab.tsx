@@ -87,7 +87,7 @@ export function PortfolioOverviewTab({
               .slice(0, 5)
               .map((item: any, idx) => (
                 <div key={idx} className="flex gap-3 items-start">
-                  <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${item._type === 'inv' ? 'bg-primary/10 text-primary' : 'bg-primary/100/10 text-primary'}`}>
+                  <div className={`h-8 w-8 rounded-full flex items-center justify-center shrink-0 ${item._type === 'inv' ? 'bg-primary/10 text-primary' : 'bg-primary/10 text-primary'}`}>
                     {item._type === 'inv' ? <TrendingUp className="h-4 w-4" /> : <CreditCard className="h-4 w-4" />}
                   </div>
                   <div className="flex-1 min-w-0">

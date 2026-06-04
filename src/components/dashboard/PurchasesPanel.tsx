@@ -113,7 +113,7 @@ export function PurchasesPanel({ userId }: { userId: string }) {
       case "confirmed":
       case "success":
       case "completed":
-      case "rented": return "bg-primary/100/10 text-primary border-primary/20";
+      case "rented": return "bg-primary/10 text-primary border-primary/20";
       case "installment_active": return "bg-blue-500/10 text-blue-700 border-blue-500/20";
       default: return "bg-accent text-accent-foreground";
     }

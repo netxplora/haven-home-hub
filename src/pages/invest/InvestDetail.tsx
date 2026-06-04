@@ -666,7 +666,7 @@ export default function InvestDetail() {
       <Dialog open={authWarningOpen} onOpenChange={setAuthWarningOpen}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-none rounded-2xl bg-background shadow-lux">
           <DialogHeader className="p-8 pb-4 text-center sm:text-center shrink-0">
-            <div className="h-14 w-14 rounded-full bg-primary/100/10 flex items-center justify-center mx-auto mb-4">
+            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
               <Lock className="h-6 w-6 text-primary" />
             </div>
             <DialogTitle className="text-2xl font-bold font-serif">Investor Access Required</DialogTitle>
