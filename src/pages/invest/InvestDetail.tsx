@@ -48,10 +48,19 @@ export default function InvestDetail() {
     queryFn: async () => {
       const { data } = await supabase
         .from("investment_properties")
-        .select("*, investment_property_images(url, sort_order, is_cover)")
+        .select(`
+          *, 
+          investment_property_images(url, sort_order, is_cover),
+          property_documents(id, title, url, document_type, size_bytes, document_date),
+          property_journey(id, stage_name, description, expected_date, completed_date, status, sort_order)
+        `)
         .eq("slug", slug!)
         .maybeSingle();
-      return data as (InvestmentProperty & { investment_property_images: { url: string; sort_order: number; is_cover: boolean }[] }) | null;
+      return data as (InvestmentProperty & { 
+        investment_property_images: { url: string; sort_order: number; is_cover: boolean }[],
+        property_documents: any[],
+        property_journey: any[]
+      }) | null;
     },
     enabled: !!slug,
   });
@@ -293,11 +302,13 @@ export default function InvestDetail() {
           {/* Details Tabs */}
           <div className="mt-10">
             <Tabs defaultValue="highlights" className="w-full">
-              <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
-                <TabsTrigger value="highlights" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent">Highlights</TabsTrigger>
-                <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent">Location</TabsTrigger>
-                <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent">Documents</TabsTrigger>
-                <TabsTrigger value="how-it-works" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent">How it works</TabsTrigger>
+              <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto overflow-x-auto flex-nowrap hide-scrollbar">
+                <TabsTrigger value="highlights" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Highlights</TabsTrigger>
+                <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Location</TabsTrigger>
+                <TabsTrigger value="journey" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Journey</TabsTrigger>
+                <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Documents</TabsTrigger>
+                {(data as any).liquidity_rules && <TabsTrigger value="liquidity" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Liquidity</TabsTrigger>}
+                <TabsTrigger value="how-it-works" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">How it works</TabsTrigger>
               </TabsList>
               
               <TabsContent value="highlights" className="mt-8 space-y-6">
@@ -346,12 +357,50 @@ export default function InvestDetail() {
                 </div>
               </TabsContent>
 
+              <TabsContent value="journey" className="mt-8">
+                {data.property_journey?.length === 0 ? (
+                  <p className="text-muted-foreground italic text-sm">No journey stages have been documented yet.</p>
+                ) : (
+                  <div className="space-y-6 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/50">
+                    {data.property_journey?.sort((a,b) => a.sort_order - b.sort_order).map((stage, idx) => (
+                      <div key={stage.id} className="flex gap-6 items-start relative z-10">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border-2 border-background ${
+                          stage.status === 'completed' ? 'bg-green-500 text-white' :
+                          stage.status === 'in_progress' ? 'bg-blue-500 text-white animate-pulse' : 'bg-secondary text-muted-foreground'
+                        }`}>
+                          {idx + 1}
+                        </div>
+                        <div className="pt-1">
+                          <h4 className="font-semibold text-sm">{stage.stage_name}</h4>
+                          {stage.description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{stage.description}</p>}
+                          <div className="flex gap-3 text-[10px] uppercase tracking-wider text-muted-foreground mt-2 font-medium">
+                            {stage.expected_date && <span>Exp: {stage.expected_date}</span>}
+                            {stage.completed_date && <span className="text-green-600">Done: {stage.completed_date}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
               <TabsContent value="documents" className="mt-8">
                 <div className="grid gap-3">
-                  <DocumentLink title="Project Prospectus" size="2.4 MB" date="Oct 2025" />
-                  <DocumentLink title="Market Analysis Report" size="1.8 MB" date="Nov 2025" />
-                  <DocumentLink title="Financial Projections" size="1.2 MB" date="Jan 2026" />
-                  <DocumentLink title="Property Certificate" size="3.5 MB" date="Dec 2025" />
+                  {data.property_documents?.length === 0 ? (
+                    <p className="text-muted-foreground italic text-sm">No documents are currently available.</p>
+                  ) : (
+                    data.property_documents?.map((doc) => (
+                      <DocumentLink key={doc.id} url={doc.url} title={doc.title} size={doc.size_bytes > 0 ? `${(doc.size_bytes / 1024 / 1024).toFixed(1)} MB` : ""} date={doc.document_date || ""} />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="liquidity" className="mt-8">
+                <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm prose prose-sm dark:prose-invert max-w-none">
+                  <div className="whitespace-pre-line text-foreground/85 leading-relaxed">
+                    {(data as any).liquidity_rules}
+                  </div>
                 </div>
               </TabsContent>
 
@@ -697,16 +746,16 @@ function HighlightItem({ icon: Icon, title, desc }: { icon: any; title: string; 
   );
 }
 
-function DocumentLink({ title, size, date }: { title: string; size: string; date: string }) {
+function DocumentLink({ title, size, date, url }: { title: string; size: string; date: string; url?: string }) {
   return (
-    <a href="#" onClick={(e) => e.preventDefault()} className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 transition-all w-full text-left group">
+    <a href={url || "#"} target={url ? "_blank" : "_self"} rel="noreferrer" className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 transition-all w-full text-left group">
       <div className="flex items-center gap-4">
         <div className="p-2.5 rounded-lg bg-secondary text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-colors">
           <FileText className="h-5 w-5" />
         </div>
         <div>
           <p className="text-sm font-semibold">{title}</p>
-          <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{date} · {size}</p>
+          {(date || size) && <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{date} {date && size ? '·' : ''} {size}</p>}
         </div>
       </div>
       <Button variant="ghost" size="icon" className="rounded-lg h-9 w-9 pointer-events-none">

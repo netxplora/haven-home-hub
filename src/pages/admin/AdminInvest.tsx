@@ -15,6 +15,7 @@ import { Separator } from "@/components/ui/separator";
 import { formatMoney } from "@/lib/invest";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InteractivePropertyMap } from "@/components/site/InteractivePropertyMap";
+import { PropertyDetailManager } from "@/components/admin/PropertyDetailManager";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -26,6 +27,7 @@ export function AdminInvest() {
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
+  const [detailModal, setDetailModal] = useState<{ open: boolean, id: string, title: string }>({ open: false, id: "", title: "" });
 
   /* Search, filter, sort state */
   const [searchTerm, setSearchTerm] = useState("");
@@ -250,6 +252,9 @@ export function AdminInvest() {
                           <Play className="h-4 w-4" /> Resume
                         </Button>
                       )}
+                      <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4" onClick={() => setDetailModal({ open: true, id: p.id, title: p.title })}>
+                        <Layers className="h-4 w-4" /> Details
+                      </Button>
                       <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4" onClick={() => { setEditing(p); setOpen(true); }}>
                         <Pencil className="h-4 w-4" /> Edit
                       </Button>
@@ -315,6 +320,9 @@ export function AdminInvest() {
                               <Play className="h-4 w-4" />
                             </Button>
                           )}
+                          <Button size="icon" variant="ghost" onClick={() => setDetailModal({ open: true, id: p.id, title: p.title })} className="h-8 w-8 rounded-lg" title="Manage Details">
+                            <Layers className="h-4 w-4" />
+                          </Button>
                           <Button size="icon" variant="ghost" onClick={() => { setEditing(p); setOpen(true); }} className="h-8 w-8 rounded-lg">
                             <Pencil className="h-4 w-4" />
                           </Button>
@@ -379,6 +387,15 @@ export function AdminInvest() {
           <InvestPropForm initial={editing} onClose={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }} />
         </DialogContent>
       </Dialog>
+      
+      {detailModal.id && (
+        <PropertyDetailManager 
+          propertyId={detailModal.id} 
+          propertyTitle={detailModal.title} 
+          open={detailModal.open} 
+          onOpenChange={(open) => setDetailModal(prev => ({ ...prev, open }))} 
+        />
+      )}
     </div>
   );
 }

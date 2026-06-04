@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -224,7 +224,6 @@ export function InvestmentsPanel() {
                 <InvestmentGridCard 
                   key={inv.id} 
                   investment={inv} 
-                  dividends={returnsByProperty[inv.property_id]} 
                   onSelect={() => handleInvestmentClick(inv)} 
                 />
              ))}
@@ -374,14 +373,73 @@ export function InvestmentsPanel() {
           </div>
         )}
       </div>
+
+      {/* ── Portfolio Statistics Row ── */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+          <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Active</p>
+          <p className="text-xl font-bold font-serif text-foreground">{activeCount}</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+          <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Pending</p>
+          <p className="text-xl font-bold font-serif text-amber-600">{pendingCount}</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+          <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Completed</p>
+          <p className="text-xl font-bold font-serif text-green-600">{completedCount}</p>
+        </div>
+        <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
+          <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Total Units</p>
+          <p className="text-xl font-bold font-serif text-foreground">{totalUnits}</p>
+        </div>
+      </div>
+
+      {/* ── Recent Portfolio Activity Feed ── */}
+      {recentActivity.length > 0 && (
+        <div className="bg-card border border-border/50 rounded-2xl p-6 shadow-sm">
+          <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground mb-4">Recent Portfolio Activity</h3>
+          <div className="space-y-3">
+            {recentActivity.map((log: any) => (
+              <div key={log.id} className="flex items-center gap-3 p-3 rounded-xl bg-muted/30 border border-border/30">
+                <div className={cn(
+                  "h-8 w-8 rounded-full flex items-center justify-center shrink-0",
+                  log.action_type === 'status_change' ? 'bg-blue-500/10 text-blue-600' :
+                  log.action_type === 'create' ? 'bg-green-500/10 text-green-600' :
+                  log.action_type === 'delete' ? 'bg-red-500/10 text-red-600' :
+                  'bg-primary/10 text-primary'
+                )}>
+                  {log.action_type === 'status_change' ? <Clock className="h-4 w-4" /> :
+                   log.action_type === 'create' ? <TrendingUp className="h-4 w-4" /> :
+                   <RefreshCcw className="h-4 w-4" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-foreground capitalize">
+                    {log.action_type === 'status_change' ? `Status changed to ${log.new_value}` :
+                     log.action_type === 'create' ? 'New investment created' :
+                     log.action_type === 'update' ? `${(log.field_changed || '').replace(/_/g, ' ')} updated` :
+                     log.action_type}
+                  </p>
+                  {log.old_value && log.new_value && log.action_type === 'update' && (
+                    <p className="text-xs text-muted-foreground">{log.old_value} → {log.new_value}</p>
+                  )}
+                </div>
+                <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                  {new Date(log.created_at).toLocaleDateString()}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
-function InvestmentGridCard({ investment, dividends = 0, onSelect }: { investment: any, dividends?: number, onSelect: () => void }) {
+function InvestmentGridCard({ investment, onSelect }: { investment: any, onSelect: () => void }) {
   const total = Number(investment.total_amount ?? investment.amount_invested ?? 0);
   const paid = Number(investment.amount_paid ?? investment.amount_invested ?? 0);
   const pct = total > 0 ? Math.min(100, Math.round((paid / total) * 100)) : 100;
+  const accrued = Number(investment.accrued_earnings || 0);
   
   return (
     <div className="group rounded-xl border border-border/40 bg-card overflow-hidden shadow-soft transition-all duration-300 hover:shadow-card hover:border-primary/20 cursor-pointer" onClick={onSelect}>
@@ -389,7 +447,7 @@ function InvestmentGridCard({ investment, dividends = 0, onSelect }: { investmen
           <img src={investment.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
           <div className="absolute top-4 right-4 flex gap-2">
              <Badge className="bg-background/90 backdrop-blur-md text-foreground font-bold rounded-lg border-none capitalize">
-                {investment.status?.replace("_", " ")}
+                {investment.status?.replace("_", " ") || "Processing"}
              </Badge>
           </div>
        </div>
@@ -418,15 +476,15 @@ function InvestmentGridCard({ investment, dividends = 0, onSelect }: { investmen
              </div>
           </div>
 
-          {dividends > 0 && (
-             <div className="bg-primary/100/5 border border-primary/ rounded-xl p-3 flex justify-between items-center text-xs">
+          {accrued > 0 && (
+             <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-3 flex justify-between items-center text-xs">
                 <span className="text-muted-foreground font-medium">Earnings Accrued</span>
-                <span className="font-bold text-green-600">{formatMoney(dividends, investment.investment_properties?.currency ?? "USD")}</span>
+                <span className="font-bold text-green-600">{formatMoney(accrued, investment.investment_properties?.currency ?? "USD")}</span>
              </div>
           )}
 
           <Button variant="outline" className="w-full rounded-xl border-border/40 text-xs font-bold group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all">
-             View Asset Intelligence
+             View Asset Details
              <ChevronRight className="h-3.5 w-3.5 ml-1 transition-transform group-hover:translate-x-1" />
           </Button>
        </div>
