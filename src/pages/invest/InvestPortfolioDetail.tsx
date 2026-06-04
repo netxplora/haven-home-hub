@@ -13,7 +13,8 @@ import {
   AlertCircle, RefreshCw, BarChart3, LineChart, ShieldCheck, MapPin,
   Calendar, Wallet, Target, Activity, DollarSign, Building2,
   CreditCard, ArrowUpRight, Percent, Timer, ChevronRight,
-  Download, PenLine, Eye, Stamp, Scale, Lock, Award
+  Download, PenLine, Eye, Stamp, Scale, Lock, Award,
+  Pause, Play, Zap, FileCheck
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
@@ -68,6 +69,22 @@ export default function InvestPortfolioDetail() {
     enabled: !!enrichedData?.investment?.user_id
   });
 
+  // ── Auto-generated Lifecycle Documents ──
+  const { data: userDocuments } = useQuery({
+    queryKey: ["user-lifecycle-documents", id, enrichedData?.investment?.user_id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_documents")
+        .select("*")
+        .eq("user_id", enrichedData.investment.user_id)
+        .eq("investment_property_id", enrichedData.investment.property_id)
+        .order("created_at", { ascending: false });
+      if (error) return [];
+      return data || [];
+    },
+    enabled: !!enrichedData?.investment?.user_id && !!enrichedData?.investment?.property_id
+  });
+
   // ── Real-time sync ──
   useEffect(() => {
     if (!id) return;
@@ -98,11 +115,13 @@ export default function InvestPortfolioDetail() {
   const investment = enrichedData?.investment || fallbackData;
   const prop = enrichedData?.property || fallbackData?.investment_properties;
   const maturityData = enrichedData?.maturity || null;
+  const roiData = enrichedData?.roi || null;
   const documents = enrichedData?.documents || [];
   const propertyDocuments = enrichedData?.property_documents || [];
   const activityList = enrichedData?.activity || [];
   const auditLogs = enrichedData?.audit_logs || [];
   const paymentsList = enrichedData?.payments || [];
+  const lifecycleDocuments = userDocuments || [];
 
   // ── Chart data ──
   const chartData = useMemo(() => {
@@ -165,7 +184,7 @@ export default function InvestPortfolioDetail() {
   }
 
   // ── Computed values ──
-  const isFunded = prop.status === 'funded' || (prop.units_sold >= prop.total_units);
+  const isFunded = ['funded', 'fully_funded', 'roi_active', 'roi_paused', 'matured'].includes(prop.status) || (prop.units_sold >= prop.total_units);
   const unitsAvailable = Math.max(0, prop.total_units - prop.units_sold);
   const fundingPct = Math.min(100, Math.round((prop.units_sold / (prop.total_units || 1)) * 100));
 
@@ -173,9 +192,16 @@ export default function InvestPortfolioDetail() {
   const accruedEarnings = Number(investment.accrued_earnings || 0);
   const currentValue = totalInv + accruedEarnings;
   const ownershipPct = ((investment.units_owned / (prop.total_units || 1)) * 100).toFixed(2);
-  const expectedReturnAmt = totalInv * (Number(prop.projected_return_min) / 100);
-  const remainingROI = Math.max(0, expectedReturnAmt - accruedEarnings);
-  const exactRaisedAmount = Number(prop.units_sold || 0) * Number(prop.unit_price || 0);
+  const expectedReturnAmt = Number(roiData?.expected_roi) || (totalInv * (Number(prop.projected_return_min) / 100));
+  const remainingROI = Number(roiData?.remaining_roi) ?? Math.max(0, expectedReturnAmt - accruedEarnings);
+  const exactRaisedAmount = Number(prop.current_funding || 0) || (Number(prop.units_sold || 0) * Number(prop.unit_price || 0));
+
+  // Investment lifecycle status flags
+  const roiStatus = investment.roi_status || 'inactive';
+  const isRoiActive = roiStatus === 'active' || investment.status === 'roi_active';
+  const isRoiPaused = roiStatus === 'paused' || investment.status === 'roi_paused';
+  const isMatured = investment.status === 'matured' || investment.maturity_status === 'matured';
+  const isPreparingForRoi = investment.status === 'preparing_for_roi';
 
   // Maturity from RPC or compute locally
   const maturityProgress = maturityData?.progress_percent ?? 0;
@@ -213,13 +239,37 @@ export default function InvestPortfolioDetail() {
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <Badge variant={investment.status === 'active' || investment.status === 'confirmed' ? 'default' : 'secondary'} className="uppercase tracking-wider text-[10px]">
+                  <Badge variant={isRoiActive || isMatured || investment.status === 'confirmed' ? 'default' : 'secondary'} className="uppercase tracking-wider text-[10px]">
                     {investment.status ? investment.status.replace(/_/g, " ") : "Processing"}
                   </Badge>
                   <Badge variant="outline" className="uppercase tracking-wider text-[10px]">
                     {isInstallment ? 'Installment' : 'Full Payment'}
                   </Badge>
-                  {isFunded && (
+                  {isRoiActive && (
+                    <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-50 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
+                      ROI Active
+                    </Badge>
+                  )}
+                  {isRoiPaused && (
+                    <Badge variant="outline" className="border-amber-500/30 text-amber-600 bg-amber-50 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                      <Pause className="w-3 h-3" />
+                      ROI Paused
+                    </Badge>
+                  )}
+                  {isMatured && (
+                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-50 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                      <Award className="w-3 h-3" />
+                      Matured
+                    </Badge>
+                  )}
+                  {isPreparingForRoi && (
+                    <Badge variant="outline" className="border-blue-500/30 text-blue-600 bg-blue-50 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                      <Clock className="w-3 h-3" />
+                      Awaiting Activation
+                    </Badge>
+                  )}
+                  {isFunded && !isRoiActive && !isRoiPaused && !isMatured && !isPreparingForRoi && (
                     <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-50 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
                       <div className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
                       Funding Complete
@@ -477,13 +527,21 @@ export default function InvestPortfolioDetail() {
                   </Badge>
                 </div>
                 
-                {!investment.activated_at ? (
+                {!investment.activated_at && !isPreparingForRoi ? (
                   <div className="bg-muted/30 border border-border/50 rounded-xl p-6 text-center">
                     <Clock className="w-8 h-8 text-muted-foreground mx-auto mb-3" />
                     <p className="font-semibold text-foreground">Awaiting Funding Completion</p>
                     <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
                       The ROI and maturity timeline will automatically start once this property reaches 100% funding. 
                       Current funding stands at {fundingPct}%.
+                    </p>
+                  </div>
+                ) : isPreparingForRoi ? (
+                  <div className="bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 rounded-xl p-6 text-center">
+                    <Zap className="w-8 h-8 text-blue-600 mx-auto mb-3" />
+                    <p className="font-semibold text-foreground">Funding Complete — Awaiting ROI Activation</p>
+                    <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
+                      This property has reached 100% funding. The administration team will activate ROI tracking shortly.
                     </p>
                   </div>
                 ) : (
@@ -526,6 +584,22 @@ export default function InvestPortfolioDetail() {
                       </div>
                     </div>
 
+                    {/* ROI Paused Alert */}
+                    {isRoiPaused && (
+                      <div className="bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl p-4 flex items-center gap-3">
+                        <div className="p-2 bg-amber-100 dark:bg-amber-500/20 rounded-lg">
+                          <Pause className="w-5 h-5 text-amber-600" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-amber-700 dark:text-amber-400">ROI Tracking Paused</p>
+                          <p className="text-xs text-amber-600/80 mt-0.5">
+                            Maturity countdown and ROI accrual are temporarily suspended. The maturity date will extend by the paused duration once resumed.
+                            {investment.total_paused_days > 0 && ` Total paused: ${investment.total_paused_days} days.`}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
                     {/* Key Dates Summary */}
                     <div className="border-t border-border/50 pt-4 space-y-3">
                       <h4 className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Key Dates</h4>
@@ -562,7 +636,7 @@ export default function InvestPortfolioDetail() {
                     title="Payment Verified" 
                     description="Funds secured and verified by administration."
                     date={investment.approved_at ? new Date(investment.approved_at).toLocaleDateString() : null}
-                    isCompleted={!!investment.approved_at || investment.status === 'confirmed' || investment.status === 'active' || investment.status === 'completed'}
+                    isCompleted={!!investment.approved_at || ['confirmed', 'active', 'roi_active', 'roi_paused', 'preparing_for_roi', 'matured', 'completed'].includes(investment.status)}
                     isActive={investment.status === 'payment_under_review'}
                   />
 
@@ -570,7 +644,7 @@ export default function InvestPortfolioDetail() {
                     title="Units Allocated" 
                     description={`Successfully secured ${investment.units_owned} units (${ownershipPct}% ownership).`}
                     date={investment.approved_at ? new Date(investment.approved_at).toLocaleDateString() : null}
-                    isCompleted={investment.status === 'confirmed' || investment.status === 'active' || investment.status === 'completed'}
+                    isCompleted={['confirmed', 'active', 'roi_active', 'roi_paused', 'preparing_for_roi', 'matured', 'completed'].includes(investment.status)}
                     isActive={investment.status === 'confirmed' && !isFunded}
                   />
 
@@ -578,29 +652,41 @@ export default function InvestPortfolioDetail() {
                     title="Funding Completed" 
                     description="Property reached 100% funding goal."
                     date={
-                      prop.funding_completed_at
-                        ? new Date(prop.funding_completed_at).toLocaleDateString()
-                        : investment.activated_at
-                          ? new Date(investment.activated_at).toLocaleDateString()
-                          : null
+                      investment.funding_completed_at
+                        ? new Date(investment.funding_completed_at).toLocaleDateString()
+                        : prop.funding_completed_at
+                          ? new Date(prop.funding_completed_at).toLocaleDateString()
+                          : investment.activated_at
+                            ? new Date(investment.activated_at).toLocaleDateString()
+                            : null
                     }
-                    isCompleted={isFunded}
-                    isActive={!isFunded && investment.status === 'confirmed'}
+                    isCompleted={isFunded || isPreparingForRoi || isRoiActive || isRoiPaused || isMatured}
+                    isActive={isPreparingForRoi}
                   />
 
                   <TimelineStep 
                     title="ROI Activated" 
                     description="Returns tracking officially started."
                     date={investment.activated_at ? new Date(investment.activated_at).toLocaleDateString() : null}
-                    isCompleted={!!investment.activated_at}
-                    isActive={!!investment.activated_at && maturityStatus === 'in_progress'}
+                    isCompleted={!!investment.activated_at || isRoiActive || isRoiPaused || isMatured}
+                    isActive={isRoiActive}
                   />
+
+                  {isRoiPaused && (
+                    <TimelineStep 
+                      title="ROI Paused" 
+                      description={`ROI tracking temporarily suspended.${investment.total_paused_days > 0 ? ` Total paused: ${investment.total_paused_days} days.` : ''}`}
+                      date={investment.roi_paused_at ? new Date(investment.roi_paused_at).toLocaleDateString() : null}
+                      isCompleted={false}
+                      isActive={true}
+                    />
+                  )}
 
                   <TimelineStep 
                     title="Maturity Reached" 
                     description="Investment cycle complete. Principal and returns ready for withdrawal."
-                    date={investment.status === 'completed' ? new Date(investment.maturity_date || investment.updated_at).toLocaleDateString() : null}
-                    isCompleted={investment.status === 'completed'}
+                    date={isMatured ? new Date(investment.maturity_date || investment.updated_at).toLocaleDateString() : null}
+                    isCompleted={isMatured}
                     isActive={maturityStatus === 'nearing_maturity'}
                     isLast={true}
                   />
@@ -795,6 +881,69 @@ export default function InvestPortfolioDetail() {
                 })}
               </div>
             </div>
+
+            {/* ── Lifecycle Documents (auto-generated) ── */}
+            {lifecycleDocuments.length > 0 && (
+              <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
+                <div className="border-b border-border/50 px-8 py-5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                      <FileCheck className="w-5 h-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <h4 className="font-serif text-lg font-bold text-foreground">Lifecycle Documents</h4>
+                      <p className="text-xs text-muted-foreground mt-0.5">Auto-generated documents from ROI activation and maturity events</p>
+                    </div>
+                  </div>
+                  <Badge variant="outline" className="border-purple-500/30 text-purple-600 bg-purple-50 font-bold uppercase tracking-wider text-[9px] px-3 py-1">
+                    {lifecycleDocuments.length} Documents
+                  </Badge>
+                </div>
+                <div className="divide-y divide-border/50">
+                  {lifecycleDocuments.map((doc: any) => {
+                    const docSnapshot = doc.metadata?.document_snapshot;
+                    const docRef = doc.metadata?.reference_id || doc.verification_code;
+                    return (
+                      <div key={doc.id} className="p-5 md:px-8 hover:bg-muted/20 transition-colors">
+                        <div className="flex flex-col md:flex-row md:items-start justify-between gap-4">
+                          <div className="flex items-start gap-4">
+                            <div className="p-3 bg-purple-500/10 rounded-xl text-purple-600 shrink-0 mt-0.5">
+                              <FileText className="w-5 h-5" />
+                            </div>
+                            <div>
+                              <p className="text-sm font-semibold text-foreground">{doc.name || doc.document_type?.replace(/_/g, " ")}</p>
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1.5">
+                                <Badge variant="outline" className="text-[9px] uppercase font-bold tracking-wider">{doc.document_type?.replace(/_/g, " ")}</Badge>
+                                <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                                  <Calendar className="w-3 h-3" /> {new Date(doc.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                                </span>
+                                {docRef && (
+                                  <span className="text-[10px] font-mono text-muted-foreground">Ref: {docRef}</span>
+                                )}
+                              </div>
+                              <Badge variant="outline" className="mt-2 border-green-500/30 text-green-600 bg-green-50 dark:bg-green-500/10 font-bold uppercase tracking-wider text-[9px] flex items-center gap-1 w-fit">
+                                <CheckCircle className="w-3 h-3" /> Available
+                              </Badge>
+                            </div>
+                          </div>
+                        </div>
+                        {docSnapshot && (
+                          <details className="mt-4 group">
+                            <summary className="cursor-pointer text-xs font-semibold text-purple-600 hover:underline flex items-center gap-1.5 select-none">
+                              <ChevronRight className="w-3.5 h-3.5 transition-transform group-open:rotate-90" />
+                              View Document
+                            </summary>
+                            <div className="mt-3 border border-border/50 rounded-xl p-5 bg-white dark:bg-background prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed max-h-[500px] overflow-y-auto">
+                              <div dangerouslySetInnerHTML={{ __html: docSnapshot }} />
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* ── Other Signed Legal Documents ── */}
             {documents.filter((d: any) => !['contract_of_sale', 'grant_deed', 'purchase_receipt', 'allocation_letter'].includes(d.document_type)).length > 0 && (

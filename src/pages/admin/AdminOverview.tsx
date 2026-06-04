@@ -42,13 +42,61 @@ export function AdminOverview() {
     }
   });
 
-  const { data: investStats } = useQuery({
-    queryKey: ["admin-invest-stats"],
+  const { data: lifecycleStats } = useQuery({
+    queryKey: ["admin-lifecycle-overview-stats"],
     queryFn: async () => {
-      const { data } = await (supabase as any).from("investment_properties").select("total_value, units_sold, unit_price").in("status", ["open", "funded"]);
-      const totalAUM = (data ?? []).reduce((sum, p) => sum + Number(p.total_value || 0), 0);
-      const totalRaised = (data ?? []).reduce((sum, p) => sum + (Number(p.units_sold || 0) * Number(p.unit_price || 0)), 0);
-      return { totalAUM, totalRaised };
+      // Fetch properties
+      const { data: properties } = await supabase
+        .from("investment_properties")
+        .select("status, total_value, units_sold, unit_price, projected_return_min");
+      
+      // Fetch user investments
+      const { data: investments } = await supabase
+        .from("user_investments")
+        .select("status, total_amount, amount_invested, units_owned, user_id");
+
+      const propsList = properties ?? [];
+      const invsList = investments ?? [];
+
+      const totalAUM = propsList.reduce((sum, p) => sum + Number(p.total_value || 0), 0);
+      
+      // Total Funding Raised
+      const totalRaised = invsList
+        .filter(i => ['active', 'confirmed', 'roi_active', 'roi_paused', 'matured', 'completed'].includes(i.status))
+        .reduce((sum, i) => sum + Number(i.total_amount || i.amount_invested || 0), 0);
+
+      const activeCampaigns = propsList.filter(p => p.status === 'open').length;
+      const roiActiveProperties = propsList.filter(p => p.status === 'roi_active').length;
+      
+      // Distinct investors
+      const distinctInvestors = new Set(
+        invsList
+          .filter(i => ['active', 'confirmed', 'roi_active', 'roi_paused', 'matured', 'completed'].includes(i.status))
+          .map(i => i.user_id)
+      ).size;
+
+      const totalUnitsSold = propsList.reduce((sum, p) => sum + Number(p.units_sold || 0), 0);
+      
+      // Average ROI
+      const propsWithRoi = propsList.filter(p => Number(p.projected_return_min) > 0);
+      const averageROI = propsWithRoi.length > 0
+        ? Number((propsWithRoi.reduce((sum, p) => sum + Number(p.projected_return_min), 0) / propsWithRoi.length).toFixed(2))
+        : 0;
+
+      const maturingInvestments = invsList.filter(i => i.status === 'roi_active' || i.status === 'roi_paused' || i.status === 'active').length;
+      const maturedInvestments = invsList.filter(i => i.status === 'matured' || i.status === 'completed').length;
+
+      return {
+        totalAUM,
+        totalRaised,
+        activeCampaigns,
+        roiActiveProperties,
+        totalInvestors: distinctInvestors,
+        totalUnitsSold,
+        averageROI,
+        maturingInvestments,
+        maturedInvestments
+      };
     }
   });
 
@@ -158,16 +206,46 @@ export function AdminOverview() {
   return (
     <div className="space-y-8">
       {/* Financial headline cards */}
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-          <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase mb-3">Managed Assets</p>
-          <p className="text-3xl font-serif font-semibold text-foreground">{formatMoney(investStats?.totalAUM ?? 0)}</p>
-          <p className="mt-2 text-sm text-muted-foreground">Combined value of all investment properties currently open.</p>
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase mb-1">Total Funding Raised</p>
+          <p className="text-2xl font-serif font-bold text-foreground">{formatMoney(lifecycleStats?.totalRaised ?? 0)}</p>
+          <p className="text-xs text-muted-foreground mt-2">Capital deployed on assets</p>
         </div>
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-          <p className="text-xs font-medium tracking-wider text-muted-foreground uppercase mb-3">Total Invested</p>
-          <p className="text-3xl font-serif font-semibold text-foreground">{formatMoney(investStats?.totalRaised ?? 0)}</p>
-          <p className="mt-2 text-sm text-muted-foreground">Total amount invested by verified users.</p>
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase mb-1">Average Projected ROI</p>
+          <p className="text-2xl font-serif font-bold text-green-600">{lifecycleStats?.averageROI ?? "0.00"}% p.a.</p>
+          <p className="text-xs text-muted-foreground mt-2">Target portfolio yield</p>
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase mb-1">Total Units Sold</p>
+          <p className="text-2xl font-serif font-bold text-foreground">{lifecycleStats?.totalUnitsSold ?? 0}</p>
+          <p className="text-xs text-muted-foreground mt-2">Fractional ownership units</p>
+        </div>
+        <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">
+          <p className="text-[10px] font-bold tracking-widest text-muted-foreground uppercase mb-1">Total Investors</p>
+          <p className="text-2xl font-serif font-bold text-foreground">{lifecycleStats?.totalInvestors ?? 0}</p>
+          <p className="text-xs text-muted-foreground mt-2">Distinct verified users</p>
+        </div>
+      </div>
+
+      {/* Campaign and Maturity counts subrow */}
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4 bg-secondary/15 p-4 rounded-xl border">
+        <div className="text-center">
+          <p className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground mb-0.5">Active Campaigns</p>
+          <p className="font-serif font-bold text-foreground text-lg">{lifecycleStats?.activeCampaigns ?? 0}</p>
+        </div>
+        <div className="text-center border-l border-border/40">
+          <p className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground mb-0.5">ROI Active Properties</p>
+          <p className="font-serif font-bold text-foreground text-lg">{lifecycleStats?.roiActiveProperties ?? 0}</p>
+        </div>
+        <div className="text-center border-l border-border/40">
+          <p className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground mb-0.5">Maturing Investments</p>
+          <p className="font-serif font-bold text-primary text-lg">{lifecycleStats?.maturingInvestments ?? 0}</p>
+        </div>
+        <div className="text-center border-l border-border/40">
+          <p className="text-[9px] uppercase font-bold tracking-wider text-muted-foreground mb-0.5">Matured Investments</p>
+          <p className="font-serif font-bold text-green-600 text-lg">{lifecycleStats?.maturedInvestments ?? 0}</p>
         </div>
       </div>
 

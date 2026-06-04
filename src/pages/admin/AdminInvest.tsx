@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Pencil, Trash2, Layers, Search, ArrowUpDown, ChevronLeft, ChevronRight, Map, Pause, Play } from "lucide-react";
+import { Plus, Pencil, Trash2, Layers, Search, ArrowUpDown, ChevronLeft, ChevronRight, Map, Pause, Play, Zap, Award } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -107,9 +107,48 @@ export function AdminInvest() {
     if (error) toast({ title: "Resume failed", description: error.message, variant: "destructive" });
     else { toast({ title: "Campaign resumed" }); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }
   }
+
+  async function activatePropertyRoi(propertyId: string) {
+    if (!confirm("This will activate ROI tracking for all investors in this property. Proceed?")) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return toast({ title: "Auth error", description: "Not authenticated.", variant: "destructive" });
+    const { error } = await (supabase.rpc as any)("activate_property_roi", {
+      p_property_id: propertyId,
+      p_admin_id: user.id,
+      p_notes: "Activated via admin panel."
+    });
+    if (error) toast({ title: "Activation failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "ROI Activated", description: "All investors notified. Maturity countdown started." }); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }
+  }
+
+  async function pausePropertyRoi(propertyId: string) {
+    if (!confirm("This will pause ROI tracking for all investors. Maturity dates will extend. Proceed?")) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await (supabase.rpc as any)("pause_property_roi", {
+      p_property_id: propertyId,
+      p_admin_id: user.id
+    });
+    if (error) toast({ title: "Pause failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "ROI Paused" }); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }
+  }
+
+  async function resumePropertyRoi(propertyId: string) {
+    if (!confirm("This will resume ROI tracking and extend maturity dates by the paused duration. Proceed?")) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
+    const { error } = await (supabase.rpc as any)("resume_property_roi", {
+      p_property_id: propertyId,
+      p_admin_id: user.id
+    });
+    if (error) toast({ title: "Resume failed", description: error.message, variant: "destructive" });
+    else { toast({ title: "ROI Resumed" }); qc.invalidateQueries({ queryKey: ["admin-invest"] }); }
+  }
+
   const totalFunding = properties.reduce((sum: number, p: any) => sum + Number(p.current_funding || 0), 0);
   const totalUnitsSold = properties.reduce((sum: number, p: any) => sum + Number(p.units_sold || 0), 0);
   const activeCampaigns = properties.filter((p: any) => p.status === "open").length;
+  const roiActiveCampaigns = properties.filter((p: any) => p.status === "roi_active").length;
 
   return (
     <div className="space-y-6">
@@ -130,6 +169,10 @@ export function AdminInvest() {
         <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Units Sold</p>
           <p className="text-2xl font-bold mt-1">{totalUnitsSold}</p>
+        </div>
+        <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
+          <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">ROI Active</p>
+          <p className="text-2xl font-bold mt-1 text-blue-600">{roiActiveCampaigns}</p>
         </div>
       </div>
 
@@ -177,6 +220,10 @@ export function AdminInvest() {
                 <SelectItem value="under_review">Under Review</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
                 <SelectItem value="funded">Fully Funded</SelectItem>
+                <SelectItem value="fully_funded">Fully Funded (New)</SelectItem>
+                <SelectItem value="roi_active">ROI Active</SelectItem>
+                <SelectItem value="roi_paused">ROI Paused</SelectItem>
+                <SelectItem value="matured">Matured</SelectItem>
                 <SelectItem value="closed">Closed</SelectItem>
                 <SelectItem value="paused">Suspended</SelectItem>
                 <SelectItem value="archived">Archived</SelectItem>
@@ -214,11 +261,14 @@ export function AdminInvest() {
                       </div>
                       <Badge variant={p.status === "open" ? "default" : "secondary"} className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold shrink-0 ${
                           p.status === 'open' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
-                          p.status === 'funded' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                          p.status === 'funded' || p.status === 'fully_funded' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                          p.status === 'roi_active' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                          p.status === 'roi_paused' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                          p.status === 'matured' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
                           p.status === 'closed' ? 'bg-gray-500/10 text-gray-500 border-gray-500/20' :
                           p.status === 'paused' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' : ''
                         }`}>
-                        {p.status}
+                        {p.status?.replace(/_/g, ' ')}
                       </Badge>
                     </div>
 
@@ -241,7 +291,22 @@ export function AdminInvest() {
                       )}
                     </div>
 
-                    <div className="pt-3 border-t border-border/50 flex gap-2 justify-end">
+                    <div className="pt-3 border-t border-border/50 flex gap-2 justify-end flex-wrap">
+                      {(p.status === 'funded' || p.status === 'fully_funded') && (
+                        <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-emerald-600 border-emerald-200 hover:bg-emerald-50" onClick={() => activatePropertyRoi(p.id)}>
+                          <Zap className="h-4 w-4" /> Activate ROI
+                        </Button>
+                      )}
+                      {p.status === 'roi_active' && (
+                        <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-amber-600 border-amber-200 hover:bg-amber-50" onClick={() => pausePropertyRoi(p.id)}>
+                          <Pause className="h-4 w-4" /> Pause ROI
+                        </Button>
+                      )}
+                      {p.status === 'roi_paused' && (
+                        <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-green-600 border-green-200 hover:bg-green-50" onClick={() => resumePropertyRoi(p.id)}>
+                          <Play className="h-4 w-4" /> Resume ROI
+                        </Button>
+                      )}
                       {p.status === 'open' && (
                         <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-amber-600 border-amber-200 hover:bg-amber-50" onClick={() => pauseCampaign(p.id)}>
                           <Pause className="h-4 w-4" /> Pause

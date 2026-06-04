@@ -10,7 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
-import { BarChart3, LineChart, ShieldCheck, TrendingUp, Loader2, Upload, Activity, FileText, Trash2, RefreshCw, ArrowUpRight, CheckCircle, ChevronRight } from "lucide-react";
+import { BarChart3, LineChart, ShieldCheck, TrendingUp, Loader2, Upload, Activity, FileText, Trash2, RefreshCw, ArrowUpRight, CheckCircle, ChevronRight, Calendar, Download } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 
 interface AdminManageInvestmentDialogProps {
@@ -72,6 +72,70 @@ export function AdminManageInvestmentDialog({ open, onOpenChange, investment }: 
     enabled: !!investment?.id && open
   });
 
+  // Fetch auto-generated lifecycle documents
+  const { data: lifecycleDocs = [], refetch: refetchLifecycleDocs } = useQuery({
+    queryKey: ["admin-investment-lifecycle-docs", investment?.id],
+    queryFn: async () => {
+      if (!investment?.id) return [];
+      const { data, error } = await supabase
+        .from("user_documents")
+        .select("*")
+        .eq("user_id", investment.user_id);
+      if (error) return [];
+      return (data || []).filter((doc: any) => doc.metadata?.investment_id === investment.id);
+    },
+    enabled: !!investment?.id && open
+  });
+
+  // Operations states
+  const [extensionMonths, setExtensionMonths] = useState(6);
+  const [extending, setExtending] = useState(false);
+  const [archiving, setArchiving] = useState(false);
+
+  const handleExtendTerm = async () => {
+    try {
+      setExtending(true);
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
+      if (!adminUser) throw new Error("Not logged in");
+
+      const { error } = await supabase.rpc("extend_investment_term", {
+        p_investment_id: investment.id,
+        p_extension_months: Number(extensionMonths),
+        p_admin_id: adminUser.id
+      });
+      if (error) throw error;
+      toast({ title: "Term Extended", description: `Term successfully extended by ${extensionMonths} months.` });
+      qc.invalidateQueries({ queryKey: ["admin-investments"] });
+      onOpenChange(false);
+    } catch (err: any) {
+      toast({ title: "Extension Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setExtending(false);
+    }
+  };
+
+  const handleArchive = async () => {
+    if (!confirm("Archive this investment? This will prevent further updates.")) return;
+    try {
+      setArchiving(true);
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
+      if (!adminUser) throw new Error("Not logged in");
+
+      const { error } = await supabase.rpc("archive_investment", {
+        p_investment_id: investment.id,
+        p_admin_id: adminUser.id
+      });
+      if (error) throw error;
+      toast({ title: "Investment Archived" });
+      qc.invalidateQueries({ queryKey: ["admin-investments"] });
+      onOpenChange(false);
+    } catch (err: any) {
+      toast({ title: "Archive Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setArchiving(false);
+    }
+  };
+
   // Fetch audit logs for this investment
   const { data: auditLogs = [] } = useQuery({
     queryKey: ["admin-investment-audit", investment?.id],
@@ -91,12 +155,46 @@ export function AdminManageInvestmentDialog({ open, onOpenChange, investment }: 
 
   const { mutate: handleSave, isPending } = useMutation({
     mutationFn: async () => {
+      const { data: { user: adminUser } } = await supabase.auth.getUser();
+      if (!adminUser) throw new Error("Not logged in");
+
+      // If accrued earnings changed, let's call the RPC edit_investment_roi_parameters
+      if (Number(accruedEarnings) !== Number(investment.accrued_earnings)) {
+        const { error: rpcErr } = await supabase.rpc("edit_investment_roi_parameters", {
+          p_investment_id: investment.id,
+          p_accrued_earnings: Number(accruedEarnings),
+          p_admin_id: adminUser.id
+        });
+        if (rpcErr) throw rpcErr;
+      }
+
+      // Generate documents if status changed to active/roi_active
+      const isActivating = (status === 'roi_active' || status === 'active') && 
+                            !['active', 'roi_active'].includes(investment.status);
+      const isMaturing = (status === 'matured' || status === 'completed') && 
+                           !['matured', 'completed'].includes(investment.status);
+
+      if (isActivating) {
+        await Promise.all([
+          supabase.rpc("create_automated_document", { p_user_id: investment.user_id, p_document_type: "investment_activation_certificate", p_investment_id: investment.id }),
+          supabase.rpc("create_automated_document", { p_user_id: investment.user_id, p_document_type: "roi_commencement_notice", p_investment_id: investment.id }),
+          supabase.rpc("create_automated_document", { p_user_id: investment.user_id, p_document_type: "investment_summary_report", p_investment_id: investment.id })
+        ]);
+      }
+
+      if (isMaturing) {
+        await Promise.all([
+          supabase.rpc("create_automated_document", { p_user_id: investment.user_id, p_document_type: "investment_completion_report", p_investment_id: investment.id }),
+          supabase.rpc("create_automated_document", { p_user_id: investment.user_id, p_document_type: "final_roi_statement", p_investment_id: investment.id }),
+          supabase.rpc("create_automated_document", { p_user_id: investment.user_id, p_document_type: "investment_maturity_certificate", p_investment_id: investment.id })
+        ]);
+      }
+
       const payload = {
         status,
         units_owned: Number(unitsOwned),
         amount_invested: Number(amountInvested),
         total_amount: Number(amountInvested),
-        accrued_earnings: Number(accruedEarnings),
         start_date: startDate ? new Date(startDate).toISOString() : null,
         maturity_date: maturityDate ? new Date(maturityDate).toISOString() : null,
         secondary_market_enabled: secondaryMarket,
@@ -257,14 +355,17 @@ export function AdminManageInvestmentDialog({ open, onOpenChange, investment }: 
                   onChange={(e) => setUnitsOwned(Number(e.target.value))} 
                 />
               </div>
-              <div className="space-y-2 col-span-2">
-                <Label>Accrued Earnings ({currency})</Label>
-                <Input 
-                  type="number" 
-                  value={accruedEarnings} 
-                  onChange={(e) => setAccruedEarnings(Number(e.target.value))} 
-                />
-                <p className="text-xs text-muted-foreground mt-1">This controls the ROI dashboard shown to the investor.</p>
+              <div className="space-y-2 col-span-2 pt-6 mt-6 border-t border-destructive/25">
+                <Label className="text-destructive font-bold">Danger Zone</Label>
+                <div className="flex items-center justify-between p-4 bg-destructive/5 border border-destructive/25 rounded-xl mt-1">
+                  <div>
+                    <h5 className="text-sm font-semibold text-destructive">Archive Investment</h5>
+                    <p className="text-xs text-muted-foreground">Locks and archives the investment record once completed.</p>
+                  </div>
+                  <Button variant="destructive" size="sm" onClick={handleArchive} disabled={archiving}>
+                    {archiving ? "Archiving..." : "Archive Investment"}
+                  </Button>
+                </div>
               </div>
             </div>
           </TabsContent>
@@ -281,8 +382,14 @@ export function AdminManageInvestmentDialog({ open, onOpenChange, investment }: 
                     <SelectItem value="pending">Pending</SelectItem>
                     <SelectItem value="payment_under_review">Payment Under Review</SelectItem>
                     <SelectItem value="confirmed">Confirmed</SelectItem>
+                    <SelectItem value="preparing_for_roi">Preparing for ROI</SelectItem>
+                    <SelectItem value="roi_active">ROI Active</SelectItem>
+                    <SelectItem value="roi_paused">ROI Paused</SelectItem>
+                    <SelectItem value="matured">Matured</SelectItem>
                     <SelectItem value="active">Active (ROI Accruing)</SelectItem>
                     <SelectItem value="completed">Completed (Matured)</SelectItem>
+                    <SelectItem value="rejected">Rejected</SelectItem>
+                    <SelectItem value="cancelled">Cancelled</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -305,6 +412,24 @@ export function AdminManageInvestmentDialog({ open, onOpenChange, investment }: 
                     onChange={(e) => setMaturityDate(e.target.value)} 
                   />
                   <p className="text-xs text-muted-foreground mt-1">Controls maturity progress bar.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 pt-6 border-t border-border/50">
+                <h4 className="text-xs font-semibold text-foreground uppercase tracking-wider">Lifecycle Term Extension</h4>
+                <div className="flex items-end gap-4 p-4 bg-secondary/10 rounded-xl border">
+                  <div className="flex-1 space-y-2">
+                    <Label>Extend Holding Period (Months)</Label>
+                    <Input 
+                      type="number" 
+                      value={extensionMonths} 
+                      onChange={(e) => setExtensionMonths(Number(e.target.value))} 
+                      className="bg-background"
+                    />
+                  </div>
+                  <Button onClick={handleExtendTerm} disabled={extending} className="shrink-0 font-bold">
+                    {extending ? "Extending..." : "Extend Term"}
+                  </Button>
                 </div>
               </div>
 
@@ -334,10 +459,49 @@ export function AdminManageInvestmentDialog({ open, onOpenChange, investment }: 
           </TabsContent>
 
           <TabsContent value="documents" className="space-y-6 pt-6">
+            {/* Auto-Generated Lifecycle Documents */}
+            {lifecycleDocs.length > 0 && (
+              <div className="space-y-3">
+                <h4 className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Auto-Generated Lifecycle Documents</h4>
+                <div className="space-y-2.5">
+                  {lifecycleDocs.map((doc: any) => {
+                    const docRef = doc.metadata?.reference_id || doc.verification_code;
+                    return (
+                      <div key={doc.id} className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10 space-y-3">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-4 h-4 text-purple-600" />
+                            <div>
+                              <p className="text-sm font-semibold">{doc.name || doc.document_type?.replace(/_/g, ' ')}</p>
+                              <p className="text-[10px] text-muted-foreground">Generated: {new Date(doc.created_at).toLocaleDateString()} {docRef && `· Ref: ${docRef}`}</p>
+                            </div>
+                          </div>
+                          <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-50 font-bold uppercase tracking-wider text-[9px] px-2 py-0.5">
+                            Available
+                          </Badge>
+                        </div>
+                        {doc.metadata?.document_snapshot && (
+                          <details className="mt-2 group">
+                            <summary className="cursor-pointer text-xs font-semibold text-purple-600 hover:underline flex items-center gap-1 select-none">
+                              <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
+                              View Document Content
+                            </summary>
+                            <div className="mt-2 border border-border/50 rounded-lg p-4 bg-white dark:bg-background prose prose-sm dark:prose-invert max-h-[300px] overflow-y-auto text-[11px] leading-relaxed">
+                              <div dangerouslySetInnerHTML={{ __html: doc.metadata.document_snapshot }} />
+                            </div>
+                          </details>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
             {/* Existing Documents */}
             {investmentDocs.length > 0 && (
               <div className="space-y-3">
-                <h4 className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Existing Documents</h4>
+                <h4 className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Uploaded Documents</h4>
                 {investmentDocs.map((doc: any) => (
                   <div key={doc.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/20 border border-border/30">
                     <div className="flex items-center gap-3">

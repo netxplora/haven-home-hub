@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BadgeCheck, Building2, LineChart, Search, ShieldCheck, Sparkles, TrendingUp, Wallet } from "lucide-react";
+import { ArrowRight, BadgeCheck, Building2, LineChart, Search, ShieldCheck, Sparkles, TrendingUp, Wallet, ArrowUpRight, DollarSign, Activity, Clock, Award } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,8 +9,44 @@ import investHero from "@/assets/invest-hero.jpg";
 import type { InvestmentProperty } from "@/lib/invest";
 import { SEO } from "@/components/site/SEO";
 import { PromoBanner } from "@/components/site/PromoBanner";
+import { useAuth } from "@/hooks/useAuth";
+import { formatMoney } from "@/lib/invest";
+import { Badge } from "@/components/ui/badge";
 
 export default function InvestHome() {
+  const { user } = useAuth();
+
+  // Live portfolio summary query from DB RPC
+  const { data: portfolioSummary } = useQuery({
+    queryKey: ["invest-portfolio-summary", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_investor_portfolio_summary", { p_user_id: user!.id });
+      if (error) {
+        console.error("Portfolio summary RPC error:", error);
+        return null;
+      }
+      return data;
+    }
+  });
+
+  // Query user investments to count specific status occurrences
+  const { data: userInvestments = [] } = useQuery({
+    queryKey: ["invest-home-investments-detail", user?.id],
+    enabled: !!user,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("user_investments")
+        .select("status")
+        .eq("user_id", user!.id);
+      if (error) {
+        console.error("Error fetching user investments:", error);
+        return [];
+      }
+      return data || [];
+    }
+  });
+
   const { data: featured = [] } = useQuery({
     queryKey: ["invest-featured"],
     queryFn: async () => {
@@ -38,6 +74,20 @@ export default function InvestHome() {
     { icon: BadgeCheck, title: "Passive income potential", body: "Scheduled distributions from underlying rental performance." },
     { icon: Sparkles, title: "Diversification", body: "Spread capital across locations, asset types, and horizons." },
   ];
+
+  const nav = Number(portfolioSummary?.nav || 0);
+  const totalInvested = Number(portfolioSummary?.total_invested || 0);
+  const totalEarnings = Number(portfolioSummary?.total_earnings || 0);
+  const averageYield = Number(portfolioSummary?.projected_return_min || 0);
+  
+  const expectedRoi = totalInvested * (averageYield / 100);
+  const currentRoiEarned = totalEarnings;
+  const remainingRoi = Math.max(0, expectedRoi - currentRoiEarned);
+
+  // Status counts
+  const activeCount = userInvestments.filter((i: any) => i.status === 'roi_active' || i.status === 'active').length;
+  const fundingCompletedCount = userInvestments.filter((i: any) => i.status === 'preparing_for_roi' || i.status === 'funding_completed').length;
+  const maturedCount = userInvestments.filter((i: any) => i.status === 'matured' || i.status === 'completed').length;
 
   return (
     <SiteLayout>
@@ -79,6 +129,98 @@ export default function InvestHome() {
               <Link to="/dashboard?tab=investments">My portfolio</Link>
             </Button>
           </div>
+        </div>
+      </section>
+
+      {/* Investment Performance Center */}
+      <section className="container-wide py-12 relative z-20">
+        <div className="bg-card border border-border/50 rounded-2xl p-6 md:p-8 shadow-md">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-primary">Investment Performance Center</p>
+              <h2 className="font-serif text-2xl font-bold mt-1">
+                {user ? "Your Portfolio Performance" : "Platform Performance Overview"}
+              </h2>
+            </div>
+            {!user ? (
+              <Badge variant="outline" className="border-primary/20 text-primary bg-primary/5 px-3 py-1 font-bold text-xs uppercase rounded-lg">
+                Demo Portfolio Preview
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="font-mono text-xs font-bold uppercase rounded-lg">
+                Live Data Synchronized
+              </Badge>
+            )}
+          </div>
+
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Portfolio Value</p>
+              <p className="font-serif text-2xl font-bold text-foreground">
+                {user ? formatMoney(nav) : "$124,500.00"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                <ArrowUpRight className="h-3 w-3 text-green-600" /> Valuation
+              </p>
+            </div>
+
+            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Amount Invested</p>
+              <p className="font-serif text-2xl font-bold text-foreground">
+                {user ? formatMoney(totalInvested) : "$100,000.00"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
+                <Activity className="h-3 w-3 text-primary" /> Capital deployed
+              </p>
+            </div>
+
+            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Expected ROI / Yield</p>
+              <p className="font-serif text-2xl font-bold text-green-600">
+                {user ? formatMoney(expectedRoi) : "$18,500.00"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Target: {user ? `${averageYield}%` : "18.5%"} average p.a.
+              </p>
+            </div>
+
+            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Current ROI Earned</p>
+              <p className="font-serif text-2xl font-bold text-primary">
+                {user ? formatMoney(currentRoiEarned) : "$6,000.00"}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Remaining to accrue: {user ? formatMoney(remainingRoi) : "$12,500.00"}
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-border/40">
+            <div className="text-center">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Active Investments</p>
+              <p className="font-serif text-lg font-bold text-foreground">
+                {user ? activeCount : "3"}
+              </p>
+            </div>
+            <div className="text-center border-x border-border/40">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Funding Completed</p>
+              <p className="font-serif text-lg font-bold text-amber-600">
+                {user ? fundingCompletedCount : "1"}
+              </p>
+            </div>
+            <div className="text-center">
+              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Matured Assets</p>
+              <p className="font-serif text-lg font-bold text-green-600">
+                {user ? maturedCount : "0"}
+              </p>
+            </div>
+          </div>
+
+          {user && userInvestments.length === 0 && (
+            <div className="mt-6 p-4 bg-muted/40 rounded-xl text-center border border-dashed border-border/60">
+              <p className="text-sm text-muted-foreground">You have no active investments. Click browse below to explore opportunities.</p>
+            </div>
+          )}
         </div>
       </section>
 

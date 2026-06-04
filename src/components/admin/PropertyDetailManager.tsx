@@ -122,6 +122,24 @@ function JourneyTab({ propertyId }: { propertyId: string }) {
     }
   }
 
+  async function handleUpdateStatus(id: string, newStatus: string) {
+    const payload: any = { status: newStatus };
+    if (newStatus === "completed") {
+      payload.completed_date = new Date().toISOString().split('T')[0];
+    }
+    const { error } = await supabase
+      .from("property_journey")
+      .update(payload)
+      .eq("id", id);
+    
+    if (error) {
+      toast({ title: "Update Failed", description: error.message, variant: "destructive" });
+    } else {
+      toast({ title: "Journey stage updated" });
+      qc.invalidateQueries({ queryKey: ["admin-prop-journey", propertyId] });
+    }
+  }
+
   async function handleDelete(id: string) {
     if (!confirm("Remove this stage?")) return;
     const { error } = await supabase.from("property_journey").delete().eq("id", id);
@@ -184,13 +202,9 @@ function JourneyTab({ propertyId }: { propertyId: string }) {
       <div className="space-y-3">
         {journey.map((stage: any) => (
           <div key={stage.id} className="bg-card p-4 rounded-xl border border-border shadow-sm flex justify-between items-start">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
+            <div className="flex-1 mr-4">
+              <div className="flex items-center flex-wrap gap-2 mb-1">
                 <span className="font-bold">{stage.stage_name}</span>
-                <span className={`text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-md font-bold ${
-                  stage.status === 'completed' ? 'bg-green-500/10 text-green-600' :
-                  stage.status === 'in_progress' ? 'bg-blue-500/10 text-blue-600' : 'bg-gray-500/10 text-gray-500'
-                }`}>{stage.status}</span>
                 <span className="text-xs text-muted-foreground">Order: {stage.sort_order}</span>
               </div>
               <p className="text-sm text-muted-foreground">{stage.description}</p>
@@ -199,9 +213,21 @@ function JourneyTab({ propertyId }: { propertyId: string }) {
                 {stage.completed_date && <span>Completed: {stage.completed_date}</span>}
               </div>
             </div>
-            <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-lg" onClick={() => handleDelete(stage.id)}>
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            <div className="flex items-center gap-3 shrink-0">
+              <Select value={stage.status} onValueChange={(val) => handleUpdateStatus(stage.id, val)}>
+                <SelectTrigger className="w-32 h-8 rounded-lg text-xs font-semibold">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="rounded-lg">
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="in_progress">In Progress</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button variant="ghost" size="icon" className="text-destructive hover:bg-destructive/10 hover:text-destructive rounded-lg h-8 w-8" onClick={() => handleDelete(stage.id)}>
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ))}
         {journey.length === 0 && !adding && (

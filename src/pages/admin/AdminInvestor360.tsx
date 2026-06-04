@@ -126,6 +126,57 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
     enabled: !!selectedUserId,
   });
 
+  // Fetch signed documents
+  const { data: signedDocs = [] } = useQuery({
+    queryKey: ["admin-360-signed-docs", selectedUserId],
+    queryFn: async () => {
+      if (!selectedUserId) return [];
+      const { data, error } = await supabase
+        .from("signed_documents")
+        .select("*")
+        .eq("user_id", selectedUserId)
+        .order("signed_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!selectedUserId
+  });
+
+  // Fetch auto-generated lifecycle documents
+  const { data: lifecycleDocs = [] } = useQuery({
+    queryKey: ["admin-360-lifecycle-docs", selectedUserId],
+    queryFn: async () => {
+      if (!selectedUserId) return [];
+      const { data, error } = await supabase
+        .from("user_documents")
+        .select("*")
+        .eq("user_id", selectedUserId)
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!selectedUserId
+  });
+
+  // Fetch investment activity logs (history trail)
+  const { data: activityLogs = [] } = useQuery({
+    queryKey: ["admin-360-activity-logs", selectedUserId],
+    queryFn: async () => {
+      if (!selectedUserId) return [];
+      const { data, error } = await supabase
+        .from("investment_activity_logs")
+        .select(`
+          *,
+          user_investments(
+            id,
+            investment_properties(title)
+          )
+        `)
+        .eq("user_id", selectedUserId)
+        .order("created_at", { ascending: false });
+      return data || [];
+    },
+    enabled: !!selectedUserId
+  });
+
   // Calculate completeness
   const completenessScore = profileData ? Math.round(
     ([
@@ -321,6 +372,8 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
               { id: "payments", label: "Payments", icon: CreditCard, count: activityData?.payments?.length },
               { id: "reservations", label: "Reservations", icon: Calendar, count: activityData?.reservations?.length },
               { id: "marketplace", label: "Marketplace", icon: ArrowLeftRight, count: (activityData?.listings?.length || 0) + (activityData?.trades?.length || 0) },
+              { id: "documents", label: "Documents", icon: FileText, count: signedDocs.length + lifecycleDocs.length },
+              { id: "history", label: "Activity Feed", icon: Clock, count: activityLogs.length },
               { id: "admin", label: "Admin Controls", icon: Settings },
             ].map(tab => (
               <button
@@ -527,6 +580,109 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* ── DOCUMENTS TAB ── */}
+            {activeTab === "documents" && (
+              <div className="space-y-6">
+                {/* Auto-Generated Lifecycle Documents */}
+                <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm">
+                  <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">Auto-Generated Lifecycle Documents</h3>
+                  {lifecycleDocs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">No auto-generated documents found.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {lifecycleDocs.map((doc: any) => {
+                        const docRef = doc.metadata?.reference_id || doc.verification_code;
+                        return (
+                          <div key={doc.id} className="p-4 rounded-xl bg-purple-500/5 border border-purple-500/10 space-y-3">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <FileText className="w-4 h-4 text-purple-600" />
+                                <div>
+                                  <p className="text-sm font-semibold">{doc.name || doc.document_type?.replace(/_/g, ' ')}</p>
+                                  <p className="text-[10px] text-muted-foreground">Generated: {new Date(doc.created_at).toLocaleDateString()} {docRef && `· Ref: ${docRef}`}</p>
+                                </div>
+                              </div>
+                              <Badge variant="outline" className="border-green-500/30 text-green-600 bg-green-50 font-bold uppercase tracking-wider text-[9px] px-2 py-0.5">
+                                Available
+                              </Badge>
+                            </div>
+                            {doc.metadata?.document_snapshot && (
+                              <details className="mt-2 group">
+                                <summary className="cursor-pointer text-xs font-semibold text-purple-600 hover:underline flex items-center gap-1 select-none">
+                                  <ChevronRight className="w-3 h-3 transition-transform group-open:rotate-90" />
+                                  View Document Content
+                                </summary>
+                                <div className="mt-2 border border-border/50 rounded-lg p-4 bg-white dark:bg-background prose prose-sm dark:prose-invert max-h-[300px] overflow-y-auto text-[11px] leading-relaxed">
+                                  <div dangerouslySetInnerHTML={{ __html: doc.metadata.document_snapshot }} />
+                                </div>
+                              </details>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
+
+                {/* Uploaded Documents */}
+                <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm">
+                  <h3 className="font-semibold mb-4 text-sm uppercase tracking-wider text-muted-foreground">Uploaded Documents</h3>
+                  {signedDocs.length === 0 ? (
+                    <p className="text-sm text-muted-foreground py-4 text-center">No uploaded documents found.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      {signedDocs.map((doc: any) => (
+                        <div key={doc.id} className="flex justify-between items-center p-3 border rounded-lg hover:bg-secondary/10 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <FileText className="w-4 h-4 text-primary" />
+                            <div>
+                              <p className="font-medium text-sm capitalize">{doc.document_type?.replace(/_/g, ' ')}</p>
+                              <p className="text-[10px] text-muted-foreground">{new Date(doc.signed_at).toLocaleDateString()}</p>
+                            </div>
+                          </div>
+                          {doc.signature_data && (
+                            <Button variant="outline" size="sm" className="h-7 text-xs" asChild>
+                              <a href={doc.signature_data} target="_blank" rel="noopener noreferrer">View</a>
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* ── ACTIVITY FEED TAB ── */}
+            {activeTab === "history" && (
+              <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm">
+                <h3 className="font-semibold mb-6 text-sm uppercase tracking-wider text-muted-foreground">Chronological Activity Trail</h3>
+                {activityLogs.length === 0 ? (
+                  <p className="text-sm text-muted-foreground py-8 text-center">No activity log entries found for this investor.</p>
+                ) : (
+                  <div className="space-y-6 relative border-l border-border/60 pl-6 ml-4">
+                    {activityLogs.map((log: any) => {
+                      const propTitle = log.user_investments?.investment_properties?.title || "Portfolio Account";
+                      return (
+                        <div key={log.id} className="relative">
+                          {/* Dot marker */}
+                          <span className="absolute -left-[31px] top-1.5 bg-primary rounded-full h-2.5 w-2.5 ring-4 ring-background animate-in zoom-in" />
+                          <div className="space-y-1">
+                            <div className="flex flex-wrap items-center gap-2">
+                              <span className="font-semibold text-sm text-foreground">{log.description}</span>
+                              <Badge variant="outline" className="text-[9px] uppercase font-bold tracking-wider">{log.activity_type?.replace(/_/g, ' ')}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">Asset: <span className="font-medium text-foreground">{propTitle}</span></p>
+                            <p className="text-[10px] font-mono text-muted-foreground">{new Date(log.created_at).toLocaleString()}</p>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
             )}
 
