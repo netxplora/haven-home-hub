@@ -249,20 +249,7 @@ export default function Home() {
                 </Button>
               </form>
 
-              {/* Location Suggestions */}
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <span className="text-muted-foreground font-medium">Suggestions:</span>
-                {exploreLocations.slice(0, 4).map((loc: any) => (
-                  <button
-                    key={loc.id}
-                    type="button"
-                    onClick={() => setSearchLocation(loc.id)}
-                    className="text-primary hover:underline font-semibold"
-                  >
-                    {loc.name}
-                  </button>
-                ))}
-              </div>
+
             </div>
           </div>
         </div>
