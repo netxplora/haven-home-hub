@@ -32,48 +32,6 @@ export function AdminPropertyImport() {
     return data as any;
   };
 
-  // Setup realtime subscription when jobId exists
-  useEffect(() => {
-    if (!jobId) return;
-
-    const channel = supabase
-      .channel(`job_${jobId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'extraction_jobs',
-          filter: `id=eq.${jobId}`
-        },
-        (payload: any) => {
-          const newStatus = payload.new.status;
-          setJobStatus(newStatus);
-          if (payload.new.logs) setJobLogs(payload.new.logs);
-
-          if (newStatus === 'completed') {
-            toast({ title: "Extraction complete!", description: "Review the extracted schema below." });
-            setExtractedData(payload.new.extracted_data);
-            setConfidenceScores(payload.new.confidence_scores);
-            setIsEditMode(true);
-            setJobId(null); // Stop listening
-          } else if (newStatus === 'failed') {
-            toast({ 
-              title: "Extraction Failed", 
-              description: payload.new.error_message || "Unknown error occurred", 
-              variant: "destructive" 
-            });
-            setJobId(null);
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [jobId]);
-
   const extractMutation = useMutation({
     mutationFn: async () => {
       if (!url) throw new Error("Please enter a valid URL");
@@ -83,27 +41,80 @@ export function AdminPropertyImport() {
         throw new Error(`Property already exists: ${duplicate.title}`);
       }
 
-      // Insert job into the queue
-      const { data, error } = await supabase
+      setJobStatus("initializing");
+
+      // 1. Insert job into the queue
+      const { data: jobData, error: jobError } = await supabase
         .from('extraction_jobs')
-        .insert([{ url, status: 'pending' }])
+        .insert([{ url, status: 'initializing' }])
         .select()
         .single();
 
-      if (error) throw error;
-      return data;
+      if (jobError) throw jobError;
+      const id = jobData.id;
+      setJobId(id);
+
+      try {
+        setJobStatus("extracting_structured");
+        await supabase
+          .from('extraction_jobs')
+          .update({ status: 'extracting_structured' })
+          .eq('id', id);
+
+        // 2. Invoke Edge Function
+        const { data: resData, error: funcError } = await supabase.functions.invoke("extract-property", {
+          body: { url }
+        });
+
+        if (funcError) throw funcError;
+        if (!resData || !resData.success) {
+          throw new Error(resData?.error || "Extraction failed");
+        }
+
+        setJobStatus("mapping");
+        await supabase
+          .from('extraction_jobs')
+          .update({ status: 'mapping' })
+          .eq('id', id);
+
+        // 3. Complete job in database
+        await supabase
+          .from('extraction_jobs')
+          .update({ 
+            status: 'completed', 
+            extracted_data: resData.data, 
+            completed_at: new Date().toISOString() 
+          })
+          .eq('id', id);
+
+        return resData.data;
+      } catch (err: any) {
+        // Update job status to failed
+        if (id) {
+          await supabase
+            .from('extraction_jobs')
+            .update({ 
+              status: 'failed', 
+              error_message: err.message || "Unknown error" 
+            })
+            .eq('id', id);
+        }
+        throw err;
+      }
     },
     onSuccess: (data) => {
-      setJobId(data.id);
-      setJobStatus(data.status);
-      toast({ title: "Extraction started", description: "Your job has been queued." });
+      toast({ title: "Extraction complete!", description: "Review the extracted schema below." });
+      setExtractedData(data);
+      setIsEditMode(true);
+      setJobId(null);
     },
     onError: (error: any) => {
       toast({ 
-        title: "Failed to start extraction", 
-        description: error.message || "Unknown error", 
+        title: "Extraction Failed", 
+        description: error.message || "Unknown error occurred", 
         variant: "destructive" 
       });
+      setJobId(null);
     }
   });
 

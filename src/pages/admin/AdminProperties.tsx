@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Link } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/useAuth";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { Plus, Pencil, Trash2, Building2, Hash, Calendar, Car, Bed, Bath, Search, ArrowUpDown, ChevronLeft, ChevronRight, ShieldAlert, Link as LinkIcon } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
@@ -22,6 +23,7 @@ function slugify(s: string) {
 const ITEMS_PER_PAGE = 10;
 
 export function AdminProperties() {
+  const { user } = useAuth();
   const qc = useQueryClient();
   const [open, setOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
@@ -108,11 +110,101 @@ export function AdminProperties() {
     if (!importUrl) return;
     setIsImporting(true);
     try {
-      const { error } = await supabase.from("extraction_jobs").insert([{ url: importUrl }]);
-      if (error) throw error;
-      toast({ title: "Import Job Queued", description: "The property is being extracted in the background. It will appear here once complete." });
-      setImportOpen(false);
-      setImportUrl("");
+      // 1. Check duplicate URL
+      const { data: duplicate } = await supabase
+        .from("properties")
+        .select("id, title")
+        .eq("external_url", importUrl)
+        .maybeSingle();
+
+      if (duplicate) {
+        throw new Error(`Property already exists: ${duplicate.title}`);
+      }
+
+      // 2. Insert job into queue
+      const { data: jobData, error: jobError } = await supabase
+        .from("extraction_jobs")
+        .insert([{ url: importUrl, status: "initializing" }])
+        .select()
+        .single();
+
+      if (jobError) throw jobError;
+      const jobId = jobData.id;
+
+      try {
+        await supabase
+          .from("extraction_jobs")
+          .update({ status: "extracting_structured" })
+          .eq("id", jobId);
+
+        // 3. Invoke Edge Function
+        const { data: resData, error: funcError } = await supabase.functions.invoke("extract-property", {
+          body: { url: importUrl }
+        });
+
+        if (funcError) throw funcError;
+        if (!resData || !resData.success) {
+          throw new Error(resData?.error || "Extraction failed");
+        }
+
+        await supabase
+          .from("extraction_jobs")
+          .update({ status: "mapping" })
+          .eq("id", jobId);
+
+        const extracted = resData.data;
+
+        // Clean up and construct property payload
+        const { gallery_images, ...propPayload } = extracted;
+        propPayload.external_url = importUrl;
+        propPayload.owner_user_id = user?.id;
+        propPayload.slug = propPayload.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).substring(2, 7);
+        propPayload.status = "available"; // Default status
+        propPayload.approval_status = "pending"; // Default approval status (Draft/Pending)
+
+        // 4. Save property
+        const { data: propData, error: propError } = await supabase
+          .from("properties")
+          .insert([propPayload])
+          .select()
+          .single();
+
+        if (propError) throw propError;
+
+        // 5. Save images
+        if (gallery_images && gallery_images.length > 0) {
+          const imagesToInsert = gallery_images.map((imgUrl: string, idx: number) => ({
+            property_id: propData.id,
+            url: imgUrl,
+            sort_order: idx + 1
+          }));
+          await supabase.from("property_images").insert(imagesToInsert);
+        }
+
+        // 6. Complete job in database
+        await supabase
+          .from("extraction_jobs")
+          .update({ 
+            status: "completed", 
+            extracted_data: extracted, 
+            completed_at: new Date().toISOString() 
+          })
+          .eq("id", jobId);
+
+        toast({ title: "Property Imported", description: `Successfully imported "${propPayload.title}" as draft.` });
+        setImportOpen(false);
+        setImportUrl("");
+        qc.invalidateQueries({ queryKey: ["admin-properties"] });
+      } catch (err: any) {
+        await supabase
+          .from("extraction_jobs")
+          .update({ 
+            status: "failed", 
+            error_message: err.message || "Unknown error" 
+          })
+          .eq("id", jobId);
+        throw err;
+      }
     } catch (error: any) {
       toast({ title: "Import Failed", description: error.message, variant: "destructive" });
     } finally {

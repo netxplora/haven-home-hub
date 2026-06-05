@@ -172,8 +172,8 @@ serve(async (req) => {
     let propertyData: any = {
       title: "",
       description: "",
-      property_category: "buy", // Default fallback
-      property_type: "house", // Default fallback
+      property_type: "buy", // Default fallback
+      property_category: "house", // Default fallback
       price: 0,
       currency: "USD",
       bedrooms: null,
@@ -360,26 +360,26 @@ serve(async (req) => {
       propertyData.cover_image_url = propertyData.gallery_images[0];
     }
 
-    // Category detection based on URL and Title
+    // Category detection based on URL and Title (maps to property_type in DB)
     const urlAndTitle = (url + " " + propertyData.title).toLowerCase();
     if (urlAndTitle.includes("rent")) {
-      propertyData.property_category = "rent";
+      propertyData.property_type = "rent";
     } else if (urlAndTitle.includes("land") || urlAndTitle.includes("lot")) {
-      propertyData.property_category = "land";
       propertyData.property_type = "land";
+      propertyData.property_category = "land";
     } else {
-      propertyData.property_category = "buy";
+      propertyData.property_type = "buy";
     }
 
-    // Basic property type detection
+    // Basic property type detection (maps to property_category in DB)
     if (urlAndTitle.includes("apartment") || urlAndTitle.includes("apt")) {
-      propertyData.property_type = "apartment";
+      propertyData.property_category = "apartment";
     } else if (urlAndTitle.includes("condo")) {
-      propertyData.property_type = "condo";
+      propertyData.property_category = "condo";
     } else if (urlAndTitle.includes("villa")) {
-      propertyData.property_type = "villa";
+      propertyData.property_category = "villa";
     } else if (urlAndTitle.includes("commercial")) {
-      propertyData.property_type = "commercial";
+      propertyData.property_category = "commercial";
     }
 
     // AI ENHANCEMENT (Optional)
