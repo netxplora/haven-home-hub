@@ -1,4 +1,4 @@
-import { useState, ReactNode } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { 
   LayoutDashboard, 
@@ -68,6 +68,11 @@ export function DashboardShell({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const avatarUrl = getAvatarUrl(profile?.avatar_url);
+
+  // Auto-scroll to top when switching dashboard tabs
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [activeTab]);
 
   const SidebarContent = () => (
     <div className="flex h-full flex-col bg-background border-r border-border/50">

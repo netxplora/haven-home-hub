@@ -54,6 +54,7 @@ import { CurrencyProvider } from "./hooks/useCurrency";
 import { CompareWidget } from "./components/site/CompareWidget";
 import { useDeploymentCache } from "./hooks/useDeploymentCache";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
+import { ScrollToTop } from "./components/ScrollToTop";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -108,6 +109,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <ScrollToTop />
           <CompareWidget />
           <RealtimeGlobal />
           <GlobalErrorBoundary>
