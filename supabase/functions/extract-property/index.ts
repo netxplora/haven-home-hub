@@ -7,6 +7,69 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ── Conversion helpers ──────────────────────────────────────────────
+const SQFT_TO_SQM = 0.092903;
+const ACRE_TO_SQM = 4046.86;
+
+function convertToSqm(value: number, unit: string): number {
+  const u = unit.toLowerCase().replace(/[^a-z]/g, "");
+  if (["sqft", "sqfeet", "squarefeet", "squarefoot", "sf"].includes(u)) {
+    return Math.round(value * SQFT_TO_SQM * 100) / 100;
+  }
+  if (["acre", "acres", "ac"].includes(u)) {
+    return Math.round(value * ACRE_TO_SQM * 100) / 100;
+  }
+  // Already sqm or unknown unit — return as-is
+  return value;
+}
+
+function isValidCoordinate(lat: any, lng: any): boolean {
+  const la = Number(lat);
+  const lo = Number(lng);
+  return !isNaN(la) && !isNaN(lo) && la >= -90 && la <= 90 && lo >= -180 && lo <= 180;
+}
+
+// ── Image accessibility check ───────────────────────────────────────
+async function verifyImageUrl(imageUrl: string, timeoutMs = 5000): Promise<boolean> {
+  if (!imageUrl || !imageUrl.startsWith("http")) return false;
+  try {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    const res = await fetch(imageUrl, {
+      method: "HEAD",
+      signal: controller.signal,
+      headers: {
+        "User-Agent": "Mozilla/5.0 (compatible; HavenHomeHub/1.0)",
+      },
+    });
+    clearTimeout(timer);
+    if (!res.ok) return false;
+    const ct = res.headers.get("content-type") || "";
+    return ct.startsWith("image/");
+  } catch {
+    return false;
+  }
+}
+
+// ── Required-field validation ───────────────────────────────────────
+const REQUIRED_FIELDS = [
+  "property_title",
+  "property_description",
+  "listing_type",
+  "base_price",
+  "primary_cover_image_url",
+];
+
+function getMissingFields(data: Record<string, any>): string[] {
+  return REQUIRED_FIELDS.filter((key) => {
+    const v = data[key];
+    if (v === null || v === undefined || v === "") return true;
+    if (key === "base_price" && (isNaN(Number(v)) || Number(v) <= 0)) return true;
+    return false;
+  });
+}
+
+// ─────────────────────────────────────────────────────────────────────
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -76,7 +139,6 @@ serve(async (req) => {
     const scraperApiKey = Deno.env.get("SCRAPER_API_KEY");
 
     // ── TIER 1: Direct fetch (free, fast) ───────────────────────────
-    // Works for smaller, unprotected property sites.
     try {
       console.log("Tier 1: Attempting direct fetch...");
       const directRes = await fetchWithTimeout(url, { headers: browserHeaders, timeout: 8000 });
@@ -98,8 +160,6 @@ serve(async (req) => {
     }
 
     // ── TIER 2: ScraperAPI with JS rendering ────────────────────────
-    // Routes through residential IPs with headless browser rendering.
-    // Handles Cloudflare, PerimeterX, and JS-rendered SPAs.
     if (!successfulHtml && scraperApiKey) {
       try {
         console.log("Tier 2: Attempting ScraperAPI with render=true...");
@@ -124,7 +184,6 @@ serve(async (req) => {
     }
 
     // ── TIER 3: ScraperAPI with premium residential proxies ─────────
-    // Maximum bypass for very aggressive protection (rare).
     if (!successfulHtml && scraperApiKey) {
       try {
         console.log("Tier 3: Attempting ScraperAPI with premium=true...");
@@ -168,68 +227,95 @@ serve(async (req) => {
     const html = successfulHtml;
     const $ = cheerio.load(html);
 
-    // Initial Data Structure
-    let propertyData: any = {
-      title: "",
-      description: "",
-      property_type: "buy", // Default fallback
-      property_category: "house", // Default fallback
-      price: 0,
+    // ── Refined extraction schema ───────────────────────────────────
+    // Keys match the user-defined schema exactly.
+    let propertyData: Record<string, any> = {
+      property_title: "",
+      property_description: "",
+      listing_type: "buy",        // buy | rent | land
+      property_category: "house", // house | apartment | condo | villa | commercial | land
+      base_price: 0,
       currency: "USD",
-      bedrooms: null,
-      bathrooms: null,
-      size_sqm: null,
-      address: "",
+      full_street_address: "",
       city: "",
       state: "",
       country: "",
+      latitude: null,
+      longitude: null,
+      beds: null,
+      baths: null,
+      parking: null,
+      sqm: null,
+      year: null,
       interior_features: [],
       exterior_features: [],
-      cover_image_url: "",
-      gallery_images: []
+      nearby_points_of_interest: [],
+      viewing_times: "",
+      primary_cover_image_url: "",
+      property_media_gallery: [],
     };
 
-    // 1. EXTRACT JSON-LD (Highest Priority)
+    // ── 1. EXTRACT JSON-LD (Highest Priority) ───────────────────────
     $('script[type="application/ld+json"]').each((_, el) => {
       try {
         const json = JSON.parse($(el).html() || "{}");
-        // Handle array of JSON-LD objects
         const objects = Array.isArray(json) ? json : [json];
         
         objects.forEach(obj => {
-          if (obj['@type'] === 'RealEstateListing' || obj['@type'] === 'SingleFamilyResidence' || obj['@type'] === 'Product' || obj['@type'] === 'Place') {
-            if (obj.name && !propertyData.title) propertyData.title = obj.name;
-            if (obj.description && !propertyData.description) propertyData.description = obj.description;
-            
-            // Extract Price from Offers
-            if (obj.offers && obj.offers.price) {
-              propertyData.price = parseFloat(obj.offers.price);
-              if (obj.offers.priceCurrency) propertyData.currency = obj.offers.priceCurrency;
-            }
-            
-            // Address
-            if (obj.address) {
-              if (obj.address.streetAddress) propertyData.address = obj.address.streetAddress;
-              if (obj.address.addressLocality) propertyData.city = obj.address.addressLocality;
-              if (obj.address.addressRegion) propertyData.state = obj.address.addressRegion;
-              if (obj.address.addressCountry) propertyData.country = obj.address.addressCountry;
-            }
+          const types = ['RealEstateListing', 'SingleFamilyResidence', 'Product', 'Place', 'Apartment', 'House', 'Residence'];
+          if (!types.includes(obj['@type'])) return;
 
-            // Specs
-            if (obj.numberOfBedrooms) propertyData.bedrooms = Number(obj.numberOfBedrooms);
-            if (obj.numberOfBathroomsTotal) propertyData.bathrooms = Number(obj.numberOfBathroomsTotal);
-            if (obj.floorSize && obj.floorSize.value) propertyData.size_sqm = Number(obj.floorSize.value);
-            
-            // Image
-            if (obj.image) {
-              if (Array.isArray(obj.image)) {
-                propertyData.cover_image_url = obj.image[0];
-                propertyData.gallery_images = obj.image;
-              } else if (typeof obj.image === 'string') {
-                propertyData.cover_image_url = obj.image;
-              } else if (obj.image.url) {
-                propertyData.cover_image_url = obj.image.url;
-              }
+          if (obj.name && !propertyData.property_title) propertyData.property_title = obj.name;
+          if (obj.description && !propertyData.property_description) propertyData.property_description = obj.description;
+          
+          // Price from Offers
+          if (obj.offers && obj.offers.price) {
+            propertyData.base_price = parseFloat(obj.offers.price);
+            if (obj.offers.priceCurrency) propertyData.currency = obj.offers.priceCurrency;
+          }
+          
+          // Address
+          if (obj.address) {
+            if (obj.address.streetAddress) propertyData.full_street_address = obj.address.streetAddress;
+            if (obj.address.addressLocality) propertyData.city = obj.address.addressLocality;
+            if (obj.address.addressRegion) propertyData.state = obj.address.addressRegion;
+            if (obj.address.addressCountry) propertyData.country = obj.address.addressCountry;
+          }
+
+          // Coordinates
+          if (obj.geo) {
+            const lat = obj.geo.latitude ?? obj.geo.lat;
+            const lng = obj.geo.longitude ?? obj.geo.lng ?? obj.geo.lon;
+            if (isValidCoordinate(lat, lng)) {
+              propertyData.latitude = Number(lat);
+              propertyData.longitude = Number(lng);
+            }
+          }
+
+          // Specs
+          if (obj.numberOfBedrooms) propertyData.beds = Number(obj.numberOfBedrooms);
+          if (obj.numberOfBathroomsTotal) propertyData.baths = Number(obj.numberOfBathroomsTotal);
+          if (obj.numberOfRooms && !propertyData.beds) propertyData.beds = Number(obj.numberOfRooms);
+
+          // Floor size with unit conversion
+          if (obj.floorSize && obj.floorSize.value) {
+            const rawVal = Number(obj.floorSize.value);
+            const unit = obj.floorSize.unitText || obj.floorSize.unitCode || "sqm";
+            propertyData.sqm = convertToSqm(rawVal, unit);
+          }
+
+          // Year built
+          if (obj.yearBuilt) propertyData.year = Number(obj.yearBuilt);
+          
+          // Image
+          if (obj.image) {
+            if (Array.isArray(obj.image)) {
+              propertyData.primary_cover_image_url = typeof obj.image[0] === 'string' ? obj.image[0] : obj.image[0]?.url || "";
+              propertyData.property_media_gallery = obj.image.map((img: any) => typeof img === 'string' ? img : img?.url || "").filter(Boolean);
+            } else if (typeof obj.image === 'string') {
+              propertyData.primary_cover_image_url = obj.image;
+            } else if (obj.image.url) {
+              propertyData.primary_cover_image_url = obj.image.url;
             }
           }
         });
@@ -238,88 +324,131 @@ serve(async (req) => {
       }
     });
 
-    // 2. EXTRACT OPEN GRAPH & META TAGS (Fallback)
-    if (!propertyData.title) propertyData.title = $('meta[property="og:title"]').attr('content') || $('meta[name="title"]').attr('content') || $('title').text() || "";
-    if (!propertyData.description) propertyData.description = $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || "";
-    if (!propertyData.cover_image_url) propertyData.cover_image_url = $('meta[property="og:image"]').attr('content') || $('link[rel="image_src"]').attr('href') || "";
-    if (propertyData.price === 0) {
-      const priceMeta = $('meta[property="product:price:amount"]').attr('content') || $('meta[name="price"]').attr('content') || $('meta[itemprop="price"]').attr('content');
-      if (priceMeta) propertyData.price = parseFloat(priceMeta.replace(/[^0-9.]/g, ''));
+    // ── 2. EXTRACT OPEN GRAPH & META TAGS (Fallback) ────────────────
+    if (!propertyData.property_title) {
+      propertyData.property_title = $('meta[property="og:title"]').attr('content') || $('meta[name="title"]').attr('content') || $('title').text() || "";
     }
-    if (!propertyData.currency) {
+    if (!propertyData.property_description) {
+      propertyData.property_description = $('meta[property="og:description"]').attr('content') || $('meta[name="description"]').attr('content') || "";
+    }
+    if (!propertyData.primary_cover_image_url) {
+      propertyData.primary_cover_image_url = $('meta[property="og:image"]').attr('content') || $('link[rel="image_src"]').attr('href') || "";
+    }
+    if (propertyData.base_price === 0) {
+      const priceMeta = $('meta[property="product:price:amount"]').attr('content') || $('meta[name="price"]').attr('content') || $('meta[itemprop="price"]').attr('content');
+      if (priceMeta) propertyData.base_price = parseFloat(priceMeta.replace(/[^0-9.]/g, ''));
+    }
+    if (propertyData.currency === "USD") {
       const currMeta = $('meta[property="product:price:currency"]').attr('content') || $('meta[itemprop="priceCurrency"]').attr('content');
       if (currMeta) propertyData.currency = currMeta;
     }
 
     // Address Fallbacks
-    if (!propertyData.address) propertyData.address = $('meta[property="og:street-address"]').attr('content') || $('meta[name="street-address"]').attr('content') || "";
+    if (!propertyData.full_street_address) propertyData.full_street_address = $('meta[property="og:street-address"]').attr('content') || $('meta[name="street-address"]').attr('content') || "";
     if (!propertyData.city) propertyData.city = $('meta[property="og:locality"]').attr('content') || $('meta[name="locality"]').attr('content') || "";
     if (!propertyData.state) propertyData.state = $('meta[property="og:region"]').attr('content') || $('meta[name="region"]').attr('content') || "";
     if (!propertyData.country) propertyData.country = $('meta[property="og:country-name"]').attr('content') || $('meta[name="country-name"]').attr('content') || "";
 
-    // 3. AGGRESSIVE REGEX SCRAPING (Final Fallback for heavily obfuscated SPAs like Zillow/Redfin)
-    // Sometimes data is hidden in JSON hydration blocks
-    if (!propertyData.title) {
+    // Coordinates from meta
+    if (!propertyData.latitude) {
+      const latMeta = $('meta[property="place:location:latitude"]').attr('content') || $('meta[name="geo.position"]').attr('content')?.split(";")[0];
+      const lngMeta = $('meta[property="place:location:longitude"]').attr('content') || $('meta[name="geo.position"]').attr('content')?.split(";")[1];
+      if (latMeta && lngMeta && isValidCoordinate(latMeta, lngMeta)) {
+        propertyData.latitude = Number(latMeta);
+        propertyData.longitude = Number(lngMeta);
+      }
+    }
+
+    // ── 3. REGEX SCRAPING (Final Fallback) ──────────────────────────
+    // Title
+    if (!propertyData.property_title) {
        const titleMatch = html.match(/<title[^>]*>([^<]+)<\/title>/i);
-       if (titleMatch) propertyData.title = titleMatch[1].trim();
+       if (titleMatch) propertyData.property_title = titleMatch[1].trim();
     }
 
     // Address Parsing from Title (if still missing)
-    if (!propertyData.address || !propertyData.city) {
-      const titleStr = propertyData.title || $('title').text() || "";
+    if (!propertyData.full_street_address || !propertyData.city) {
+      const titleStr = propertyData.property_title || $('title').text() || "";
       const firstPart = titleStr.split(/\||-/)[0].trim();
       const parts = firstPart.split(',').map((s: string) => s.trim());
       if (parts.length >= 2) {
-        if (!propertyData.address) propertyData.address = parts[0];
+        if (!propertyData.full_street_address) propertyData.full_street_address = parts[0];
         if (!propertyData.city) propertyData.city = parts[1];
         if (!propertyData.state && parts.length > 2) {
-            propertyData.state = parts[2].split(' ')[0]; // E.g., "CA 90210" -> "CA"
+            propertyData.state = parts[2].split(' ')[0];
         }
       }
     }
     
-    // Attempt to guess bedrooms if missing
-    if (!propertyData.bedrooms) {
-      // Look for "3 beds", "3 bd", "3 Bedrooms"
+    // Bedrooms
+    if (!propertyData.beds) {
       const bedMatch = html.match(/(\d+)\s*(?:beds|bedrooms|bd|bds)\b/i);
-      if (bedMatch) propertyData.bedrooms = parseInt(bedMatch[1]);
+      if (bedMatch) propertyData.beds = parseInt(bedMatch[1]);
     }
     
-    // Attempt to guess bathrooms if missing
-    if (!propertyData.bathrooms) {
-      // Look for "2 baths", "2.5 ba", "2 Bathrooms"
+    // Bathrooms
+    if (!propertyData.baths) {
       const bathMatch = html.match(/(\d+(?:\.\d+)?)\s*(?:baths|bathrooms|ba)\b/i);
-      if (bathMatch) propertyData.bathrooms = parseFloat(bathMatch[1]);
+      if (bathMatch) propertyData.baths = parseFloat(bathMatch[1]);
     }
 
-    // Attempt to guess square footage
-    if (!propertyData.size_sqm) {
-      const sqftMatch = html.match(/(\d+(?:,\d+)?)\s*(?:sqft|sq ft|square feet)\b/i);
-      if (sqftMatch) propertyData.size_sqm = parseFloat(sqftMatch[1].replace(/,/g, ''));
+    // Parking
+    if (!propertyData.parking) {
+      const parkMatch = html.match(/(\d+)\s*(?:car|parking|garage)\s*(?:spaces?|spots?|bays?)?/i);
+      if (parkMatch) propertyData.parking = parseInt(parkMatch[1]);
     }
 
-    // Attempt to guess price if still 0
-    if (propertyData.price === 0) {
-      // Look for raw $ amounts. Take the first reasonable looking price (e.g. $450,000)
-      const priceMatch = html.match(/\$\s*(\d{1,3}(?:,\d{3})+)/);
-      if (priceMatch) {
-        propertyData.price = parseFloat(priceMatch[1].replace(/,/g, ''));
+    // Square footage with unit conversion
+    if (!propertyData.sqm) {
+      const sqftMatch = html.match(/(\d+(?:,\d+)?)\s*(sqft|sq\s*ft|square\s*feet|sf)\b/i);
+      if (sqftMatch) {
+        const raw = parseFloat(sqftMatch[1].replace(/,/g, ''));
+        propertyData.sqm = convertToSqm(raw, "sqft");
+      } else {
+        // Try acres
+        const acreMatch = html.match(/(\d+(?:\.\d+)?)\s*(acres?)\b/i);
+        if (acreMatch) {
+          const raw = parseFloat(acreMatch[1]);
+          propertyData.sqm = convertToSqm(raw, "acre");
+        } else {
+          // Try sqm directly
+          const sqmMatch = html.match(/(\d+(?:,\d+)?)\s*(?:sqm|sq\s*m|m²|square\s*met(?:er|re)s?)\b/i);
+          if (sqmMatch) propertyData.sqm = parseFloat(sqmMatch[1].replace(/,/g, ''));
+        }
       }
     }
 
-    // Features Fallbacks
+    // Year built
+    if (!propertyData.year) {
+      const yearMatch = html.match(/(?:built\s*(?:in)?\s*|year\s*built\s*:?\s*)(\d{4})/i);
+      if (yearMatch) {
+        const y = parseInt(yearMatch[1]);
+        if (y >= 1800 && y <= new Date().getFullYear() + 5) {
+          propertyData.year = y;
+        }
+      }
+    }
+
+    // Price fallback
+    if (propertyData.base_price === 0) {
+      const priceMatch = html.match(/\$\s*(\d{1,3}(?:,\d{3})+)/);
+      if (priceMatch) {
+        propertyData.base_price = parseFloat(priceMatch[1].replace(/,/g, ''));
+      }
+    }
+
+    // ── 4. FEATURES EXTRACTION ──────────────────────────────────────
     if (propertyData.exterior_features.length === 0 || propertyData.interior_features.length === 0) {
         const extractedFeatures: string[] = [];
         $('li').each((_, el) => {
             const text = $(el).text().trim();
-            // Filter likely feature strings
             if (text.length > 3 && text.length < 60 && !text.includes('http') && !text.includes('javascript:')) {
                 extractedFeatures.push(text);
             }
         });
 
-        const exteriorKeywords = ['pool', 'garage', 'patio', 'deck', 'fence', 'yard', 'garden', 'roof', 'brick', 'acreage', 'lot', 'balcony', 'porch', 'exterior', 'parking', 'carport'];
-        const interiorKeywords = ['room', 'floor', 'kitchen', 'bath', 'heating', 'cooling', 'appliances', 'basement', 'carpet', 'wood', 'tile', 'window', 'closet', 'fireplace', 'laundry', 'hvac', 'ac'];
+        const exteriorKeywords = ['pool', 'garage', 'patio', 'deck', 'fence', 'yard', 'garden', 'roof', 'brick', 'acreage', 'lot', 'balcony', 'porch', 'exterior', 'parking', 'carport', 'driveway', 'landscap'];
+        const interiorKeywords = ['room', 'floor', 'kitchen', 'bath', 'heating', 'cooling', 'appliances', 'basement', 'carpet', 'wood', 'tile', 'window', 'closet', 'fireplace', 'laundry', 'hvac', 'ac', 'granite', 'marble', 'stainless'];
         
         extractedFeatures.forEach(f => {
             const lowerF = f.toLowerCase();
@@ -337,53 +466,77 @@ serve(async (req) => {
         propertyData.interior_features = [...new Set(propertyData.interior_features)];
     }
 
-    // Extract generic images for gallery if empty
-    if (propertyData.gallery_images.length === 0) {
+    // ── 5. GALLERY IMAGES ───────────────────────────────────────────
+    if (propertyData.property_media_gallery.length === 0) {
       $('img').each((_, el) => {
         const src = $(el).attr('src') || $(el).attr('data-src');
-        // Filter out small icons/logos, 1x1 pixels, or relative paths
-        if (src && src.startsWith('http') && !src.includes('icon') && !src.includes('logo') && !src.includes('avatar')) {
-          propertyData.gallery_images.push(src);
+        if (src && src.startsWith('http') && !src.includes('icon') && !src.includes('logo') && !src.includes('avatar') && !src.includes('favicon')) {
+          propertyData.property_media_gallery.push(src);
         }
       });
-      // Try extracting background images or JSON strings with image URLs
+      // Background images and JSON-embedded image URLs
       const allUrlsMatch = html.match(/https?:\/\/[^"'\s>]+?\.(?:jpg|jpeg|png|webp)/gi);
       if (allUrlsMatch) {
-        propertyData.gallery_images.push(...allUrlsMatch);
+        propertyData.property_media_gallery.push(...allUrlsMatch);
       }
-      // Unique and limit
-      propertyData.gallery_images = [...new Set(propertyData.gallery_images)].slice(0, 15);
+      propertyData.property_media_gallery = [...new Set(propertyData.property_media_gallery)].slice(0, 15);
     }
     
-    // If we got gallery images but no cover, use the first one
-    if (!propertyData.cover_image_url && propertyData.gallery_images.length > 0) {
-      propertyData.cover_image_url = propertyData.gallery_images[0];
+    // Cover image fallback
+    if (!propertyData.primary_cover_image_url && propertyData.property_media_gallery.length > 0) {
+      propertyData.primary_cover_image_url = propertyData.property_media_gallery[0];
     }
 
-    // Category detection based on URL and Title (maps to property_type in DB)
-    const urlAndTitle = (url + " " + propertyData.title).toLowerCase();
-    if (urlAndTitle.includes("rent")) {
-      propertyData.property_type = "rent";
-    } else if (urlAndTitle.includes("land") || urlAndTitle.includes("lot")) {
-      propertyData.property_type = "land";
+    // ── 6. LISTING TYPE & CATEGORY DETECTION ────────────────────────
+    const urlAndTitle = (url + " " + propertyData.property_title).toLowerCase();
+    if (urlAndTitle.includes("rent") || urlAndTitle.includes("lease")) {
+      propertyData.listing_type = "rent";
+    } else if (urlAndTitle.includes("land") || urlAndTitle.includes("lot") || urlAndTitle.includes("acreage")) {
+      propertyData.listing_type = "land";
       propertyData.property_category = "land";
     } else {
-      propertyData.property_type = "buy";
+      propertyData.listing_type = "buy";
     }
 
-    // Basic property type detection (maps to property_category in DB)
-    if (urlAndTitle.includes("apartment") || urlAndTitle.includes("apt")) {
+    if (urlAndTitle.includes("apartment") || urlAndTitle.includes("apt") || urlAndTitle.includes("flat")) {
       propertyData.property_category = "apartment";
-    } else if (urlAndTitle.includes("condo")) {
+    } else if (urlAndTitle.includes("condo") || urlAndTitle.includes("condominium")) {
       propertyData.property_category = "condo";
     } else if (urlAndTitle.includes("villa")) {
       propertyData.property_category = "villa";
-    } else if (urlAndTitle.includes("commercial")) {
+    } else if (urlAndTitle.includes("commercial") || urlAndTitle.includes("office") || urlAndTitle.includes("retail")) {
       propertyData.property_category = "commercial";
+    } else if (urlAndTitle.includes("penthouse")) {
+      propertyData.property_category = "penthouse";
     }
 
-    // AI ENHANCEMENT (Optional)
-    // Try to run OpenAI for cleanup only if the key is available, but do not fail if it's missing or quota exceeded
+    // ── 7. IMAGE ACCESSIBILITY VALIDATION ───────────────────────────
+    // Verify cover image is accessible
+    console.log("Validating image accessibility...");
+    if (propertyData.primary_cover_image_url) {
+      const coverValid = await verifyImageUrl(propertyData.primary_cover_image_url);
+      if (!coverValid) {
+        console.log("Cover image failed accessibility check:", propertyData.primary_cover_image_url);
+        propertyData.primary_cover_image_url = "";
+      }
+    }
+
+    // Validate gallery images (check up to 15 in parallel)
+    if (propertyData.property_media_gallery.length > 0) {
+      const validationResults = await Promise.allSettled(
+        propertyData.property_media_gallery.slice(0, 15).map((imgUrl: string) => verifyImageUrl(imgUrl))
+      );
+      propertyData.property_media_gallery = propertyData.property_media_gallery.filter(
+        (_: string, i: number) => i < validationResults.length && validationResults[i].status === "fulfilled" && (validationResults[i] as PromiseFulfilledResult<boolean>).value === true
+      );
+    }
+
+    // If cover was cleared but gallery has valid images, use the first
+    if (!propertyData.primary_cover_image_url && propertyData.property_media_gallery.length > 0) {
+      propertyData.primary_cover_image_url = propertyData.property_media_gallery[0];
+    }
+
+    // ── 8. AI ENHANCEMENT (Optional) ────────────────────────────────
     const openAiKey = Deno.env.get("OPENAI_API_KEY");
     if (openAiKey) {
       try {
@@ -398,7 +551,20 @@ serve(async (req) => {
             model: "gpt-4o-mini",
             response_format: { type: "json_object" },
             messages: [
-              { role: "system", content: "You are a real estate parser. Clean and format the provided JSON object. Return the EXACT SAME SCHEMA. Only fix capitalization, clean up messy descriptions, format the address (extract address, city, state, country if missing from the description or title), and extract a list of string features for both `interior_features` and `exterior_features` separately from the description. If any fields are blank, try to fill them using clues from the title or description." },
+              { 
+                role: "system", 
+                content: `You are a real estate data parser. Clean and format the provided property JSON.
+Return the EXACT SAME schema keys. Only:
+1. Fix capitalization in the title and description.
+2. Clean up messy descriptions (remove HTML artifacts, excessive whitespace).
+3. Extract address components (full_street_address, city, state, country) if missing — use clues from the title or description.
+4. Extract interior_features and exterior_features as arrays of short strings from the description.
+5. Extract nearby_points_of_interest as an array of objects with "name" and "distance" keys if mentioned.
+6. Extract viewing_times if any open-house or inspection schedule is mentioned.
+7. If beds, baths, parking, sqm, or year are null, try to fill them using the description.
+Do NOT change listing_type, property_category, base_price, or currency unless they are clearly wrong.
+Do NOT invent data. Return only fields you can extract from the provided input.` 
+              },
               { role: "user", content: JSON.stringify(propertyData) }
             ]
           })
@@ -408,18 +574,34 @@ serve(async (req) => {
           const aiData = await openAiRes.json();
           const enhancedData = JSON.parse(aiData.choices[0].message.content);
           
-          // Merge safely (don't override with nulls)
-          propertyData.title = enhancedData.title || propertyData.title;
-          propertyData.description = enhancedData.description || propertyData.description;
-          propertyData.address = enhancedData.address || propertyData.address;
-          propertyData.city = enhancedData.city || propertyData.city;
-          propertyData.state = enhancedData.state || propertyData.state;
-          propertyData.country = enhancedData.country || propertyData.country;
-          if (enhancedData.interior_features && enhancedData.interior_features.length > 0) {
+          // Merge safely — never override with nulls or empty
+          if (enhancedData.property_title) propertyData.property_title = enhancedData.property_title;
+          if (enhancedData.property_description) propertyData.property_description = enhancedData.property_description;
+          if (enhancedData.full_street_address) propertyData.full_street_address = enhancedData.full_street_address;
+          if (enhancedData.city) propertyData.city = enhancedData.city;
+          if (enhancedData.state) propertyData.state = enhancedData.state;
+          if (enhancedData.country) propertyData.country = enhancedData.country;
+          if (enhancedData.beds && !propertyData.beds) propertyData.beds = Number(enhancedData.beds);
+          if (enhancedData.baths && !propertyData.baths) propertyData.baths = Number(enhancedData.baths);
+          if (enhancedData.parking && !propertyData.parking) propertyData.parking = Number(enhancedData.parking);
+          if (enhancedData.sqm && !propertyData.sqm) propertyData.sqm = Number(enhancedData.sqm);
+          if (enhancedData.year && !propertyData.year) propertyData.year = Number(enhancedData.year);
+          if (enhancedData.viewing_times && !propertyData.viewing_times) propertyData.viewing_times = enhancedData.viewing_times;
+          if (Array.isArray(enhancedData.interior_features) && enhancedData.interior_features.length > 0) {
             propertyData.interior_features = enhancedData.interior_features;
           }
-          if (enhancedData.exterior_features && enhancedData.exterior_features.length > 0) {
+          if (Array.isArray(enhancedData.exterior_features) && enhancedData.exterior_features.length > 0) {
             propertyData.exterior_features = enhancedData.exterior_features;
+          }
+          if (Array.isArray(enhancedData.nearby_points_of_interest) && enhancedData.nearby_points_of_interest.length > 0) {
+            propertyData.nearby_points_of_interest = enhancedData.nearby_points_of_interest;
+          }
+          // Validate coordinates from AI
+          if (enhancedData.latitude && enhancedData.longitude && !propertyData.latitude) {
+            if (isValidCoordinate(enhancedData.latitude, enhancedData.longitude)) {
+              propertyData.latitude = Number(enhancedData.latitude);
+              propertyData.longitude = Number(enhancedData.longitude);
+            }
           }
         } else {
           console.log("AI Enhancement skipped: OpenAI returned non-200");
@@ -429,8 +611,16 @@ serve(async (req) => {
       }
     }
 
-    // Validation: Did we actually extract anything?
-    if (!propertyData.title || propertyData.title.trim() === "") {
+    // ── 9. FINAL COORDINATE VALIDATION ──────────────────────────────
+    if (propertyData.latitude !== null && propertyData.longitude !== null) {
+      if (!isValidCoordinate(propertyData.latitude, propertyData.longitude)) {
+        propertyData.latitude = null;
+        propertyData.longitude = null;
+      }
+    }
+
+    // ── 10. REQUIRED FIELD VALIDATION ───────────────────────────────
+    if (!propertyData.property_title || propertyData.property_title.trim() === "") {
       return new Response(JSON.stringify({ 
         success: false, 
         error: "Extraction Failed: Could not find any property details. The site might be blocking automated access with a Captcha, or the URL format is unsupported. Please enter this property manually." 
@@ -440,14 +630,15 @@ serve(async (req) => {
       });
     }
 
+    const missingFields = getMissingFields(propertyData);
+    const isIncomplete = missingFields.length > 0;
+
     return new Response(JSON.stringify({ 
       success: true, 
-      data: {
-        ...propertyData,
-        // Include alternative keys in case frontend mapping expects them
-        beds: propertyData.bedrooms,
-        baths: propertyData.bathrooms,
-        sqft: propertyData.size_sqm
+      data: propertyData,
+      validation: {
+        status: isIncomplete ? "incomplete_import" : "complete",
+        missing_fields: missingFields,
       }
     }), {
       status: 200,
