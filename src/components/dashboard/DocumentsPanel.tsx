@@ -261,7 +261,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'verified': return "bg-primary/ text-primary border-primary/";
+      case 'verified': return "bg-primary/10 text-primary border-primary/20";
       case 'available':
       case 'delivered': return "bg-blue-500/10 text-blue-700 border-blue-500/20";
       case 'pending':
@@ -361,7 +361,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <p className="text-xs text-muted-foreground mt-0.5">Signed on {new Date(doc.signed_at).toLocaleString()}</p>
                             </div>
                           </div>
-                          <Badge variant="outline" className="bg-primary/ text-primary border-primary/ shrink-0 font-bold">
+                          <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 shrink-0 font-bold">
                             <CheckCircle2 className="h-3.5 w-3.5 mr-1" /> Legally Binding
                           </Badge>
                         </div>
@@ -575,10 +575,10 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             ) : (
               <div className="grid gap-4 md:grid-cols-2">
                 {certificates.map((cert: any) => (
-                  <div key={cert.id} className="p-5 rounded-2xl border border-primary/ bg-primary/ hover:border-primary/ transition-all flex flex-col h-full justify-between shadow-sm">
+                  <div key={cert.id} className="p-5 rounded-2xl border border-primary/20 bg-primary/5 hover:border-primary/30 transition-all flex flex-col h-full justify-between shadow-sm">
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <div className="h-10 w-10 rounded-full bg-primary/ flex items-center justify-center">
+                        <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
                           <ShieldCheck className="h-5 w-5 text-primary" />
                         </div>
                         <Badge variant="outline" className="bg-primary/5 text-primary border-primary font-bold">Verified</Badge>

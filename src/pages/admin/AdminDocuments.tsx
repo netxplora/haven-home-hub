@@ -660,7 +660,7 @@ export function AdminDocuments() {
                             <div className="space-y-1.5">
                               <Badge variant="outline" className={
                                 doc.status === 'available' || doc.status === 'delivered' || doc.status === 'verified' 
-                                  ? "bg-primary/100/10 text-primary border-primary/20 capitalize font-bold" 
+                                  ? "bg-primary/10 text-primary border-primary/20 capitalize font-bold" 
                                   : doc.status === 'revoked' 
                                     ? "bg-destructive/10 text-destructive border-destructive/20 capitalize font-bold"
                                     : doc.status === 'deleted'
@@ -781,7 +781,7 @@ export function AdminDocuments() {
                 <div key={sig.id} className="p-5 rounded-2xl border border-border/40 bg-card shadow-soft flex flex-col justify-between relative group hover:border-primary/25 transition-all">
                   <div className="absolute top-4 right-4">
                     <Badge className={
-                      sig.is_active ? "bg-primary/100/10 text-primary border-primary/20 font-bold" : "bg-secondary text-muted-foreground font-bold"
+                      sig.is_active ? "bg-primary/10 text-primary border-primary/20 font-bold" : "bg-secondary text-muted-foreground font-bold"
                     }>
                       {sig.is_active ? "Active" : "Inactive"}
                     </Badge>

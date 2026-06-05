@@ -92,7 +92,7 @@ function getStatusBadge(ad: AdRow) {
     if (ad.starts_at && new Date(ad.starts_at) > now) {
       return <Badge className="bg-amber-500/15 text-amber-700 border-amber-200 hover:bg-amber-500/20">Scheduled</Badge>;
     }
-    return <Badge className="bg-primary/100/15 text-primary border-primary/25 hover:bg-primary/100/20">Active</Badge>;
+    return <Badge className="bg-primary/15 text-primary border-primary/25 hover:bg-primary/20">Active</Badge>;
   }
   return <Badge variant="secondary">Draft</Badge>;
 }

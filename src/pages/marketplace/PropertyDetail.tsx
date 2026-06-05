@@ -276,7 +276,7 @@ export default function PropertyDetail() {
                 <p className="font-serif text-3xl font-semibold text-foreground">
                   {formatPrice(Number(property.price), property.currency, property.property_type)}
                 </p>
-                <div className="flex items-center justify-end gap-3 mt-4">
+                <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 mt-4">
                   <Button 
                     variant="outline" 
                     size="sm" 

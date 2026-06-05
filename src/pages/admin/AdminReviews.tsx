@@ -75,7 +75,7 @@ export function AdminReviews() {
                 </div>
                 <div>
                   {r.status === "pending" && <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20"><Clock className="w-3 h-3 mr-1"/> Pending</Badge>}
-                  {r.status === "published" && <Badge variant="outline" className="bg-primary/100/10 text-primary border-primary/20"><CheckCircle2 className="w-3 h-3 mr-1"/> Published</Badge>}
+                  {r.status === "published" && <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20"><CheckCircle2 className="w-3 h-3 mr-1"/> Published</Badge>}
                   {r.status === "rejected" && <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1"/> Rejected</Badge>}
                 </div>
               </div>
@@ -150,7 +150,7 @@ export function AdminReviews() {
                 <tr key={r.id} className="hover:bg-muted/30 transition-colors">
                   <td className="px-6 py-4">
                     {r.status === "pending" && <Badge variant="outline" className="bg-amber-500/10 text-amber-500 border-amber-500/20"><Clock className="w-3 h-3 mr-1"/> Pending</Badge>}
-                    {r.status === "published" && <Badge variant="outline" className="bg-primary/100/10 text-primary border-primary/20"><CheckCircle2 className="w-3 h-3 mr-1"/> Published</Badge>}
+                    {r.status === "published" && <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20"><CheckCircle2 className="w-3 h-3 mr-1"/> Published</Badge>}
                     {r.status === "rejected" && <Badge variant="outline" className="bg-destructive/10 text-destructive border-destructive/20"><XCircle className="w-3 h-3 mr-1"/> Rejected</Badge>}
                   </td>
                   <td className="px-6 py-4">

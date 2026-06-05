@@ -49,7 +49,7 @@ function Inner({ userId }: { userId: string }) {
   }
   return (
     <Tabs defaultValue="overview" className="space-y-8">
-      <TabsList className="bg-card/50 backdrop-blur-md border border-border/50 p-1 rounded-xl shadow-sm">
+      <TabsList className="bg-card/50 backdrop-blur-md border border-border/50 p-1 rounded-xl shadow-sm overflow-x-auto flex-nowrap w-full justify-start sm:justify-center">
         <TabsTrigger value="overview" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">Overview</TabsTrigger>
         <TabsTrigger value="listings" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">My Listings</TabsTrigger>
         <TabsTrigger value="inquiries" className="rounded-lg data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-none">Inquiries</TabsTrigger>

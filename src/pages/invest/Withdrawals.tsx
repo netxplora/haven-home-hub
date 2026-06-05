@@ -198,7 +198,44 @@ export default function Withdrawals() {
           {/* History */}
           <div className="md:col-span-2 space-y-6">
             <h2 className="font-serif text-2xl font-semibold">Withdrawal History</h2>
-            <div className="rounded-xl border border-border/50 bg-card overflow-hidden">
+
+            {/* Mobile Card Layout */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+              {isLoading ? (
+                <Skeleton className="h-20 rounded-xl" />
+              ) : data?.history.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-border/60 p-8 text-center text-muted-foreground">No withdrawals requested yet.</div>
+              ) : (
+                data?.history.map((req: any) => (
+                  <div key={req.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        {req.method === 'bank' ? <Landmark className="h-4 w-4 text-primary" /> : <Building2 className="h-4 w-4 text-primary" />}
+                        <span className="capitalize font-semibold text-sm">{req.method}</span>
+                      </div>
+                      <div>
+                        {req.status === 'pending' && <Badge variant="outline" className="text-amber-600 border-amber-600/30 bg-amber-50"><Clock className="mr-1 h-3 w-3" /> Pending</Badge>}
+                        {req.status === 'approved' && <Badge variant="outline" className="text-blue-600 border-blue-600/30 bg-blue-50">Approved</Badge>}
+                        {req.status === 'processing' && <Badge variant="outline" className="text-blue-600 border-blue-600/30 bg-blue-50">Processing</Badge>}
+                        {req.status === 'completed' && <Badge variant="default" className="bg-green-600 hover:bg-green-700"><CheckCircle2 className="mr-1 h-3 w-3" /> Completed</Badge>}
+                        {req.status === 'rejected' && <Badge variant="destructive">Rejected</Badge>}
+                        {req.status === 'failed' && <Badge variant="destructive">Failed</Badge>}
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between pt-2 border-t border-border/30">
+                      <span className="text-xs text-muted-foreground">{new Date(req.created_at).toLocaleDateString()}</span>
+                      <span className="font-serif font-bold text-foreground">{formatMoney(Number(req.amount), req.currency)}</span>
+                    </div>
+                    {req.method === 'crypto' && <p className="text-[10px] text-muted-foreground font-mono">{req.crypto_address?.slice(0,20)}...</p>}
+                    {req.method === 'bank' && <p className="text-[10px] text-muted-foreground">{req.bank_name} - ****{req.bank_account_number?.slice(-4)}</p>}
+                  </div>
+                ))
+              )}
+            </div>
+
+            {/* Desktop Table Layout */}
+            <div className="rounded-xl border border-border/50 bg-card overflow-hidden hidden md:block">
+              <div className="w-full overflow-x-auto">
               <table className="w-full text-sm">
                 <thead className="bg-accent/40 text-left">
                   <tr>
@@ -244,6 +281,7 @@ export default function Withdrawals() {
                   )}
                 </tbody>
               </table>
+              </div>
             </div>
           </div>
         </div>
