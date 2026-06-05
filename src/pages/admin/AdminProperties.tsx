@@ -155,7 +155,7 @@ export function AdminProperties() {
         const extracted = resData.data;
 
         // Clean up and construct property payload
-        const { gallery_images, ...propPayload } = extracted;
+        const { gallery_images, beds, baths, sqft, ...propPayload } = extracted;
         propPayload.external_url = importUrl;
         propPayload.owner_user_id = user?.id;
         propPayload.slug = propPayload.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).substring(2, 7);

@@ -123,7 +123,7 @@ export function AdminPropertyImport() {
       if (!extractedData) throw new Error("No data to publish");
       
       // Clean up for insert
-      const { gallery_images, nearby_pois, _rawPayload, ...insertData } = extractedData;
+      const { gallery_images, nearby_pois, _rawPayload, beds, baths, sqft, ...insertData } = extractedData;
       
       // Assign owner to admin or system
       insertData.owner_user_id = user?.id;
