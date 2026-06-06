@@ -20,7 +20,8 @@ import {
   Star,
   Sparkles,
   Landmark,
-  UserSearch
+  UserSearch,
+  Headset
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +45,7 @@ import { AdminUsers } from "./AdminUsers";
 import { AdminReferrals } from "./AdminReferrals";
 import { AdminDocuments } from "./AdminDocuments";
 import { AdminInvestor360 } from "./AdminInvestor360";
+import { AdminSupportCenter } from "./AdminSupportCenter";
 import { AdminInvestmentOrders } from "./AdminInvestmentOrders";
 import { Award, CreditCard, ClipboardList } from "lucide-react";
 
@@ -57,6 +59,7 @@ const navItems: NavItem[] = [
   { id: "agents", label: "Agents", icon: Users },
   { id: "locations", label: "Locations", icon: MapPin },
   { id: "inquiries", label: "Inquiries", icon: MessageSquare },
+  { id: "support-center", label: "Support Center", icon: Headset },
   { id: "bookings", label: "Viewings", icon: Calendar },
   { id: "providers", label: "Payment Providers", icon: Globe },
   { id: "kyc", label: "KYC Verification", icon: Fingerprint },
@@ -106,6 +109,7 @@ export default function Admin() {
         {activeTab === "agents" && <AdminAgents />}
         {activeTab === "locations" && <AdminLocations />}
         {activeTab === "inquiries" && <AdminInquiries />}
+        {activeTab === "support-center" && <AdminSupportCenter />}
         {activeTab === "bookings" && <AdminBookings />}
         {activeTab === "kyc" && <AdminKYC />}
         {activeTab === "providers" && <AdminProviders />}

@@ -13,7 +13,7 @@ export function CompareWidget() {
     return (
       <Button 
         onClick={() => setIsOpen(true)}
-        className="fixed bottom-6 right-6 z-50 rounded-full h-14 px-6 bg-secondary text-secondary-foreground shadow-2xl hover:bg-secondary/95 hover:scale-102 active:scale-98 transition-all font-bold group animate-in slide-in-from-bottom-10"
+        className="fixed bottom-6 right-24 z-50 rounded-full h-14 px-6 bg-secondary text-secondary-foreground shadow-2xl hover:bg-secondary/95 hover:scale-102 active:scale-98 transition-all font-bold group animate-in slide-in-from-bottom-10"
       >
         <Scale className="mr-2 h-5 w-5" />
         Compare ({compareList.length})

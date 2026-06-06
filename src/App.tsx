@@ -52,6 +52,7 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 import { CompareProvider } from "./hooks/useCompare";
 import { CurrencyProvider } from "./hooks/useCurrency";
 import { CompareWidget } from "./components/site/CompareWidget";
+import { SupportWidget } from "./components/site/SupportWidget";
 import { useDeploymentCache } from "./hooks/useDeploymentCache";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
@@ -114,6 +115,7 @@ const App = () => (
           <RealtimeGlobal />
           <GlobalErrorBoundary>
           <AuthProvider>
+            <SupportWidget />
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Marketplace */}
