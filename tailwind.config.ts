@@ -67,8 +67,8 @@ export default {
         DEFAULT: "8px",
       },
       fontFamily: {
-        sans: ['"Nunito"', '-apple-system', '"Segoe UI"', 'Helvetica', 'sans-serif'],
-        serif: ['"Alike"', 'serif'],
+        sans: ['"Inter"', '"Roboto"', 'sans-serif'],
+        serif: ['"Poppins"', '"Roboto"', 'serif'],
         mono: ['"Source Code Pro"', 'monospace'],
       },
       backgroundImage: {
