@@ -530,7 +530,7 @@ function BroadcastForm({ initial, userId, onClose }: BroadcastFormProps) {
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">
             Visibility (where it appears)
           </Label>
-          <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
             {VISIBILITY_OPTIONS.map((v) => (
               <label
                 key={v.value}
