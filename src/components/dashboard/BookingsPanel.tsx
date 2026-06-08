@@ -83,7 +83,7 @@ export function BookingsPanel({ userId }: { userId: string }) {
                           </Badge>
                        </div>
 
-                       <div className="grid grid-cols-1 md:grid-cols-2 sm:grid-cols-4 gap-6 pt-6 border-t border-border/40">
+                       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 pt-6 border-t border-border/40">
                           <div className="space-y-1">
                              <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</p>
                              <p className="text-sm font-bold text-foreground">{new Date(b.preferred_date).toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}</p>

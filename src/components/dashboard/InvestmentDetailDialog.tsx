@@ -224,7 +224,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
                     <p className="text-xs text-muted-foreground">ID: {certificate.certificate_id}</p>
                   </div>
                 </div>
-                <Button variant="outline" className="shrink-0 w-full sm:w-auto h-11 sm:h-9" onClick={() => window.open(`/certificate/${certificate.id}`, '_blank')}>
+                <Button variant="outline" className="shrink-0 w-full sm:w-auto h-11 sm:h-9" onClick={() => window.open(`/invest/certificate/${certificate.id}`, '_blank')}>
                   <FileText className="h-4 w-4 mr-2" /> View Certificate
                 </Button>
               </div>

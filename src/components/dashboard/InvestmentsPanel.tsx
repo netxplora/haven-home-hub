@@ -550,7 +550,7 @@ export function InvestmentsPanel() {
                         </Button>
                       )}
                       <Button variant="outline" size="sm" className="h-8 text-xs font-semibold gap-1.5" asChild>
-                        <Link to={`/certificate/${doc.related_id || doc.id}`}>
+                        <Link to={`/invest/certificate/${doc.related_id || doc.id}`}>
                           <ExternalLink className="h-3.5 w-3.5" /> View
                         </Link>
                       </Button>

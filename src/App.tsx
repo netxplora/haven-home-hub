@@ -143,7 +143,6 @@ const App = () => (
               <Route path="/invest/withdrawals" element={<Withdrawals />} />
               <Route path="/invest/:slug" element={<InvestDetail />} />
               <Route path="/payments/:id" element={<PaymentStatus />} />
-              <Route path="/certificate/:id" element={<CertificateView />} />
               <Route path="/invest/certificate/:id" element={<CertificateView />} />
               <Route path="/print-document/:id" element={<PrintDocument />} />
               <Route path="/verify-document/:id" element={<VerifyDocument />} />

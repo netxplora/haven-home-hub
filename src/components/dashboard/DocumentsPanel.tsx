@@ -600,7 +600,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
 
                     <Button
                       className="w-full bg-primary hover:bg-primary text-white rounded-xl font-bold"
-                      onClick={() => window.open(`/certificate/${cert.id}`, '_blank')}
+                      onClick={() => window.open(`/invest/certificate/${cert.id}`, '_blank')}
                     >
                       <ExternalLink className="h-4 w-4 mr-2" /> View Certificate
                     </Button>

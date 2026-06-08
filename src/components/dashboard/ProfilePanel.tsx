@@ -433,7 +433,7 @@ export function ProfilePanel({ userId }: { userId: string }) {
             </div>
           ) : (
             <div className="space-y-10">
-              <div className="grid grid-cols-3 gap-3 relative">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 relative">
                  {[1, 2, 3].map(step => (
                     <div key={step} className="space-y-3 relative z-10">
                        <div className={`h-1.5 rounded-full transition-all duration-500 ${kycStep >= step ? 'bg-primary' : 'bg-secondary'}`} />
