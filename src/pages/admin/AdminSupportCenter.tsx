@@ -44,13 +44,14 @@ import {
   Mail,
   Phone,
   Calendar,
+  Smile
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -66,13 +67,13 @@ import { cn } from "@/lib/utils";
 function statusColor(status: string) {
   switch (status) {
     case "open":
-      return "bg-blue-500/10 text-blue-600 border-blue-200";
+      return "bg-blue-500/10 text-blue-600 border-blue-200 dark:bg-blue-900/30 dark:border-blue-800";
     case "pending":
-      return "bg-amber-500/10 text-amber-600 border-amber-200";
+      return "bg-amber-500/10 text-amber-600 border-amber-200 dark:bg-amber-900/30 dark:border-amber-800";
     case "awaiting_user":
-      return "bg-purple-500/10 text-purple-600 border-purple-200";
+      return "bg-purple-500/10 text-purple-600 border-purple-200 dark:bg-purple-900/30 dark:border-purple-800";
     case "resolved":
-      return "bg-green-500/10 text-green-600 border-green-200";
+      return "bg-green-500/10 text-green-600 border-green-200 dark:bg-green-900/30 dark:border-green-800";
     case "closed":
       return "bg-muted text-muted-foreground border-border";
     default:
@@ -136,14 +137,19 @@ export function AdminSupportCenter() {
   const [messageText, setMessageText] = useState("");
   const [noteText, setNoteText] = useState("");
   const [uploadingFile, setUploadingFile] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [customAgentName, setCustomAgentName] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // ── Data from hook ─────────────────────────────────────────────────────────
   const {
     ticket,
     ticketLoading,
+    customerProfile,
+    customerProfileLoading,
     messages,
     messagesLoading,
     notes,
@@ -156,6 +162,9 @@ export function AdminSupportCenter() {
     addNote,
     addNotePending,
     uploadAttachment,
+    activeUsers,
+    typingUsers,
+    setTyping
   } = useSupport(selectedTicketId || undefined, true);
 
   // ── All Tickets Query (admin-scoped) ───────────────────────────────────────
@@ -226,12 +235,26 @@ export function AdminSupportCenter() {
     ).length,
   };
 
+  // Auto-select first ticket
+  useEffect(() => {
+    if (!selectedTicketId && filteredTickets.length > 0) {
+      setSelectedTicketId(filteredTickets[0].id);
+    }
+  }, [selectedTicketId, filteredTickets]);
+
   // Auto-scroll messages
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [messages, typingUsers]);
+
+  // Sync custom agent name
+  useEffect(() => {
+    if (ticket) {
+      setCustomAgentName(ticket.assigned_agent_name || "");
+    }
+  }, [ticket]);
 
   // ── Handlers ───────────────────────────────────────────────────────────────
 
@@ -239,13 +262,16 @@ export function AdminSupportCenter() {
     if (!messageText.trim() || !selectedTicketId) return;
     const text = messageText;
     setMessageText("");
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    setTyping(false);
+
     try {
       await sendMessage({
         ticket_id: selectedTicketId,
         message_text: text.trim(),
         sender_type: "agent",
         sender_name:
-          user?.user_metadata?.full_name || user?.email || "Support Agent",
+          ticket?.assigned_agent_name || user?.user_metadata?.full_name || user?.email || "Support Agent",
       });
     } catch (err: any) {
       toast({
@@ -254,6 +280,16 @@ export function AdminSupportCenter() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleTextChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setMessageText(e.target.value);
+    
+    setTyping(true);
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+    typingTimeoutRef.current = setTimeout(() => {
+      setTyping(false);
+    }, 2000);
   };
 
   const handleAddNote = async () => {
@@ -300,13 +336,26 @@ export function AdminSupportCenter() {
     }
   };
 
+  const handleCustomAgentNameBlur = async () => {
+    if (!selectedTicketId || !ticket) return;
+    if (customAgentName !== (ticket.assigned_agent_name || "")) {
+      try {
+        await updateTicket({ id: selectedTicketId, assigned_agent_name: customAgentName || null });
+        toast({ title: "Custom agent name updated" });
+      } catch (err: any) {
+        toast({
+          title: "Failed",
+          description: err.message,
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
   const handleAssignAgent = async (agentId: string) => {
     if (!selectedTicketId) return;
     try {
-      await updateTicket({
-        id: selectedTicketId,
-        assigned_agent_id: agentId === "unassigned" ? null : agentId,
-      });
+      await updateTicket({ id: selectedTicketId, assigned_agent_id: agentId === "unassigned" ? null : agentId });
       toast({ title: "Agent assignment updated" });
     } catch (err: any) {
       toast({
@@ -321,14 +370,22 @@ export function AdminSupportCenter() {
     const file = e.target.files?.[0];
     if (!file || !selectedTicketId) return;
     setUploadingFile(true);
+    setUploadProgress(10);
     try {
+      const interval = setInterval(() => {
+        setUploadProgress((p) => (p < 80 ? p + 15 : p));
+      }, 100);
+
       const attachment = await uploadAttachment(selectedTicketId, file);
+      clearInterval(interval);
+      setUploadProgress(100);
+
       await sendMessage({
         ticket_id: selectedTicketId,
-        message_text: `Sent file: ${file.name}`,
+        message_text: `Shared file: ${file.name}`,
         sender_type: "agent",
         sender_name:
-          user?.user_metadata?.full_name || user?.email || "Support Agent",
+          ticket?.assigned_agent_name || user?.user_metadata?.full_name || user?.email || "Support Agent",
         attachments: [attachment],
       });
       toast({ title: "File shared" });
@@ -340,89 +397,69 @@ export function AdminSupportCenter() {
       });
     } finally {
       setUploadingFile(false);
+      setUploadProgress(0);
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
+
+  // Presence Logic
+  const isClientOnline = Object.values(activeUsers).some(u => u.user_type === 'user' || u.user_type === 'guest');
+  const typingClientNames = Object.keys(typingUsers)
+    .filter(k => typingUsers[k] && (activeUsers[k]?.user_type === 'user' || activeUsers[k]?.user_type === 'guest'))
+    .map(k => activeUsers[k]?.name || "Client");
 
   // ── RENDER ─────────────────────────────────────────────────────────────────
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h2 className="font-serif text-2xl font-bold flex items-center gap-2">
-          <MessageSquare className="h-6 w-6 text-primary" />
-          Support Center
-        </h2>
-        <p className="text-sm text-muted-foreground">
-          Manage customer support tickets, respond to inquiries, and track
-          resolutions.
-        </p>
-      </div>
-
-      {/* Stats Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-        {[
-          {
-            label: "Total Tickets",
-            value: statCounts.total,
-            color: "text-foreground",
-          },
-          {
-            label: "Open",
-            value: statCounts.open,
-            color: "text-blue-600",
-          },
-          {
-            label: "Pending",
-            value: statCounts.pending,
-            color: "text-amber-600",
-          },
-          {
-            label: "Resolved",
-            value: statCounts.resolved,
-            color: "text-green-600",
-          },
-        ].map((s) => (
-          <div
-            key={s.label}
-            className="rounded-xl border border-border/60 bg-card p-4 text-center"
-          >
-            <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-              {s.label}
-            </p>
-            <p className={cn("text-2xl font-bold mt-1 font-serif", s.color)}>
-              {s.value}
-            </p>
-          </div>
-        ))}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="font-serif text-2xl font-bold flex items-center gap-2 text-foreground">
+            <MessageSquare className="h-6 w-6 text-primary" />
+            Support Inbox
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Manage customer conversations, assign tickets, and view history.
+          </p>
+        </div>
+        
+        {/* Stats Row Compact */}
+        <div className="flex gap-2 text-xs">
+          <Badge variant="outline" className="px-3 py-1 font-semibold rounded-md border-border/80">
+            {statCounts.open} Open
+          </Badge>
+          <Badge variant="outline" className="px-3 py-1 font-semibold rounded-md border-border/80 text-amber-600 bg-amber-50">
+            {statCounts.pending} Pending
+          </Badge>
+        </div>
       </div>
 
       {/* Main Layout: 3-column */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border border-border/60 rounded-xl overflow-hidden bg-card min-h-[700px]">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 border border-border/60 rounded-xl overflow-hidden bg-white dark:bg-card min-h-[750px] shadow-sm">
         {/* ═══════════════════════════════════════════════════════════════════
             COLUMN 1 — Ticket Inbox List
         ═══════════════════════════════════════════════════════════════════ */}
         <div
           className={cn(
-            "lg:col-span-3 border-r border-border/50 flex flex-col bg-accent/5",
+            "lg:col-span-3 border-r border-border/50 flex flex-col bg-[#fafafa] dark:bg-accent/5",
             selectedTicketId && "hidden lg:flex"
           )}
         >
           {/* Search & Filters */}
-          <div className="p-3 border-b border-border/40 space-y-2">
+          <div className="p-3 border-b border-border/40 space-y-2 bg-white dark:bg-card shrink-0">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground/50" />
               <Input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search tickets..."
-                className="pl-9 h-9 text-xs bg-card border-border/60 rounded-lg"
+                placeholder="Search by name, email, #ID..."
+                className="pl-9 h-9 text-xs bg-accent/20 border-border/60 rounded-lg shadow-none"
               />
             </div>
             <div className="flex gap-2">
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="h-8 text-[10px] bg-card border-border/60 rounded-lg flex-1">
+                <SelectTrigger className="h-8 text-[10px] bg-accent/20 border-border/60 rounded-lg flex-1 shadow-none">
                   <SelectValue placeholder="Status" />
                 </SelectTrigger>
                 <SelectContent className="text-xs">
@@ -435,7 +472,7 @@ export function AdminSupportCenter() {
                 </SelectContent>
               </Select>
               <Select value={priorityFilter} onValueChange={setPriorityFilter}>
-                <SelectTrigger className="h-8 text-[10px] bg-card border-border/60 rounded-lg flex-1">
+                <SelectTrigger className="h-8 text-[10px] bg-accent/20 border-border/60 rounded-lg flex-[0.8] shadow-none">
                   <SelectValue placeholder="Priority" />
                 </SelectTrigger>
                 <SelectContent className="text-xs">
@@ -447,15 +484,15 @@ export function AdminSupportCenter() {
                 </SelectContent>
               </Select>
               <Button
-                variant="ghost"
+                variant="outline"
                 size="icon"
-                className="h-8 w-8 shrink-0"
+                className="h-8 w-8 shrink-0 rounded-lg border-border/60 shadow-none"
                 onClick={() =>
                   setSortOrder((p) => (p === "newest" ? "oldest" : "newest"))
                 }
                 title={`Sort: ${sortOrder}`}
               >
-                <ArrowUpDown className="h-3.5 w-3.5" />
+                <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
               </Button>
             </div>
           </div>
@@ -464,12 +501,14 @@ export function AdminSupportCenter() {
           <div className="flex-1 overflow-y-auto">
             {allTicketsQuery.isLoading ? (
               <div className="flex items-center justify-center h-40 text-xs text-muted-foreground gap-2">
-                <Loader2 className="h-4 w-4 animate-spin" /> Loading tickets...
+                <Loader2 className="h-4 w-4 animate-spin" /> Loading...
               </div>
             ) : filteredTickets.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-40 text-xs text-muted-foreground gap-2">
-                <Inbox className="h-8 w-8 text-muted-foreground/30" />
-                <p>No tickets found</p>
+              <div className="flex flex-col items-center justify-center h-60 text-xs text-muted-foreground gap-3">
+                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center">
+                  <Inbox className="h-5 w-5 text-muted-foreground/40" />
+                </div>
+                <p className="font-medium text-muted-foreground">No conversations found</p>
               </div>
             ) : (
               filteredTickets.map((t) => (
@@ -480,65 +519,42 @@ export function AdminSupportCenter() {
                     setDetailTab("details");
                   }}
                   className={cn(
-                    "w-full text-left p-3.5 border-b border-border/30 hover:bg-accent/40 transition-colors",
-                    selectedTicketId === t.id && "bg-accent/60 border-l-2 border-l-primary"
+                    "w-full text-left p-3.5 border-b border-border/30 hover:bg-black/5 dark:hover:bg-accent/40 transition-all",
+                    selectedTicketId === t.id && "bg-white dark:bg-card border-l-[3px] border-l-primary shadow-sm"
                   )}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      <p className="text-xs font-bold text-foreground truncate">
+                      <p className="text-sm font-semibold text-foreground truncate">
                         {t.name}
                       </p>
-                      <p className="text-[10px] text-muted-foreground truncate mt-0.5">
-                        {t.email}
+                      <p className="text-[11px] text-muted-foreground truncate mt-0.5">
+                        {t.support_categories?.name || "General"}
                       </p>
                     </div>
-                    <span className="text-[9px] text-muted-foreground/70 font-medium whitespace-nowrap">
+                    <span className="text-[9px] text-muted-foreground font-semibold whitespace-nowrap mt-1">
                       {timeAgo(t.last_message_at)}
                     </span>
                   </div>
-                  <div className="flex items-center gap-1.5 mt-2 flex-wrap">
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[8px] uppercase tracking-wider font-bold rounded px-1.5 py-0",
-                        statusColor(t.status)
-                      )}
-                    >
+                  <div className="flex items-center gap-1.5 mt-2.5 flex-wrap">
+                    <span className={cn(
+                      "text-[9px] uppercase tracking-wider font-bold rounded-sm px-1.5 py-0.5 border",
+                      statusColor(t.status)
+                    )}>
                       {t.status.replace("_", " ")}
-                    </Badge>
-                    <Badge
-                      variant="outline"
-                      className={cn(
-                        "text-[8px] uppercase tracking-wider font-bold rounded px-1.5 py-0",
+                    </span>
+                    {t.priority === 'high' || t.priority === 'critical' ? (
+                      <span className={cn(
+                        "text-[9px] uppercase tracking-wider font-bold rounded-sm px-1.5 py-0.5 border",
                         priorityColor(t.priority)
-                      )}
-                    >
-                      {t.priority}
-                    </Badge>
-                    {t.support_categories?.name && (
-                      <span className="text-[9px] text-muted-foreground/60 truncate">
-                        · {t.support_categories.name}
+                      )}>
+                        {t.priority}
                       </span>
-                    )}
+                    ) : null}
                   </div>
                 </button>
               ))
             )}
-          </div>
-
-          {/* Ticket Count Footer */}
-          <div className="px-3 py-2 border-t border-border/40 text-[10px] text-muted-foreground font-medium flex items-center justify-between bg-card">
-            <span>
-              {filteredTickets.length} ticket
-              {filteredTickets.length !== 1 ? "s" : ""}
-            </span>
-            <button
-              onClick={() => allTicketsQuery.refetch()}
-              className="flex items-center gap-1 hover:text-foreground transition-colors"
-            >
-              <RefreshCw className="h-3 w-3" /> Refresh
-            </button>
           </div>
         </div>
 
@@ -547,65 +563,90 @@ export function AdminSupportCenter() {
         ═══════════════════════════════════════════════════════════════════ */}
         <div
           className={cn(
-            "lg:col-span-5 flex flex-col min-h-0",
+            "lg:col-span-5 flex flex-col min-h-0 bg-white dark:bg-card border-r border-border/50",
             !selectedTicketId && "hidden lg:flex"
           )}
         >
           {selectedTicketId ? (
             <>
               {/* Thread Header */}
-              <div className="bg-card px-4 py-3 border-b border-border/40 flex items-center gap-3 shrink-0">
-                <button
-                  onClick={() => setSelectedTicketId(null)}
-                  className="lg:hidden flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ArrowLeft className="h-3.5 w-3.5" /> Back
-                </button>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-foreground truncate">
-                    {ticket?.name || "Loading..."}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground font-medium">
-                    #{selectedTicketId.substring(0, 8)} ·{" "}
-                    {ticket?.support_categories?.name || "Uncategorized"}
-                  </p>
-                </div>
-                {ticket && (
-                  <Badge
-                    variant="outline"
-                    className={cn(
-                      "text-[9px] uppercase tracking-wider font-bold rounded px-1.5 py-0.5",
-                      statusColor(ticket.status)
-                    )}
+              <div className="bg-white dark:bg-card px-4 py-3 border-b border-border/40 flex items-center justify-between shrink-0 shadow-sm z-10">
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setSelectedTicketId(null)}
+                    className="lg:hidden h-8 w-8 rounded-full flex items-center justify-center hover:bg-accent text-muted-foreground transition-colors"
                   >
-                    {ticket.status.replace("_", " ")}
-                  </Badge>
-                )}
+                    <ArrowLeft className="h-4 w-4" />
+                  </button>
+                  <div className="relative">
+                    <Avatar className="h-10 w-10 border border-border/60 shadow-sm">
+                      <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                        {initials(ticket?.name || "C")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className={cn(
+                      "absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white dark:border-card",
+                      isClientOnline ? "bg-green-500" : "bg-muted-foreground/30"
+                    )} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground leading-none mb-1">
+                      {ticket?.name || "Loading..."}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground font-medium flex items-center gap-1.5">
+                      {isClientOnline ? <span className="text-green-600">Online now</span> : "Offline"}
+                      <span>·</span>
+                      <span>#{selectedTicketId.substring(0, 8)}</span>
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  {ticket?.status !== "resolved" && ticket?.status !== "closed" && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-8 px-3 text-[11px] rounded-lg text-green-600 border-green-200 hover:bg-green-50 shadow-none font-bold"
+                      onClick={() => handleStatusChange("resolved")}
+                      disabled={updateTicketPending}
+                    >
+                      <Check className="h-3.5 w-3.5 mr-1" /> Mark Resolved
+                    </Button>
+                  )}
+                </div>
               </div>
 
               {/* Messages */}
               <div
                 ref={scrollRef}
-                className="flex-1 overflow-y-auto p-4 space-y-3 min-h-0 bg-accent/5"
+                className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 bg-[#f8f9fa] dark:bg-accent/5"
               >
                 {messagesLoading ? (
                   <div className="flex items-center justify-center h-full text-xs text-muted-foreground gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin text-primary" />{" "}
-                    Loading messages...
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    Loading conversation...
                   </div>
                 ) : messages.length === 0 ? (
-                  <p className="text-center text-xs text-muted-foreground py-12">
-                    No messages yet in this conversation.
-                  </p>
+                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-3">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <MessageSquare className="h-5 w-5 text-primary" />
+                    </div>
+                    <p className="text-sm font-bold">No messages yet</p>
+                    <p className="text-xs text-muted-foreground">Send the first message to start the conversation.</p>
+                  </div>
                 ) : (
-                  messages.map((msg) => {
+                  messages.map((msg, index) => {
                     const isAgent = msg.sender_type === "agent";
                     const isSystem = msg.sender_type === "system";
 
+                    // Grouping logic
+                    const prevMsg = index > 0 ? messages[index - 1] : null;
+                    const isGrouped = prevMsg && prevMsg.sender_type === msg.sender_type && prevMsg.sender_name === msg.sender_name && (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime() < 5 * 60000);
+
                     if (isSystem) {
                       return (
-                        <div key={msg.id} className="flex justify-center my-2">
-                          <div className="bg-accent/40 border border-border/30 rounded-xl px-3.5 py-2 max-w-[85%] text-[10px] text-muted-foreground text-center leading-relaxed">
+                        <div key={msg.id} className="flex justify-center my-4">
+                          <div className="bg-accent/50 border border-border/40 rounded-full px-4 py-1.5 max-w-[85%] text-[10px] font-medium text-muted-foreground text-center">
                             {msg.message_text}
                           </div>
                         </div>
@@ -613,527 +654,464 @@ export function AdminSupportCenter() {
                     }
 
                     return (
-                      <div
-                        key={msg.id}
-                        className={cn(
-                          "flex gap-2",
-                          isAgent ? "flex-row-reverse" : "flex-row"
-                        )}
-                      >
-                        <Avatar className="h-7 w-7 shrink-0 border border-border/60">
-                          <AvatarFallback
-                            className={cn(
-                              "text-[9px] font-bold",
-                              isAgent
-                                ? "bg-primary/15 text-primary"
-                                : "bg-secondary/15 text-secondary"
-                            )}
-                          >
-                            {initials(msg.sender_name || "U")}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div
-                          className={cn(
-                            "max-w-[75%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-soft",
-                            isAgent
-                              ? "bg-primary text-white rounded-tr-none"
-                              : "bg-card border border-border/60 text-foreground rounded-tl-none"
-                          )}
-                        >
-                          <p className={cn(
-                            "text-[9px] font-bold mb-1 uppercase tracking-wider",
-                            isAgent ? "text-white/70" : "text-muted-foreground/70"
-                          )}>
-                            {msg.sender_name}
-                          </p>
-                          {msg.message_text && <p>{msg.message_text}</p>}
-
-                          {/* Attachments */}
-                          {msg.attachments && msg.attachments.length > 0 && (
-                            <div className="mt-2 space-y-1.5 border-t border-white/20 pt-2">
-                              {msg.attachments.map(
-                                (file: any, idx: number) => (
-                                  <a
-                                    key={idx}
-                                    href={file.url}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="flex items-center gap-2 p-1.5 rounded bg-black/10 hover:bg-black/15 transition-all text-[10px] truncate max-w-full font-semibold"
-                                  >
-                                    {file.type?.startsWith("image/") ? (
-                                      <ImageIcon className="h-4 w-4 shrink-0" />
-                                    ) : (
-                                      <FileText className="h-4 w-4 shrink-0" />
-                                    )}
-                                    <span className="truncate flex-1">
-                                      {file.name}
-                                    </span>
-                                  </a>
-                                )
+                      <div key={msg.id} className={cn("flex w-full", isAgent ? "justify-end" : "justify-start")}>
+                        <div className={cn("flex max-w-[85%] items-end gap-2", isAgent ? "flex-row-reverse" : "flex-row")}>
+                          
+                          {/* Avatar */}
+                          {!isAgent && (
+                            <div className="w-6 shrink-0 flex flex-col justify-end pb-1">
+                              {!isGrouped && (
+                                <Avatar className="h-6 w-6 shadow-sm border border-border/50">
+                                  <AvatarFallback className="bg-secondary/20 text-[9px] font-bold text-secondary-foreground">
+                                    {initials(msg.sender_name || "U")}
+                                  </AvatarFallback>
+                                </Avatar>
                               )}
                             </div>
                           )}
 
-                          {/* Timestamp & Read */}
-                          <div className="flex items-center justify-end gap-1 mt-1">
-                            <span
-                              className={cn(
-                                "text-[9px] uppercase tracking-wider font-semibold opacity-60",
-                                isAgent
-                                  ? "text-white/80"
-                                  : "text-muted-foreground"
+                          <div className={cn("flex flex-col gap-1", isAgent ? "items-end" : "items-start")}>
+                            {/* Sender Name */}
+                            {!isGrouped && !isAgent && (
+                              <span className="text-[10px] font-bold text-muted-foreground ml-1">
+                                {msg.sender_name || "Client"}
+                              </span>
+                            )}
+
+                            {/* Message Bubble */}
+                            <div className={cn(
+                              "px-4 py-2.5 text-[13px] leading-relaxed shadow-sm",
+                              isAgent 
+                                ? "bg-primary text-white rounded-2xl rounded-br-sm" 
+                                : "bg-white dark:bg-card border border-border/50 text-foreground rounded-2xl rounded-bl-sm"
+                            )}>
+                              {msg.message_text && <p className="whitespace-pre-wrap">{msg.message_text}</p>}
+
+                              {/* Attachments */}
+                              {msg.attachments && msg.attachments.length > 0 && (
+                                <div className={cn("mt-2 space-y-2", msg.message_text && "border-t border-border/10 pt-2")}>
+                                  {msg.attachments.map((file: any, idx: number) => (
+                                    <a 
+                                      key={idx} 
+                                      href={file.url} 
+                                      target="_blank" 
+                                      rel="noreferrer" 
+                                      className={cn(
+                                        "flex items-center gap-3 p-2 rounded-xl transition-all border",
+                                        isAgent 
+                                          ? "bg-black/10 border-white/10 hover:bg-black/20 text-white" 
+                                          : "bg-accent/40 border-border/50 hover:bg-accent/60 text-foreground"
+                                      )}
+                                    >
+                                      <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center shrink-0", isAgent ? "bg-white/20" : "bg-card shadow-sm")}>
+                                        {file.type?.startsWith("image/") ? (
+                                          <ImageIcon className="h-4 w-4" />
+                                        ) : (
+                                          <FileText className="h-4 w-4" />
+                                        )}
+                                      </div>
+                                      <div className="min-w-0 flex-1">
+                                        <p className="text-[11px] font-semibold truncate">{file.name}</p>
+                                        <p className={cn("text-[9px]", isAgent ? "text-white/70" : "text-muted-foreground")}>
+                                          Click to open
+                                        </p>
+                                      </div>
+                                    </a>
+                                  ))}
+                                </div>
                               )}
-                            >
-                              {new Date(msg.created_at).toLocaleTimeString([], {
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                            {isAgent &&
-                              (msg.is_read ? (
-                                <CheckCheck className="h-3.5 w-3.5 text-white/90" />
-                              ) : (
-                                <Check className="h-3.5 w-3.5 text-white/60" />
-                              ))}
+                            </div>
+                            
+                            {/* Metadata */}
+                            <div className="flex items-center gap-1 mt-0.5 px-1">
+                              <span className="text-[9px] font-medium text-muted-foreground/80">
+                                {new Date(msg.created_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
+                              </span>
+                              {isAgent && (
+                                msg.is_read ? (
+                                  <CheckCheck className="h-3 w-3 text-blue-500" />
+                                ) : (
+                                  <Check className="h-3 w-3 text-muted-foreground/60" />
+                                )
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
                     );
                   })
                 )}
+
+                {/* Typing Indicator */}
+                {typingClientNames.length > 0 && (
+                  <div className="flex w-full justify-start mt-2">
+                    <div className="flex max-w-[85%] items-end gap-2">
+                      <div className="w-6 shrink-0 flex flex-col justify-end pb-1">
+                        <Avatar className="h-6 w-6 shadow-sm border border-border/50">
+                          <AvatarFallback className="bg-secondary/20 text-[9px] font-bold text-secondary-foreground">
+                            {initials(typingClientNames[0])}
+                          </AvatarFallback>
+                        </Avatar>
+                      </div>
+                      <div className="bg-white dark:bg-card border border-border/50 rounded-2xl rounded-bl-sm px-4 py-3 flex items-center gap-1 shadow-sm">
+                        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="h-1.5 w-1.5 rounded-full bg-muted-foreground/40 animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="h-2" />
               </div>
 
-              {/* File upload progress */}
+              {/* Upload progress */}
               {uploadingFile && (
-                <div className="px-4 py-2 bg-card border-t border-border/40 text-[10px] text-muted-foreground flex items-center gap-2 shrink-0">
+                <div className="px-4 py-2.5 bg-card/80 backdrop-blur border-t border-border/40 text-[10px] text-muted-foreground flex items-center gap-2 shrink-0 z-10">
                   <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />
-                  Uploading file...
+                  Uploading secure attachment ({uploadProgress}%)...
                 </div>
               )}
 
               {/* Compose Input */}
-              <div className="p-3 bg-card border-t border-border/40 flex items-center gap-2 shrink-0">
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={uploadingFile}
-                  className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-accent border border-border/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors"
-                  title="Attach file"
-                >
-                  <Paperclip className="h-4 w-4" />
-                </button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  className="hidden"
-                  onChange={handleFileUpload}
-                  accept=".jpg,.jpeg,.png,.pdf,.docx,.txt,.xlsx"
-                />
-                <Input
-                  value={messageText}
-                  onChange={(e) => setMessageText(e.target.value)}
-                  placeholder="Type your reply as agent..."
-                  className="flex-1 bg-accent/40 border-border/60 h-10 text-xs rounded-xl focus-visible:ring-primary/20"
-                  onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
-                />
-                <Button
-                  onClick={handleSendMessage}
-                  disabled={!messageText.trim() || sendMessagePending}
-                  size="icon"
-                  className="h-10 w-10 rounded-xl bg-primary hover:bg-primary/95 text-white shrink-0 shadow-sm"
-                >
-                  <Send className="h-4 w-4" />
-                </Button>
-              </div>
-
-              {/* Quick Actions */}
-              <div className="px-3 py-2 bg-card border-t border-border/30 flex items-center gap-2 shrink-0 flex-wrap">
-                {ticket?.status !== "resolved" && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-[10px] h-7 rounded-lg text-green-600 border-green-200 hover:bg-green-50"
-                    onClick={() => handleStatusChange("resolved")}
-                    disabled={updateTicketPending}
+              <div className="p-3 bg-white dark:bg-card border-t border-border/50 flex flex-col gap-2 shrink-0 z-10">
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingFile}
+                    className="h-10 w-10 flex items-center justify-center rounded-xl hover:bg-accent/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors"
+                    title="Attach file"
                   >
-                    <Check className="h-3 w-3 mr-1" /> Resolve
-                  </Button>
-                )}
-                {ticket?.status !== "closed" && (
+                    <Paperclip className="h-5 w-5" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    className="hidden"
+                    onChange={handleFileUpload}
+                    accept=".jpg,.jpeg,.png,.pdf,.docx,.txt,.xlsx"
+                  />
+                  <Input
+                    value={messageText}
+                    onChange={handleTextChange}
+                    placeholder="Type a reply..."
+                    className="flex-1 bg-accent/30 border-transparent hover:border-border/60 focus:border-primary/50 h-11 text-sm rounded-xl transition-all shadow-none px-4"
+                    onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+                  />
                   <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-[10px] h-7 rounded-lg"
-                    onClick={() => handleStatusChange("closed")}
-                    disabled={updateTicketPending}
+                    onClick={handleSendMessage}
+                    disabled={!messageText.trim() || sendMessagePending}
+                    size="icon"
+                    className="h-11 w-11 rounded-xl bg-primary hover:bg-primary/95 text-white shrink-0 shadow-sm"
                   >
-                    <X className="h-3 w-3 mr-1" /> Close
+                    <Send className="h-4 w-4 ml-0.5" />
                   </Button>
-                )}
-                {(ticket?.status === "resolved" ||
-                  ticket?.status === "closed") && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="text-[10px] h-7 rounded-lg text-blue-600 border-blue-200 hover:bg-blue-50"
-                    onClick={() => handleStatusChange("open")}
-                    disabled={updateTicketPending}
-                  >
-                    <RefreshCw className="h-3 w-3 mr-1" /> Reopen
-                  </Button>
-                )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="text-[10px] h-7 rounded-lg"
-                  onClick={() => handleStatusChange("awaiting_user")}
-                  disabled={updateTicketPending}
-                >
-                  <Clock className="h-3 w-3 mr-1" /> Await User
-                </Button>
+                </div>
               </div>
             </>
           ) : (
             /* Empty State */
-            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3 p-8">
-              <Inbox className="h-16 w-16 text-muted-foreground/20" />
-              <p className="text-sm font-medium">
-                Select a ticket to view the conversation
-              </p>
-              <p className="text-xs text-muted-foreground/60">
-                Choose from the inbox on the left
+            <div className="flex-1 flex flex-col items-center justify-center bg-[#f8f9fa] dark:bg-accent/5">
+              <div className="h-24 w-24 rounded-full bg-white dark:bg-card border border-border/50 shadow-sm flex items-center justify-center mb-6">
+                <MessageSquare className="h-10 w-10 text-primary/40" />
+              </div>
+              <h3 className="text-xl font-serif font-bold text-foreground mb-2">Support Workspace</h3>
+              <p className="text-sm text-muted-foreground max-w-sm text-center">
+                Select a conversation from the left to view messages and assist customers.
               </p>
             </div>
           )}
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════════
-            COLUMN 3 — Ticket Details / Notes / Events Panel
+            COLUMN 3 — Customer Info & Internal Notes
         ═══════════════════════════════════════════════════════════════════ */}
         <div
           className={cn(
-            "lg:col-span-4 border-l border-border/50 flex flex-col bg-accent/5",
+            "lg:col-span-4 flex flex-col bg-[#fafafa] dark:bg-accent/5",
             !selectedTicketId && "hidden lg:flex"
           )}
         >
           {selectedTicketId && ticket ? (
             <>
               {/* Panel Tabs */}
-              <div className="flex border-b border-border/40 shrink-0">
+              <div className="flex border-b border-border/40 shrink-0 bg-white dark:bg-card px-2 pt-2">
                 {(
                   [
-                    { id: "details", label: "Details", icon: Eye },
-                    { id: "notes", label: "Notes", icon: StickyNote },
-                    { id: "events", label: "Activity", icon: History },
+                    { id: "details", label: "Details" },
+                    { id: "notes", label: "Internal Notes" },
                   ] as const
                 ).map((tab) => (
                   <button
                     key={tab.id}
                     onClick={() => setDetailTab(tab.id)}
                     className={cn(
-                      "flex-1 py-2.5 text-[10px] font-bold uppercase tracking-wider text-center flex items-center justify-center gap-1.5 transition-colors border-b-2",
+                      "flex-1 py-3 text-xs font-bold transition-all border-b-[3px] relative -bottom-px",
                       detailTab === tab.id
-                        ? "text-primary border-primary bg-primary/5"
-                        : "text-muted-foreground border-transparent hover:text-foreground hover:bg-accent/40"
+                        ? "text-primary border-primary"
+                        : "text-muted-foreground border-transparent hover:text-foreground"
                     )}
                   >
-                    <tab.icon className="h-3.5 w-3.5" />
                     {tab.label}
                   </button>
                 ))}
               </div>
 
               {/* Panel Content */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-5">
+              <div className="flex-1 overflow-y-auto p-5">
+                
                 {/* ── Details Tab ────────────────────────────────────────── */}
                 {detailTab === "details" && (
-                  <>
-                    {/* Contact Info */}
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Contact Information
-                      </Label>
-                      <div className="bg-card rounded-xl border border-border/50 p-3.5 space-y-2.5">
-                        <div className="flex items-center gap-2.5">
-                          <Avatar className="h-10 w-10 border border-border/60">
-                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs">
-                              {initials(ticket.name)}
+                  <div className="space-y-6">
+                    {/* Customer Profile Card */}
+                    <div className="bg-white dark:bg-card rounded-2xl border border-border/50 p-5 shadow-sm">
+                      <div className="flex items-center gap-4 mb-4">
+                        <div className="relative">
+                          <Avatar className="h-14 w-14 border-2 border-border/50 shadow-sm">
+                            {customerProfile?.avatar_url ? (
+                              <AvatarImage src={customerProfile.avatar_url} alt={ticket.name} />
+                            ) : null}
+                            <AvatarFallback className="bg-primary/10 text-primary font-bold text-lg">
+                              {initials(customerProfile?.full_name || ticket.name)}
                             </AvatarFallback>
                           </Avatar>
-                          <div>
-                            <p className="text-xs font-bold">{ticket.name}</p>
-                            <p className="text-[10px] text-muted-foreground capitalize">
+                          <span className={cn(
+                            "absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white dark:border-card",
+                            isClientOnline ? "bg-green-500" : "bg-muted-foreground/30"
+                          )} />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h4 className="text-base font-bold text-foreground leading-tight truncate">
+                            {customerProfile?.full_name || ticket.name}
+                          </h4>
+                          <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                            <Badge variant="secondary" className="text-[9px] font-bold bg-accent/60 uppercase tracking-wider">
                               {ticket.user_type}
+                            </Badge>
+                            {customerProfile?.roles?.map((role: string) => (
+                              <Badge key={role} variant="outline" className="text-[9px] font-bold uppercase tracking-wider border-primary/30 text-primary">
+                                {role}
+                              </Badge>
+                            ))}
+                            {isClientOnline && (
+                              <span className="text-[9px] font-bold text-green-600 uppercase tracking-wider">Online</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Contact Info */}
+                      <div className="space-y-2.5 pt-3.5 border-t border-border/40">
+                        <div className="flex items-center gap-3 text-sm">
+                          <Mail className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                          <span className="truncate text-foreground">{ticket.email}</span>
+                        </div>
+                        {customerProfile?.phone && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <Phone className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                            <span className="text-foreground">{customerProfile.phone}</span>
+                          </div>
+                        )}
+                        {customerProfile?.country && (
+                          <div className="flex items-center gap-3 text-sm">
+                            <Building2 className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                            <span className="text-foreground capitalize">
+                              {[customerProfile.city, customerProfile.state, customerProfile.country].filter(Boolean).join(", ")}
+                            </span>
+                          </div>
+                        )}
+                        <div className="flex items-center gap-3 text-sm">
+                          <Calendar className="h-4 w-4 shrink-0 text-muted-foreground/60" />
+                          <span className="text-muted-foreground">
+                            Account created {new Date(customerProfile?.created_at || ticket.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Quick Stats */}
+                    {customerProfile && (
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="bg-white dark:bg-card rounded-xl border border-border/50 p-3.5 shadow-sm text-center">
+                          <p className="text-2xl font-bold text-foreground">{customerProfile.total_tickets}</p>
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">Total Tickets</p>
+                        </div>
+                        <div className="bg-white dark:bg-card rounded-xl border border-border/50 p-3.5 shadow-sm text-center">
+                          <p className="text-2xl font-bold text-foreground">
+                            {ticket.satisfaction_rating !== null ? `${ticket.satisfaction_rating}/5` : "—"}
+                          </p>
+                          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mt-0.5">Satisfaction</p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Ticket Settings */}
+                    <div className="space-y-4">
+                      <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">Ticket Settings</h4>
+                      
+                      <div className="bg-white dark:bg-card rounded-2xl border border-border/50 p-4 space-y-4 shadow-sm">
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-semibold text-muted-foreground">Status</Label>
+                          <Select
+                            value={ticket.status}
+                            onValueChange={(v) => handleStatusChange(v as TicketStatus)}
+                          >
+                            <SelectTrigger className="h-10 text-sm bg-accent/20 border-border/60 shadow-none">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="open">Open</SelectItem>
+                              <SelectItem value="pending">Pending</SelectItem>
+                              <SelectItem value="awaiting_user">Awaiting User</SelectItem>
+                              <SelectItem value="resolved">Resolved</SelectItem>
+                              <SelectItem value="closed">Closed</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-semibold text-muted-foreground">Priority</Label>
+                          <Select
+                            value={ticket.priority}
+                            onValueChange={(v) => handlePriorityChange(v as TicketPriority)}
+                          >
+                            <SelectTrigger className="h-10 text-sm bg-accent/20 border-border/60 shadow-none">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="low">Low</SelectItem>
+                              <SelectItem value="medium">Medium</SelectItem>
+                              <SelectItem value="high">High</SelectItem>
+                              <SelectItem value="critical">Critical</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-semibold text-muted-foreground">Assigned Agent (Display Name)</Label>
+                          <Input
+                            value={customAgentName}
+                            onChange={(e) => setCustomAgentName(e.target.value)}
+                            onBlur={handleCustomAgentNameBlur}
+                            placeholder="e.g. Support Team Alpha"
+                            className="h-10 text-sm bg-accent/20 border-border/60 shadow-none"
+                          />
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-semibold text-muted-foreground">Assigned Staff Account</Label>
+                          <Select
+                            value={ticket.assigned_agent_id || "unassigned"}
+                            onValueChange={handleAssignAgent}
+                          >
+                            <SelectTrigger className="h-10 text-sm bg-accent/20 border-border/60 shadow-none">
+                              <SelectValue placeholder="Unassigned" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="unassigned">Unassigned</SelectItem>
+                              {staff.map((s) => (
+                                <SelectItem key={s.id} value={s.id}>{s.full_name}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        
+                        <div className="space-y-2">
+                          <Label className="text-[11px] font-semibold text-muted-foreground">Category</Label>
+                          <div className="h-10 px-3 bg-accent/10 border border-border/40 rounded-md flex items-center text-sm text-foreground">
+                            {ticket.support_categories?.name || "General"}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Related Property Context */}
+                    {ticket.properties && (
+                      <div className="space-y-3">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground px-1">Related Context</h4>
+                        <div className="bg-white dark:bg-card rounded-xl border border-border/50 p-4 shadow-sm flex items-start gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0">
+                            <Building2 className="h-5 w-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-sm font-bold text-foreground leading-snug">
+                              {ticket.properties.title}
+                            </p>
+                            <p className="text-[11px] text-muted-foreground capitalize mt-0.5">
+                              {ticket.properties.property_category} · {ticket.properties.status}
                             </p>
                           </div>
                         </div>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <Mail className="h-3 w-3" />
-                          <span>{ticket.email}</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                          <Calendar className="h-3 w-3" />
-                          <span>
-                            Created{" "}
-                            {new Date(ticket.created_at).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Status Control */}
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Status
-                      </Label>
-                      <Select
-                        value={ticket.status}
-                        onValueChange={(v) =>
-                          handleStatusChange(v as TicketStatus)
-                        }
-                      >
-                        <SelectTrigger className="h-9 text-xs bg-card border-border/60 rounded-lg">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="text-xs">
-                          <SelectItem value="open">Open</SelectItem>
-                          <SelectItem value="pending">Pending</SelectItem>
-                          <SelectItem value="awaiting_user">
-                            Awaiting User
-                          </SelectItem>
-                          <SelectItem value="resolved">Resolved</SelectItem>
-                          <SelectItem value="closed">Closed</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Priority Control */}
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Priority
-                      </Label>
-                      <Select
-                        value={ticket.priority}
-                        onValueChange={(v) =>
-                          handlePriorityChange(v as TicketPriority)
-                        }
-                      >
-                        <SelectTrigger className="h-9 text-xs bg-card border-border/60 rounded-lg">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="text-xs">
-                          <SelectItem value="low">Low</SelectItem>
-                          <SelectItem value="medium">Medium</SelectItem>
-                          <SelectItem value="high">High</SelectItem>
-                          <SelectItem value="critical">Critical</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Agent Assignment */}
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Assigned Agent
-                      </Label>
-                      <Select
-                        value={ticket.assigned_agent_id || "unassigned"}
-                        onValueChange={handleAssignAgent}
-                      >
-                        <SelectTrigger className="h-9 text-xs bg-card border-border/60 rounded-lg">
-                          <SelectValue placeholder="Unassigned" />
-                        </SelectTrigger>
-                        <SelectContent className="text-xs">
-                          <SelectItem value="unassigned">
-                            Unassigned
-                          </SelectItem>
-                          {staff.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.full_name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-
-                    {/* Category */}
-                    <div className="space-y-2">
-                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                        Category
-                      </Label>
-                      <div className="bg-card rounded-lg border border-border/50 px-3 py-2 text-xs text-foreground">
-                        {ticket.support_categories?.name || "Uncategorized"}
-                      </div>
-                    </div>
-
-                    {/* Property Context */}
-                    {ticket.properties && (
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Related Property
-                        </Label>
-                        <div className="bg-card rounded-xl border border-border/50 p-3.5 space-y-1.5">
-                          <p className="text-xs font-bold text-foreground flex items-center gap-1.5">
-                            <Building2 className="h-3.5 w-3.5 text-primary" />
-                            {ticket.properties.title}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground capitalize">
-                            {ticket.properties.category} ·{" "}
-                            {ticket.properties.status}
-                          </p>
-                        </div>
                       </div>
                     )}
-
-                    {/* Satisfaction Rating */}
-                    {ticket.satisfaction_rating !== null && (
-                      <div className="space-y-2">
-                        <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                          Customer Satisfaction
-                        </Label>
-                        <div className="flex items-center gap-1">
-                          {[1, 2, 3, 4, 5].map((star) => (
-                            <Star
-                              key={star}
-                              className={cn(
-                                "h-5 w-5",
-                                star <= (ticket.satisfaction_rating || 0)
-                                  ? "text-amber-400 fill-amber-400"
-                                  : "text-border"
-                              )}
-                            />
-                          ))}
-                          <span className="text-xs text-muted-foreground ml-2 font-medium">
-                            {ticket.satisfaction_rating}/5
-                          </span>
-                        </div>
-                      </div>
-                    )}
-                  </>
+                  </div>
                 )}
 
                 {/* ── Notes Tab ──────────────────────────────────────────── */}
                 {detailTab === "notes" && (
-                  <>
-                    <div className="space-y-3">
-                      <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                        <StickyNote className="h-3.5 w-3.5" />
-                        Internal Notes (Staff Only)
-                      </Label>
-
-                      {/* Existing Notes */}
-                      {notes.length === 0 ? (
-                        <p className="text-xs text-muted-foreground/60 italic py-4 text-center">
-                          No internal notes yet for this ticket.
-                        </p>
-                      ) : (
-                        <div className="space-y-2.5">
-                          {notes.map((note) => (
-                            <div
-                              key={note.id}
-                              className="bg-amber-50 border border-amber-200/60 rounded-xl p-3 space-y-1.5"
-                            >
-                              <div className="flex items-center justify-between">
-                                <p className="text-[10px] font-bold text-amber-800">
-                                  {note.admin?.full_name || "Staff"}
-                                </p>
-                                <span className="text-[9px] text-amber-600/70">
-                                  {new Date(
-                                    note.created_at
-                                  ).toLocaleString()}
-                                </span>
-                              </div>
-                              <p className="text-xs text-amber-900 leading-relaxed">
-                                {note.note_text}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-
-                      {/* Add Note */}
-                      <div className="space-y-2 pt-2 border-t border-border/30">
-                        <Textarea
-                          value={noteText}
-                          onChange={(e) => setNoteText(e.target.value)}
-                          placeholder="Add private note (visible to staff only)..."
-                          className="min-h-[80px] text-xs bg-card border-border/60 rounded-xl resize-none"
-                        />
-                        <Button
-                          onClick={handleAddNote}
-                          disabled={!noteText.trim() || addNotePending}
-                          size="sm"
-                          className="w-full h-9 text-xs rounded-lg bg-amber-600 hover:bg-amber-700 text-white"
-                        >
-                          {addNotePending ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin mr-1.5" />
-                          ) : (
-                            <StickyNote className="h-3.5 w-3.5 mr-1.5" />
-                          )}
-                          Save Private Note
-                        </Button>
-                      </div>
+                  <div className="space-y-6 h-full flex flex-col">
+                    <div className="flex items-center gap-2 bg-amber-50 dark:bg-amber-950/20 text-amber-800 dark:text-amber-500 p-3 rounded-lg border border-amber-200 dark:border-amber-900/50">
+                      <ShieldCheck className="h-5 w-5 shrink-0" />
+                      <p className="text-xs font-medium">Notes are strictly internal and completely invisible to the customer.</p>
                     </div>
-                  </>
-                )}
 
-                {/* ── Events Tab ─────────────────────────────────────────── */}
-                {detailTab === "events" && (
-                  <>
-                    <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-                      <History className="h-3.5 w-3.5" />
-                      Activity Timeline
-                    </Label>
-
-                    {events.length === 0 ? (
-                      <p className="text-xs text-muted-foreground/60 italic py-4 text-center">
-                        No activity events recorded yet.
-                      </p>
-                    ) : (
-                      <div className="relative">
-                        {/* Timeline line */}
-                        <div className="absolute left-[11px] top-2 bottom-2 w-px bg-border/60" />
-
-                        <div className="space-y-4">
-                          {events.map((evt) => (
-                            <div
-                              key={evt.id}
-                              className="flex items-start gap-3 relative"
-                            >
-                              <div className="h-6 w-6 rounded-full bg-accent border border-border/60 flex items-center justify-center shrink-0 z-10">
-                                <History className="h-3 w-3 text-muted-foreground" />
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-xs font-medium text-foreground">
-                                  {evt.event_type
-                                    .replace(/_/g, " ")
-                                    .replace(/\b\w/g, (c) => c.toUpperCase())}
-                                </p>
-                                <p className="text-[10px] text-muted-foreground">
-                                  {evt.creator?.full_name || "System"} ·{" "}
-                                  {new Date(
-                                    evt.created_at
-                                  ).toLocaleString()}
-                                </p>
-                                {evt.details &&
-                                  Object.keys(evt.details).length > 0 && (
-                                    <pre className="text-[9px] mt-1 bg-accent/30 rounded p-1.5 overflow-x-auto text-muted-foreground">
-                                      {JSON.stringify(evt.details, null, 2)}
-                                    </pre>
-                                  )}
-                              </div>
-                            </div>
-                          ))}
+                    <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+                      {notes.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center h-40 text-muted-foreground gap-3">
+                          <StickyNote className="h-8 w-8 text-muted-foreground/30" />
+                          <p className="text-sm">No internal notes yet</p>
                         </div>
-                      </div>
-                    )}
-                  </>
+                      ) : (
+                        notes.map((note) => (
+                          <div key={note.id} className="bg-white dark:bg-card border border-border/60 rounded-xl p-4 shadow-sm">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarFallback className="bg-primary/10 text-[9px] font-bold text-primary">
+                                    {initials(note.admin?.full_name || "S")}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <p className="text-xs font-bold text-foreground">{note.admin?.full_name || "Staff"}</p>
+                              </div>
+                              <span className="text-[10px] text-muted-foreground font-medium">
+                                {new Date(note.created_at).toLocaleDateString()} {new Date(note.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                              </span>
+                            </div>
+                            <p className="text-sm text-foreground/90 leading-relaxed whitespace-pre-wrap pl-8">
+                              {note.note_text}
+                            </p>
+                          </div>
+                        ))
+                      )}
+                    </div>
+
+                    <div className="pt-4 border-t border-border/40 space-y-3 shrink-0">
+                      <Textarea
+                        value={noteText}
+                        onChange={(e) => setNoteText(e.target.value)}
+                        placeholder="Write a private note..."
+                        className="min-h-[100px] text-sm bg-white dark:bg-card border-border/80 rounded-xl resize-none shadow-sm focus-visible:ring-amber-500/30 focus-visible:border-amber-500"
+                      />
+                      <Button
+                        onClick={handleAddNote}
+                        disabled={!noteText.trim() || addNotePending}
+                        className="w-full h-11 text-sm font-bold rounded-xl bg-amber-500 hover:bg-amber-600 text-white shadow-sm"
+                      >
+                        {addNotePending ? (
+                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                        ) : (
+                          <StickyNote className="h-4 w-4 mr-2" />
+                        )}
+                        Save Private Note
+                      </Button>
+                    </div>
+                  </div>
                 )}
               </div>
             </>
           ) : (
-            /* Empty Context Panel */
-            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-2 p-8">
-              <Eye className="h-10 w-10 text-muted-foreground/20" />
-              <p className="text-xs font-medium">Ticket details appear here</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-muted-foreground gap-3 p-8">
+              <User className="h-12 w-12 text-muted-foreground/20" />
+              <p className="text-sm font-medium">Customer details will appear here</p>
             </div>
           )}
         </div>

@@ -41,6 +41,74 @@ export function AIPropertyAdvisor() {
 
     setTimeout(() => {
       setLoading(false);
+
+      // Handle "Restart" option from anywhere
+      if (option === "Restart Consultation" || option === "Restart") {
+        resetAdvisor();
+        return;
+      }
+
+      // Branch: Market Trends
+      if (option === "Check Market Trends") {
+        setStep(5);
+        setMessages([
+          ...updated,
+          {
+            sender: "advisor",
+            text: "Market trends are constantly shifting. Which data points are most critical to your strategy right now?",
+            options: ["Rental Yields & ROI", "Appreciation Rates", "Regulatory & Tax Changes", "Restart Consultation"]
+          }
+        ]);
+        return;
+      }
+
+      // Handle Step 5: Market Trends follow up
+      if (step === 5) {
+        let advice = "";
+        let title = "Market Intelligence";
+        if (option.includes("Yields")) {
+          advice = "Currently, Sunbelt cities like Miami and Austin are seeing sustained rental demand, pushing gross yields to 6-8% on premium properties.";
+          title = "Yield Analysis";
+        } else if (option.includes("Appreciation")) {
+          advice = "While pandemic-era spikes have cooled, emerging tech hubs are showing a steady 4-5% annualized appreciation.";
+          title = "Growth Forecast";
+        } else if (option.includes("Tax")) {
+          advice = "Texas and Florida remain highly favorable due to zero state income tax, though local property taxes require careful calculation.";
+          title = "Taxation Overview";
+        }
+        
+        setMessages([
+          ...updated,
+          {
+            sender: "advisor",
+            text: advice,
+            recommendation: {
+              title,
+              advice: "Review our full market data dashboard for deep-dive analytics on these metrics.",
+              actionLabel: "View Insights",
+              actionLink: "/blog"
+            }
+          }
+        ]);
+        return;
+      }
+
+      // Branch: Fractional Co-investing (Custom Budget Options)
+      if (option === "Co-invest Fractionally") {
+        setStep(2);
+        setSelections({ ...selections, goal: option });
+        setMessages([
+          ...updated,
+          {
+            sender: "advisor",
+            text: "Fractional co-investing is a smart way to diversify. What total capital are you looking to deploy?",
+            options: ["Under $10k", "$10k - $50k", "$50k - $250k", "Above $250k"]
+          }
+        ]);
+        return;
+      }
+
+      // Standard Flow
       if (step === 1) {
         setSelections({ ...selections, goal: option });
         setStep(2);
@@ -65,14 +133,13 @@ export function AIPropertyAdvisor() {
           {
             sender: "advisor",
             text: `Perfect. What preferred region are you targeting in the US?`,
-            options: ["Austin, TX", "Miami, FL", "Brooklyn, NY", "Seattle, WA"]
+            options: ["Austin, TX", "Miami, FL", "Brooklyn, NY", "Seattle, WA", "Open to Suggestions"]
           }
         ]);
       } else if (step === 3) {
         setSelections({ ...selections, location: option });
-        setStep(4);
+        setStep(4); // Final standard step
         
-        // Generate recommendation based on selections
         let title = "High-Yield Investment Route";
         let advice = "Based on your criteria, Austin and Miami offer the most secure rental yield profiles. We recommend exploring verified fractional investments in these areas to build capital before committing to outright purchases.";
         let actionLabel = "View Co-Investments";
@@ -80,14 +147,21 @@ export function AIPropertyAdvisor() {
 
         if (selections.goal.includes("Buy")) {
           title = "Premium Residential Ownership Path";
-          advice = `For a budget in the ${selections.budget} range in ${option}, outright ownership is highly viable. We advise reviewing listings certified with clear Title Insurance and HOA disclosures.`;
+          const locText = option === "Open to Suggestions" ? "emerging US markets" : option;
+          advice = `For a budget in the ${selections.budget} range in ${locText}, outright ownership is highly viable. We advise reviewing listings certified with clear Title Insurance and HOA disclosures.`;
           actionLabel = "Browse Checked Properties";
-          actionLink = `/properties?type=buy&city=${encodeURIComponent(option.split(',')[0])}`;
+          actionLink = option === "Open to Suggestions" ? "/properties?type=buy" : `/properties?type=buy&city=${encodeURIComponent(option.split(',')[0])}`;
         } else if (selections.goal.includes("Rent")) {
           title = "Vetted Lease Advisory";
-          advice = `Leasing in ${option} requires reviewing FEMA flood zones and Walk Scores. Check our pre-audited apartments with clear terms and transparent management.`;
+          const locText = option === "Open to Suggestions" ? "target regions" : option;
+          advice = `Leasing in ${locText} requires reviewing FEMA flood zones and Walk Scores. Check our pre-audited apartments with clear terms and transparent management.`;
           actionLabel = "View Available Rentals";
-          actionLink = `/properties?type=rent&city=${encodeURIComponent(option.split(',')[0])}`;
+          actionLink = option === "Open to Suggestions" ? "/properties?type=rent" : `/properties?type=rent&city=${encodeURIComponent(option.split(',')[0])}`;
+        } else if (selections.goal.includes("Co-invest")) {
+          title = "Fractional Portfolio Allocation";
+          advice = `Deploying ${selections.budget} across multiple properties mitigates risk. We suggest building a diversified portfolio across residential and commercial assets in high-growth zones.`;
+          actionLabel = "Start Investing";
+          actionLink = "/invest";
         }
 
         setMessages([
@@ -112,6 +186,7 @@ export function AIPropertyAdvisor() {
     if (!customInput.trim()) return;
 
     const userInput = customInput;
+    const lowerInput = userInput.toLowerCase();
     setCustomInput("");
     const userMsg: Message = { sender: "user", text: userInput };
     const updated = [...messages, userMsg];
@@ -120,15 +195,71 @@ export function AIPropertyAdvisor() {
 
     setTimeout(() => {
       setLoading(false);
-      setMessages([
-        ...updated,
-        {
-          sender: "advisor",
-          text: `I appreciate your inquiry regarding: "${userInput}". Let's narrow down your requirements. What is your primary focus?`,
-          options: ["Outright Purchasing", "Fractional Yields", "Rental Accommodations", "Speak to a Human Advisor"]
-        }
-      ]);
-      setStep(1);
+      
+      // Smart Keyword Matching
+      if (lowerInput.includes("tax")) {
+        setMessages([
+          ...updated,
+          {
+            sender: "advisor",
+            text: "Property taxes vary significantly by state. Texas has higher property taxes but no state income tax, making Austin attractive. Florida offers a balanced tax profile. Would you like to see properties in these tax-advantaged states?",
+            options: ["Explore Texas Properties", "Explore Florida Properties", "Restart Consultation"]
+          }
+        ]);
+        setStep(6); // Custom response state
+      } else if (lowerInput.includes("yield") || lowerInput.includes("roi") || lowerInput.includes("return")) {
+        setMessages([
+          ...updated,
+          {
+            sender: "advisor",
+            text: "For the highest yields, fractional co-investing in commercial or premium residential properties often outperforms single-family rentals. Our current target ROIs average 10-12%.",
+            recommendation: {
+              title: "High-Yield Fractional Portfolios",
+              advice: "Browse our vetted fractional opportunities designed for consistent monthly returns.",
+              actionLabel: "View Opportunities",
+              actionLink: "/invest/opportunities"
+            }
+          }
+        ]);
+        setStep(6);
+      } else if (lowerInput.includes("inspect") || lowerInput.includes("audit") || lowerInput.includes("verify")) {
+        setMessages([
+          ...updated,
+          {
+            sender: "advisor",
+            text: "Every property on our platform undergoes a strict 100-point physical inspection and title audit. We ensure there are no structural defects or hidden liens before listing.",
+            options: ["Browse Verified Homes", "Restart Consultation"]
+          }
+        ]);
+        setStep(6);
+      } else if (lowerInput.includes("texas") || lowerInput.includes("florida")) {
+         // Catching custom state option responses
+         const link = lowerInput.includes("texas") ? "/properties?city=Austin" : "/properties?city=Miami";
+         setMessages([
+           ...updated,
+           {
+             sender: "advisor",
+             text: `Excellent choice. We have a robust catalog of vetted properties in that region.`,
+             recommendation: {
+               title: "Regional Property Search",
+               advice: "Review the latest listings matching your regional preference.",
+               actionLabel: "Browse Properties",
+               actionLink: link
+             }
+           }
+         ]);
+      } else {
+        // Fallback
+        setMessages([
+          ...updated,
+          {
+            sender: "advisor",
+            text: `I appreciate your inquiry regarding: "${userInput}". Let's narrow down your requirements. What is your primary focus?`,
+            options: ["Outright Purchasing", "Fractional Yields", "Rental Accommodations", "Speak to a Human Advisor"]
+          }
+        ]);
+        setStep(1);
+      }
     }, 650);
   };
 

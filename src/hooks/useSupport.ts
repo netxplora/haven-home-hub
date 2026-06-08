@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -16,13 +16,14 @@ export interface SupportTicket {
   priority: TicketPriority;
   category_id: string | null;
   assigned_agent_id: string | null;
+  assigned_agent_name: string | null;
   property_id: string | null;
   created_at: string;
   updated_at: string;
   last_message_at: string;
   satisfaction_rating: number | null;
   support_categories?: { name: string } | null;
-  properties?: { title: string; slug: string; category: string; status: string } | null;
+  properties?: { title: string; slug: string; property_category: string; status: string } | null;
   assigned_agent?: { full_name: string; email: string } | null;
 }
 
@@ -83,6 +84,11 @@ export interface AutoResponse {
 export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
   const { user } = useAuth();
   const qc = useQueryClient();
+
+  // Presence State
+  const [activeUsers, setActiveUsers] = useState<Record<string, any>>({});
+  const [typingUsers, setTypingUsers] = useState<Record<string, boolean>>({});
+  const presenceChannelRef = useRef<any>(null);
 
   // 1. Fetch FAQs
   const faqsQuery = useQuery({
@@ -145,11 +151,57 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("support_tickets")
-        .select("*, support_categories(name), properties(title, slug, category, status)")
+        .select("*, support_categories(name), properties(title, slug, property_category, status)")
         .eq("id", ticketId)
         .maybeSingle();
       if (error) throw error;
-      return data as SupportTicket | null;
+
+      // Fetch assigned agent profile separately (FK is to auth.users, not profiles)
+      let assigned_agent = null;
+      if (data?.assigned_agent_id) {
+        const { data: agentProfile } = await supabase
+          .from("profiles")
+          .select("full_name, email")
+          .eq("id", data.assigned_agent_id)
+          .maybeSingle();
+        assigned_agent = agentProfile;
+      }
+
+      return { ...data, assigned_agent } as SupportTicket | null;
+    },
+  });
+
+  // 5b. Fetch Customer Profile (for admin context panel)
+  const customerProfileQuery = useQuery({
+    queryKey: ["support-customer-profile", ticketQuery.data?.user_id],
+    enabled: !!ticketQuery.data?.user_id && isAdminMode,
+    queryFn: async () => {
+      const userId = ticketQuery.data!.user_id!;
+
+      // Fetch profile
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("*")
+        .eq("id", userId)
+        .maybeSingle();
+
+      // Count total tickets by this customer
+      const { count: ticketCount } = await supabase
+        .from("support_tickets")
+        .select("id", { count: "exact", head: true })
+        .eq("user_id", userId);
+
+      // Get user roles
+      const { data: roles } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", userId);
+
+      return {
+        ...profile,
+        total_tickets: ticketCount ?? 0,
+        roles: (roles ?? []).map((r: any) => r.role),
+      };
     },
   });
 
@@ -195,6 +247,74 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
       supabase.removeChannel(channel);
     };
   }, [ticketId, qc, user]);
+
+  // Presence subscription for typing and online status
+  useEffect(() => {
+    if (!ticketId) return;
+
+    // Use a unique room for each ticket
+    const channel = supabase.channel(`presence-support-${ticketId}`, {
+      config: {
+        presence: {
+          key: user?.id || "guest",
+        },
+      },
+    });
+
+    presenceChannelRef.current = channel;
+
+    channel
+      .on("presence", { event: "sync" }, () => {
+        const state = channel.presenceState();
+        const users: Record<string, any> = {};
+        const typing: Record<string, boolean> = {};
+
+        Object.keys(state).forEach((key) => {
+          if (state[key].length > 0) {
+            const presence = state[key][0] as any;
+            users[key] = presence;
+            if (presence.isTyping) {
+              typing[key] = true;
+            }
+          }
+        });
+
+        setActiveUsers(users);
+        setTypingUsers(typing);
+      })
+      .subscribe(async (status) => {
+        if (status === "SUBSCRIBED") {
+          await channel.track({
+            online_at: new Date().toISOString(),
+            isTyping: false,
+            user_id: user?.id || "guest",
+            user_type: isAdminMode ? "agent" : "user",
+            name: user?.user_metadata?.full_name || "Guest",
+          });
+        }
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+      presenceChannelRef.current = null;
+    };
+  }, [ticketId, user, isAdminMode]);
+
+  const setTyping = async (isTyping: boolean) => {
+    if (presenceChannelRef.current) {
+      try {
+        await presenceChannelRef.current.track({
+          online_at: new Date().toISOString(),
+          isTyping,
+          user_id: user?.id || "guest",
+          user_type: isAdminMode ? "agent" : "user",
+          name: user?.user_metadata?.full_name || "Guest",
+        });
+      } catch (e) {
+        console.error("Failed to update presence typing status", e);
+      }
+    }
+  };
 
   // Mark ticket messages as read when viewed
   useEffect(() => {
@@ -362,6 +482,7 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
       status?: TicketStatus;
       priority?: TicketPriority;
       assigned_agent_id?: string | null;
+      assigned_agent_name?: string | null;
       satisfaction_rating?: number;
     }) => {
       const { data, error } = await supabase
@@ -486,6 +607,8 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
     myTicketsLoading: myTicketsQuery.isLoading,
     ticket: ticketQuery.data ?? null,
     ticketLoading: ticketQuery.isLoading,
+    customerProfile: customerProfileQuery.data ?? null,
+    customerProfileLoading: customerProfileQuery.isLoading,
     messages: messagesQuery.data ?? [],
     messagesLoading: messagesQuery.isLoading,
     notes: notesQuery.data ?? [],
@@ -502,5 +625,8 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
     addNote: addNote.mutateAsync,
     addNotePending: addNote.isPending,
     uploadAttachment,
+    activeUsers,
+    typingUsers,
+    setTyping,
   };
 }
