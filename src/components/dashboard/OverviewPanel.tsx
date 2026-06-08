@@ -252,7 +252,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
                     </div>
                     <ArrowUpRight className="h-4 w-4 text-muted-foreground/40 group-hover:text-primary transition-colors shrink-0" />
                  </button>
-                 <button onClick={() => onNavigate("reservations")} className="flex items-center gap-3.5 w-full p-3.5 rounded-lg hover:bg-accent transition-colors text-left group">
+                 <button onClick={() => onNavigate("my-properties")} className="flex items-center gap-3.5 w-full p-3.5 rounded-lg hover:bg-accent transition-colors text-left group">
                     <div className="h-9 w-9 rounded-lg bg-secondary/8 text-secondary flex items-center justify-center shrink-0">
                        <ClipboardList className="h-4 w-4" />
                     </div>
@@ -333,7 +333,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
                 </div>
                 <span className="text-sm font-bold text-amber-600 dark:text-amber-400">{stats?.activeReservationsCount ?? 0}</span>
               </div>
-              <Button variant="ghost" size="sm" className="w-full mt-2 h-8 text-xs font-medium text-primary hover:bg-primary/5" onClick={() => onNavigate("reservations")}>
+              <Button variant="ghost" size="sm" className="w-full mt-2 h-8 text-xs font-medium text-primary hover:bg-primary/5" onClick={() => onNavigate("my-properties")}>
                 View all reservations <ArrowRight className="h-3 w-3 ml-1" />
               </Button>
             </div>

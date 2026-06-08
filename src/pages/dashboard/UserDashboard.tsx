@@ -15,7 +15,8 @@ import {
   Heart,
   Calendar,
   MessageSquare,
-  LogOut
+  LogOut,
+  Home
 } from "lucide-react";
 
 // Modularized Panels
@@ -23,8 +24,7 @@ import { OverviewPanel } from "@/components/dashboard/OverviewPanel";
 import { WithdrawalsPanel } from "@/components/dashboard/WithdrawalsPanel";
 import { TransactionsPanel } from "@/components/dashboard/TransactionsPanel";
 import { InvestmentsPanel } from "@/components/dashboard/InvestmentsPanel";
-import { ReservationsPanel } from "@/components/dashboard/ReservationsPanel";
-import { PurchasesPanel } from "@/components/dashboard/PurchasesPanel";
+import { MyPropertiesPanel } from "@/components/dashboard/MyPropertiesPanel";
 import { ReferralsPanel } from "@/components/dashboard/ReferralsPanel";
 import { NotificationsPanel } from "@/components/dashboard/NotificationsPanel";
 import { ProfilePanel } from "@/components/dashboard/ProfilePanel";
@@ -67,8 +67,7 @@ export default function UserDashboard() {
   const menuItems = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
     { id: "investments", label: "Investments", icon: TrendingUp },
-    { id: "purchases", label: "Property Purchases", icon: ClipboardList },
-    { id: "reservations", label: "Reservations", icon: ClipboardList },
+    { id: "my-properties", label: "My Properties", icon: Home },
     { id: "withdrawals", label: "Withdrawals", icon: Wallet },
     { id: "transactions", label: "Transactions", icon: History },
     { id: "documents", label: "Documents", icon: FileText },
@@ -90,10 +89,10 @@ export default function UserDashboard() {
         return <OverviewPanel userId={user.id} onNavigate={handleTabChange} />;
       case "investments":
         return <InvestmentsPanel />;
+      case "my-properties":
       case "purchases":
-        return <PurchasesPanel userId={user.id} />;
       case "reservations":
-        return <ReservationsPanel userId={user.id} />;
+        return <MyPropertiesPanel userId={user.id} />;
       case "withdrawals":
         return <WithdrawalsPanel userId={user.id} />;
       case "transactions":
