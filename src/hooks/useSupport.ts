@@ -80,7 +80,7 @@ export interface AutoResponse {
   is_active: boolean;
 }
 
-export function useSupport(ticketId?: string) {
+export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
@@ -200,9 +200,16 @@ export function useSupport(ticketId?: string) {
   useEffect(() => {
     if (!ticketId || !messagesQuery.data) return;
 
-    const unread = messagesQuery.data.filter(
-      (m) => !m.is_read && m.sender_type !== (user ? "agent" : "user")
-    );
+    const unread = messagesQuery.data.filter((m) => {
+      if (m.is_read) return false;
+      if (isAdminMode) {
+        // Staff views thread: mark client (user/guest) messages as read
+        return m.sender_type === "user" || m.sender_type === "guest";
+      } else {
+        // Customer views thread: mark agent messages as read
+        return m.sender_type === "agent";
+      }
+    });
 
     if (unread.length > 0) {
       supabase
@@ -216,7 +223,7 @@ export function useSupport(ticketId?: string) {
           qc.invalidateQueries({ queryKey: ["support-messages", ticketId] });
         });
     }
-  }, [ticketId, messagesQuery.data, user, qc]);
+  }, [ticketId, messagesQuery.data, isAdminMode, qc]);
 
   // 7. Fetch Internal Notes (Staff Only)
   const notesQuery = useQuery({

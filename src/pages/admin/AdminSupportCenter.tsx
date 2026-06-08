@@ -156,7 +156,7 @@ export function AdminSupportCenter() {
     addNote,
     addNotePending,
     uploadAttachment,
-  } = useSupport(selectedTicketId || undefined);
+  } = useSupport(selectedTicketId || undefined, true);
 
   // ── All Tickets Query (admin-scoped) ───────────────────────────────────────
   const allTicketsQuery = useQuery({

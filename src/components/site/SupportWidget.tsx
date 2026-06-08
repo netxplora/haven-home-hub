@@ -67,7 +67,7 @@ export function SupportWidget() {
     sendMessagePending,
     uploadAttachment,
     updateTicket
-  } = useSupport(activeTicketId || undefined);
+  } = useSupport(activeTicketId || undefined, false);
 
   // Load guest details or registered user data
   useEffect(() => {
@@ -197,7 +197,7 @@ export function SupportWidget() {
       await sendMessage({
         ticket_id: currentTicketId,
         message_text: content.trim(),
-        sender_type: user ? "agent" : "user", // Wait! In public widget, user is client (which is 'user' or 'guest' sender_type)
+        sender_type: user ? "user" : "guest",
         sender_name: guestName || "Client User"
       });
     } catch (err: any) {
@@ -341,6 +341,12 @@ export function SupportWidget() {
 
                   return (
                     <div key={msg.id} className={cn("flex flex-col", isUser ? "items-end" : "items-start")}>
+                      {!isUser && (
+                        <span className="text-[10px] font-bold text-muted-foreground/85 mb-1 ml-1 flex items-center gap-1">
+                          <span className="h-1.5 w-1.5 rounded-full bg-primary" />
+                          {msg.sender_name || "Support"}
+                        </span>
+                      )}
                       <div className={cn(
                         "max-w-[80%] rounded-2xl px-3.5 py-2.5 text-xs leading-relaxed shadow-soft",
                         isUser 
