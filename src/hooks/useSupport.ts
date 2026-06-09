@@ -214,9 +214,10 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
         .from("support_messages")
         .select("*")
         .eq("ticket_id", ticketId)
-        .order("created_at", { ascending: true });
+        .order("created_at", { ascending: false })
+        .limit(50);
       if (error) throw error;
-      return (data ?? []) as SupportMessage[];
+      return (data ?? []).reverse() as SupportMessage[];
     },
   });
 

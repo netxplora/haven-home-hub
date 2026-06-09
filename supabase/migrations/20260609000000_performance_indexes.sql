@@ -26,7 +26,7 @@ CREATE INDEX IF NOT EXISTS idx_investment_properties_status ON investment_proper
 -- ── Returns ──
 CREATE INDEX IF NOT EXISTS idx_returns_user_id ON returns (user_id);
 CREATE INDEX IF NOT EXISTS idx_returns_distribution_date ON returns (distribution_date DESC);
-CREATE INDEX IF NOT EXISTS idx_returns_investment_id ON returns (investment_id);
+CREATE INDEX IF NOT EXISTS idx_returns_payout_id ON returns (payout_id);
 
 -- ── Payments ──
 -- Payment lookups: by user, by property, by type+status
@@ -35,9 +35,7 @@ CREATE INDEX IF NOT EXISTS idx_payments_property_id_type ON payments (property_i
 CREATE INDEX IF NOT EXISTS idx_payments_status ON payments (status);
 CREATE INDEX IF NOT EXISTS idx_payments_reference ON payments (reference);
 
--- ── Reservations ──
-CREATE INDEX IF NOT EXISTS idx_reservations_user_id_status ON reservations (user_id, status);
-CREATE INDEX IF NOT EXISTS idx_reservations_property_id ON reservations (property_id);
+
 
 -- ── Notifications ──
 -- User notification feed: unread first, sorted by date
@@ -58,26 +56,25 @@ CREATE INDEX IF NOT EXISTS idx_saved_properties_user_id ON saved_properties (use
 -- ── Support Tickets ──
 CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets (user_id);
 CREATE INDEX IF NOT EXISTS idx_support_tickets_status ON support_tickets (status);
-CREATE INDEX IF NOT EXISTS idx_support_tickets_assigned ON support_tickets (assigned_to);
+
 
 -- ── Support Messages ──
 CREATE INDEX IF NOT EXISTS idx_support_messages_ticket_id ON support_messages (ticket_id, created_at);
 
 -- ── Documents ──
-CREATE INDEX IF NOT EXISTS idx_documents_user_id ON documents (user_id);
-CREATE INDEX IF NOT EXISTS idx_documents_type ON documents (document_type);
+CREATE INDEX IF NOT EXISTS idx_user_documents_user_id ON user_documents (user_id);
+CREATE INDEX IF NOT EXISTS idx_user_documents_type ON user_documents (document_type);
 
 -- ── Referrals ──
-CREATE INDEX IF NOT EXISTS idx_referral_codes_user_id ON referral_codes (user_id);
-CREATE INDEX IF NOT EXISTS idx_referral_uses_code_id ON referral_uses (referral_code_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referrer_id ON referrals (referrer_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_referred_id ON referrals (referred_id);
+CREATE INDEX IF NOT EXISTS idx_referrals_status ON referrals (status);
+CREATE INDEX IF NOT EXISTS idx_referral_rewards_user_id ON referral_rewards (user_id);
 
--- ── Profiles ──
-CREATE INDEX IF NOT EXISTS idx_profiles_email ON profiles (email);
+
 
 -- ── Investment Certificates ──
 CREATE INDEX IF NOT EXISTS idx_certificates_investment_id ON investment_certificates (investment_id);
 CREATE INDEX IF NOT EXISTS idx_certificates_user_id ON investment_certificates (user_id);
 
--- ── Wallet Transactions ──
-CREATE INDEX IF NOT EXISTS idx_wallet_transactions_user_id ON wallet_transactions (user_id);
-CREATE INDEX IF NOT EXISTS idx_wallet_transactions_created_at ON wallet_transactions (created_at DESC);
+
