@@ -365,7 +365,7 @@ export default function Home() {
             ].map((loc) => (
               <div key={loc.name} className="group relative overflow-hidden rounded-xl border border-border/50 bg-card hover-lift flex flex-col h-full shadow-sm">
                 <div className="h-44 overflow-hidden relative">
-                  <img src={loc.image} alt={loc.name} className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  <img src={loc.image} alt={loc.name} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
                   <h3 className="absolute bottom-4 left-4 font-serif text-lg font-bold text-white">{loc.name}</h3>
                 </div>

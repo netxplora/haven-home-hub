@@ -72,7 +72,7 @@ export function SavedPanel({ userId }: { userId: string }) {
         return (
           <div key={s.id} className="group relative rounded-xl border border-border/50 bg-card overflow-hidden shadow-soft transition-all duration-300 hover:shadow-card hover:border-border">
              <div className="relative aspect-[16/10] overflow-hidden">
-                <img src={p.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt={p.title} />
+                <img src={p.cover_image_url || "/placeholder.svg"} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt={p.title} />
                 <div className="absolute top-4 right-4 flex gap-2">
                    <Button 
                      variant="destructive" 

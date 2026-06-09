@@ -67,7 +67,7 @@ export function BookingsPanel({ userId }: { userId: string }) {
               <div key={b.id} className="rounded-xl border border-border/40 bg-card overflow-hidden shadow-soft transition-all duration-300 hover:shadow-md group">
                  <div className="flex flex-col md:flex-row">
                     <div className="h-40 md:h-auto md:w-64 shrink-0 overflow-hidden bg-muted">
-                       <img src={b.properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt="" />
+                       <img src={b.properties?.cover_image_url || "/placeholder.svg"} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt="" />
                     </div>
                     <div className="flex-1 p-6 space-y-6">
                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

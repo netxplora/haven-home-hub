@@ -340,7 +340,7 @@ export function InvestmentsPanel() {
                           <td className="px-6 py-5">
                             <div className="flex items-center gap-3">
                                <div className="h-10 w-10 rounded-xl overflow-hidden bg-muted group-hover:scale-105 transition-transform shrink-0">
-                                  <img src={inv.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                                  <img src={inv.investment_properties?.cover_image_url || "/placeholder.svg"} loading="lazy" className="h-full w-full object-cover" alt="" />
                                </div>
                                <div>
                                   <p className="font-semibold text-foreground line-clamp-1">{inv.investment_properties?.title ?? "Unknown Asset"}</p>
@@ -622,7 +622,7 @@ function InvestmentGridCard({ investment, onSelect }: { investment: any, onSelec
   return (
     <div className="group rounded-xl border border-border/40 bg-card overflow-hidden shadow-soft transition-all duration-300 hover:shadow-card hover:border-primary/20 cursor-pointer" onClick={onSelect}>
        <div className="relative aspect-[16/9] overflow-hidden bg-accent">
-          <img src={investment.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
+          <img src={investment.investment_properties?.cover_image_url || "/placeholder.svg"} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt="" />
           <div className="absolute top-4 right-4 flex gap-2">
              <Badge className="bg-background/90 backdrop-blur-md text-foreground font-bold rounded-lg border-none capitalize">
                 {investment.status?.replace("_", " ") || "Processing"}

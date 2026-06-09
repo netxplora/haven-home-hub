@@ -357,7 +357,7 @@ export default function ComparePage() {
                             <XCircle className="h-4.5 w-4.5" />
                           </button>
                           <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-secondary/10 shadow-sm">
-                            <img src={resolveImage(p.cover_image_url)} alt={p.title} className="w-full h-full object-cover" />
+                            <img src={resolveImage(p.cover_image_url)} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
                             <Badge className="absolute top-3 left-3 bg-white/95 text-foreground hover:bg-white border-none shadow-sm font-bold text-[10px] uppercase">
                               {p.property_type.toUpperCase()}
                             </Badge>
