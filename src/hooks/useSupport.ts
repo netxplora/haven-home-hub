@@ -385,28 +385,36 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
   const staffQuery = useQuery({
     queryKey: ["support-staff-list"],
     queryFn: async () => {
-      const { data: profiles } = await supabase.from("profiles").select("*");
+      // Fetch admin and support role user IDs first
       const { data: roles } = await supabase
         .from("user_roles")
-        .select("user_id, role")
+        .select("user_id")
         .eq("role", "admin");
       
       const { data: supportRoles } = await supabase
         .from("support_roles")
-        .select("user_id, role");
+        .select("user_id");
 
-      const staffIds = new Set([
-        ...(roles ?? []).map((r) => r.user_id),
-        ...(supportRoles ?? []).map((sr) => sr.user_id),
-      ]);
+      const staffIds = [
+        ...new Set([
+          ...(roles ?? []).map((r) => r.user_id),
+          ...(supportRoles ?? []).map((sr) => sr.user_id),
+        ]),
+      ];
 
-      return (profiles ?? [])
-        .filter((p) => staffIds.has(p.id))
-        .map((p) => ({
-          id: p.id,
-          full_name: p.full_name || p.email || "Unknown Staff",
-          email: p.email,
-        }));
+      if (staffIds.length === 0) return [];
+
+      // Only fetch profiles for known staff — not all profiles
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("id, full_name, email")
+        .in("id", staffIds);
+
+      return (profiles ?? []).map((p) => ({
+        id: p.id,
+        full_name: p.full_name || p.email || "Unknown Staff",
+        email: p.email,
+      }));
     },
   });
 

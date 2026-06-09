@@ -17,7 +17,7 @@ CREATE INDEX IF NOT EXISTS idx_property_images_property_id_sort ON property_imag
 -- ── User Investments ──
 -- Portfolio queries: by user, by status, by property
 CREATE INDEX IF NOT EXISTS idx_user_investments_user_id_status ON user_investments (user_id, status);
-CREATE INDEX IF NOT EXISTS idx_user_investments_property_id ON user_investments (investment_property_id);
+CREATE INDEX IF NOT EXISTS idx_user_investments_property_id ON user_investments (property_id);
 CREATE INDEX IF NOT EXISTS idx_user_investments_created_at_desc ON user_investments (created_at DESC);
 
 -- ── Investment Properties ──
