@@ -66,16 +66,15 @@ export default function UserDashboard() {
 
   const menuItems = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
-    { id: "investments", label: "Investments", icon: TrendingUp },
     { id: "my-properties", label: "My Properties", icon: Home },
+    { id: "investments", label: "Investments", icon: TrendingUp },
     { id: "withdrawals", label: "Withdrawals", icon: Wallet },
     { id: "transactions", label: "Transactions", icon: History },
-    { id: "documents", label: "Documents", icon: FileText },
-    { id: "referrals", label: "Referrals", icon: Users },
-    { id: "notifications", label: "Notifications", icon: Bell },
-    { id: "saved", label: "Saved Properties", icon: Heart },
     { id: "bookings", label: "Bookings", icon: Calendar },
+    { id: "documents", label: "Documents", icon: FileText },
     { id: "inquiries", label: "Support", icon: MessageSquare },
+    { id: "notifications", label: "Notifications", icon: Bell },
+    { id: "referrals", label: "Referrals", icon: Users },
     { id: "profile", label: "Profile", icon: User },
   ];
 
@@ -103,8 +102,6 @@ export default function UserDashboard() {
         return <ReferralsPanel userId={user.id} />;
       case "notifications":
         return <NotificationsPanel />;
-      case "saved":
-        return <SavedPanel userId={user.id} />;
       case "bookings":
         return <BookingsPanel userId={user.id} />;
       case "inquiries":

@@ -7,7 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { 
   Plus, Pencil, Trash2, Building2, Hash, Calendar, Car, Bed, Bath, 
   Search, ArrowUpDown, ChevronLeft, ChevronRight, ShieldAlert, 
-  Link as LinkIcon, Star, Layers, Zap, Pause, Play
+  Link as LinkIcon, Star, Layers, Zap, Pause, Play, DownloadCloud, UploadCloud, ChevronDown
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,7 @@ import { Separator } from "@/components/ui/separator";
 import { ChipInput } from "@/components/ui/chip-input";
 import { ImageUploader } from "@/components/site/ImageUploader";
 import { formatMoney } from "@/lib/invest";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -324,13 +325,32 @@ export function AdminProperties() {
           >
             <ShieldAlert className="mr-2 h-4 w-4" /> Verification Queue
           </Button>
-          <Button 
-            variant="secondary"
-            onClick={() => setImportOpen(true)} 
-            className="shadow-sm rounded-xl font-bold bg-secondary hover:bg-secondary/80 text-secondary-foreground"
-          >
-            <LinkIcon className="mr-2 h-4 w-4" /> Import URL
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button 
+                variant="secondary"
+                className="shadow-sm rounded-xl font-bold bg-secondary hover:bg-secondary/80 text-secondary-foreground"
+              >
+                <DownloadCloud className="mr-2 h-4 w-4" /> Import Property <ChevronDown className="ml-2 h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56 rounded-xl">
+              <DropdownMenuItem onClick={() => setImportOpen(true)} className="gap-2 font-medium cursor-pointer">
+                <LinkIcon className="h-4 w-4 text-muted-foreground" /> Import via AI (URL)
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => { setEditing(null); setCreateType("property"); setOpen(true); }} className="gap-2 font-medium cursor-pointer">
+                <Plus className="h-4 w-4 text-muted-foreground" /> Manual Entry
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => {
+                  toast({
+                    title: "Bulk Import",
+                    description: "Bulk import functionality will be available in the next release.",
+                  });
+                }} className="gap-2 font-medium cursor-pointer">
+                <Layers className="h-4 w-4 text-muted-foreground" /> Bulk Upload (CSV)
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Button 
             onClick={() => { setEditing(null); setCreateType(null); setOpen(true); }} 
             className="bg-primary text-primary-foreground hover:bg-primary/90 shadow-sm transition-all active:scale-[0.98] rounded-xl font-bold"

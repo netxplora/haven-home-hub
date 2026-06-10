@@ -314,7 +314,7 @@ export default function PropertyDetail() {
             </div>
 
             {property.property_type === 'land' ? (
-              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                   <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Land Size"}</p>
@@ -337,7 +337,7 @@ export default function PropertyDetail() {
                 </div>
               </div>
             ) : (
-              <div className="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                   <Bed className="h-5 w-5 text-primary mx-auto mb-2" />
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Bedrooms"}</p>
@@ -397,7 +397,7 @@ export default function PropertyDetail() {
 
             <div className="p-6 space-y-6">
               {/* Telemetry Grid */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
                   <Activity className="h-5 w-5 text-emerald-500 mx-auto mb-2" />
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Est. Tax Rate</p>

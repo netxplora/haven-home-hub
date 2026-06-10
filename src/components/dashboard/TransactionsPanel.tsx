@@ -117,7 +117,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
   
   return (
     <div className="space-y-6 ">
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between p-8 rounded-xl border border-border/40 bg-card shadow-soft">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between p-5 sm:p-8 rounded-xl border border-border/40 bg-card shadow-soft">
         <div>
           <h2 className="font-serif text-2xl font-bold tracking-tight">Financial Ledger</h2>
           <p className="mt-1 text-sm text-muted-foreground">Comprehensive record of all deposits, investments, and payouts.</p>

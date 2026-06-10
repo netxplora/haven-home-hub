@@ -369,7 +369,7 @@ serve(async (req) => {
     // Address Parsing from Title (if still missing)
     if (!propertyData.full_street_address || !propertyData.city) {
       const titleStr = propertyData.property_title || $('title').text() || "";
-      const firstPart = titleStr.split(/\||-/)[0].trim();
+      const firstPart = titleStr.split(/\||-|:/)[0].trim();
       const parts = firstPart.split(',').map((s: string) => s.trim());
       if (parts.length >= 2) {
         if (!propertyData.full_street_address) propertyData.full_street_address = parts[0];
@@ -623,7 +623,24 @@ Do NOT invent data. Return only fields you can extract from the provided input.`
     if (!propertyData.property_title || propertyData.property_title.trim() === "") {
       return new Response(JSON.stringify({ 
         success: false, 
-        error: "Extraction Failed: Could not find any property details. The site might be blocking automated access with a Captcha, or the URL format is unsupported. Please enter this property manually." 
+        error: "Extraction Failed: Could not extract a property title. The URL may be invalid, or the site is blocking automated access (e.g. Captcha). Please manually input the details." 
+      }), {
+        status: 200, 
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Check if it looks like a real property (requires at least 2 of: price, address, beds, baths)
+    let validFeaturesCount = 0;
+    if (propertyData.base_price > 0) validFeaturesCount++;
+    if (propertyData.full_street_address || propertyData.city) validFeaturesCount++;
+    if (propertyData.beds !== null || propertyData.baths !== null) validFeaturesCount++;
+    if (propertyData.property_media_gallery.length > 0) validFeaturesCount++;
+
+    if (validFeaturesCount < 2) {
+      return new Response(JSON.stringify({ 
+        success: false, 
+        error: `Extraction Failed: The provided URL does not appear to be a standard real estate listing. Missing critical pricing, location, or property specifications. Please enter this listing manually.` 
       }), {
         status: 200, 
         headers: { ...corsHeaders, "Content-Type": "application/json" },

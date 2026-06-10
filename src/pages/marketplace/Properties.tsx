@@ -734,7 +734,7 @@ export default function Properties() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 animate-in fade-in duration-500">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-2 gap-x-4 sm:gap-6 lg:gap-8 animate-in fade-in duration-500 -mx-4 sm:mx-0 [&>div]:rounded-none [&>div]:border-x-0 sm:[&>div]:rounded-2xl sm:[&>div]:border-x sm:[&>div]:border-border/40">
               {filteredProperties.map((p: any) => <PropertyCard key={p.id} property={p} />)}
             </div>
             <div className="mt-16 flex justify-center">

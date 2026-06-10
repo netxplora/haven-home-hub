@@ -17,6 +17,7 @@ import { formatMoney } from "@/lib/invest";
 import { ReceiptDialog } from "./ReceiptDialog";
 import { LegalDocumentsDialog } from "./LegalDocumentsDialog";
 import { ManualPaymentModal } from "./ManualPaymentModal";
+import { SavedPanel } from "./SavedPanel";
 import { toast } from "sonner";
 
 export function MyPropertiesPanel({ userId }: { userId: string }) {
@@ -265,7 +266,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
         userId={userId} 
       />
 
-      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between p-8 rounded-xl border border-border/40 bg-card shadow-soft">
+      <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between p-5 sm:p-8 rounded-xl border border-border/40 bg-card shadow-soft">
         <div>
           <h2 className="font-serif text-2xl font-bold tracking-tight text-foreground">My Properties Management</h2>
           <p className="mt-1 text-sm text-muted-foreground">Manage your holds, active reservations, rents, and fully owned properties in one unified center.</p>
@@ -279,6 +280,9 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
 
       <Tabs value={activeTab} onValueChange={(val) => { setActiveTab(val); setSearchTerm(""); setStatusFilter("all"); }} className="space-y-6">
         <TabsList className="bg-muted/50 p-1 border border-border/40 rounded-xl h-auto flex flex-wrap gap-1 w-fit">
+          <TabsTrigger value="saved" className="rounded-lg px-4 py-2 text-xs font-bold gap-2">
+            Saved
+          </TabsTrigger>
           <TabsTrigger value="reservations" className="rounded-lg px-4 py-2 text-xs font-bold gap-2">
             Reservations ({activeReservations.length})
           </TabsTrigger>
@@ -320,12 +324,17 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
           )}
         </div>
 
-        {isLoading ? (
+        {isLoading && activeTab !== "saved" ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => <Skeleton key={i} className="h-32 rounded-xl" />)}
           </div>
         ) : (
           <>
+            {/* ── Saved Content ── */}
+            <TabsContent value="saved" className="space-y-6">
+              <SavedPanel userId={userId} />
+            </TabsContent>
+
             {/* ── Reservations Content ── */}
             <TabsContent value="reservations" className="space-y-6">
               {getFilteredItems(activeReservations).length === 0 ? (

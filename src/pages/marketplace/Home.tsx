@@ -22,6 +22,7 @@ import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 import { PromoBanner } from "@/components/site/PromoBanner";
 import { MarketIntelligence } from "@/components/site/MarketIntelligence";
 import { AIPropertyAdvisor } from "@/components/site/AIPropertyAdvisor";
+import useEmblaCarousel from "embla-carousel-react";
 
 const heroImages = [
   heroImg,
@@ -173,12 +174,13 @@ export default function Home() {
               <img
                 src={img}
                 alt="Real Estate"
+                fetchPriority={index === 0 ? "high" : "auto"}
+                loading={index === 0 ? "eager" : "lazy"}
                 className={`h-full w-full object-cover transition-transform [transition-duration:7000ms] ease-linear ${index === currentSlide ? "scale-[1.04]" : "scale-100"}`}
               />
             </div>
           ))}
-          <div className="absolute inset-0 bg-secondary/35 mix-blend-multiply z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-gray-900/90 via-gray-900/35 to-gray-900/40 z-[2]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 z-[1]" />
         </div>
 
         <div className="container-wide relative z-10 py-20">
@@ -783,18 +785,17 @@ function HomeLocations() {
 }
 
 function HomeTestimonials() {
+  const [emblaRef] = useEmblaCarousel({ loop: true, align: "start" });
+
   const { data: testimonials = [], isLoading } = useQuery({
     queryKey: ["homepage-testimonials"],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("reviews")
-        .select(`
-          id, rating, comment, created_at,
-          profiles(full_name)
-        `)
-        .eq("status", "published")
+        .from("testimonials")
+        .select("*")
+        .eq("featured", true)
         .order("created_at", { ascending: false })
-        .limit(3);
+        .limit(6);
       if (error) throw error;
       return data ?? [];
     },
@@ -819,23 +820,36 @@ function HomeTestimonials() {
   }
 
   return (
-    <div className="grid md:grid-cols-3 gap-8">
-      {testimonials.map((item: any) => (
-        <div key={item.id} className="bg-card p-6 rounded-2xl border border-border/40 shadow-soft hover-lift flex flex-col justify-between">
-          <div>
-            <div className="flex gap-1 text-primary mb-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Star key={i} className={`h-3.5 w-3.5 ${i < item.rating ? "fill-current" : "fill-transparent text-muted-foreground/30"}`} />
-              ))}
+    <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
+      <div className="flex touch-pan-y -ml-4">
+        {testimonials.map((item: any) => (
+          <div key={item.id} className="min-w-0 shrink-0 basis-full sm:basis-1/2 md:basis-1/3 pl-4">
+            <div className="bg-card p-6 rounded-2xl border border-border/40 shadow-soft flex flex-col justify-between h-full select-none">
+              <div>
+                <div className="flex gap-1 text-primary mb-4">
+                  {Array.from({ length: 5 }).map((_, i) => (
+                    <Star key={i} className={`h-3.5 w-3.5 ${i < item.rating ? "fill-current" : "fill-transparent text-muted-foreground/30"}`} />
+                  ))}
+                </div>
+                <p className="text-muted-foreground italic mb-6 leading-relaxed text-xs">"{item.content}"</p>
+              </div>
+              <div className="flex items-center gap-3">
+                {item.image_url ? (
+                  <img src={item.image_url} alt={item.name} className="h-10 w-10 rounded-full object-cover border border-border/50" draggable={false} />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
+                    {item.name.charAt(0)}
+                  </div>
+                )}
+                <div>
+                  <h4 className="font-semibold text-foreground text-sm">{item.name}</h4>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{item.user_type}</p>
+                </div>
+              </div>
             </div>
-            <p className="text-muted-foreground italic mb-6 leading-relaxed text-xs">"{item.comment}"</p>
           </div>
-          <div>
-            <h4 className="font-semibold text-foreground text-sm">{item.profiles?.full_name || "Verified Client"}</h4>
-            <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-1">Client Review</p>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 }

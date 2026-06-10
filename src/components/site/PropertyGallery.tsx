@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { ChevronLeft, ChevronRight, Maximize2, X, Grid3X3 } from "lucide-react";
+import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from "@/components/ui/dialog";
@@ -14,24 +15,40 @@ interface PropertyGalleryProps {
 }
 
 export function PropertyGallery({ images, title, propertyType, status, typeLabel, statusLabel }: PropertyGalleryProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [gridOpen, setGridOpen] = useState(false);
   const [dayNightMode, setDayNightMode] = useState<"day" | "night">("day");
 
-  const next = useCallback(() => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  }, [images.length]);
-
-  const prev = useCallback(() => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  }, [images.length]);
+  const onSelect = useCallback(() => {
+    if (!emblaApi) return;
+    setCurrentIndex(emblaApi.selectedScrollSnap());
+  }, [emblaApi, setCurrentIndex]);
 
   useEffect(() => {
-    if (!isAutoPlaying || gridOpen) return;
+    if (!emblaApi) return;
+    emblaApi.on("select", onSelect);
+    return () => { emblaApi.off("select", onSelect); };
+  }, [emblaApi, onSelect]);
+
+  const next = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
+
+  const prev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
+
+  const scrollTo = useCallback((index: number) => {
+    if (emblaApi) emblaApi.scrollTo(index);
+  }, [emblaApi]);
+
+  useEffect(() => {
+    if (!isAutoPlaying || gridOpen || !emblaApi) return;
     const interval = setInterval(next, 5000);
     return () => clearInterval(interval);
-  }, [isAutoPlaying, next, gridOpen]);
+  }, [isAutoPlaying, next, gridOpen, emblaApi]);
 
   return (
     <div className="space-y-4">
@@ -40,21 +57,21 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
         onMouseEnter={() => setIsAutoPlaying(false)} 
         onMouseLeave={() => setIsAutoPlaying(true)}
       >
-        {/* Main Image */}
-        <div className="relative aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/10] overflow-hidden">
-          {images.map((img, i) => (
-            <img
-              key={i}
-              src={img}
-              alt={`${title} - View ${i + 1}`}
-              onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
-              className={`absolute inset-0 h-full w-full object-cover transition-all duration-1000 ease-in-out ${
-                dayNightMode === "night" ? "brightness-[0.4] contrast-[1.2] saturate-[0.7] hue-rotate-[20deg]" : ""
-              } ${
-                currentIndex === i ? "opacity-100 scale-100 z-10" : "opacity-0 scale-110 z-0"
-              }`}
-            />
-          ))}
+        <div className="relative aspect-[16/10] sm:aspect-[16/9] md:aspect-[21/9] lg:aspect-[24/10] overflow-hidden" ref={emblaRef}>
+          <div className="flex touch-pan-y h-full">
+            {images.map((img, i) => (
+              <div key={i} className="relative min-w-0 shrink-0 basis-full h-full">
+                <img
+                  src={img}
+                  alt={`${title} - View ${i + 1}`}
+                  onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }}
+                  className={`h-full w-full object-cover transition-all duration-1000 ease-in-out ${
+                    dayNightMode === "night" ? "brightness-[0.4] contrast-[1.2] saturate-[0.7] hue-rotate-[20deg]" : ""
+                  }`}
+                />
+              </div>
+            ))}
+          </div>
           
           {/* Overlays */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 z-20 pointer-events-none" />
@@ -124,7 +141,7 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
                           key={i} 
                           className="group relative aspect-[4/3] rounded-[1.5rem] overflow-hidden cursor-pointer bg-muted border border-border/50 shadow-soft transition-all hover:shadow-card"
                           onClick={() => {
-                            setCurrentIndex(i);
+                            scrollTo(i);
                             setGridOpen(false);
                           }}
                         >
@@ -155,7 +172,7 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
         {images.map((img, i) => (
           <button
             key={i}
-            onClick={() => setCurrentIndex(i)}
+            onClick={() => scrollTo(i)}
             className={`relative flex-shrink-0 w-32 h-20 rounded-xl overflow-hidden transition-all duration-500 border-2 ${
               currentIndex === i 
                 ? "border-primary scale-105 shadow-sm z-10" 
