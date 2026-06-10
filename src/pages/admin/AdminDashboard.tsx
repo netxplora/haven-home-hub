@@ -47,29 +47,35 @@ import { AdminDocuments } from "./AdminDocuments";
 import { AdminInvestor360 } from "./AdminInvestor360";
 import { AdminSupportCenter } from "./AdminSupportCenter";
 import { AdminInvestmentOrders } from "./AdminInvestmentOrders";
-import { Award, CreditCard, ClipboardList } from "lucide-react";
+import { AdminTestimonials } from "./AdminTestimonials";
+import { Award, CreditCard, ClipboardList, Quote } from "lucide-react";
 
 const navItems: NavItem[] = [
+  // Dashboard & Analytics
   { id: "overview", label: "Overview", icon: LayoutDashboard },
+  { id: "finance", label: "Finance Center", icon: Landmark },
+  // Real Estate Operations
   { id: "properties", label: "Properties", icon: Home },
-  { id: "property-import", label: "AI Property Import", icon: Sparkles },
+  { id: "locations", label: "Locations", icon: MapPin },
+  { id: "bookings", label: "Viewings", icon: Calendar },
+  // Investments
   { id: "invest", label: "Investments Map", icon: TrendingUp },
   { id: "invest-orders", label: "Investment Orders", icon: ClipboardList },
-  { id: "finance", label: "Finance Center", icon: Landmark },
-  { id: "agents", label: "Agents", icon: Users },
-  { id: "locations", label: "Locations", icon: MapPin },
-  { id: "inquiries", label: "Inquiries", icon: MessageSquare },
-  { id: "support-center", label: "Support Center", icon: Headset },
-  { id: "bookings", label: "Viewings", icon: Calendar },
-  { id: "providers", label: "Payment Providers", icon: Globe },
-  { id: "kyc", label: "KYC Verification", icon: Fingerprint },
-  { id: "reviews", label: "Reviews", icon: Star },
+  { id: "investor-360", label: "Investor 360", icon: UserSearch },
+  // People & Support
   { id: "users", label: "Users & Roles", icon: ShieldCheck },
+  { id: "agents", label: "Agents", icon: Users },
+  { id: "support-center", label: "Support Center", icon: Headset },
+  { id: "inquiries", label: "Inquiries", icon: MessageSquare },
+  { id: "kyc", label: "KYC Verification", icon: Fingerprint },
+  // Content & Marketing
   { id: "cms", label: "Website Content", icon: FileText },
+  { id: "testimonials", label: "Testimonials", icon: Quote },
+  { id: "reviews", label: "Agent Reviews", icon: Star },
   { id: "documents", label: "Documents", icon: FileText },
   { id: "referrals", label: "Referral Program", icon: Award },
+  // Settings & System
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
-  { id: "investor-360", label: "Investor 360", icon: UserSearch },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -103,7 +109,6 @@ export default function Admin() {
       <div className="animate-in fade-in slide-in-from-bottom-2 duration-500">
         {activeTab === "overview" && <AdminOverview />}
         {activeTab === "properties" && <AdminProperties />}
-        {activeTab === "property-import" && <AdminPropertyImport />}
         {activeTab === "invest" && <AdminInvest />}
         {activeTab === "finance" && <AdminFinanceCenter />}
         {activeTab === "agents" && <AdminAgents />}
@@ -112,8 +117,8 @@ export default function Admin() {
         {activeTab === "support-center" && <AdminSupportCenter />}
         {activeTab === "bookings" && <AdminBookings />}
         {activeTab === "kyc" && <AdminKYC />}
-        {activeTab === "providers" && <AdminProviders />}
         {activeTab === "reviews" && <AdminReviews />}
+        {activeTab === "testimonials" && <AdminTestimonials />}
         {activeTab === "users" && <AdminUsers />}
         {activeTab === "cms" && <AdminCMS />}
         {activeTab === "documents" && <AdminDocuments />}
