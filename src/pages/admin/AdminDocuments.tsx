@@ -42,6 +42,8 @@ export function AdminDocuments() {
   const [templateModalOpen, setTemplateModalOpen] = useState(false);
   const [sigModalOpen, setSigModalOpen] = useState(false);
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewTemplate, setPreviewTemplate] = useState<any>(null);
   
   // Loading states
   const [submitting, setSubmitting] = useState(false);
@@ -399,6 +401,11 @@ export function AdminDocuments() {
     setTemplateSignatureX(template.signature_placement?.signature || "bottom-left");
     setTemplateSealX(template.signature_placement?.seal || "bottom-right");
     setTemplateModalOpen(true);
+  };
+
+  const handlePreviewTemplate = (template: any) => {
+    setPreviewTemplate(template);
+    setPreviewModalOpen(true);
   };
 
   // Actions: Signatures & Seals
@@ -761,6 +768,9 @@ export function AdminDocuments() {
                     <Button variant="outline" size="sm" onClick={() => handleViewTemplateHistory(template)} className="rounded-lg font-bold text-xs h-8">
                       <History className="h-3.5 w-3.5 mr-1" /> Revision History
                     </Button>
+                    <Button variant="outline" size="sm" onClick={() => handlePreviewTemplate(template)} className="rounded-lg font-bold text-xs h-8 text-blue-600 border-blue-200 hover:bg-blue-50">
+                      <Eye className="h-3.5 w-3.5 mr-1" /> Preview
+                    </Button>
                     <Button variant="outline" size="sm" onClick={() => handleEditTemplate(template)} className="rounded-lg font-bold text-xs h-8 text-primary border-primary/20 hover:bg-primary/5">
                       <Edit3 className="h-3.5 w-3.5 mr-1" /> Edit Template
                     </Button>
@@ -894,11 +904,11 @@ export function AdminDocuments() {
         </TabsContent>
       </Tabs>
 
-      {/* MODAL: Upload External Document */}
+      {/* MODAL: Upload Document Modal */}
       <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
-        <DialogContent className="sm:max-w-[500px] rounded-2xl border-border/40">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">Upload External PDF Document</DialogTitle>
+            <DialogTitle>Upload External Document</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
@@ -1005,6 +1015,11 @@ export function AdminDocuments() {
                       <SelectItem value="property_purchase_agreement">Property Purchase Agreement</SelectItem>
                       <SelectItem value="ownership_confirmation">Ownership Confirmation</SelectItem>
                       <SelectItem value="fractional_ownership_certificate">Fractional Ownership Certificate</SelectItem>
+                      <SelectItem value="investment_activation_certificate">Investment Activation Certificate</SelectItem>
+                      <SelectItem value="roi_commencement_notice">ROI Commencement Notice</SelectItem>
+                      <SelectItem value="investment_summary_report">Investment Summary Report</SelectItem>
+                      <SelectItem value="investment_completion_report">Investment Completion Report</SelectItem>
+                      <SelectItem value="investment_maturity_certificate">Investment Maturity Certificate</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -1027,7 +1042,7 @@ export function AdminDocuments() {
               <div className="bg-white p-4 rounded-xl border border-slate-200">
                 <h4 className="text-[10px] uppercase font-bold text-slate-500 mb-2 border-b pb-2">Available Variables</h4>
                 <div className="flex flex-wrap gap-1">
-                  {["{{investor_name}}", "{{investor_email}}", "{{investor_phone}}", "{{property_name}}", "{{property_location}}", "{{purchase_amount}}", "{{amount_paid}}", "{{outstanding_balance}}", "{{payment_method}}", "{{issue_date}}", "{{document_reference}}", "{{verification_code}}"].map(v => (
+                  {["{{investor_name}}", "{{investor_email}}", "{{investor_phone}}", "{{property_name}}", "{{property_location}}", "{{purchase_amount}}", "{{amount_paid}}", "{{outstanding_balance}}", "{{payment_method}}", "{{issue_date}}", "{{document_reference}}", "{{verification_code}}", "{{units_owned}}", "{{amount_invested}}", "{{admin_signature}}", "{{company_seal}}", "{{company_logo}}", "{{ownership_details}}", "{{investment_details}}"].map(v => (
                     <code key={v} className="text-[9px] text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm hover:bg-slate-200 cursor-copy" onClick={() => {navigator.clipboard.writeText(v); toast.success("Copied!");}}>{v}</code>
                   ))}
                 </div>
@@ -1061,7 +1076,6 @@ export function AdminDocuments() {
 
             {/* Right side: Live Preview rendering */}
             <div className="flex-1 bg-slate-200 overflow-y-auto p-4 md:p-10 flex justify-center custom-scrollbar shadow-inner">
-              
               <div className="w-full max-w-[800px] bg-white text-slate-900 p-8 md:p-14 border border-slate-300 shadow-xl min-h-[1123px] relative overflow-hidden h-fit">
                 {/* Background Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0">
@@ -1161,27 +1175,77 @@ export function AdminDocuments() {
 
       {/* MODAL: Revision History */}
       <Dialog open={historyModalOpen} onOpenChange={setHistoryModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto rounded-2xl border-border/40">
+        <DialogContent className="sm:max-w-2xl max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="font-serif text-xl">Template Revision History</DialogTitle>
+            <DialogTitle>Template Revision History</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 pt-4">
             {templateHistory.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center py-6">No previous versions found for this template.</p>
+              <p className="text-sm text-muted-foreground">No history available for this template.</p>
             ) : (
-              <div className="space-y-4">
-                {templateHistory.map((hist: any) => (
-                  <div key={hist.id} className="p-4 rounded-xl border border-border bg-slate-50/50 space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="font-bold text-sm text-slate-700">Version {hist.version}</span>
-                      <span className="text-[10px] text-muted-foreground">{new Date(hist.created_at).toLocaleString()}</span>
-                    </div>
-                    <p className="text-xs text-slate-600 truncate font-mono max-h-[60px] overflow-hidden whitespace-pre-wrap">{hist.content_html}</p>
+              templateHistory.map((rev: any) => (
+                <div key={rev.id} className="p-4 border rounded-xl bg-slate-50">
+                  <div className="flex justify-between items-center mb-2">
+                    <Badge>v{rev.version}</Badge>
+                    <span className="text-xs text-muted-foreground">{new Date(rev.created_at).toLocaleString()}</span>
                   </div>
-                ))}
-              </div>
+                  <div className="text-xs font-mono bg-white p-3 rounded-lg border max-h-32 overflow-y-auto">
+                    {rev.content_html}
+                  </div>
+                </div>
+              ))
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Preview Template Modal */}
+      <Dialog open={previewModalOpen} onOpenChange={setPreviewModalOpen}>
+        <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
+          {previewTemplate && (
+            <div className="bg-white rounded-xl shadow-2xl overflow-hidden relative">
+              <div className="bg-slate-900 text-white p-4 flex justify-between items-center sticky top-0 z-50">
+                <div>
+                  <h3 className="font-bold">Live Template Preview</h3>
+                  <p className="text-xs text-slate-400">Viewing: {previewTemplate.name}</p>
+                </div>
+                <Button variant="ghost" size="sm" className="hover:bg-slate-800 text-white" onClick={() => setPreviewModalOpen(false)}>
+                  Close
+                </Button>
+              </div>
+              <div className="p-8 prose max-w-none font-serif text-sm leading-loose text-justify text-slate-800 bg-white">
+                <div dangerouslySetInnerHTML={{ 
+                  __html: previewTemplate.content_html
+                    .replace(/{{investor_name}}/g, "John Doe")
+                    .replace(/{{investor_email}}/g, "john.doe@example.com")
+                    .replace(/{{investor_phone}}/g, "+1 555-0198")
+                    .replace(/{{investor_address}}/g, "123 Fake Street, CA")
+                    .replace(/{{property_name}}/g, "Haven Royal Estate")
+                    .replace(/{{property_location}}/g, "Beverly Hills, CA")
+                    .replace(/{{property_type}}/g, "Luxury Villa")
+                    .replace(/{{property_id}}/g, "PRP-8A9X")
+                    .replace(/{{purchase_amount}}/g, "$2,500,000.00")
+                    .replace(/{{amount_paid}}/g, "$2,500,000.00")
+                    .replace(/{{outstanding_balance}}/g, "$0.00")
+                    .replace(/{{payment_method}}/g, "Bank Transfer")
+                    .replace(/{{transaction_reference}}/g, "TXN-987654321")
+                    .replace(/{{issue_date}}/g, new Date().toLocaleDateString())
+                    .replace(/{{approval_date}}/g, new Date().toLocaleDateString())
+                    .replace(/{{payment_date}}/g, new Date().toLocaleDateString())
+                    .replace(/{{document_reference}}/g, "HHH-TEST001")
+                    .replace(/{{verification_code}}/g, "TESTVERIFICATION123")
+                    .replace(/{{units_owned}}/g, "5")
+                    .replace(/{{amount_invested}}/g, "$25,000.00")
+                    .replace(/{{admin_signature}}/g, '<div style="border-bottom: 1px solid #000; width: 150px; height: 50px; display: flex; align-items: end; padding-bottom: 5px; color: #666; font-family: sans-serif; font-size: 10px;">[Admin Signature Image]</div>')
+                    .replace(/{{company_signature}}/g, '<div style="border-bottom: 1px solid #000; width: 150px; height: 50px; display: flex; align-items: end; padding-bottom: 5px; color: #666; font-family: sans-serif; font-size: 10px;">[Company Signature Image]</div>')
+                    .replace(/{{company_seal}}/g, '<div style="width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; font-family: sans-serif;">[Seal]</div>')
+                    .replace(/{{company_logo}}/g, '<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">HAVEN HOME HUB</div>')
+                    .replace(/{{ownership_details}}/g, 'Verified Ownership Share: 5 Unit(s)')
+                    .replace(/{{investment_details}}/g, 'Investment Value: $25,000.00')
+                }} />
+              </div>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
