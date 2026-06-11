@@ -105,7 +105,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
       // Fetch only verified investments and standard properties from fully completed payments
       const [invs, paymentsResponse] = await Promise.all([
         supabase.from("user_investments" as any)
-          .select("investment_property_id, investment_properties(title)")
+          .select("property_id, investment_properties(title)")
           .eq("user_id", userId)
           .in("status", ["active", "completed", "verified"]),
         supabase.from("payments" as any)
@@ -116,7 +116,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
       
       const merged = [
         ...(invs.data || []).map((i: any) => ({
-          id: i.investment_property_id,
+          id: i.property_id,
           title: i.investment_properties?.title || "Unknown Asset",
           type: "investment"
         })),
