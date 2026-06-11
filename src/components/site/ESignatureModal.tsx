@@ -7,6 +7,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { Input } from "@/components/ui/input";
 import { toast } from "@/hooks/use-toast";
 import { PenTool, CheckCircle2 } from "lucide-react";
+import DOMPurify from "dompurify";
 
 interface ESignatureModalProps {
   open: boolean;
@@ -155,7 +156,7 @@ export function ESignatureModal({ open, onOpenChange, documentType, referenceId,
           ) : (
             <div 
               className="prose prose-sm dark:prose-invert max-w-none p-4 bg-background border border-border rounded-xl shadow-sm text-foreground/80"
-              dangerouslySetInnerHTML={{ __html: template?.content_html || "<p>Please sign to acknowledge terms and conditions.</p>" }}
+              dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(template?.content_html || "<p>Please sign to acknowledge terms and conditions.</p>") }}
             />
           )}
         </div>

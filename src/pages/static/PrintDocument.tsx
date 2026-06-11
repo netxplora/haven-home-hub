@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { QRCodeSVG } from "qrcode.react";
 import { ShieldCheck, Printer, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import DOMPurify from "dompurify";
 
 export default function PrintDocument() {
   const { id } = useParams<{ id: string }>();
@@ -199,10 +200,9 @@ export default function PrintDocument() {
             </div>
           </div>
 
-          {/* Dynamic HTML Content — template with injected data */}
           <div 
             className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
-            dangerouslySetInnerHTML={{ __html: snapshotHtml }} 
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(snapshotHtml) }} 
           />
 
           {/* Fallback Signatures & Seal Section (only shows if template has no #signature-block) */}

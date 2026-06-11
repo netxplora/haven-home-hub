@@ -24,8 +24,9 @@ import {
 } from "lucide-react";
 import { ESignatureModal } from "@/components/site/ESignatureModal";
 import { ReceiptDialog } from "@/components/dashboard/ReceiptDialog";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogBody } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { toast } from "sonner";
+import { DocumentViewerModal } from "@/components/dashboard/DocumentViewerModal";
 import { cn } from "@/lib/utils";
 import { formatMoney } from "@/lib/invest";
 
@@ -501,7 +502,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
 
                         {/* Interactive Buttons */}
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center sm:justify-end gap-2 pt-2 border-t border-border/30 w-full">
-                          {isReady && !isRevoked && doc.file_path.startsWith('generated://') && (
+                          {isReady && !isRevoked && (
                             <Button
                               onClick={() => {
                                 setPreviewDoc(doc);
@@ -521,7 +522,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                             disabled={!isReady}
                             className="rounded-lg font-bold text-xs shrink-0 group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary transition-all w-full sm:w-auto h-9"
                           >
-                            <Download className="h-4 w-4 mr-2" /> {doc.file_path.startsWith('generated://') ? 'View / Print PDF' : 'Download Securely'}
+                            <Download className="h-4 w-4 mr-2" /> Download Securely
                           </Button>
                           <Button
                             onClick={() => handleResendDoc(doc)}
@@ -682,54 +683,13 @@ export function DocumentsPanel({ userId }: { userId: string }) {
         />
       )}
 
-      {/* MODAL: Inline Document Preview */}
-      <Dialog open={previewOpen} onOpenChange={setPreviewOpen}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto rounded-2xl border-border/40">
-          <DialogHeader className="border-b border-border/40 pb-4">
-            <div className="flex justify-between items-center pr-6">
-              <div>
-                <DialogTitle className="font-serif text-lg">{previewDoc?.name}</DialogTitle>
-                <p className="text-xs text-muted-foreground mt-0.5">Reference ID: {previewDoc?.metadata?.reference_id || previewDoc?.id.split('-')[0].toUpperCase()}</p>
-              </div>
-              <Button
-                onClick={() => window.open(`/print-document/${previewDoc?.id}`, '_blank')}
-                className="bg-primary hover:bg-primary text-white rounded-lg font-bold"
-              >
-                <Eye className="h-4 w-4 mr-2" /> Open Printable View
-              </Button>
-            </div>
-          </DialogHeader>
-          <DialogBody className="py-6 relative">
-            <div className="bg-white p-10 sm:p-14 rounded-none border-2 border-slate-200 shadow-md min-h-[600px] relative overflow-hidden">
-              {/* Background Watermark */}
-              <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0">
-                <ShieldCheck className="w-[400px] h-[400px]" />
-              </div>
+      {/* MODAL: Unified Document Preview */}
+      <DocumentViewerModal 
+        open={previewOpen} 
+        onOpenChange={setPreviewOpen} 
+        document={previewDoc} 
+      />
 
-              {/* Document Content */}
-              <div className="relative z-10">
-                {/* Header */}
-                <div className="flex justify-between items-start border-b-[3px] border-double border-slate-800 pb-4 mb-8">
-                  <div className="flex items-center gap-3">
-                    <img src="/logo.png" alt="Haven Home Hub" className="h-8 w-auto" />
-                    <div>
-                      <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold mt-0.5">Certified Legal Documentation</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-[9px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">REF: {previewDoc?.metadata?.reference_id || previewDoc?.id?.split('-')[0].toUpperCase()}</p>
-                  </div>
-                </div>
-
-                <div
-                  className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
-                  dangerouslySetInnerHTML={{ __html: previewDoc?.metadata?.document_snapshot || "" }}
-                />
-              </div>
-            </div>
-          </DialogBody>
-        </DialogContent>
-      </Dialog>
       {/* Document Request Modal */}
       <Dialog open={requestModalOpen} onOpenChange={setRequestModalOpen}>
         <DialogContent className="sm:max-w-[425px]">

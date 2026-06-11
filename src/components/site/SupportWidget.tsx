@@ -118,7 +118,7 @@ export function SupportWidget() {
         };
         fetchGuestTickets();
       } else {
-        setLocalTickets([]);
+        setLocalTickets(prev => prev.length === 0 ? prev : []);
       }
     }
   }, [user, myTickets, guestTicketIds]);

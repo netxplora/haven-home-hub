@@ -160,7 +160,10 @@ export default function Home() {
 
   return (
     <SiteLayout>
-      <SEO />
+      <SEO>
+        {/* LCP Optimization: Preload the first hero image */}
+        <link rel="preload" as="image" href={heroImages[0]} fetchPriority="high" />
+      </SEO>
       <OrganizationJsonLd />
 
       {/* 1. HERO SEARCH EXPERIENCE (SAFETY DOMINANT) */}
@@ -171,13 +174,17 @@ export default function Home() {
               key={img}
               className={`absolute inset-0 transition-opacity [transition-duration:1500ms] ease-in-out ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
             >
-              <img
-                src={img}
-                alt="Real Estate"
-                fetchPriority={index === 0 ? "high" : "auto"}
-                loading={index === 0 ? "eager" : "lazy"}
-                className={`h-full w-full object-cover transition-transform [transition-duration:7000ms] ease-linear ${index === currentSlide ? "scale-[1.04]" : "scale-100"}`}
-              />
+              <picture>
+                <source srcSet={img.replace(/\.(png|jpg|jpeg)$/i, '.webp')} type="image/webp" />
+                <img
+                  src={img}
+                  alt="Real Estate"
+                  fetchPriority={index === 0 ? "high" : "auto"}
+                  loading={index === 0 ? "eager" : "lazy"}
+                  decoding={index === 0 ? "sync" : "async"}
+                  className={`h-full w-full object-cover transition-transform [transition-duration:7000ms] ease-linear ${index === currentSlide ? "scale-[1.04]" : "scale-100"}`}
+                />
+              </picture>
             </div>
           ))}
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 z-[1]" />

@@ -16,12 +16,15 @@ import { formatMoney } from "@/lib/invest";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
+import { DocumentViewerModal } from "@/components/dashboard/DocumentViewerModal";
 
 export function InvestmentsPanel() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [activeSubTab, setActiveSubTab] = useState("overview");
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
 
   // ── Query 1: User investments list ──
   const { data: investments = [], isLoading: isInvestmentsLoading, refetch: refetchInvestments } = useQuery({
@@ -542,17 +545,11 @@ export function InvestmentsPanel() {
                     </div>
 
                     <div className="flex gap-2">
-                      {doc.document_url && (
-                        <Button variant="outline" size="sm" className="h-8 text-xs font-semibold gap-1.5" asChild>
-                          <a href={doc.document_url} target="_blank" rel="noopener noreferrer">
-                            <Download className="h-3.5 w-3.5" /> Download
-                          </a>
-                        </Button>
-                      )}
-                      <Button variant="outline" size="sm" className="h-8 text-xs font-semibold gap-1.5" asChild>
-                        <Link to={`/invest/certificate/${doc.related_id || doc.id}`}>
-                          <ExternalLink className="h-3.5 w-3.5" /> View
-                        </Link>
+                      <Button variant="outline" size="sm" className="h-8 text-xs font-semibold gap-1.5" onClick={() => {
+                        setPreviewDoc(doc);
+                        setPreviewOpen(true);
+                      }}>
+                        <ExternalLink className="h-3.5 w-3.5" /> View / Download
                       </Button>
                     </div>
                   </div>
@@ -609,6 +606,7 @@ export function InvestmentsPanel() {
           </div>
         </TabsContent>
       </Tabs>
+      <DocumentViewerModal open={previewOpen} onOpenChange={setPreviewOpen} document={previewDoc} />
     </div>
   );
 }

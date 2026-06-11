@@ -20,6 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
 import { useState, useEffect, useMemo } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
+import { DocumentViewerModal } from "@/components/dashboard/DocumentViewerModal";
 
 export default function InvestPortfolioDetail() {
   const { id } = useParams();
@@ -27,6 +28,8 @@ export default function InvestPortfolioDetail() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [previewDoc, setPreviewDoc] = useState<any>(null);
 
   // ── Enriched Data from RPC ──
   const { data: enrichedData, isLoading, error } = useQuery({
@@ -857,16 +860,18 @@ export default function InvestPortfolioDetail() {
                       <div className="shrink-0 flex items-center gap-3">
                         {isAvailable ? (
                           matchedSigned ? (
-                            <Button variant="outline" size="sm" className="font-semibold text-xs h-9" asChild>
-                              <a href={matchedSigned.signature_data} target="_blank" rel="noopener noreferrer">
-                                <Eye className="w-3.5 h-3.5 mr-1.5" /> View
-                              </a>
+                            <Button variant="outline" size="sm" className="font-semibold text-xs h-9" onClick={() => {
+                              setPreviewDoc({ ...matchedSigned, direct_url: matchedSigned.signature_data });
+                              setPreviewOpen(true);
+                            }}>
+                              <Eye className="w-3.5 h-3.5 mr-1.5" /> View
                             </Button>
                           ) : (
-                            <Button variant="outline" size="sm" className="font-semibold text-xs h-9" asChild>
-                              <a href={matchedProp?.url} target="_blank" rel="noopener noreferrer">
-                                <Download className="w-3.5 h-3.5 mr-1.5" /> Download
-                              </a>
+                            <Button variant="outline" size="sm" className="font-semibold text-xs h-9" onClick={() => {
+                              setPreviewDoc({ ...matchedProp, direct_url: matchedProp?.url });
+                              setPreviewOpen(true);
+                            }}>
+                              <Download className="w-3.5 h-3.5 mr-1.5" /> Download
                             </Button>
                           )
                         ) : (
@@ -986,10 +991,11 @@ export default function InvestPortfolioDetail() {
                           </div>
                         </div>
                         <div className="flex gap-2 shrink-0">
-                          <Button variant="outline" size="sm" className="font-semibold text-xs h-9" asChild>
-                            <a href={doc.signature_data} target="_blank" rel="noopener noreferrer">
-                              <Eye className="w-3.5 h-3.5 mr-1.5" /> View
-                            </a>
+                          <Button variant="outline" size="sm" className="font-semibold text-xs h-9" onClick={() => {
+                            setPreviewDoc({ ...doc, direct_url: doc.signature_data });
+                            setPreviewOpen(true);
+                          }}>
+                            <Eye className="w-3.5 h-3.5 mr-1.5" /> View
                           </Button>
                         </div>
                       </div>
@@ -1226,6 +1232,7 @@ export default function InvestPortfolioDetail() {
         </Tabs>
       </div>
 
+      <DocumentViewerModal open={previewOpen} onOpenChange={setPreviewOpen} document={previewDoc} />
       <SellUnitsDialog 
         open={isSellModalOpen} 
         onOpenChange={setIsSellModalOpen} 

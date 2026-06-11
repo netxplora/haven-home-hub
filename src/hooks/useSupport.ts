@@ -3,6 +3,9 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 
+const EMPTY_ARRAY: any[] = [];
+const EMPTY_OBJECT: Record<string, any> = {};
+
 export type TicketStatus = "open" | "pending" | "awaiting_user" | "resolved" | "closed";
 export type TicketPriority = "low" | "medium" | "high" | "critical";
 
@@ -607,24 +610,24 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
   };
 
   return {
-    faqs: faqsQuery.data ?? [],
+    faqs: faqsQuery.data ?? EMPTY_ARRAY,
     faqsLoading: faqsQuery.isLoading,
-    categories: categoriesQuery.data ?? [],
+    categories: categoriesQuery.data ?? EMPTY_ARRAY,
     categoriesLoading: categoriesQuery.isLoading,
-    autoResponses: autoResponsesQuery.data ?? [],
-    myTickets: myTicketsQuery.data ?? [],
+    autoResponses: autoResponsesQuery.data ?? EMPTY_ARRAY,
+    myTickets: myTicketsQuery.data ?? EMPTY_ARRAY,
     myTicketsLoading: myTicketsQuery.isLoading,
     ticket: ticketQuery.data ?? null,
     ticketLoading: ticketQuery.isLoading,
     customerProfile: customerProfileQuery.data ?? null,
     customerProfileLoading: customerProfileQuery.isLoading,
-    messages: messagesQuery.data ?? [],
+    messages: messagesQuery.data ?? EMPTY_ARRAY,
     messagesLoading: messagesQuery.isLoading,
-    notes: notesQuery.data ?? [],
+    notes: notesQuery.data ?? EMPTY_ARRAY,
     notesLoading: notesQuery.isLoading,
-    events: eventsQuery.data ?? [],
+    events: eventsQuery.data ?? EMPTY_ARRAY,
     eventsLoading: eventsQuery.isLoading,
-    staff: staffQuery.data ?? [],
+    staff: staffQuery.data ?? EMPTY_ARRAY,
     createTicket: createTicket.mutateAsync,
     createTicketPending: createTicket.isPending,
     sendMessage: sendMessage.mutateAsync,
