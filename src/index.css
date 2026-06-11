@@ -10,46 +10,46 @@
 
 @layer base {
   :root {
-    /* HomeNest Design System */
-    --background: 48 96% 89%;      /* #FEF3C7 (Cream) */
-    --foreground: 20 10% 10%;      /* #1C1917 */
+    /* NomadKit Design System */
+    --background: 45 100% 98%;     /* #FFFDF7 */
+    --foreground: 20 10% 10%;
 
-    --card: 48 100% 96%;           /* #FFFBEB */
+    --card: 0 0% 100%;             /* #FFFFFF */
     --card-foreground: 20 10% 10%;
 
-    --popover: 48 100% 96%;
+    --popover: 0 0% 100%;          /* #FFFFFF */
     --popover-foreground: 20 10% 10%;
 
     /* Brand Colors */
-    --primary: 22 83% 31%;         /* #92400E (Warm Brown) */
+    --primary: 30 54% 64%;         /* #D4A373 (Primary Sand) */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 84 81% 44%;       /* #84CC16 (Sage) */
+    --secondary: 192 91% 36%;      /* #0891B2 (Secondary Ocean) */
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 48 100% 96%;         /* #FFFBEB */
-    --accent-foreground: 22 83% 31%;
+    --accent: 45 50% 95%;          /* light sand accent */
+    --accent-foreground: 30 54% 64%;
 
-    --muted: 60 5% 96%;            /* #F5F5F4 */
-    --muted-foreground: 20 5% 45%; /* #78716C */
+    --muted: 45 20% 95%;           
+    --muted-foreground: 20 5% 45%; 
 
     /* Status Colors */
-    --destructive: 0 72% 51%;      /* #DC2626 */
+    --destructive: 0 72% 51%;      /* #DC2626 (Error) */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 76% 36%;        /* #16A34A */
+    --success: 143 64% 24%;        /* #166534 (Success / Tertiary Forest) */
     --success-foreground: 0 0% 100%;
 
-    --warning: 32 95% 44%;         /* #D97706 */
+    --warning: 41 96% 40%;         /* #CA8A04 (Warning) */
     --warning-foreground: 0 0% 100%;
 
-    --info: 200 98% 39%;           /* #0284C7 */
+    --info: 192 91% 36%;           /* #0891B2 (Info) */
     --info-foreground: 0 0% 100%;
 
     /* Borders */
-    --border: 20 6% 90%;           /* #E7E5E4 */
-    --input: 20 6% 90%;          
-    --ring: 22 83% 31%;            /* #92400E */
+    --border: 30 20% 90%;          
+    --input: 30 20% 90%;          
+    --ring: 30 54% 64%;            /* #D4A373 */
 
     --radius: 8px;
 
