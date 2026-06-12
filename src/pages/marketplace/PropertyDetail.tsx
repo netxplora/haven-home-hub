@@ -314,7 +314,7 @@ export default function PropertyDetail() {
             </div>
 
             {property.property_type === 'land' ? (
-              <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                   <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Land Size"}</p>
@@ -337,7 +337,7 @@ export default function PropertyDetail() {
                 </div>
               </div>
             ) : (
-              <div className="mt-10 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
                   <Bed className="h-5 w-5 text-primary mx-auto mb-2" />
                   <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Bedrooms"}</p>

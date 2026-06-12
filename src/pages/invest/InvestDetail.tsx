@@ -342,17 +342,15 @@ export default function InvestDetail() {
                     </div>
                   </div>
                   <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-border bg-accent/50">
-                    {/* Placeholder for map */}
-                    <div className="absolute inset-0 flex items-center justify-center flex-col text-muted-foreground">
-                      <MapIcon className="h-10 w-10 mb-2 opacity-20" />
-                      <p className="text-sm font-medium">Interactive Map View</p>
-                      <p className="text-xs">Precise coordinates: {data.city}, {data.state}</p>
-                    </div>
-                    <img 
-                      src={`https://api.dicebear.com/7.x/identicon/svg?seed=${data.slug}&backgroundColor=f1f5f9`} 
-                      alt="Map" 
-                      className="w-full h-full object-cover opacity-10 mix-blend-multiply" 
-                    />
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(data.location || data.city + ", " + data.state)}&output=embed`}
+                    ></iframe>
                   </div>
                 </div>
               </TabsContent>

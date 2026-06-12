@@ -172,7 +172,13 @@ export default function Home() {
           {heroImages.map((img, index) => (
             <div
               key={img}
-              className={`absolute inset-0 transition-opacity [transition-duration:1500ms] ease-in-out ${index === currentSlide ? "opacity-100" : "opacity-0"}`}
+              className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${
+                index === currentSlide 
+                  ? "translate-x-0 opacity-100 z-10" 
+                  : index < currentSlide 
+                    ? "-translate-x-full opacity-0 z-0" 
+                    : "translate-x-full opacity-0 z-0"
+              }`}
             >
               <picture>
                 <source srcSet={img.replace(/\.(png|jpg|jpeg)$/i, '.webp')} type="image/webp" />
@@ -187,7 +193,8 @@ export default function Home() {
               </picture>
             </div>
           ))}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/30 z-[1]" />
+          <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/40 z-[1]" />
         </div>
 
         <div className="container-wide relative z-10 py-20">
