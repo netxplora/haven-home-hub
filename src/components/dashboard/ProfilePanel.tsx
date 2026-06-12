@@ -416,6 +416,16 @@ export function ProfilePanel({ userId }: { userId: string }) {
                  <p className="font-serif text-lg font-semibold text-foreground">Verified Investor</p>
                  <p className="mt-2 leading-relaxed max-w-sm">Your identity has been fully verified. You have complete access to all investment vehicles and portfolio management tools.</p>
               </div>
+              {profile?.kyc_reviewed_at && (
+                <div className="mt-2 text-xs font-medium bg-green-500/20 text-green-800 px-3 py-1.5 rounded-full">
+                  Verified on {new Date(profile.kyc_reviewed_at).toLocaleDateString()}
+                </div>
+              )}
+              {profile?.kyc_reviewer_notes && (
+                <div className="mt-2 text-xs text-green-700 bg-white/50 p-3 rounded-lg border border-green-500/30 text-left w-full max-w-sm">
+                  <span className="font-bold">Reviewer Notes:</span> {profile.kyc_reviewer_notes}
+                </div>
+              )}
               <Button variant="outline" className="mt-2 rounded-lg border-green-500/30 text-green-700 font-medium px-6">View Documents</Button>
             </div>
           ) : kycStatus === 'pending' ? (
@@ -427,8 +437,15 @@ export function ProfilePanel({ userId }: { userId: string }) {
                  <p className="font-serif text-lg font-semibold text-foreground">Review in Progress</p>
                  <p className="mt-2 leading-relaxed max-w-sm">Our compliance team is auditing your credentials. This process typically takes 24-48 business hours.</p>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-xs font-medium text-primary uppercase tracking-wider px-4 py-1.5 bg-primary/10 rounded-full">
-                 <Clock className="h-3.5 w-3.5" /> Awaiting Final Audit
+              <div className="mt-4 flex flex-col items-center gap-2">
+                 <div className="flex items-center gap-2 text-xs font-medium text-primary uppercase tracking-wider px-4 py-1.5 bg-primary/10 rounded-full">
+                    <Clock className="h-3.5 w-3.5" /> Awaiting Final Audit
+                 </div>
+                 {profile?.kyc_submitted_at && (
+                   <span className="text-[10px] text-muted-foreground">
+                     Submitted on {new Date(profile.kyc_submitted_at).toLocaleDateString()}
+                   </span>
+                 )}
               </div>
             </div>
           ) : (
@@ -442,12 +459,22 @@ export function ProfilePanel({ userId }: { userId: string }) {
                  ))}
               </div>
 
-              {kycStatus === 'rejected' && profile?.kyc_rejection_reason && (
+              {kycStatus === 'rejected' && (
                 <div className="text-sm text-destructive bg-destructive/10 p-6 rounded-xl flex gap-4 border border-destructive/20">
                   <ShieldAlert className="w-6 h-6 shrink-0 mt-1" />
-                  <div>
+                  <div className="w-full">
                     <p className="font-bold text-lg">Verification Refused</p>
-                    <p className="mt-1 opacity-90 leading-relaxed">{profile.kyc_rejection_reason}</p>
+                    {(profile?.kyc_rejection_reason || profile?.kyc_reviewer_notes) && (
+                      <p className="mt-2 opacity-90 leading-relaxed bg-background/50 p-3 rounded-md">
+                        <span className="font-bold block mb-1">Reason:</span>
+                        {profile?.kyc_rejection_reason || profile?.kyc_reviewer_notes}
+                      </p>
+                    )}
+                    {profile?.kyc_reviewed_at && (
+                      <p className="mt-3 text-xs opacity-70">
+                        Reviewed on {new Date(profile.kyc_reviewed_at).toLocaleDateString()}
+                      </p>
+                    )}
                   </div>
                 </div>
               )}

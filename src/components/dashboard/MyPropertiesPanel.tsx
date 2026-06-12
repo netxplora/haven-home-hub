@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { 
   ClipboardList, ExternalLink, Clock, CheckCircle2, XCircle, AlertCircle, 
   CalendarDays, FileText, RefreshCcw, Loader2, Search, Home, ShieldCheck, 
-  MapPin, Receipt, History, Building2
+  MapPin, Receipt, History, Building2, Layers
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { LegalDocumentsDialog } from "./LegalDocumentsDialog";
 import { ManualPaymentModal } from "./ManualPaymentModal";
 import { SavedPanel } from "./SavedPanel";
 import { toast } from "sonner";
+import { SellUnitsDialog } from "./SellUnitsDialog";
 
 export function MyPropertiesPanel({ userId }: { userId: string }) {
   const [activeTab, setActiveTab] = useState("reservations");
@@ -29,6 +30,9 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedReservation, setSelectedReservation] = useState<any | null>(null);
   const [cancellingResId, setCancellingResId] = useState<string | null>(null);
+  const [investmentToSell, setInvestmentToSell] = useState<any>(null);
+  const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  const [isFetchingInvestment, setIsFetchingInvestment] = useState<string | null>(null);
 
   // ── Query 1: Fetch all user reservations/purchases/rentals ──
   const { data: reservations = [], isLoading: isResLoading, refetch: refetchReservations } = useQuery({
@@ -89,6 +93,34 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
       toast.error(err.message || "Failed to cancel reservation.");
     } finally {
       setCancellingResId(null);
+    }
+  };
+
+  const handleSellUnits = async (r: any) => {
+    setIsFetchingInvestment(r.id);
+    try {
+      const { data, error } = await supabase
+        .from("user_investments")
+        .select(`*, investment_properties(*)`)
+        .eq("user_id", userId)
+        .eq("property_id", r.investment_property_id)
+        .in("status", ["active", "confirmed", "completed", "roi_active", "roi_paused", "preparing_for_roi"])
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      if (error) throw error;
+      if (data) {
+        setInvestmentToSell(data);
+        setIsSellModalOpen(true);
+      } else {
+        toast.error("Could not find an active fractional investment record for this asset.");
+      }
+    } catch (err: any) {
+      console.error(err);
+      toast.error("Failed to load investment details.");
+    } finally {
+      setIsFetchingInvestment(null);
     }
   };
 
@@ -264,6 +296,11 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
         propertyId={selectedPropertyForDocs?.id || ""} 
         propertyTitle={selectedPropertyForDocs?.title || ""} 
         userId={userId} 
+      />
+      <SellUnitsDialog
+        open={isSellModalOpen}
+        onOpenChange={setIsSellModalOpen}
+        investment={investmentToSell}
       />
 
       <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between p-5 sm:p-8 rounded-xl border border-border/40 bg-card shadow-soft">
@@ -531,6 +568,18 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
                             </div>
                             
                             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0 justify-end">
+                              {isInvestment && (
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="rounded-lg flex-1 sm:flex-none font-bold text-amber-700 hover:text-amber-800 hover:bg-amber-50 border-amber-200" 
+                                  onClick={() => handleSellUnits(r)}
+                                  disabled={isFetchingInvestment === r.id}
+                                >
+                                  {isFetchingInvestment === r.id ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers className="mr-2 h-4 w-4" />}
+                                  List for Sale
+                                </Button>
+                              )}
                               {item?.property_type === 'land' && (
                                 <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold text-blue-700 hover:text-blue-800 hover:bg-blue-50 border-blue-200" onClick={() => setSelectedPropertyForDocs({ id: item.id || r.related_id, title: item.title })}>
                                   <FileText className="mr-2 h-4 w-4" /> Legal Docs

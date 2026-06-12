@@ -17,8 +17,10 @@ import Auth from "./pages/auth/Auth";
 // Lazy-loaded routes — loaded on demand
 const ComparePage = lazy(() => import("./pages/marketplace/ComparePage"));
 const Agents = lazy(() => import("./pages/marketplace/Agents"));
+const SecondaryMarket = lazy(() => import("./pages/marketplace/SecondaryMarket"));
 const ForgotPassword = lazy(() => import("./pages/auth/ForgotPassword"));
 const ResetPassword = lazy(() => import("./pages/auth/ResetPassword"));
+const PropertyMapExplorer = lazy(() => import("./pages/marketplace/PropertyMapExplorer"));
 
 // Dashboards (heavy)
 const Dashboard = lazy(() => import("./pages/dashboard/UserDashboard"));
@@ -124,6 +126,8 @@ const App = () => (
               <Route path="/properties/:slug" element={<PropertyDetail />} />
               <Route path="/compare" element={<ComparePage />} />
               <Route path="/agents" element={<Agents />} />
+              <Route path="/secondary-market" element={<SecondaryMarket />} />
+              <Route path="/explore" element={<PropertyMapExplorer />} />
               
               {/* Auth */}
               <Route path="/auth" element={<Auth />} />

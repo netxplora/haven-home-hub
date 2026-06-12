@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
@@ -9,15 +9,28 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Save, RefreshCw, AlertCircle, Play, Clock, Trash2 } from "lucide-react";
+import { Save, RefreshCw, AlertCircle, Play, Clock, Trash2, Search, Settings2, ShieldCheck, Mail, CreditCard, LayoutDashboard, Database, Activity, FileText } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+
+const TABS = [
+  { id: "General", icon: LayoutDashboard },
+  { id: "Branding", icon: Settings2 },
+  { id: "Payments", icon: CreditCard },
+  { id: "Documents", icon: FileText },
+  { id: "Notifications", icon: Mail },
+  { id: "Security", icon: ShieldCheck },
+  { id: "Integrations", icon: Database },
+  { id: "Investment Settings", icon: Activity },
+  { id: "Referral Settings", icon: Activity },
+];
 
 export function AdminSettings() {
   const qc = useQueryClient();
   const [saving, setSaving] = useState<string | null>(null);
   const [runningMaintenance, setRunningMaintenance] = useState(false);
   const [maintenanceResult, setMaintenanceResult] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<string>("platform");
+  const [activeTab, setActiveTab] = useState<string>("General");
+  const [searchQuery, setSearchQuery] = useState("");
 
   async function runMaintenance() {
     setRunningMaintenance(true);
@@ -41,7 +54,6 @@ export function AdminSettings() {
       const { data, error } = await (supabase as any)
         .from("system_configs")
         .select("*")
-        .order("category", { ascending: true })
         .order("key", { ascending: true });
       if (error) throw error;
       return data;
@@ -55,7 +67,6 @@ export function AdminSettings() {
       try {
         parsedValue = JSON.parse(value);
       } catch (e) {
-        // If not valid JSON, treat as string if it's simple or error
         parsedValue = value;
       }
 
@@ -65,7 +76,7 @@ export function AdminSettings() {
         .eq("id", id);
 
       if (error) throw error;
-      toast({ title: "Configuration Updated", description: `Successfully updated ${key}` });
+      toast({ title: "Configuration Updated", description: `Successfully updated ${key.replace(/_/g, " ")}` });
       qc.invalidateQueries({ queryKey: ["admin-system-configs"] });
     } catch (error: any) {
       toast({ title: "Update Failed", description: error.message, variant: "destructive" });
@@ -74,65 +85,94 @@ export function AdminSettings() {
     }
   }
 
+  const filteredConfigs = useMemo(() => {
+    return (configs as any[]).filter(c => {
+      const matchesTab = searchQuery ? true : c.category === activeTab;
+      const matchesSearch = c.key.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                            (c.description || "").toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesTab && matchesSearch;
+    });
+  }, [configs, activeTab, searchQuery]);
+
   if (isLoading) return <Skeleton className="h-[600px] w-full rounded-xl" />;
-
-  const categories = Array.from(new Set((configs as any[]).map((c) => c.category))).sort();
-
-  // Sync activeTab if categories change and it's not present
-  if (categories.length > 0 && activeTab !== "maintenance" && !categories.includes(activeTab)) {
-    setActiveTab(categories[0] as string);
-  }
 
   return (
     <div className="space-y-8 pb-12">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight">System Registry</h2>
-          <p className="text-muted-foreground mt-1">Manage core platform configurations and recovery engines.</p>
+          <h2 className="text-3xl font-bold tracking-tight">Control Center</h2>
+          <p className="text-muted-foreground mt-1">Manage global platform configurations and architecture.</p>
         </div>
-        <Button variant="outline" size="sm" className="rounded-xl border-border/50 shadow-sm" onClick={() => qc.invalidateQueries({ queryKey: ["admin-system-configs"] })}>
-          <RefreshCw className="mr-2 h-4 w-4" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-3">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input 
+              placeholder="Search configurations..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-card rounded-xl border-border/50 shadow-sm"
+            />
+          </div>
+          <Button variant="outline" size="icon" className="rounded-xl border-border/50 shadow-sm shrink-0" onClick={() => qc.invalidateQueries({ queryKey: ["admin-system-configs"] })}>
+            <RefreshCw className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-8 items-start">
-        {/* Sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8 items-start">
+        {/* Sidebar Navigation */}
         <aside className="sticky top-20 flex flex-col gap-1.5 p-4 rounded-2xl border border-border/50 bg-card shadow-soft">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">System Modules</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">System Actions</div>
           <button
-            onClick={() => setActiveTab("maintenance")}
+            onClick={() => { setActiveTab("maintenance"); setSearchQuery(""); }}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === "maintenance" 
+              activeTab === "maintenance" && !searchQuery
                 ? "bg-primary text-primary-foreground shadow-md scale-[1.02]" 
                 : "text-foreground/70 hover:bg-secondary/50 hover:text-foreground"
             }`}
           >
-            <AlertCircle className="h-4 w-4" /> Operations
+            <AlertCircle className="h-4 w-4" /> Operations & Maintenance
           </button>
           
           <div className="my-2 border-t border-border/50" />
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">Configurations</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">Module Configurations</div>
           
-          {categories.map((cat: any) => (
+          {TABS.map((tab) => (
             <button
-              key={cat}
-              onClick={() => setActiveTab(cat)}
-              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all capitalize ${
-                activeTab === cat 
+              key={tab.id}
+              onClick={() => { setActiveTab(tab.id); setSearchQuery(""); }}
+              className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                activeTab === tab.id && !searchQuery
                   ? "bg-primary text-primary-foreground shadow-md scale-[1.02]" 
                   : "text-foreground/70 hover:bg-secondary/50 hover:text-foreground"
               }`}
             >
-              <div className="h-1.5 w-1.5 rounded-full bg-current opacity-50" />
-              {cat}
+              <tab.icon className="h-4 w-4 opacity-70" />
+              {tab.id}
             </button>
           ))}
         </aside>
 
         {/* Main Content Area */}
         <main className="space-y-6">
-          {activeTab === "maintenance" ? (
+          {searchQuery ? (
+            <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
+              <div className="pb-4 border-b border-border/40">
+                <h3 className="text-2xl font-bold">Search Results for "{searchQuery}"</h3>
+                <p className="text-sm text-muted-foreground mt-1">Found {filteredConfigs.length} matching configurations across all modules.</p>
+              </div>
+              <div className="grid gap-5 xl:grid-cols-2">
+                {filteredConfigs.map((config: any) => (
+                  <ConfigCard 
+                    key={config.id} 
+                    config={config} 
+                    isSaving={saving === config.id} 
+                    onSave={(val) => updateConfig(config.id, config.key, val)} 
+                  />
+                ))}
+              </div>
+            </div>
+          ) : activeTab === "maintenance" ? (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
               <Alert variant="default" className="bg-primary/5 border-primary/20 rounded-xl">
                 <AlertCircle className="h-4 w-4 text-primary" />
@@ -175,13 +215,18 @@ export function AdminSettings() {
           ) : (
             <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2">
               <div className="pb-4 border-b border-border/40">
-                <h3 className="text-2xl font-bold capitalize">{activeTab} Variables</h3>
+                <h3 className="text-2xl font-bold">{activeTab} Variables</h3>
                 <p className="text-sm text-muted-foreground mt-1">Configure global parameters for the {activeTab} module.</p>
               </div>
-              <div className="grid gap-5 xl:grid-cols-2">
-                {configs
-                  .filter((c: any) => c.category === activeTab)
-                  .map((config: any) => (
+              
+              {filteredConfigs.length === 0 ? (
+                <div className="text-center py-16 bg-card rounded-2xl border border-dashed border-border">
+                  <Settings2 className="h-10 w-10 mx-auto text-muted-foreground/30 mb-3" />
+                  <p className="text-foreground font-medium">No configurations found for this module.</p>
+                </div>
+              ) : (
+                <div className="grid gap-5 xl:grid-cols-2">
+                  {filteredConfigs.map((config: any) => (
                     <ConfigCard 
                       key={config.id} 
                       config={config} 
@@ -189,7 +234,8 @@ export function AdminSettings() {
                       onSave={(val) => updateConfig(config.id, config.key, val)} 
                     />
                   ))}
-              </div>
+                </div>
+              )}
             </div>
           )}
         </main>
@@ -201,12 +247,16 @@ export function AdminSettings() {
 function ConfigCard({ config, onSave, isSaving }: { config: any; onSave: (val: string) => void; isSaving: boolean }) {
   const [parsedVal, setParsedVal] = useState<any>(config.value);
 
+  useEffect(() => {
+    setParsedVal(config.value);
+  }, [config.value]);
+
   const type = typeof parsedVal;
 
   return (
     <div className="group relative overflow-hidden rounded-xl border border-border/50 bg-card/50 p-6 transition-all hover:shadow-lg hover:shadow-primary/5">
       <div className="space-y-4">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="space-y-1">
             <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
               {config.key.replace(/_/g, " ")}
@@ -215,7 +265,7 @@ function ConfigCard({ config, onSave, isSaving }: { config: any; onSave: (val: s
           </div>
           <Button 
             size="sm" 
-            className="rounded-xl px-4 h-9 font-semibold" 
+            className="rounded-xl px-4 h-9 font-semibold shrink-0" 
             disabled={isSaving || JSON.stringify(parsedVal) === JSON.stringify(config.value)}
             onClick={() => onSave(JSON.stringify(parsedVal))}
           >

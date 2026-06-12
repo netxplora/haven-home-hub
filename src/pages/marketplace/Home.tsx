@@ -724,6 +724,14 @@ function NewsletterForm() {
 }
 
 function HomeLocations() {
+  const [emblaRef] = useEmblaCarousel({
+    align: "start",
+    containScroll: "trimSnaps",
+    breakpoints: {
+      "(min-width: 640px)": { active: false },
+    },
+  });
+
   const { data: locations = [], isLoading } = useQuery({
     queryKey: ["homepage-featured-locations"],
     queryFn: async () => {
@@ -757,43 +765,45 @@ function HomeLocations() {
   }
 
   return (
-    <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-      {locations.map((loc: any) => {
-        // Fallback fake telemetry based on location length
-        const walkScore = 75 + (loc.name.length % 20);
-        const floodZone = loc.name.length % 2 === 0 ? "Zone X (Low Risk)" : "Zone AE (Required)";
-        const safetyIndex = (8 + (loc.name.length % 20) / 10).toFixed(1);
-        const imageUrl = loc.image_url || "https://images.unsplash.com/photo-1554629947-334ff61d85dc?auto=format&fit=crop&w=400&q=80";
+    <div className="overflow-hidden sm:overflow-visible -mx-4 sm:mx-0 px-4 sm:px-0" ref={emblaRef}>
+      <div className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+        {locations.map((loc: any) => {
+          // Fallback fake telemetry based on location length
+          const walkScore = 75 + (loc.name.length % 20);
+          const floodZone = loc.name.length % 2 === 0 ? "Zone X (Low Risk)" : "Zone AE (Required)";
+          const safetyIndex = (8 + (loc.name.length % 20) / 10).toFixed(1);
+          const imageUrl = loc.image_url || "https://images.unsplash.com/photo-1554629947-334ff61d85dc?auto=format&fit=crop&w=800&q=80";
 
-        return (
-          <div key={loc.id} className="group relative overflow-hidden rounded-xl border border-border/50 bg-card hover-lift flex flex-col h-full shadow-sm">
-            <div className="h-44 overflow-hidden relative">
-              <img src={imageUrl} alt={loc.name} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              <h3 className="absolute bottom-4 left-4 font-serif text-lg font-bold text-white">{loc.name}</h3>
-            </div>
-            <div className="p-4 space-y-2.5 text-xs flex-1 flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Walk Score:</span>
-                  <span className="font-semibold text-foreground flex items-center gap-1"><MapPin className="h-3 w-3 text-amber-500" /> {walkScore} - Walkable</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">FEMA Zone:</span>
-                  <span className="font-semibold text-foreground">{floodZone}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-muted-foreground">Safety Index:</span>
-                  <span className="font-semibold text-primary">{safetyIndex}/10</span>
-                </div>
+          return (
+            <div key={loc.id} className="flex-[0_0_85%] sm:flex-none min-w-0 group relative overflow-hidden rounded-xl border border-border/50 bg-card hover-lift flex flex-col h-full shadow-sm">
+              <div className="aspect-[4/3] overflow-hidden relative">
+                <img src={imageUrl} alt={loc.name} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                <h3 className="absolute bottom-4 left-4 font-serif text-lg font-bold text-white">{loc.name}</h3>
               </div>
-              <Button asChild variant="ghost" size="sm" className="w-full text-xs font-semibold text-primary hover:bg-primary/5 mt-2">
-                <Link to={`/properties?location_id=${loc.id}`}>Explore Area Listings</Link>
-              </Button>
+              <div className="p-4 space-y-2.5 text-xs flex-1 flex flex-col justify-between">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Walk Score:</span>
+                    <span className="font-semibold text-foreground flex items-center gap-1"><MapPin className="h-3 w-3 text-amber-500" /> {walkScore} - Walkable</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">FEMA Zone:</span>
+                    <span className="font-semibold text-foreground">{floodZone}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Safety Index:</span>
+                    <span className="font-semibold text-primary">{safetyIndex}/10</span>
+                  </div>
+                </div>
+                <Button asChild variant="ghost" size="sm" className="w-full text-xs font-semibold text-primary hover:bg-primary/5 mt-2">
+                  <Link to={`/properties?location_id=${loc.id}`}>Explore Area Listings</Link>
+                </Button>
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
     </div>
   );
 }

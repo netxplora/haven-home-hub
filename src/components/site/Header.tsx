@@ -68,7 +68,9 @@ export function Header() {
   const topOffset = isScrolled ? 0 : announcementHeight;
 
   const nav = [
+    { to: "/explore", label: "Map" },
     { to: "/invest", label: "Invest" },
+    { to: "/secondary-market", label: "Trade" },
     { to: "/agents", label: "Agents" },
     { to: "/blog", label: "Blog" },
     { to: "/about", label: "About" },

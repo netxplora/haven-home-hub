@@ -77,12 +77,18 @@ export function AdminKYC() {
     },
   });
 
-  async function updateKycStatus(userId: string, status: "approved" | "rejected", reason?: string) {
+  async function updateKycStatus(userId: string, status: "approved" | "rejected" | "unverified", reason?: string) {
     setProcessing(userId);
     try {
-      const updateData: any = { kyc_status: status };
-      if (status === "rejected" && reason) {
-        updateData.kyc_rejection_reason = reason;
+      const updateData: any = { 
+        kyc_status: status,
+        kyc_reviewed_at: new Date().toISOString()
+      };
+      if (reason) {
+        updateData.kyc_reviewer_notes = reason;
+        if (status === "rejected" || status === "unverified") {
+          updateData.kyc_rejection_reason = reason;
+        }
       }
       if (status === "approved") {
         updateData.kyc_rejection_reason = null;
@@ -96,20 +102,24 @@ export function AdminKYC() {
       if (error) throw error;
 
       // Send notification to user
+      let title = status === "approved" ? "Identity Verified" : "Verification Update";
+      let body = status === "approved"
+            ? "Your identity verification has been approved. You now have full access to all investment opportunities."
+            : status === "rejected"
+            ? `Your identity verification has been rejected. Reason: ${reason || "Documents not accepted."}`
+            : `Additional information is required for your verification. Notes: ${reason}`;
+
       await supabase.from("notifications").insert({
         user_id: userId,
         type: "system",
-        title: status === "approved" ? "Identity Verified" : "Verification Declined",
-        body:
-          status === "approved"
-            ? "Your identity verification has been approved. You now have full access to all investment opportunities."
-            : `Your identity verification has been rejected. Reason: ${reason || "Documents not accepted."}`,
+        title,
+        body,
         link: "/dashboard?tab=profile",
       });
 
       toast({
-        title: `Verification ${status === "approved" ? "Approved" : "Rejected"}`,
-        description: `User verification has been ${status}.`,
+        title: `Verification ${status === "approved" ? "Approved" : status === "unverified" ? "Needs Info" : "Rejected"}`,
+        description: `User verification has been updated to ${status}.`,
       });
 
       setExpandedId(null);
@@ -478,67 +488,104 @@ export function AdminKYC() {
                               </div>
                             </div>
 
-                            {/* Rejection reason (for pending or already rejected) */}
-                            {(profile.kyc_status === "pending" ||
-                              profile.kyc_status === "rejected") && (
-                              <div className="space-y-2">
-                                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                                  {profile.kyc_status === "rejected"
-                                    ? "Decline Reason"
-                                    : "Decline Reason (if declining)"}
-                                </p>
-                                {profile.kyc_status === "rejected" &&
-                                profile.kyc_rejection_reason ? (
-                                  <p className="text-sm bg-destructive/10 text-destructive p-3 rounded-lg">
-                                    {profile.kyc_rejection_reason}
-                                  </p>
-                                ) : (
-                                  profile.kyc_status === "pending" && (
-                                    <div className="flex gap-2">
+                            {/* Advanced KYC Audit & Review Block */}
+                            <div className="pt-4 border-t border-border/40 mt-4">
+                              <div className="grid gap-6 sm:grid-cols-2">
+                                {/* Audit Trail */}
+                                <div className="space-y-3 bg-card p-4 rounded-lg border border-border/50">
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                    <Clock className="h-3.5 w-3.5" /> Verification Timeline
+                                  </h4>
+                                  <div className="text-sm space-y-2">
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Submitted At</span>
+                                      <span className="font-mono">{profile.kyc_submitted_at ? new Date(profile.kyc_submitted_at).toLocaleString() : "—"}</span>
+                                    </div>
+                                    <div className="flex justify-between">
+                                      <span className="text-muted-foreground">Reviewed At</span>
+                                      <span className="font-mono">{profile.kyc_reviewed_at ? new Date(profile.kyc_reviewed_at).toLocaleString() : "—"}</span>
+                                    </div>
+                                    <div className="pt-2 border-t border-border/50 mt-2">
+                                      <span className="text-muted-foreground block mb-1">Reviewer Notes</span>
+                                      <p className="bg-secondary/30 p-2 rounded text-xs leading-relaxed min-h-[40px] italic">
+                                        {profile.kyc_reviewer_notes || "No notes available."}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Action Panel */}
+                                <div className="space-y-3 bg-card p-4 rounded-lg border border-border/50">
+                                  <h4 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                                    <ShieldAlert className="h-3.5 w-3.5" /> Administrator Actions
+                                  </h4>
+                                  
+                                  {profile.kyc_status === "pending" || profile.kyc_status === "rejected" || profile.kyc_status === "unverified" ? (
+                                    <div className="space-y-3">
                                       <Textarea
-                                        placeholder="Provide a reason for declining..."
+                                        placeholder="Add reviewer notes or rejection reason..."
                                         value={rejectionReason}
-                                        onChange={(e) =>
-                                          setRejectionReason(e.target.value)
-                                        }
-                                        className="min-h-[80px] flex-1"
+                                        onChange={(e) => setRejectionReason(e.target.value)}
+                                        className="min-h-[80px] text-sm resize-none bg-background"
                                       />
+                                      <div className="grid grid-cols-2 gap-2">
+                                        <Button
+                                          size="sm"
+                                          className="bg-green-600 hover:bg-green-700 text-white w-full gap-1.5"
+                                          disabled={processing === profile.id}
+                                          onClick={() => updateKycStatus(profile.id, "approved", rejectionReason)}
+                                        >
+                                          <Check className="h-3.5 w-3.5" /> Approve
+                                        </Button>
+                                        
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="w-full gap-1.5 text-amber-600 border-amber-200 hover:bg-amber-50"
+                                          disabled={!rejectionReason.trim() || processing === profile.id}
+                                          onClick={() => updateKycStatus(profile.id, "unverified", rejectionReason)}
+                                        >
+                                          <User className="h-3.5 w-3.5" /> Request Info
+                                        </Button>
+
+                                        <Button
+                                          variant="destructive"
+                                          size="sm"
+                                          className="w-full gap-1.5"
+                                          disabled={!rejectionReason.trim() || processing === profile.id}
+                                          onClick={() => updateKycStatus(profile.id, "rejected", rejectionReason)}
+                                        >
+                                          <X className="h-3.5 w-3.5" /> Reject
+                                        </Button>
+
+                                        <Button
+                                          variant="outline"
+                                          size="sm"
+                                          className="w-full gap-1.5 text-red-600 border-red-200 hover:bg-red-50"
+                                          disabled={!rejectionReason.trim() || processing === profile.id}
+                                          onClick={() => updateKycStatus(profile.id, "rejected", `[COMPLIANCE SUSPENSION] ${rejectionReason}`)}
+                                        >
+                                          <ShieldX className="h-3.5 w-3.5" /> Suspend
+                                        </Button>
+                                      </div>
+                                    </div>
+                                  ) : (
+                                    <div className="text-center p-4 border border-dashed rounded bg-background">
+                                      <ShieldCheck className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                                      <p className="text-sm font-medium">User is fully verified.</p>
                                       <Button
-                                        variant="destructive"
+                                        variant="outline"
                                         size="sm"
-                                        disabled={
-                                          !rejectionReason.trim() ||
-                                          processing === profile.id
-                                        }
-                                        onClick={() =>
-                                          updateKycStatus(
-                                            profile.id,
-                                            "rejected",
-                                            rejectionReason
-                                          )
-                                        }
+                                        className="mt-3 w-full"
+                                        onClick={() => updateKycStatus(profile.id, "unverified", "Verification reset by administrator.")}
                                       >
-                                        Confirm Decline
+                                        Revoke Verification
                                       </Button>
                                     </div>
-                                  )
-                                )}
+                                  )}
+                                </div>
                               </div>
-                            )}
-
-                            {/* Re-approve button for rejected */}
-                            {profile.kyc_status === "rejected" && (
-                              <Button
-                                size="sm"
-                                className="gap-1"
-                                disabled={processing === profile.id}
-                                onClick={() =>
-                                  updateKycStatus(profile.id, "approved")
-                                }
-                              >
-                                <Check className="h-3 w-3" /> Re-approve
-                              </Button>
-                            )}
+                            </div>
                           </div>
                         )}
                       </div>
