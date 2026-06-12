@@ -17,6 +17,7 @@ export function AdminSettings() {
   const [saving, setSaving] = useState<string | null>(null);
   const [runningMaintenance, setRunningMaintenance] = useState(false);
   const [maintenanceResult, setMaintenanceResult] = useState<any>(null);
+  const [activeTab, setActiveTab] = useState<string>("platform");
 
   async function runMaintenance() {
     setRunningMaintenance(true);
@@ -76,7 +77,6 @@ export function AdminSettings() {
   if (isLoading) return <Skeleton className="h-[600px] w-full rounded-xl" />;
 
   const categories = Array.from(new Set((configs as any[]).map((c) => c.category))).sort();
-  const [activeTab, setActiveTab] = useState<string>("platform");
 
   // Sync activeTab if categories change and it's not present
   if (categories.length > 0 && activeTab !== "maintenance" && !categories.includes(activeTab)) {
