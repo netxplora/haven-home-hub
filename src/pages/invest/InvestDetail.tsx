@@ -159,263 +159,7 @@ export default function InvestDetail() {
     ...(data.investment_property_images ?? []).sort((a, b) => a.sort_order - b.sort_order),
   ].filter((g) => g.url).slice(0, 5);
 
-  return (
-    <SiteLayout>
-      <SEO title={data.title} description={data.description.slice(0, 160)} image={resolveImage(data.cover_image_url)} />
-      <div className="container-wide py-8">
-        <Button asChild variant="ghost" size="sm">
-          <Link to="/invest/opportunities"><ArrowLeft className="mr-1 h-4 w-4" />All opportunities</Link>
-        </Button>
-      </div>
-
-      <div className="container-wide grid gap-10 pb-16 lg:grid-cols-[1fr_400px]">
-        {/* LEFT */}
-        <div>
-          {/* Gallery */}
-          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl shadow-card border border-border/50">
-            {gallery.map((g, i) => (
-              <img
-                key={i}
-                src={resolveImage(g.url)}
-                alt={data.title}
-                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-in-out ${activeImg === i ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
-              />
-            ))}
-          </div>
-          {gallery.length > 1 && (
-            <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
-              {gallery.map((g, i) => (
-                <button 
-                  key={i} 
-                  onClick={() => setActiveImg(i)}
-                  className={`relative aspect-square w-full overflow-hidden rounded-lg transition-all duration-300 ${activeImg === i ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "opacity-70 hover:opacity-100"}`}
-                >
-                  <img src={resolveImage(g.url)} alt="" loading="lazy" className="h-full w-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="mt-8">
-            <p className="inline-flex items-center gap-1 text-xs font-medium tracking-wider text-primary uppercase">
-              <MapPin className="h-3 w-3" /> {data.location}
-            </p>
-            <h1 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">{data.title}</h1>
-            <p className="mt-5 whitespace-pre-line text-foreground/85">{data.description}</p>
-          </div>
-
-          {/* Returns */}
-          <div className="mt-10 rounded-xl border border-border bg-card p-6 shadow-soft">
-            <div className="flex items-center gap-2">
-              <ChartLine className="h-4 w-4 text-primary" />
-              <h2 className="font-serif text-xl font-semibold">Estimated returns</h2>
-            </div>
-            <div className="mt-5 grid gap-4 sm:grid-cols-3">
-              <Stat label="Expected annual return" value={`${data.projected_return_min}–${data.projected_return_max}%`} />
-              <Stat label="Est. rental yield" value={data.estimated_rental_yield ? `${data.estimated_rental_yield}%` : "—"} />
-              <Stat label="Distribution" value={data.distribution_frequency.replace("_"," ")} />
-            </div>
-            <p className="mt-4 flex items-start gap-2 rounded-lg bg-accent p-3 text-xs text-muted-foreground">
-              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-              Returns are estimates based on property performance and are not guaranteed.
-            </p>
-          </div>
-
-          <InvestmentCalculator
-            minInvestment={Number(data.min_investment)}
-            maxInvestment={Number(data.total_value)}
-            projectedReturnMin={data.projected_return_min}
-            projectedReturnMax={data.projected_return_max}
-            currency={data.currency || 'USD'}
-          />
-
-          {/* Income model */}
-          <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-soft">
-            <div className="flex items-center gap-2">
-              <Coins className="h-4 w-4 text-primary" />
-              <h2 className="font-serif text-xl font-semibold">Income model</h2>
-            </div>
-            <p className="mt-3 text-sm text-foreground/85">{data.income_model}</p>
-            <p className="mt-3 inline-flex items-center gap-2 text-xs text-muted-foreground">
-              <CalendarClock className="h-3.5 w-3.5" /> Distributions: {data.distribution_frequency.replace("_"," ")} · Expected holding period: {data.holding_period_months} months
-            </p>
-          </div>
-
-          {/* Risk */}
-          <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-soft">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-primary" />
-              <h2 className="font-serif text-xl font-semibold">Risk disclosure</h2>
-            </div>
-            <ul className="mt-3 space-y-2 text-sm text-foreground/85">
-              <li><strong className="font-semibold">Market risk:</strong> Property values and rental income can fluctuate with local market conditions.</li>
-              <li><strong className="font-semibold">Investment Period:</strong> These are long-term investments. Units cannot be redeemed on demand and may be held for the full period.</li>
-              <li><strong className="font-semibold">Holding period:</strong> Expected {data.holding_period_months} months. Early exit is not guaranteed.</li>
-              {data.risk_notes && <li className="whitespace-pre-line text-muted-foreground">{data.risk_notes}</li>}
-            </ul>
-          </div>
-
-          {/* Secondary Market Listings */}
-          <SecondaryListingsSection
-            propertyId={data.id}
-            propertyTitle={data.title}
-            currency={data.currency || "USD"}
-          />
-
-          {/* Installment Calculator */}
-          {(data as any).installment_available && (
-            <div className="mt-8 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6 shadow-soft">
-              <div className="flex items-center gap-2">
-                <Layers className="h-4 w-4 text-primary" />
-                <h2 className="font-serif text-xl font-semibold">Installment Payment Available</h2>
-              </div>
-              <p className="mt-2 text-sm text-muted-foreground">
-                This property supports installment-based purchases. Pay a minimum Initial Payment of {(data as any).min_down_payment_pct ?? 20}% and spread the remainder over up to {(data as any).max_installment_months ?? 24} months.
-              </p>
-              <div className="mt-6 grid gap-4 sm:grid-cols-3">
-                <div className="rounded-xl border border-border/50 bg-card p-4 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Min. Initial Payment</p>
-                  <p className="mt-1 font-serif text-lg font-semibold text-primary">
-                    {formatMoney(Math.round(Number(data.min_investment) * ((data as any).min_down_payment_pct ?? 20) / 100), data.currency)}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">{(data as any).min_down_payment_pct ?? 20}% of Min. Investment</p>
-                </div>
-                <div className="rounded-xl border border-border/50 bg-card p-4 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Est. Monthly Payment</p>
-                  <p className="mt-1 font-serif text-lg font-semibold">
-                    {formatMoney(
-                      Math.round((Number(data.min_investment) * (1 - ((data as any).min_down_payment_pct ?? 20) / 100)) / 12),
-                      data.currency
-                    )}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">Over 12 months</p>
-                </div>
-                <div className="rounded-xl border border-border/50 bg-card p-4 text-center">
-                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Max Duration</p>
-                  <p className="mt-1 font-serif text-lg font-semibold">{(data as any).max_installment_months ?? 24} months</p>
-                  <p className="text-[10px] text-muted-foreground">Flexible scheduling</p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Details Tabs */}
-          <div className="mt-10">
-            <Tabs defaultValue="highlights" className="w-full">
-              <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto overflow-x-auto flex-nowrap hide-scrollbar">
-                <TabsTrigger value="highlights" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Highlights</TabsTrigger>
-                <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Location</TabsTrigger>
-                <TabsTrigger value="journey" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Journey</TabsTrigger>
-                <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Documents</TabsTrigger>
-                {(data as any).liquidity_rules && <TabsTrigger value="liquidity" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Liquidity</TabsTrigger>}
-                <TabsTrigger value="how-it-works" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">How it works</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="highlights" className="mt-8 space-y-6">
-                <div className="grid gap-6 sm:grid-cols-2">
-                  <HighlightItem icon={Star} title="Prime Location" desc="Situated in one of the fastest-growing real estate corridors with high demand." />
-                  <HighlightItem icon={Building2} title="Modern Architecture" desc="State-of-the-art design featuring energy-efficient systems and premium finishes." />
-                  <HighlightItem icon={ChartLine} title="Value Growth" desc="Estimated value growth of 12-15% annually based on local market trends." />
-                  <HighlightItem icon={CheckCircle2} title="Fully Managed" desc="Hassle-free ownership with professional property management handled by our team." />
-                </div>
-                <div className="rounded-xl bg-accent/50 p-6 border border-border/50">
-                  <h4 className="font-serif font-bold text-lg mb-3">Amenities & Features</h4>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
-                    {["24/7 Smart Security", "Infinity Pool", "Fitness Center", "Co-working Space", "High-speed Fiber", "EV Charging", "Concierge Service", "Rooftop Garden"].map((a) => (
-                      <div key={a} className="flex items-center gap-2 text-sm text-foreground/80">
-                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {a}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="location" className="mt-8">
-                <div className="space-y-4">
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 rounded-xl bg-primary/10">
-                      <MapIcon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div>
-                      <h4 className="font-bold">{data.location}</h4>
-                      <p className="text-sm text-muted-foreground">{data.city}, {data.state}, {data.country}</p>
-                    </div>
-                  </div>
-                  <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-border bg-accent/50">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      allowFullScreen
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(data.location || data.city + ", " + data.state)}&output=embed`}
-                    ></iframe>
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="journey" className="mt-8">
-                {data.property_journey?.length === 0 ? (
-                  <p className="text-muted-foreground italic text-sm">No journey stages have been documented yet.</p>
-                ) : (
-                  <div className="space-y-6 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/50">
-                    {data.property_journey?.sort((a,b) => a.sort_order - b.sort_order).map((stage, idx) => (
-                      <div key={stage.id} className="flex gap-6 items-start relative z-10">
-                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border-2 border-background ${
-                          stage.status === 'completed' ? 'bg-green-500 text-white' :
-                          stage.status === 'in_progress' ? 'bg-blue-500 text-white animate-pulse' : 'bg-secondary text-muted-foreground'
-                        }`}>
-                          {idx + 1}
-                        </div>
-                        <div className="pt-1">
-                          <h4 className="font-semibold text-sm">{stage.stage_name}</h4>
-                          {stage.description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{stage.description}</p>}
-                          <div className="flex gap-3 text-[10px] uppercase tracking-wider text-muted-foreground mt-2 font-medium">
-                            {stage.expected_date && <span>Exp: {stage.expected_date}</span>}
-                            {stage.completed_date && <span className="text-green-600">Done: {stage.completed_date}</span>}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </TabsContent>
-
-              <TabsContent value="documents" className="mt-8">
-                <div className="grid gap-3">
-                  {data.property_documents?.length === 0 ? (
-                    <p className="text-muted-foreground italic text-sm">No documents are currently available.</p>
-                  ) : (
-                    data.property_documents?.map((doc) => (
-                      <DocumentLink key={doc.id} url={doc.url} title={doc.title} size={doc.size_bytes > 0 ? `${(doc.size_bytes / 1024 / 1024).toFixed(1)} MB` : ""} date={doc.document_date || ""} />
-                    ))
-                  )}
-                </div>
-              </TabsContent>
-
-              <TabsContent value="liquidity" className="mt-8">
-                <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm prose prose-sm dark:prose-invert max-w-none">
-                  <div className="whitespace-pre-line text-foreground/85 leading-relaxed">
-                    {(data as any).liquidity_rules}
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="how-it-works" className="mt-8">
-                <div className="space-y-8 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/50">
-                  <StepItem num={1} title="Select Amount" desc="Decide how much you want to invest. Your investment represents a share of the property." />
-                  <StepItem num={2} title="Identity Verification" desc="Submit your identity documents for verification to comply with real estate regulations." />
-                  <StepItem num={3} title="Secure Investment" desc="Pay via your preferred method. Your units are locked once payment is confirmed." />
-                  <StepItem num={4} title="Earn Returns" desc="Receive rental payouts and benefit from property value growth over time." />
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-
-        {/* RIGHT — Investment panel */}
-        <aside className="lg:sticky lg:top-24 lg:self-start">
+  const renderInvestmentPanel = () => (
           <div className="rounded-xl border border-border/50 bg-card p-6 shadow-card">
             <div className="flex items-center justify-between">
               <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-xs font-medium ">
@@ -639,6 +383,278 @@ export default function InvestDetail() {
               Returns are estimates and not guaranteed. Investments are long-term. Please review the full risk disclosure before investing.
             </p>
           </div>
+  );
+
+  return (
+    <SiteLayout>
+      <SEO title={data.title} description={data.description.slice(0, 160)} image={resolveImage(data.cover_image_url)} />
+      <div className="container-wide py-8">
+        <Button asChild variant="ghost" size="sm">
+          <Link to="/invest/opportunities"><ArrowLeft className="mr-1 h-4 w-4" />All opportunities</Link>
+        </Button>
+      </div>
+
+      <div className="container-wide grid gap-10 pb-16 lg:grid-cols-[1fr_400px]">
+        {/* LEFT */}
+        <div className="flex flex-col gap-10">
+          <div>
+          {/* Gallery */}
+          <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl shadow-card border border-border/50">
+            {gallery.map((g, i) => (
+              <img
+                key={i}
+                src={resolveImage(g.url)}
+                alt={data.title}
+                className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ease-in-out ${activeImg === i ? 'opacity-100 z-10' : 'opacity-0 z-0'}`}
+              />
+            ))}
+          </div>
+          {gallery.length > 1 && (
+            <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
+              {gallery.map((g, i) => (
+                <button 
+                  key={i} 
+                  onClick={() => setActiveImg(i)}
+                  className={`relative aspect-square w-full overflow-hidden rounded-lg transition-all duration-300 ${activeImg === i ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "opacity-70 hover:opacity-100"}`}
+                >
+                  <img src={resolveImage(g.url)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          <div className="mt-8">
+            <p className="inline-flex items-center gap-1 text-xs font-medium tracking-wider text-primary uppercase">
+              <MapPin className="h-3 w-3" /> {data.location}
+            </p>
+            <h1 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">{data.title}</h1>
+            <p className="mt-5 whitespace-pre-line text-foreground/85">{data.description}</p>
+          </div>
+
+          {/* Returns */}
+          </div>
+
+          <div className="block lg:hidden">
+            {renderInvestmentPanel()}
+          </div>
+
+          <div className="space-y-6">
+          <div className="mt-10 rounded-xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex items-center gap-2">
+              <ChartLine className="h-4 w-4 text-primary" />
+              <h2 className="font-serif text-xl font-semibold">Estimated returns</h2>
+            </div>
+            <div className="mt-5 grid gap-4 sm:grid-cols-3">
+              <Stat label="Expected annual return" value={`${data.projected_return_min}–${data.projected_return_max}%`} />
+              <Stat label="Est. rental yield" value={data.estimated_rental_yield ? `${data.estimated_rental_yield}%` : "—"} />
+              <Stat label="Distribution" value={data.distribution_frequency.replace("_"," ")} />
+            </div>
+            <p className="mt-4 flex items-start gap-2 rounded-lg bg-accent p-3 text-xs text-muted-foreground">
+              <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+              Returns are estimates based on property performance and are not guaranteed.
+            </p>
+          </div>
+
+          <InvestmentCalculator
+            minInvestment={Number(data.min_investment)}
+            maxInvestment={Number(data.total_value)}
+            projectedReturnMin={data.projected_return_min}
+            projectedReturnMax={data.projected_return_max}
+            currency={data.currency || 'USD'}
+          />
+
+          {/* Income model */}
+          <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex items-center gap-2">
+              <Coins className="h-4 w-4 text-primary" />
+              <h2 className="font-serif text-xl font-semibold">Income model</h2>
+            </div>
+            <p className="mt-3 text-sm text-foreground/85">{data.income_model}</p>
+            <p className="mt-3 inline-flex items-center gap-2 text-xs text-muted-foreground">
+              <CalendarClock className="h-3.5 w-3.5" /> Distributions: {data.distribution_frequency.replace("_"," ")} · Expected holding period: {data.holding_period_months} months
+            </p>
+          </div>
+
+          {/* Risk */}
+          <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-soft">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-primary" />
+              <h2 className="font-serif text-xl font-semibold">Risk disclosure</h2>
+            </div>
+            <ul className="mt-3 space-y-2 text-sm text-foreground/85">
+              <li><strong className="font-semibold">Market risk:</strong> Property values and rental income can fluctuate with local market conditions.</li>
+              <li><strong className="font-semibold">Investment Period:</strong> These are long-term investments. Units cannot be redeemed on demand and may be held for the full period.</li>
+              <li><strong className="font-semibold">Holding period:</strong> Expected {data.holding_period_months} months. Early exit is not guaranteed.</li>
+              {data.risk_notes && <li className="whitespace-pre-line text-muted-foreground">{data.risk_notes}</li>}
+            </ul>
+          </div>
+
+          {/* Secondary Market Listings */}
+          <SecondaryListingsSection
+            propertyId={data.id}
+            propertyTitle={data.title}
+            currency={data.currency || "USD"}
+          />
+
+          {/* Installment Calculator */}
+          {(data as any).installment_available && (
+            <div className="mt-8 rounded-xl border border-primary/20 bg-gradient-to-br from-primary/5 to-transparent p-6 shadow-soft">
+              <div className="flex items-center gap-2">
+                <Layers className="h-4 w-4 text-primary" />
+                <h2 className="font-serif text-xl font-semibold">Installment Payment Available</h2>
+              </div>
+              <p className="mt-2 text-sm text-muted-foreground">
+                This property supports installment-based purchases. Pay a minimum Initial Payment of {(data as any).min_down_payment_pct ?? 20}% and spread the remainder over up to {(data as any).max_installment_months ?? 24} months.
+              </p>
+              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-border/50 bg-card p-4 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Min. Initial Payment</p>
+                  <p className="mt-1 font-serif text-lg font-semibold text-primary">
+                    {formatMoney(Math.round(Number(data.min_investment) * ((data as any).min_down_payment_pct ?? 20) / 100), data.currency)}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">{(data as any).min_down_payment_pct ?? 20}% of Min. Investment</p>
+                </div>
+                <div className="rounded-xl border border-border/50 bg-card p-4 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Est. Monthly Payment</p>
+                  <p className="mt-1 font-serif text-lg font-semibold">
+                    {formatMoney(
+                      Math.round((Number(data.min_investment) * (1 - ((data as any).min_down_payment_pct ?? 20) / 100)) / 12),
+                      data.currency
+                    )}
+                  </p>
+                  <p className="text-[10px] text-muted-foreground">Over 12 months</p>
+                </div>
+                <div className="rounded-xl border border-border/50 bg-card p-4 text-center">
+                  <p className="text-[10px] uppercase tracking-wider text-muted-foreground">Max Duration</p>
+                  <p className="mt-1 font-serif text-lg font-semibold">{(data as any).max_installment_months ?? 24} months</p>
+                  <p className="text-[10px] text-muted-foreground">Flexible scheduling</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Details Tabs */}
+          <div className="mt-10">
+            <Tabs defaultValue="highlights" className="w-full">
+              <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto overflow-x-auto flex-nowrap hide-scrollbar">
+                <TabsTrigger value="highlights" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Highlights</TabsTrigger>
+                <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Location</TabsTrigger>
+                <TabsTrigger value="journey" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Journey</TabsTrigger>
+                <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Documents</TabsTrigger>
+                {(data as any).liquidity_rules && <TabsTrigger value="liquidity" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Liquidity</TabsTrigger>}
+                <TabsTrigger value="how-it-works" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">How it works</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="highlights" className="mt-8 space-y-6">
+                <div className="grid gap-6 sm:grid-cols-2">
+                  <HighlightItem icon={Star} title="Prime Location" desc="Situated in one of the fastest-growing real estate corridors with high demand." />
+                  <HighlightItem icon={Building2} title="Modern Architecture" desc="State-of-the-art design featuring energy-efficient systems and premium finishes." />
+                  <HighlightItem icon={ChartLine} title="Value Growth" desc="Estimated value growth of 12-15% annually based on local market trends." />
+                  <HighlightItem icon={CheckCircle2} title="Fully Managed" desc="Hassle-free ownership with professional property management handled by our team." />
+                </div>
+                <div className="rounded-xl bg-accent/50 p-6 border border-border/50">
+                  <h4 className="font-serif font-bold text-lg mb-3">Amenities & Features</h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-y-3 gap-x-4">
+                    {["24/7 Smart Security", "Infinity Pool", "Fitness Center", "Co-working Space", "High-speed Fiber", "EV Charging", "Concierge Service", "Rooftop Garden"].map((a) => (
+                      <div key={a} className="flex items-center gap-2 text-sm text-foreground/80">
+                        <CheckCircle2 className="h-3.5 w-3.5 text-primary" /> {a}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="location" className="mt-8">
+                <div className="space-y-4">
+                  <div className="flex items-start gap-4">
+                    <div className="p-3 rounded-xl bg-primary/10">
+                      <MapIcon className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold">{data.location}</h4>
+                      <p className="text-sm text-muted-foreground">{data.city}, {data.state}, {data.country}</p>
+                    </div>
+                  </div>
+                  <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-border bg-accent/50">
+                    <iframe
+                      width="100%"
+                      height="100%"
+                      style={{ border: 0 }}
+                      loading="lazy"
+                      allowFullScreen
+                      referrerPolicy="no-referrer-when-downgrade"
+                      src={`https://maps.google.com/maps?q=${encodeURIComponent(data.location || data.city + ", " + data.state)}&output=embed`}
+                    ></iframe>
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="journey" className="mt-8">
+                {data.property_journey?.length === 0 ? (
+                  <p className="text-muted-foreground italic text-sm">No journey stages have been documented yet.</p>
+                ) : (
+                  <div className="space-y-6 relative before:absolute before:left-[15px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/50">
+                    {data.property_journey?.sort((a,b) => a.sort_order - b.sort_order).map((stage, idx) => (
+                      <div key={stage.id} className="flex gap-6 items-start relative z-10">
+                        <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border-2 border-background ${
+                          stage.status === 'completed' ? 'bg-green-500 text-white' :
+                          stage.status === 'in_progress' ? 'bg-blue-500 text-white animate-pulse' : 'bg-secondary text-muted-foreground'
+                        }`}>
+                          {idx + 1}
+                        </div>
+                        <div className="pt-1">
+                          <h4 className="font-semibold text-sm">{stage.stage_name}</h4>
+                          {stage.description && <p className="text-sm text-muted-foreground mt-1 leading-relaxed">{stage.description}</p>}
+                          <div className="flex gap-3 text-[10px] uppercase tracking-wider text-muted-foreground mt-2 font-medium">
+                            {stage.expected_date && <span>Exp: {stage.expected_date}</span>}
+                            {stage.completed_date && <span className="text-green-600">Done: {stage.completed_date}</span>}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </TabsContent>
+
+              <TabsContent value="documents" className="mt-8">
+                <div className="grid gap-3">
+                  {data.property_documents?.length === 0 ? (
+                    <p className="text-muted-foreground italic text-sm">No documents are currently available.</p>
+                  ) : (
+                    data.property_documents?.map((doc) => (
+                      <DocumentLink key={doc.id} url={doc.url} title={doc.title} size={doc.size_bytes > 0 ? `${(doc.size_bytes / 1024 / 1024).toFixed(1)} MB` : ""} date={doc.document_date || ""} />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+
+              <TabsContent value="liquidity" className="mt-8">
+                <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm prose prose-sm dark:prose-invert max-w-none">
+                  <div className="whitespace-pre-line text-foreground/85 leading-relaxed">
+                    {(data as any).liquidity_rules}
+                  </div>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="how-it-works" className="mt-8">
+                <div className="space-y-8 relative before:absolute before:left-[19px] before:top-2 before:bottom-2 before:w-[2px] before:bg-border/50">
+                  <StepItem num={1} title="Select Amount" desc="Decide how much you want to invest. Your investment represents a share of the property." />
+                  <StepItem num={2} title="Identity Verification" desc="Submit your identity documents for verification to comply with real estate regulations." />
+                  <StepItem num={3} title="Secure Investment" desc="Pay via your preferred method. Your units are locked once payment is confirmed." />
+                  <StepItem num={4} title="Earn Returns" desc="Receive rental payouts and benefit from property value growth over time." />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+
+        {/* RIGHT — Investment panel */}
+          </div>
+        </div>
+
+        {/* RIGHT — Investment panel */}
+        <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start">
+          {renderInvestmentPanel()}
         </aside>
       </div>
 

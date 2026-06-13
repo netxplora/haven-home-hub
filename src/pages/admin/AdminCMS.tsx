@@ -330,12 +330,13 @@ function HomepageContentTab({ qc }: any) {
 
   // Initialize form when data loads
   useEffect(() => {
+    if (!siteContent || siteContent.length === 0) return;
     const newForm: Record<string, any> = {};
     siteContent.forEach((c: any) => {
       newForm[c.section_key] = c.content_value;
     });
     setForm(newForm);
-  }, [siteContent]);
+  }, [JSON.stringify(siteContent)]);
 
   const updateSection = (key: string, field: string, value: string) => {
     setForm(prev => ({
