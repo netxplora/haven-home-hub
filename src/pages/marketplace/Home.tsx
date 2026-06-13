@@ -24,26 +24,14 @@ import { MarketIntelligence } from "@/components/site/MarketIntelligence";
 import { AIPropertyAdvisor } from "@/components/site/AIPropertyAdvisor";
 import useEmblaCarousel from "embla-carousel-react";
 
-const heroImages = [
-  heroImg,
-  "/hero_modern_villa.png",
-  "/hero_luxury_penthouse.png"
-];
+
 
 export default function Home() {
   const navigate = useNavigate();
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [searchType, setSearchType] = useState<"buy" | "rent" | "invest">("buy");
   const [searchLocation, setSearchLocation] = useState("");
   const [searchBudget, setSearchBudget] = useState("");
   const [verifiedOnly, setVerifiedOnly] = useState(true);
-  
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroImages.length);
-    }, 6000);
-    return () => clearInterval(timer);
-  }, []);
 
   const { data: featured = [], isLoading: featuredLoading } = useQuery({
     queryKey: ["featured-properties"],
@@ -161,40 +149,25 @@ export default function Home() {
   return (
     <SiteLayout>
       <SEO>
-        {/* LCP Optimization: Preload the first hero image */}
-        <link rel="preload" as="image" href={heroImages[0]} fetchPriority="high" />
+        <link rel="preload" as="video" href="/hero-video.mp4" />
       </SEO>
       <OrganizationJsonLd />
 
       {/* 1. HERO SEARCH EXPERIENCE (SAFETY DOMINANT) */}
       <section className="relative overflow-hidden min-h-[580px] sm:min-h-[660px] lg:min-h-[720px] flex items-center">
         <div className="absolute inset-0">
-          {heroImages.map((img, index) => (
-            <div
-              key={img}
-              className={`absolute inset-0 transition-all duration-1000 ease-[cubic-bezier(0.25,1,0.5,1)] ${
-                index === currentSlide 
-                  ? "translate-x-0 opacity-100 z-10" 
-                  : index < currentSlide 
-                    ? "-translate-x-full opacity-0 z-0" 
-                    : "translate-x-full opacity-0 z-0"
-              }`}
-            >
-              <picture>
-                <source srcSet={img.replace(/\.(png|jpg|jpeg)$/i, '.webp')} type="image/webp" />
-                <img
-                  src={img}
-                  alt="Real Estate"
-                  fetchpriority={index === 0 ? "high" : "auto"}
-                  loading={index === 0 ? "eager" : "lazy"}
-                  decoding={index === 0 ? "sync" : "async"}
-                  className={`h-full w-full object-cover transition-transform [transition-duration:7000ms] ease-linear ${index === currentSlide ? "scale-[1.04]" : "scale-100"}`}
-                />
-              </picture>
-            </div>
-          ))}
-          <div className="absolute inset-0 bg-black/30 backdrop-blur-[2px] z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-black/40 z-[1]" />
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="metadata"
+            className="absolute inset-0 h-full w-full object-cover z-0"
+          >
+            <source src="/hero-video.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/40 z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[1]" />
         </div>
 
         <div className="container-wide relative z-10 py-20">
@@ -772,7 +745,20 @@ function HomeLocations() {
           const walkScore = 75 + (loc.name.length % 20);
           const floodZone = loc.name.length % 2 === 0 ? "Zone X (Low Risk)" : "Zone AE (Required)";
           const safetyIndex = (8 + (loc.name.length % 20) / 10).toFixed(1);
-          const imageUrl = loc.image_url || "https://images.unsplash.com/photo-1554629947-334ff61d85dc?auto=format&fit=crop&w=800&q=80";
+          const lowerName = loc.name.toLowerCase();
+          let imageUrl = "https://images.unsplash.com/photo-1554629947-334ff61d85dc?auto=format&fit=crop&w=800&q=80";
+          
+          if (lowerName.includes("new york") || lowerName.includes("ny")) {
+            imageUrl = "/regions/region_major_city_skyline_1781281501942.png";
+          } else if (lowerName.includes("austin") || lowerName.includes("tx") || lowerName.includes("texas")) {
+            imageUrl = "/regions/region_transport_infrastructure_1781281533677.png";
+          } else if (lowerName.includes("seattle") || lowerName.includes("wa") || lowerName.includes("washington")) {
+            imageUrl = "/regions/region_development_1781281576904.png";
+          } else if (lowerName.includes("miami") || lowerName.includes("fl") || lowerName.includes("florida")) {
+            imageUrl = "/regions/region_major_city_skyline_1781281501942.png"; // Fallback for Miami if we don't have a specific one
+          } else {
+            imageUrl = loc.image_url || "/regions/region_major_city_skyline_1781281501942.png";
+          }
 
           return (
             <div key={loc.id} className="flex-[0_0_85%] sm:flex-none min-w-0 group relative overflow-hidden rounded-xl border border-border/50 bg-card hover-lift flex flex-col h-full shadow-sm">
