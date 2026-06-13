@@ -160,229 +160,229 @@ export default function InvestDetail() {
   ].filter((g) => g.url).slice(0, 5);
 
   const renderInvestmentPanel = () => (
-          <div className="rounded-xl border border-border/50 bg-card p-6 shadow-card">
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-xs font-medium ">
-                <Building2 className="h-3 w-3" /> {data.status === "funded" ? "Fully funded" : "Open"}
-              </span>
-              <span className="text-xs text-muted-foreground">{data.currency}</span>
-            </div>
-            {(data as any).installment_available && (
-              <div className="mt-3 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
-                <Layers className="h-3.5 w-3.5 text-primary" />
-                <span className="text-xs font-medium text-primary">Installment plans available</span>
-              </div>
-            )}
+    <div className="rounded-xl border border-border/50 bg-card p-6 shadow-card">
+      <div className="flex items-center justify-between">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/15 px-3 py-1 text-xs font-medium ">
+          <Building2 className="h-3 w-3" /> {data.status === "funded" ? "Fully funded" : "Open"}
+        </span>
+        <span className="text-xs text-muted-foreground">{data.currency}</span>
+      </div>
+      {(data as any).installment_available && (
+        <div className="mt-3 flex items-center gap-2 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2">
+          <Layers className="h-3.5 w-3.5 text-primary" />
+          <span className="text-xs font-medium text-primary">Installment plans available</span>
+        </div>
+      )}
 
-            <div className="mt-5 grid grid-cols-2 gap-4">
-              <Stat small label="Total value" value={formatMoney(Number(data.total_value), data.currency)} />
-              <Stat small label="Unit price" value={formatMoney(Number(data.unit_price), data.currency)} />
-              <Stat small label="Total units" value={data.total_units.toLocaleString()} />
-              <Stat small label="Units sold" value={data.units_sold.toLocaleString()} />
-            </div>
+      <div className="mt-5 grid grid-cols-2 gap-4">
+        <Stat small label="Total value" value={formatMoney(Number(data.total_value), data.currency)} />
+        <Stat small label="Unit price" value={formatMoney(Number(data.unit_price), data.currency)} />
+        <Stat small label="Total units" value={data.total_units.toLocaleString()} />
+        <Stat small label="Units sold" value={data.units_sold.toLocaleString()} />
+      </div>
 
-            <div className="mt-5">
-              <div className="flex items-center justify-between text-xs">
-                <span className="text-muted-foreground">Funded</span>
-                <span className="font-medium">{pct}%</span>
-              </div>
-              <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary">
-                <div className="h-full rounded-full bg-primary text-primary-foreground" style={{ width: `${pct}%` }} />
-              </div>
-            </div>
+      <div className="mt-5">
+        <div className="flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">Funded</span>
+          <span className="font-medium">{pct}%</span>
+        </div>
+        <div className="mt-1.5 h-2 w-full overflow-hidden rounded-full bg-secondary">
+          <div className="h-full rounded-full bg-primary text-primary-foreground" style={{ width: `${pct}%` }} />
+        </div>
+      </div>
 
-            <Separator className="my-6" />
+      <Separator className="my-6" />
 
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Number of Units</Label>
-                <div className="flex items-center gap-3">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => setUnits(Math.max(currentMinUnits, units - 1))}
-                    disabled={units <= currentMinUnits || avail === 0 || data.status !== "open"}
-                    className="h-12 w-12 shrink-0 rounded-xl"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </Button>
-                  <Input
-                    type="number"
-                    min={currentMinUnits}
-                    max={maxAllowedUnits}
-                    value={units}
-                    onChange={(e) => {
-                      const val = parseInt(e.target.value, 10);
-                      if (isNaN(val)) setUnits(currentMinUnits);
-                      else if (val > maxAllowedUnits) setUnits(maxAllowedUnits);
-                      else setUnits(val);
-                    }}
-                    disabled={avail === 0 || data.status !== "open"}
-                    className="h-12 flex-1 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-lg text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                  />
-                  <button
-                    type="button"
-                    className="h-12 w-12 rounded-xl border border-border bg-accent/50 hover:bg-accent flex items-center justify-center text-lg font-bold transition-colors disabled:opacity-40"
-                    disabled={units >= maxAllowedUnits || avail === 0 || data.status !== "open"}
-                    onClick={() => setUnits(Math.min(maxAllowedUnits, units + 1))}
-                  >+</button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <p className="text-[10px] text-muted-foreground italic">
-                    Unit price: {formatMoney(Number(data.unit_price), data.currency)}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground">
-                    {avail.toLocaleString()} units available
-                  </p>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Payment Plan</Label>
-                <Select value={investMode} onValueChange={(val: "full" | "installment") => setInvestMode(val)} disabled={avail === 0 || data.status !== "open"}>
-                  <SelectTrigger className="h-12 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-sm">
-                    <SelectValue placeholder="Select payment plan" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="full">Full Payment</SelectItem>
-                    {(data as any).installment_available && (
-                       <SelectItem value="installment">Installment Payment</SelectItem>
-                    )}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {investMode === "installment" && (
-                <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initial Payment ({currentDownPct}%)</Label>
-                      <span className="font-bold text-primary">{formatMoney(downPaymentAmount, data.currency)}</span>
-                    </div>
-                    <input
-                      type="range"
-                      min={minDownPct}
-                      max={80}
-                      step={5}
-                      value={currentDownPct}
-                      onChange={(e) => setDownPaymentPct(Number(e.target.value))}
-                      disabled={avail === 0 || data.status !== "open"}
-                      className="w-full h-2 rounded-full appearance-none cursor-pointer accent-primary bg-secondary"
-                    />
-                    <div className="flex justify-between text-[10px] text-muted-foreground">
-                      <span>Min {minDownPct}%</span>
-                      <span>80%</span>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Installment Duration</Label>
-                    <Select value={String(durationMonths)} onValueChange={(val) => setDurationMonths(Number(val))} disabled={avail === 0 || data.status !== "open"}>
-                      <SelectTrigger className="h-12 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-sm">
-                        <SelectValue placeholder="Select duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="3">3 Months</SelectItem>
-                        <SelectItem value="6">6 Months</SelectItem>
-                        <SelectItem value="9">9 Months</SelectItem>
-                        <SelectItem value="12">12 Months</SelectItem>
-                        {(data as any).max_installment_months >= 18 && <SelectItem value="18">18 Months</SelectItem>}
-                        {(data as any).max_installment_months >= 24 && <SelectItem value="24">24 Months</SelectItem>}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Live Calculator */}
-            <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-4">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-muted-foreground font-medium">Total Investment</span>
-                <span className="font-serif font-bold text-lg">{formatMoney(totalAmount, data.currency)}</span>
-              </div>
-              
-              <div className="flex justify-between items-center text-sm border-t border-primary/10 pt-3">
-                <span className="text-muted-foreground font-medium">Est. Yearly Profit ({data.projected_return_min}–{data.projected_return_max}%)</span>
-                <span className="font-bold text-primary">
-                  {formatMoney(expectedReturnMin, data.currency)} – {formatMoney(expectedReturnMax, data.currency)}
-                </span>
-              </div>
-
-              {investMode === "installment" && (
-                <>
-                  <div className="flex justify-between items-center text-sm border-t border-primary/10 pt-3">
-                    <span className="text-muted-foreground font-medium">Initial Payment ({currentDownPct}%)</span>
-                    <span className="font-bold text-primary">{formatMoney(downPaymentAmount, data.currency)}</span>
-                  </div>
-                  <div className="flex justify-between items-center text-sm border-t border-primary/10 pt-3">
-                    <span className="text-muted-foreground font-medium">Monthly Installment</span>
-                    <span className="font-bold">{formatMoney(monthlyInstallment, data.currency)} / mo</span>
-                  </div>
-                </>
-              )}
-            </div>
-
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Number of Units</Label>
+          <div className="flex items-center gap-3">
             <Button
-              className={cn(
-                "mt-6 w-full text-white shadow-sm h-14 font-semibold text-lg rounded-xl flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]",
-                (avail === 0 || data.status !== "open" || !riskAck) 
-                  ? "bg-muted text-muted-foreground cursor-not-allowed" 
-                  : "bg-primary hover:bg-primary/90 active:bg-primary/80"
-              )}
-              size="lg"
-              disabled={btnLoading || avail === 0 || data.status !== "open" || !riskAck}
-              onClick={handleInvest}
+              variant="outline"
+              size="icon"
+              onClick={() => setUnits(Math.max(currentMinUnits, units - 1))}
+              disabled={units <= currentMinUnits || avail === 0 || data.status !== "open"}
+              className="h-12 w-12 shrink-0 rounded-xl"
             >
-              {btnLoading ? (
-                <>
-                  <Loader2 className="h-5 w-5 animate-spin" />
-                  Verifying secure gateway...
-                </>
-              ) : (
-                <>
-                  <Lock className="h-5 w-5" />
-                  Proceed to Payment
-                </>
-              )}
+              <Minus className="h-4 w-4" />
             </Button>
-            
-            <div 
-              id="risk-ack-container" 
-              className={cn(
-                "mt-4 flex items-start gap-3 text-xs text-foreground/85 rounded-xl p-3 border border-transparent transition-all duration-300", 
-                showRiskPulse && "border-amber-500/50 bg-amber-500/10 animate-pulse scale-[1.02]"
-              )}
-            >
-              <Checkbox
-                id="risk-ack"
-                checked={riskAck}
-                onCheckedChange={(v) => setRiskAck(v === true)}
-                className="mt-0.5"
-              />
-              <label htmlFor="risk-ack" className="cursor-pointer select-none leading-relaxed">
-                I have read and understood the <strong>risk disclosure</strong>, that returns are estimated and not guaranteed,
-                and that this investment is long-term for the stated period.
-              </label>
-            </div>
-
-            {user && !kycApproved && (
-              <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200/50 bg-amber-500/5 p-4">
-                <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
-                <div>
-                  <p className="text-xs font-semibold text-amber-800">Identity verification is required</p>
-                  <p className="text-[10px] text-amber-800/80 mt-0.5">Please complete your verification in your profile before initiating payments.</p>
-                </div>
-              </div>
-            )}
-
-            <Button asChild variant="outline" className="mt-3 w-full h-11 rounded-xl">
-              <Link to="/agents">Speak to an advisor</Link>
-            </Button>
-            <p className="mt-4 text-center text-[10px] leading-relaxed text-muted-foreground">
-              Returns are estimates and not guaranteed. Investments are long-term. Please review the full risk disclosure before investing.
+            <Input
+              type="number"
+              min={currentMinUnits}
+              max={maxAllowedUnits}
+              value={units}
+              onChange={(e) => {
+                const val = parseInt(e.target.value, 10);
+                if (isNaN(val)) setUnits(currentMinUnits);
+                else if (val > maxAllowedUnits) setUnits(maxAllowedUnits);
+                else setUnits(val);
+              }}
+              disabled={avail === 0 || data.status !== "open"}
+              className="h-12 flex-1 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-lg text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            />
+            <button
+              type="button"
+              className="h-12 w-12 rounded-xl border border-border bg-accent/50 hover:bg-accent flex items-center justify-center text-lg font-bold transition-colors disabled:opacity-40"
+              disabled={units >= maxAllowedUnits || avail === 0 || data.status !== "open"}
+              onClick={() => setUnits(Math.min(maxAllowedUnits, units + 1))}
+            >+</button>
+          </div>
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] text-muted-foreground italic">
+              Unit price: {formatMoney(Number(data.unit_price), data.currency)}
+            </p>
+            <p className="text-[10px] text-muted-foreground">
+              {avail.toLocaleString()} units available
             </p>
           </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Payment Plan</Label>
+          <Select value={investMode} onValueChange={(val: "full" | "installment") => setInvestMode(val)} disabled={avail === 0 || data.status !== "open"}>
+            <SelectTrigger className="h-12 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-sm">
+              <SelectValue placeholder="Select payment plan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="full">Full Payment</SelectItem>
+              {(data as any).installment_available && (
+                 <SelectItem value="installment">Installment Payment</SelectItem>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {investMode === "installment" && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-top-2">
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Initial Payment ({currentDownPct}%)</Label>
+                <span className="font-bold text-primary">{formatMoney(downPaymentAmount, data.currency)}</span>
+              </div>
+              <input
+                type="range"
+                min={minDownPct}
+                max={80}
+                step={5}
+                value={currentDownPct}
+                onChange={(e) => setDownPaymentPct(Number(e.target.value))}
+                disabled={avail === 0 || data.status !== "open"}
+                className="w-full h-2 rounded-full appearance-none cursor-pointer accent-primary bg-secondary"
+              />
+              <div className="flex justify-between text-[10px] text-muted-foreground">
+                <span>Min {minDownPct}%</span>
+                <span>80%</span>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Installment Duration</Label>
+              <Select value={String(durationMonths)} onValueChange={(val) => setDurationMonths(Number(val))} disabled={avail === 0 || data.status !== "open"}>
+                <SelectTrigger className="h-12 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-sm">
+                  <SelectValue placeholder="Select duration" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="3">3 Months</SelectItem>
+                  <SelectItem value="6">6 Months</SelectItem>
+                  <SelectItem value="9">9 Months</SelectItem>
+                  <SelectItem value="12">12 Months</SelectItem>
+                  {(data as any).max_installment_months >= 18 && <SelectItem value="18">18 Months</SelectItem>}
+                  {(data as any).max_installment_months >= 24 && <SelectItem value="24">24 Months</SelectItem>}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Live Calculator */}
+      <div className="mt-6 rounded-xl border border-primary/20 bg-primary/5 p-5 space-y-4">
+        <div className="flex justify-between items-center text-sm">
+          <span className="text-muted-foreground font-medium">Total Investment</span>
+          <span className="font-serif font-bold text-lg">{formatMoney(totalAmount, data.currency)}</span>
+        </div>
+        
+        <div className="flex justify-between items-center text-sm border-t border-primary/10 pt-3">
+          <span className="text-muted-foreground font-medium">Est. Yearly Profit ({data.projected_return_min}–{data.projected_return_max}%)</span>
+          <span className="font-bold text-primary">
+            {formatMoney(expectedReturnMin, data.currency)} – {formatMoney(expectedReturnMax, data.currency)}
+          </span>
+        </div>
+
+        {investMode === "installment" && (
+          <>
+            <div className="flex justify-between items-center text-sm border-t border-primary/10 pt-3">
+              <span className="text-muted-foreground font-medium">Initial Payment ({currentDownPct}%)</span>
+              <span className="font-bold text-primary">{formatMoney(downPaymentAmount, data.currency)}</span>
+            </div>
+            <div className="flex justify-between items-center text-sm border-t border-primary/10 pt-3">
+              <span className="text-muted-foreground font-medium">Monthly Installment</span>
+              <span className="font-bold">{formatMoney(monthlyInstallment, data.currency)} / mo</span>
+            </div>
+          </>
+        )}
+      </div>
+
+      <Button
+        className={cn(
+          "mt-6 w-full text-white shadow-sm h-14 font-semibold text-lg rounded-xl flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.01] active:scale-[0.99]",
+          (avail === 0 || data.status !== "open" || !riskAck) 
+            ? "bg-muted text-muted-foreground cursor-not-allowed" 
+            : "bg-primary hover:bg-primary/90 active:bg-primary/80"
+        )}
+        size="lg"
+        disabled={btnLoading || avail === 0 || data.status !== "open" || !riskAck}
+        onClick={handleInvest}
+      >
+        {btnLoading ? (
+          <>
+            <Loader2 className="h-5 w-5 animate-spin" />
+            Verifying secure gateway...
+          </>
+        ) : (
+          <>
+            <Lock className="h-5 w-5" />
+            Proceed to Payment
+          </>
+        )}
+      </Button>
+      
+      <div 
+        id="risk-ack-container" 
+        className={cn(
+          "mt-4 flex items-start gap-3 text-xs text-foreground/85 rounded-xl p-3 border border-transparent transition-all duration-300", 
+          showRiskPulse && "border-amber-500/50 bg-amber-500/10 animate-pulse scale-[1.02]"
+        )}
+      >
+        <Checkbox
+          id="risk-ack"
+          checked={riskAck}
+          onCheckedChange={(v) => setRiskAck(v === true)}
+          className="mt-0.5"
+        />
+        <label htmlFor="risk-ack" className="cursor-pointer select-none leading-relaxed">
+          I have read and understood the <strong>risk disclosure</strong>, that returns are estimated and not guaranteed,
+          and that this investment is long-term for the stated period.
+        </label>
+      </div>
+
+      {user && !kycApproved && (
+        <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200/50 bg-amber-500/5 p-4">
+          <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+          <div>
+            <p className="text-xs font-semibold text-amber-800">Identity verification is required</p>
+            <p className="text-[10px] text-amber-800/80 mt-0.5">Please complete your verification in your profile before initiating payments.</p>
+          </div>
+        </div>
+      )}
+
+      <Button asChild variant="outline" className="mt-3 w-full h-11 rounded-xl">
+        <Link to="/agents">Speak to an advisor</Link>
+      </Button>
+      <p className="mt-4 text-center text-[10px] leading-relaxed text-muted-foreground">
+        Returns are estimates and not guaranteed. Investments are long-term. Please review the full risk disclosure before investing.
+      </p>
+    </div>
   );
 
   return (
@@ -396,8 +396,7 @@ export default function InvestDetail() {
 
       <div className="container-wide grid gap-10 pb-16 lg:grid-cols-[1fr_400px]">
         {/* LEFT */}
-        <div className="flex flex-col gap-10">
-          <div>
+        <div>
           {/* Gallery */}
           <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl shadow-card border border-border/50">
             {gallery.map((g, i) => (
@@ -431,14 +430,12 @@ export default function InvestDetail() {
             <p className="mt-5 whitespace-pre-line text-foreground/85">{data.description}</p>
           </div>
 
-          {/* Returns */}
-          </div>
-
-          <div className="block lg:hidden">
+          {/* Mobile-only investment panel */}
+          <div className="block lg:hidden mt-8">
             {renderInvestmentPanel()}
           </div>
 
-          <div className="space-y-6">
+          {/* Returns */}
           <div className="mt-10 rounded-xl border border-border bg-card p-6 shadow-soft">
             <div className="flex items-center gap-2">
               <ChartLine className="h-4 w-4 text-primary" />
@@ -648,11 +645,7 @@ export default function InvestDetail() {
           </div>
         </div>
 
-        {/* RIGHT — Investment panel */}
-          </div>
-        </div>
-
-        {/* RIGHT — Investment panel */}
+        {/* RIGHT — Investment panel (desktop only) */}
         <aside className="hidden lg:block lg:sticky lg:top-24 lg:self-start">
           {renderInvestmentPanel()}
         </aside>
