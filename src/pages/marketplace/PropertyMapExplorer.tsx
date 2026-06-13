@@ -15,7 +15,7 @@ import { formatMoney } from "@/lib/invest";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { SEO } from "@/components/SEO";
+import { SEO } from "@/components/site/SEO";
 import { Header } from "@/components/site/Header";
 
 // Fix leaflet default marker icons
