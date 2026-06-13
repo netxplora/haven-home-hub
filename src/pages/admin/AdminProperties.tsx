@@ -204,12 +204,33 @@ export function AdminProperties() {
           .eq("id", jobId);
 
         const extracted = resData.data;
-        const { gallery_images, beds, baths, sqft, ...propPayload } = extracted;
-        propPayload.external_url = importUrl;
-        propPayload.owner_user_id = user?.id;
-        propPayload.slug = propPayload.title.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).substring(2, 7);
-        propPayload.status = "available";
-        propPayload.approval_status = "pending";
+        const propTitle = extracted.property_title || "Imported Property";
+        
+        const propPayload: any = {
+          title: propTitle,
+          description: extracted.property_description || null,
+          price: extracted.base_price || 0,
+          currency: extracted.currency || "USD",
+          property_type: extracted.listing_type || "buy",
+          address: extracted.full_street_address || null,
+          latitude: extracted.latitude || null,
+          longitude: extracted.longitude || null,
+          bedrooms: extracted.beds || null,
+          bathrooms: extracted.baths || null,
+          parking_spaces: extracted.parking || 0,
+          size_sqm: extracted.sqm || null,
+          year_built: extracted.year || null,
+          interior_features: extracted.interior_features || [],
+          exterior_features: extracted.exterior_features || [],
+          nearby_pois: extracted.nearby_points_of_interest || [],
+          cover_image_url: extracted.primary_cover_image_url || null,
+          external_url: importUrl,
+          owner_user_id: user?.id,
+          slug: propTitle.toLowerCase().replace(/[^a-z0-9]+/g, "-") + "-" + Math.random().toString(36).substring(2, 7),
+          status: "available",
+          approval_status: "pending"
+        };
+        const gallery_images = extracted.property_media_gallery || [];
 
         const { data: propData, error: propError } = await supabase
           .from("properties")
