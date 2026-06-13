@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { formatMoney } from "@/lib/invest";
 import { MapPin, TrendingUp, Search, RefreshCw, ShoppingCart, Info, Activity } from "lucide-react";
 import { useQueryClient } from "@tanstack/react-query";
-import { getImageUrl } from "@/lib/utils";
+import { formatPrice, resolveImage } from "@/lib/format";
 import {
   Dialog,
   DialogContent,
@@ -110,7 +110,7 @@ export default function SecondaryMarket() {
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                     {listing.property?.images?.[0] ? (
                       <img 
-                        src={getImageUrl(listing.property.images[0])} 
+                        src={resolveImage(listing.property.images[0])} 
                         alt={listing.property?.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         crossOrigin="anonymous"
