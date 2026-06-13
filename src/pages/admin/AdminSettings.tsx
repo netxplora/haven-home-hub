@@ -120,37 +120,66 @@ export function AdminSettings() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-[260px_1fr] gap-8 items-start">
-        {/* Sidebar Navigation */}
-        <aside className="sticky top-20 flex flex-col gap-1.5 p-4 rounded-2xl border border-border/50 bg-card shadow-soft">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">System Actions</div>
-          <button
-            onClick={() => { setActiveTab("maintenance"); setSearchQuery(""); }}
-            className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-              activeTab === "maintenance" && !searchQuery
-                ? "bg-primary text-primary-foreground shadow-md scale-[1.02]" 
-                : "text-foreground/70 hover:bg-secondary/50 hover:text-foreground"
-            }`}
-          >
-            <AlertCircle className="h-4 w-4" /> Operations & Maintenance
-          </button>
-          
-          <div className="my-2 border-t border-border/50" />
-          <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">Module Configurations</div>
-          
-          {TABS.map((tab) => (
+        {/* Sidebar Navigation - horizontal scroll on mobile, vertical on desktop */}
+        <aside className="lg:sticky lg:top-20">
+          {/* Mobile: horizontal scrollable pills */}
+          <div className="flex lg:hidden overflow-x-auto no-scrollbar gap-2 pb-2">
             <button
-              key={tab.id}
-              onClick={() => { setActiveTab(tab.id); setSearchQuery(""); }}
+              onClick={() => { setActiveTab("maintenance"); setSearchQuery(""); }}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all shrink-0 ${
+                activeTab === "maintenance" && !searchQuery
+                  ? "bg-primary text-primary-foreground shadow-md"
+                  : "text-foreground/70 bg-card border border-border/50 hover:bg-secondary/50 hover:text-foreground"
+              }`}
+            >
+              <AlertCircle className="h-4 w-4" /> Operations
+            </button>
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setSearchQuery(""); }}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all shrink-0 ${
+                  activeTab === tab.id && !searchQuery
+                    ? "bg-primary text-primary-foreground shadow-md"
+                    : "text-foreground/70 bg-card border border-border/50 hover:bg-secondary/50 hover:text-foreground"
+                }`}
+              >
+                <tab.icon className="h-4 w-4 opacity-70" />
+                {tab.id}
+              </button>
+            ))}
+          </div>
+
+          {/* Desktop: vertical sidebar */}
+          <div className="hidden lg:flex flex-col gap-1.5 p-4 rounded-2xl border border-border/50 bg-card shadow-soft">
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">System Actions</div>
+            <button
+              onClick={() => { setActiveTab("maintenance"); setSearchQuery(""); }}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
-                activeTab === tab.id && !searchQuery
-                  ? "bg-primary text-primary-foreground shadow-md scale-[1.02]" 
+                activeTab === "maintenance" && !searchQuery
+                  ? "bg-primary text-primary-foreground shadow-md scale-[1.02]"
                   : "text-foreground/70 hover:bg-secondary/50 hover:text-foreground"
               }`}
             >
-              <tab.icon className="h-4 w-4 opacity-70" />
-              {tab.id}
+              <AlertCircle className="h-4 w-4" /> Operations & Maintenance
             </button>
-          ))}
+            <div className="my-2 border-t border-border/50" />
+            <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-2 px-3">Module Configurations</div>
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => { setActiveTab(tab.id); setSearchQuery(""); }}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  activeTab === tab.id && !searchQuery
+                    ? "bg-primary text-primary-foreground shadow-md scale-[1.02]"
+                    : "text-foreground/70 hover:bg-secondary/50 hover:text-foreground"
+                }`}
+              >
+                <tab.icon className="h-4 w-4 opacity-70" />
+                {tab.id}
+              </button>
+            ))}
+          </div>
         </aside>
 
         {/* Main Content Area */}

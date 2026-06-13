@@ -153,7 +153,7 @@ export function DashboardShell({
       </aside>
 
       {/* Main Content */}
-      <div className="flex flex-1 flex-col lg:pl-64">
+      <div className="flex flex-1 flex-col lg:pl-64 w-full min-w-0 max-w-[100vw]">
         {/* Mobile Header */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border/50 bg-background/90 backdrop-blur-md px-4 lg:hidden">
           <Link to="/" className="flex items-center gap-2 font-serif text-base font-semibold text-foreground">
@@ -175,8 +175,8 @@ export function DashboardShell({
           </Sheet>
         </header>
 
-        <main className="flex-1">
-          <div className="mx-auto max-w-6xl px-5 py-8 sm:px-6 lg:px-8">
+        <main className="flex-1 w-full min-w-0">
+          <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 w-full">
             {/* Page Header */}
             <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>

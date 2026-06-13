@@ -94,97 +94,141 @@ export function AdminLocations() {
   }
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
-      <div className="space-y-4">
-        <div className="grid gap-3 sm:grid-cols-2">
-          {locations.map((l: any) => (
-            <div key={l.id} className={`group flex items-center justify-between rounded-xl border bg-card p-4 transition-all hover:shadow-md ${editingId === l.id ? 'border-primary/50 shadow-md ring-1 ring-primary/20' : 'border-border/50 hover:border-primary/20'}`}>
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
-                  <MapPin className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-serif font-bold text-foreground leading-none">{l.name}</p>
-                  <p className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-widest font-medium">/{l.slug}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                {l.featured && <Badge variant="default" className="text-[8px] uppercase tracking-tighter h-5">Featured</Badge>}
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => startEdit(l)} 
-                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Pencil className="h-4 w-4" />
-                </Button>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => remove(l.id)} 
-                  className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Trash2 className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
-          ))}
-        </div>
-        {locations.length === 0 && !isLoading && (
-          <div className="p-12 text-center rounded-xl border border-dashed border-border/50 bg-secondary/10">
-            <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
-            <p className="font-serif text-lg text-muted-foreground italic">No locations defined.</p>
-          </div>
-        )}
-      </div>
-
-      <div className="relative">
-        <form onSubmit={handleSubmit} className="sticky top-6 space-y-4 rounded-xl border border-border/50 bg-card p-6 shadow-xl shadow-primary/5">
-          <div className="flex items-center justify-between mb-2">
+    <div className="space-y-6">
+      {/* Mobile Form View */}
+      <div className="lg:hidden mb-6">
+        <form onSubmit={handleSubmit} className="space-y-4 rounded-xl border border-border/50 bg-card p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-1">
             <div className="flex items-center gap-3">
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${editingId ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'}`}>
-                {editingId ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+              <div className={`h-9 w-9 rounded-xl flex items-center justify-center ${editingId ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'}`}>
+                {editingId ? <Pencil className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
               </div>
-              <div>
-                <h3 className="font-serif text-lg font-bold">{editingId ? "Edit Location" : "Add Location"}</h3>
-                <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{editingId ? "Update Details" : "Regional Mapping"}</p>
-              </div>
+              <h3 className="font-serif text-base font-bold">{editingId ? "Edit Location" : "Add Location"}</h3>
             </div>
             {editingId && (
-              <Button type="button" variant="ghost" size="icon" onClick={cancelEdit} className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
+              <Button type="button" variant="ghost" size="icon" onClick={cancelEdit} className="h-8 w-8 rounded-lg">
                 <X className="h-4 w-4" />
               </Button>
             )}
           </div>
-
-          <div className="space-y-4">
-            <div className="space-y-1.5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1 col-span-2">
               <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Location Name</Label>
-              <Input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="rounded-xl h-11" placeholder="e.g. Dubai Marina" />
+              <Input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="rounded-xl h-10" placeholder="e.g. Dubai Marina" />
             </div>
-            
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">URL Slug</Label>
-              <Input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} placeholder="auto-generated" className="rounded-xl h-11 font-mono text-xs" />
+              <Input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} placeholder="auto" className="rounded-xl h-10 font-mono text-xs" />
             </div>
-
-            <div className="space-y-1.5">
+            <div className="space-y-1">
               <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Image URL</Label>
-              <Input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} placeholder="https://..." className="rounded-xl h-11" />
-            </div>
-
-            <div className="flex items-center gap-2 py-2">
-              <input type="checkbox" id="featured-loc" checked={f.featured} onChange={(e) => setF({ ...f, featured: e.target.checked })} className="rounded border-border" />
-              <Label htmlFor="featured-loc" className="text-sm font-medium">Feature this region</Label>
-            </div>
-
-            <div className="flex gap-2">
-              <Button type="submit" disabled={saving} className={`flex-1 h-12 text-primary-foreground rounded-xl font-bold shadow-sm transition-all ${editingId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary hover:bg-primary/90'}`}>
-                {saving ? (editingId ? "Updating..." : "Adding...") : (editingId ? "Update Location" : "Add Region")}
-              </Button>
+              <Input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} placeholder="https://..." className="rounded-xl h-10" />
             </div>
           </div>
+          <div className="flex items-center gap-2">
+            <input type="checkbox" id="featured-loc-mobile" checked={f.featured} onChange={(e) => setF({ ...f, featured: e.target.checked })} className="rounded border-border" />
+            <Label htmlFor="featured-loc-mobile" className="text-sm font-medium">Feature this region</Label>
+          </div>
+          <Button type="submit" disabled={saving} className={`w-full h-11 text-primary-foreground rounded-xl font-bold shadow-sm ${editingId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary hover:bg-primary/90'}`}>
+            {saving ? (editingId ? "Updating..." : "Adding...") : (editingId ? "Update Location" : "Add Region")}
+          </Button>
         </form>
+      </div>
+
+      <div className="grid gap-8 lg:grid-cols-[1fr_320px]">
+        {/* Locations List */}
+        <div className="space-y-4">
+          <div className="grid gap-3 sm:grid-cols-2">
+            {locations.map((l: any) => (
+              <div key={l.id} className={`group flex items-center justify-between rounded-xl border bg-card p-4 transition-all hover:shadow-md ${editingId === l.id ? 'border-primary/50 shadow-md ring-1 ring-primary/20' : 'border-border/50 hover:border-primary/20'}`}>
+                <div className="flex items-center gap-3">
+                  <div className="h-10 w-10 rounded-xl bg-accent flex items-center justify-center text-muted-foreground group-hover:text-primary transition-colors">
+                    <MapPin className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <p className="font-serif font-bold text-foreground leading-none">{l.name}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1.5 uppercase tracking-widest font-medium">/{l.slug}</p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  {l.featured && <Badge variant="default" className="text-[8px] uppercase tracking-tighter h-5">Featured</Badge>}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => startEdit(l)} 
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-primary opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => remove(l.id)} 
+                    className="h-8 w-8 rounded-lg text-muted-foreground hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            ))}
+          </div>
+          {locations.length === 0 && !isLoading && (
+            <div className="p-12 text-center rounded-xl border border-dashed border-border/50 bg-secondary/10">
+              <Globe className="h-12 w-12 text-muted-foreground mx-auto mb-4 opacity-20" />
+              <p className="font-serif text-lg text-muted-foreground italic">No locations defined.</p>
+            </div>
+          )}
+        </div>
+
+        {/* Desktop Form View */}
+        <div className="hidden lg:block relative">
+          <form onSubmit={handleSubmit} className="sticky top-6 space-y-4 rounded-xl border border-border/50 bg-card p-6 shadow-xl shadow-primary/5">
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-3">
+                <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${editingId ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'}`}>
+                  {editingId ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold">{editingId ? "Edit Location" : "Add Location"}</h3>
+                  <p className="text-[10px] text-muted-foreground uppercase tracking-widest">{editingId ? "Update Details" : "Regional Mapping"}</p>
+                </div>
+              </div>
+              {editingId && (
+                <Button type="button" variant="ghost" size="icon" onClick={cancelEdit} className="h-8 w-8 rounded-lg text-muted-foreground hover:text-foreground">
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Location Name</Label>
+                <Input required value={f.name} onChange={(e) => setF({ ...f, name: e.target.value })} className="rounded-xl h-11" placeholder="e.g. Dubai Marina" />
+              </div>
+              
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">URL Slug</Label>
+                <Input value={f.slug} onChange={(e) => setF({ ...f, slug: e.target.value })} placeholder="auto-generated" className="rounded-xl h-11 font-mono text-xs" />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-bold text-muted-foreground uppercase tracking-widest">Image URL</Label>
+                <Input value={f.image_url} onChange={(e) => setF({ ...f, image_url: e.target.value })} placeholder="https://..." className="rounded-xl h-11" />
+              </div>
+
+              <div className="flex items-center gap-2 py-2">
+                <input type="checkbox" id="featured-loc" checked={f.featured} onChange={(e) => setF({ ...f, featured: e.target.checked })} className="rounded border-border" />
+                <Label htmlFor="featured-loc" className="text-sm font-medium">Feature this region</Label>
+              </div>
+
+              <div className="flex gap-2">
+                <Button type="submit" disabled={saving} className={`flex-1 h-12 text-primary-foreground rounded-xl font-bold shadow-sm transition-all ${editingId ? 'bg-amber-600 hover:bg-amber-700' : 'bg-primary hover:bg-primary/90'}`}>
+                  {saving ? (editingId ? "Updating..." : "Adding...") : (editingId ? "Update Location" : "Add Region")}
+                </Button>
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   );

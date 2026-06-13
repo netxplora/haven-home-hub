@@ -431,8 +431,64 @@ export function AdminProperties() {
       </div>
 
       <div className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
+        {/* Mobile Card View */}
+        <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+          {isLoading ? (
+            <div className="p-8 text-center text-muted-foreground">Loading...</div>
+          ) : paginated.length === 0 ? (
+            <div className="p-8 text-center text-muted-foreground italic">No properties match your filters.</div>
+          ) : (
+            paginated.map((p: any) => (
+              <div key={p.id} className="rounded-xl border border-border/50 bg-background p-4 space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-[9px] font-mono font-bold bg-secondary px-1.5 py-0.5 rounded text-muted-foreground shrink-0">
+                        {p.internal_id || (p.isInvestment ? "INVEST" : "PROP")}
+                      </span>
+                      {p.featured && <Star className="h-3 w-3 fill-amber-400 text-amber-400 shrink-0" />}
+                    </div>
+                    <Link to={p.isInvestment ? `/invest/${p.slug}` : `/properties/${p.slug}`} className="font-serif font-semibold hover:text-primary transition-colors text-sm line-clamp-2">
+                      {p.title}
+                    </Link>
+                    <p className="text-[10px] text-muted-foreground mt-0.5">{p.displayLocation}</p>
+                  </div>
+                  <Badge variant="outline" className={`shrink-0 text-[9px] ${p.isInvestment ? "border-primary/30 text-primary bg-primary/5" : "border-muted text-muted-foreground"}`}>
+                    {p.isInvestment ? "Invest" : p.unifiedType}
+                  </Badge>
+                </div>
+                <div className="flex items-center justify-between border-t border-border/50 pt-3">
+                  <div>
+                    <Badge variant="secondary" className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold ${
+                      (p.status === 'available' || p.status === 'open') ? 'bg-green-500/10 text-green-600 border-green-500/20' :
+                      p.status === 'reserved' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
+                      p.status === 'sold' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
+                      p.status === 'pending' ? 'bg-primary/10 text-primary border-primary/20' :
+                      p.status === 'roi_active' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                      'bg-gray-500/10 text-gray-500 border-gray-500/20'
+                    }`}>
+                      {p.status}
+                    </Badge>
+                  </div>
+                  <p className="font-semibold text-primary text-sm">
+                    {p.isInvestment ? formatMoney(p.total_value) : `${Number(p.price).toLocaleString()} ${p.currency}`}
+                  </p>
+                </div>
+                <div className="flex gap-2 border-t border-border/50 pt-3">
+                  <Button size="sm" variant="outline" className="flex-1 h-9 rounded-lg text-xs" onClick={() => { setEditing(p); setCreateType(p.isInvestment ? "investment" : "property"); setOpen(true); }}>
+                    <Pencil className="h-3.5 w-3.5 mr-1.5" /> Edit
+                  </Button>
+                  <Button size="sm" variant="outline" className="h-9 w-9 rounded-lg hover:text-destructive hover:border-destructive" onClick={() => remove(p)}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+
         {/* Desktop Table View */}
-        <div className="overflow-x-auto">
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full text-sm text-left border-collapse">
             <thead className="bg-accent text-left">
               <tr>

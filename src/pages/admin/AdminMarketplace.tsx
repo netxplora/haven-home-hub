@@ -15,7 +15,6 @@ export function AdminMarketplace() {
   const [view, setView] = useState<ViewTab>("listings");
   const [search, setSearch] = useState("");
 
-  // Fetch all listings
   const { data: listings = [], isLoading: loadingListings } = useQuery({
     queryKey: ["admin-marketplace-listings"],
     queryFn: async () => {
@@ -26,15 +25,11 @@ export function AdminMarketplace() {
           investment_properties!secondary_market_listings_property_id_fkey(title, currency, cover_image_url)
         `)
         .order("created_at", { ascending: false });
-      if (error) {
-        console.error("Admin listings fetch error:", error);
-        return [];
-      }
+      if (error) { console.error("Admin listings fetch error:", error); return []; }
       return (data || []) as any[];
     },
   });
 
-  // Fetch all transactions
   const { data: transactions = [], isLoading: loadingTransactions } = useQuery({
     queryKey: ["admin-marketplace-transactions"],
     queryFn: async () => {
@@ -48,25 +43,19 @@ export function AdminMarketplace() {
           )
         `)
         .order("created_at", { ascending: false });
-      if (error) {
-        console.error("Admin transactions fetch error:", error);
-        return [];
-      }
+      if (error) { console.error("Admin transactions fetch error:", error); return []; }
       return (data || []) as any[];
     },
   });
 
-  // Stats
   const activeListings = listings.filter((l: any) => l.status === "active");
   const soldListings = listings.filter((l: any) => l.status === "sold");
   const totalVolume = transactions.reduce(
-    (s: number, t: any) => s + Number(t.units_traded) * Number(t.price_per_unit),
-    0
+    (s: number, t: any) => s + Number(t.units_traded) * Number(t.price_per_unit), 0
   );
   const uniqueSellers = new Set(listings.map((l: any) => l.seller_id)).size;
   const uniqueBuyers = new Set(transactions.map((t: any) => t.buyer_id)).size;
 
-  // Filtered data
   const filteredListings = listings.filter((l: any) => {
     if (!search) return true;
     const q = search.toLowerCase();
@@ -77,8 +66,7 @@ export function AdminMarketplace() {
   const filteredTransactions = transactions.filter((t: any) => {
     if (!search) return true;
     const q = search.toLowerCase();
-    const title =
-      t.secondary_market_listings?.investment_properties?.title?.toLowerCase() ?? "";
+    const title = t.secondary_market_listings?.investment_properties?.title?.toLowerCase() ?? "";
     return title.includes(q) || t.payment_method.includes(q);
   });
 
@@ -92,35 +80,11 @@ export function AdminMarketplace() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          icon={Tag}
-          label="Active Listings"
-          value={activeListings.length.toString()}
-          accent="text-primary"
-          bgAccent="bg-primary/10"
-        />
-        <StatCard
-          icon={ArrowLeftRight}
-          label="Completed Trades"
-          value={soldListings.length.toString()}
-          accent="text-primary"
-          bgAccent="bg-primary/10"
-        />
-        <StatCard
-          icon={TrendingUp}
-          label="Total Volume"
-          value={formatMoney(totalVolume)}
-          accent="text-amber-600"
-          bgAccent="bg-amber-500/10"
-        />
-        <StatCard
-          icon={Users}
-          label="Active Traders"
-          value={`${uniqueSellers} sellers · ${uniqueBuyers} buyers`}
-          accent="text-blue-600"
-          bgAccent="bg-blue-500/10"
-        />
+      <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
+        <StatCard icon={Tag} label="Active Listings" value={activeListings.length.toString()} accent="text-primary" bgAccent="bg-primary/10" />
+        <StatCard icon={ArrowLeftRight} label="Completed Trades" value={soldListings.length.toString()} accent="text-primary" bgAccent="bg-primary/10" />
+        <StatCard icon={TrendingUp} label="Total Volume" value={formatMoney(totalVolume)} accent="text-amber-600" bgAccent="bg-amber-500/10" />
+        <StatCard icon={Users} label="Active Traders" value={`${uniqueSellers}S · ${uniqueBuyers}B`} accent="text-blue-600" bgAccent="bg-blue-500/10" />
       </div>
 
       {/* View Toggle + Search */}
@@ -130,9 +94,7 @@ export function AdminMarketplace() {
             onClick={() => setView("listings")}
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
-              view === "listings"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              view === "listings" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <Tag className="h-3.5 w-3.5 inline mr-1.5" />
@@ -142,16 +104,13 @@ export function AdminMarketplace() {
             onClick={() => setView("transactions")}
             className={cn(
               "px-4 py-2 text-sm font-medium rounded-lg transition-colors",
-              view === "transactions"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
+              view === "transactions" ? "bg-background text-foreground shadow-sm" : "text-muted-foreground hover:text-foreground"
             )}
           >
             <ArrowLeftRight className="h-3.5 w-3.5 inline mr-1.5" />
             Transactions ({transactions.length})
           </button>
         </div>
-
         <div className="relative max-w-xs w-full">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -163,9 +122,9 @@ export function AdminMarketplace() {
         </div>
       </div>
 
-      {/* Listings Table */}
+      {/* Listings */}
       {view === "listings" && (
-        <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
+        <div className="rounded-xl border border-border/40 bg-card shadow-soft overflow-hidden">
           {loadingListings ? (
             <div className="p-8 space-y-4">
               <Skeleton className="h-10 w-full" />
@@ -178,72 +137,113 @@ export function AdminMarketplace() {
               <p className="text-sm text-muted-foreground">No listings found.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <div className="w-full overflow-x-auto pb-2">
-        <table className="w-full text-sm text-left border-collapse">
-                <thead>
-                  <tr className="bg-accent/50 border-b border-border/40">
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Units</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Price/Unit</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Total</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Listed</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {filteredListings.map((l: any) => {
-                    const currency = l.investment_properties?.currency ?? "USD";
-                    const total = l.units_to_sell * Number(l.price_per_unit);
-                    return (
-                      <tr key={l.id} className="hover:bg-secondary/10 transition-colors">
-                        <td className="px-5 py-4">
-                          <div className="flex items-center gap-3">
-                            <div className="h-9 w-9 rounded-lg overflow-hidden bg-muted shrink-0">
-                              <img
-                                src={l.investment_properties?.cover_image_url || "/placeholder.svg"}
-                                className="h-full w-full object-cover"
-                                alt=""
-                              />
-                            </div>
-                            <span className="font-semibold text-foreground line-clamp-1">
-                              {l.investment_properties?.title ?? "Unknown"}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-5 py-4 font-medium">{l.units_to_sell}</td>
-                        <td className="px-5 py-4 font-medium">{formatMoney(Number(l.price_per_unit), currency)}</td>
-                        <td className="px-5 py-4 font-bold">{formatMoney(total, currency)}</td>
-                        <td className="px-5 py-4">
-                          <Badge
-                            variant="secondary"
-                            className={cn(
-                              "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
-                              l.status === "active" && "bg-primary/10 text-primary border-primary/20",
-                              l.status === "sold" && "bg-primary text-primary-foreground border-none shadow-sm",
-                              l.status === "cancelled" && "bg-secondary/50 text-muted-foreground border-border/50"
-                            )}
-                          >
-                            {l.status}
-                          </Badge>
-                        </td>
-                        <td className="px-5 py-4 text-muted-foreground text-xs">
-                          {format(new Date(l.created_at), "MMM dd, yyyy")}
-                        </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+                {filteredListings.map((l: any) => {
+                  const currency = l.investment_properties?.currency ?? "USD";
+                  const total = l.units_to_sell * Number(l.price_per_unit);
+                  return (
+                    <div key={l.id} className="rounded-xl border border-border/50 bg-background p-4 space-y-3">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg overflow-hidden bg-muted shrink-0">
+                          <img src={l.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-sm truncate">{l.investment_properties?.title ?? "Unknown"}</p>
+                          <p className="text-[10px] text-muted-foreground">{format(new Date(l.created_at), "MMM dd, yyyy")}</p>
+                        </div>
+                        <Badge
+                          variant="secondary"
+                          className={cn(
+                            "ml-auto shrink-0 rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
+                            l.status === "active" && "bg-primary/10 text-primary border-primary/20",
+                            l.status === "sold" && "bg-primary text-primary-foreground border-none",
+                            l.status === "cancelled" && "bg-secondary/50 text-muted-foreground border-border/50"
+                          )}
+                        >
+                          {l.status}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs border-t border-border/50 pt-3">
+                        <div>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-medium">Units</span>
+                          <span className="font-semibold">{l.units_to_sell}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-medium">Per Unit</span>
+                          <span className="font-semibold">{formatMoney(Number(l.price_per_unit), currency)}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-medium">Total</span>
+                          <span className="font-bold text-primary">{formatMoney(total, currency)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <div className="w-full overflow-x-auto pb-2">
+                  <table className="w-full text-sm text-left border-collapse">
+                    <thead>
+                      <tr className="bg-accent/50 border-b border-border/40">
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Units</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Price/Unit</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Total</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Status</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Listed</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-      </div>
-            </div>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {filteredListings.map((l: any) => {
+                        const currency = l.investment_properties?.currency ?? "USD";
+                        const total = l.units_to_sell * Number(l.price_per_unit);
+                        return (
+                          <tr key={l.id} className="hover:bg-secondary/10 transition-colors">
+                            <td className="px-5 py-4">
+                              <div className="flex items-center gap-3">
+                                <div className="h-9 w-9 rounded-lg overflow-hidden bg-muted shrink-0">
+                                  <img src={l.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                                </div>
+                                <span className="font-semibold text-foreground line-clamp-1">{l.investment_properties?.title ?? "Unknown"}</span>
+                              </div>
+                            </td>
+                            <td className="px-5 py-4 font-medium">{l.units_to_sell}</td>
+                            <td className="px-5 py-4 font-medium">{formatMoney(Number(l.price_per_unit), currency)}</td>
+                            <td className="px-5 py-4 font-bold">{formatMoney(total, currency)}</td>
+                            <td className="px-5 py-4">
+                              <Badge
+                                variant="secondary"
+                                className={cn(
+                                  "rounded-md px-2 py-0.5 text-[10px] font-bold capitalize border",
+                                  l.status === "active" && "bg-primary/10 text-primary border-primary/20",
+                                  l.status === "sold" && "bg-primary text-primary-foreground border-none shadow-sm",
+                                  l.status === "cancelled" && "bg-secondary/50 text-muted-foreground border-border/50"
+                                )}
+                              >
+                                {l.status}
+                              </Badge>
+                            </td>
+                            <td className="px-5 py-4 text-muted-foreground text-xs">{format(new Date(l.created_at), "MMM dd, yyyy")}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
 
-      {/* Transactions Table */}
+      {/* Transactions */}
       {view === "transactions" && (
-        <div className="overflow-hidden rounded-xl border border-border/40 bg-card shadow-soft">
+        <div className="rounded-xl border border-border/40 bg-card shadow-soft overflow-hidden">
           {loadingTransactions ? (
             <div className="p-8 space-y-4">
               <Skeleton className="h-10 w-full" />
@@ -256,47 +256,80 @@ export function AdminMarketplace() {
               <p className="text-sm text-muted-foreground">No transactions recorded yet.</p>
             </div>
           ) : (
-            <div className="overflow-x-auto">
-              <div className="w-full overflow-x-auto pb-2">
-        <table className="w-full text-sm text-left border-collapse">
-                <thead>
-                  <tr className="bg-accent/50 border-b border-border/40">
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Units</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Price/Unit</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Value</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Method</th>
-                    <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-border/40">
-                  {filteredTransactions.map((t: any) => {
-                    const currency =
-                      t.secondary_market_listings?.investment_properties?.currency ?? "USD";
-                    const total = Number(t.units_traded) * Number(t.price_per_unit);
-                    const title =
-                      t.secondary_market_listings?.investment_properties?.title ?? "Unknown";
-                    return (
-                      <tr key={t.id} className="hover:bg-secondary/10 transition-colors">
-                        <td className="px-5 py-4 font-semibold text-foreground line-clamp-1">{title}</td>
-                        <td className="px-5 py-4 font-medium">{t.units_traded}</td>
-                        <td className="px-5 py-4 font-medium">{formatMoney(Number(t.price_per_unit), currency)}</td>
-                        <td className="px-5 py-4 font-bold text-primary">{formatMoney(total, currency)}</td>
-                        <td className="px-5 py-4">
-                          <Badge variant="outline" className="text-[10px] font-bold capitalize rounded-md px-2 py-0.5">
-                            {t.payment_method?.replace("_", " ")}
-                          </Badge>
-                        </td>
-                        <td className="px-5 py-4 text-muted-foreground text-xs">
-                          {format(new Date(t.created_at), "MMM dd, yyyy · HH:mm")}
-                        </td>
+            <>
+              {/* Mobile Card View */}
+              <div className="grid grid-cols-1 gap-4 p-4 md:hidden">
+                {filteredTransactions.map((t: any) => {
+                  const currency = t.secondary_market_listings?.investment_properties?.currency ?? "USD";
+                  const total = Number(t.units_traded) * Number(t.price_per_unit);
+                  const title = t.secondary_market_listings?.investment_properties?.title ?? "Unknown";
+                  return (
+                    <div key={t.id} className="rounded-xl border border-border/50 bg-background p-4 space-y-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <p className="font-semibold text-sm line-clamp-2">{title}</p>
+                        <Badge variant="outline" className="text-[10px] font-bold capitalize rounded-md px-2 py-0.5 shrink-0">
+                          {t.payment_method?.replace("_", " ")}
+                        </Badge>
+                      </div>
+                      <div className="grid grid-cols-3 gap-2 text-xs border-t border-border/50 pt-3">
+                        <div>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-medium">Units</span>
+                          <span className="font-semibold">{t.units_traded}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-medium">Per Unit</span>
+                          <span className="font-semibold">{formatMoney(Number(t.price_per_unit), currency)}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px] uppercase font-medium">Total</span>
+                          <span className="font-bold text-primary">{formatMoney(total, currency)}</span>
+                        </div>
+                      </div>
+                      <p className="text-[10px] text-muted-foreground">{format(new Date(t.created_at), "MMM dd, yyyy · HH:mm")}</p>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden md:block overflow-x-auto">
+                <div className="w-full overflow-x-auto pb-2">
+                  <table className="w-full text-sm text-left border-collapse">
+                    <thead>
+                      <tr className="bg-accent/50 border-b border-border/40">
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Property</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Units</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Price/Unit</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Value</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Method</th>
+                        <th className="px-5 py-3.5 text-xs font-medium uppercase tracking-wider text-muted-foreground">Date</th>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-      </div>
-            </div>
+                    </thead>
+                    <tbody className="divide-y divide-border/40">
+                      {filteredTransactions.map((t: any) => {
+                        const currency = t.secondary_market_listings?.investment_properties?.currency ?? "USD";
+                        const total = Number(t.units_traded) * Number(t.price_per_unit);
+                        const title = t.secondary_market_listings?.investment_properties?.title ?? "Unknown";
+                        return (
+                          <tr key={t.id} className="hover:bg-secondary/10 transition-colors">
+                            <td className="px-5 py-4 font-semibold text-foreground line-clamp-1">{title}</td>
+                            <td className="px-5 py-4 font-medium">{t.units_traded}</td>
+                            <td className="px-5 py-4 font-medium">{formatMoney(Number(t.price_per_unit), currency)}</td>
+                            <td className="px-5 py-4 font-bold text-primary">{formatMoney(total, currency)}</td>
+                            <td className="px-5 py-4">
+                              <Badge variant="outline" className="text-[10px] font-bold capitalize rounded-md px-2 py-0.5">
+                                {t.payment_method?.replace("_", " ")}
+                              </Badge>
+                            </td>
+                            <td className="px-5 py-4 text-muted-foreground text-xs">{format(new Date(t.created_at), "MMM dd, yyyy · HH:mm")}</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
           )}
         </div>
       )}
@@ -304,24 +337,12 @@ export function AdminMarketplace() {
   );
 }
 
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  accent,
-  bgAccent,
-}: {
-  icon: any;
-  label: string;
-  value: string;
-  accent: string;
-  bgAccent: string;
-}) {
+function StatCard({ icon: Icon, label, value, accent, bgAccent }: { icon: any; label: string; value: string; accent: string; bgAccent: string; }) {
   return (
     <div className="rounded-xl border border-border/50 bg-card p-5 shadow-soft">
       <div className="flex items-center gap-3 mb-3">
-        <div className={`h-9 w-9 rounded-lg ${bgAccent} flex items-center justify-center`}>
-          <Icon className={`h-4.5 w-4.5 ${accent}`} />
+        <div className={`h-9 w-9 rounded-lg ${bgAccent} flex items-center justify-center shrink-0`}>
+          <Icon className={`h-4 w-4 ${accent}`} />
         </div>
         <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{label}</p>
       </div>

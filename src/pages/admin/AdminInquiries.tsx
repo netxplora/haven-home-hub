@@ -51,8 +51,8 @@ export function AdminInquiries() {
       <div className="space-y-4">
         {inquiries.map((i: any) => (
           <div key={i.id} className="group relative overflow-hidden rounded-xl border border-border/50 bg-card p-6 transition-all hover:shadow-lg hover:border-primary/20">
-            <div className="flex flex-wrap items-start justify-between gap-6">
-              <div className="flex-1 min-w-[300px] space-y-4">
+            <div className="flex flex-wrap items-start justify-between gap-4">
+              <div className="flex-1 min-w-0 space-y-4">
                 <div className="flex items-center justify-between">
                   {i.properties ? (
                     <Link to={`/properties/${i.properties?.slug}`} className="font-serif text-lg font-bold hover:text-primary transition-colors">
@@ -106,7 +106,7 @@ export function AdminInquiries() {
                 <InquiryReplyForm inquiryId={i.id} existingResponse={i.admin_response} onSave={updateInquiry} />
               </div>
 
-              <div className="flex flex-col gap-3 w-full sm:w-auto sm:items-end">
+              <div className="flex flex-col gap-3 w-full sm:w-[220px] sm:items-end">
                 <Badge variant={
                   i.status === "resolved" ? "default" : 
                   i.status === "in_progress" ? "secondary" : 
