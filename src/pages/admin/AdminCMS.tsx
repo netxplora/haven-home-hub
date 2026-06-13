@@ -16,6 +16,7 @@ import remarkGfm from "remark-gfm";
 import { AdminBroadcasts } from "./AdminBroadcasts";
 import { AdminAdvertisements } from "./AdminAdvertisements";
 import { AdminActivityFeed } from "./AdminActivityFeed";
+import { AdminRegionTelemetry } from "./AdminRegionTelemetry";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -60,6 +61,7 @@ export function AdminCMS() {
           <TabsTrigger value="posts">Blog Posts</TabsTrigger>
           <TabsTrigger value="categories">Categories</TabsTrigger>
           <TabsTrigger value="homepage">Homepage Content</TabsTrigger>
+          <TabsTrigger value="regions">Region Intelligence</TabsTrigger>
           <TabsTrigger value="broadcasts">Broadcasts</TabsTrigger>
           <TabsTrigger value="advertisements">Advertisements</TabsTrigger>
           <TabsTrigger value="activity-feed">Activity Feed</TabsTrigger>
@@ -180,6 +182,10 @@ export function AdminCMS() {
 
         <TabsContent value="activity-feed">
           <AdminActivityFeed />
+        </TabsContent>
+
+        <TabsContent value="regions">
+          <AdminRegionTelemetry />
         </TabsContent>
       </Tabs>
 

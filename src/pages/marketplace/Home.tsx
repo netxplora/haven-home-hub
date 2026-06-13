@@ -22,6 +22,7 @@ import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 import { PromoBanner } from "@/components/site/PromoBanner";
 import { MarketIntelligence } from "@/components/site/MarketIntelligence";
 import { AIPropertyAdvisor } from "@/components/site/AIPropertyAdvisor";
+import { RegionTelemetry } from "@/components/marketing/RegionTelemetry";
 import useEmblaCarousel from "embla-carousel-react";
 
 
@@ -334,19 +335,8 @@ export default function Home() {
         )}
       </section>
 
-      {/* 4. POPULAR LOCATIONS & LIFESTYLE ZONES (LOCAL TELEMETRY) */}
-      <section className="bg-accent/30 border-y border-border/50 py-16">
-        <div className="container-wide">
-          <div className="max-w-xl mb-10">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Region Telemetry</span>
-            <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Popular Locations & Infrastructure</h2>
-            <p className="text-sm text-muted-foreground mt-2">
-              Understand Walk Score, FEMA flood risk levels, and school ratings for America's prime residential hubs.
-            </p>
-          </div>
-          <HomeLocations />
-        </div>
-      </section>
+      {/* 4. DYNAMIC REGION TELEMETRY (CMS MANAGED) */}
+      <RegionTelemetry />
 
       {/* 5. INVESTMENT OPPORTUNITIES (FRACTIONAL PREVIEW) */}
       <section className="container-wide section-gap">
