@@ -218,11 +218,11 @@ export default function InvestDetail() {
                 else setUnits(val);
               }}
               disabled={avail === 0 || data.status !== "open"}
-              className="h-12 flex-1 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-lg text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              className="h-12 flex-1 min-w-0 rounded-xl border-border bg-accent/50 focus:bg-background transition-all font-bold text-lg text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             />
             <button
               type="button"
-              className="h-12 w-12 rounded-xl border border-border bg-accent/50 hover:bg-accent flex items-center justify-center text-lg font-bold transition-colors disabled:opacity-40"
+              className="h-12 w-12 shrink-0 rounded-xl border border-border bg-accent/50 hover:bg-accent flex items-center justify-center text-lg font-bold transition-colors disabled:opacity-40"
               disabled={units >= maxAllowedUnits || avail === 0 || data.status !== "open"}
               onClick={() => setUnits(Math.min(maxAllowedUnits, units + 1))}
             >+</button>
@@ -395,8 +395,7 @@ export default function InvestDetail() {
       </div>
 
       <div className="container-wide grid gap-10 pb-16 lg:grid-cols-[1fr_400px]">
-        {/* LEFT */}
-        <div>
+        <div className="min-w-0 w-full overflow-hidden">
           {/* Gallery */}
           <div className="relative aspect-[16/9] w-full overflow-hidden rounded-xl shadow-card border border-border/50">
             {gallery.map((g, i) => (
@@ -409,7 +408,7 @@ export default function InvestDetail() {
             ))}
           </div>
           {gallery.length > 1 && (
-            <div className="mt-3 grid grid-cols-4 gap-3 sm:grid-cols-5">
+            <div className="mt-3 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
               {gallery.map((g, i) => (
                 <button 
                   key={i} 
@@ -424,10 +423,10 @@ export default function InvestDetail() {
 
           <div className="mt-8">
             <p className="inline-flex items-center gap-1 text-xs font-medium tracking-wider text-primary uppercase">
-              <MapPin className="h-3 w-3" /> {data.location}
+              <MapPin className="h-3 w-3 shrink-0" /> <span className="truncate">{data.location}</span>
             </p>
-            <h1 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">{data.title}</h1>
-            <p className="mt-5 whitespace-pre-line text-foreground/85">{data.description}</p>
+            <h1 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl break-words">{data.title}</h1>
+            <p className="mt-5 whitespace-pre-line text-foreground/85 break-words">{data.description}</p>
           </div>
 
           {/* Mobile-only investment panel */}
@@ -531,18 +530,22 @@ export default function InvestDetail() {
           )}
 
           {/* Details Tabs */}
-          <div className="mt-10">
+          <div className="mt-10 w-full min-w-0">
             <Tabs defaultValue="highlights" className="w-full">
-              <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto overflow-x-auto flex-nowrap hide-scrollbar">
-                <TabsTrigger value="highlights" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Highlights</TabsTrigger>
-                <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Location</TabsTrigger>
-                <TabsTrigger value="journey" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Journey</TabsTrigger>
-                <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Documents</TabsTrigger>
-                {(data as any).liquidity_rules && <TabsTrigger value="liquidity" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Liquidity</TabsTrigger>}
-                <TabsTrigger value="how-it-works" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">How it works</TabsTrigger>
-              </TabsList>
+              <div className="w-full overflow-hidden relative">
+                <div className="overflow-x-auto hide-scrollbar w-full border-b">
+                  <TabsList className="w-max min-w-full justify-start rounded-none bg-transparent p-0 h-auto flex-nowrap">
+                    <TabsTrigger value="highlights" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Highlights</TabsTrigger>
+                    <TabsTrigger value="location" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Location</TabsTrigger>
+                    <TabsTrigger value="journey" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Journey</TabsTrigger>
+                    <TabsTrigger value="documents" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Documents</TabsTrigger>
+                    {(data as any).liquidity_rules && <TabsTrigger value="liquidity" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">Liquidity</TabsTrigger>}
+                    <TabsTrigger value="how-it-works" className="rounded-none border-b-2 border-transparent px-6 py-3 data-[state=active]:border-primary data-[state=active]:bg-transparent whitespace-nowrap">How it works</TabsTrigger>
+                  </TabsList>
+                </div>
+              </div>
               
-              <TabsContent value="highlights" className="mt-8 space-y-6">
+              <TabsContent value="highlights" className="mt-8 space-y-6 min-w-0">
                 <div className="grid gap-6 sm:grid-cols-2">
                   <HighlightItem icon={Star} title="Prime Location" desc="Situated in one of the fastest-growing real estate corridors with high demand." />
                   <HighlightItem icon={Building2} title="Modern Architecture" desc="State-of-the-art design featuring energy-efficient systems and premium finishes." />

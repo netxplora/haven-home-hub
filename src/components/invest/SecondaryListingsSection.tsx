@@ -117,21 +117,21 @@ export function SecondaryListingsSection({ propertyId, propertyTitle, currency }
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 sm:shrink-0">
-                    <div className="text-right">
+                  <div className="flex flex-wrap items-center justify-between w-full sm:w-auto gap-4 sm:shrink-0 mt-2 sm:mt-0 pt-2 sm:pt-0 border-t sm:border-0 border-border/30">
+                    <div className="text-left sm:text-right">
                       <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-medium">Total</p>
-                      <p className="font-serif font-bold text-primary">{formatMoney(total, currency)}</p>
+                      <p className="font-serif font-bold text-primary text-lg break-words">{formatMoney(total, currency)}</p>
                     </div>
                     {user ? (
                       <Button
                         size="sm"
-                        className="rounded-xl h-10 px-5 font-bold bg-primary hover:bg-primary/90 text-white transition-all hover:scale-105 active:scale-95"
+                        className="rounded-xl h-10 px-6 font-bold bg-primary hover:bg-primary/90 text-white transition-all active:scale-95 flex-1 sm:flex-none max-w-[200px]"
                         onClick={() => handleBuy(listing)}
                       >
                         Buy <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                       </Button>
                     ) : (
-                      <Button size="sm" variant="outline" className="rounded-xl h-10 px-5 font-bold" asChild>
+                      <Button size="sm" variant="outline" className="rounded-xl h-10 px-6 font-bold flex-1 sm:flex-none max-w-[200px]" asChild>
                         <a href="/auth">Sign in to Buy</a>
                       </Button>
                     )}
