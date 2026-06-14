@@ -52,6 +52,10 @@ export function DocumentsPanel({ userId }: { userId: string }) {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [sendingEmailId, setSendingEmailId] = useState<string | null>(null);
 
+  // Search & Filtering State
+  const [docSearch, setDocSearch] = useState("");
+  const [selectedPropertyId, setSelectedPropertyId] = useState("none");
+
   // 1. Legal Documents (Signed Docs)
   const { data: signedDocs = [], isLoading: isLoadingSigned } = useQuery({
     queryKey: ["signed-docs", userId],
@@ -108,9 +112,6 @@ export function DocumentsPanel({ userId }: { userId: string }) {
   const propertyDocs = propertyDocsData?.items || [];
   const propertyDocsTotalPages = Math.ceil((propertyDocsData?.totalCount || 0) / pageSize);
 
-  // Search & Filtering State
-  const [docSearch, setDocSearch] = useState("");
-  const [selectedPropertyId, setSelectedPropertyId] = useState("none");
 
   // Fetch user's portfolio assets for the document request dropdown
   const { data: portfolioAssets = [] } = useQuery({
