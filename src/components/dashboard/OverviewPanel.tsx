@@ -17,7 +17,8 @@ import {
   PiggyBank,
   BarChart3,
   CircleDollarSign,
-  Home
+  Home,
+  Wallet
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -151,56 +152,65 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
   return (
     <div className="space-y-8">
       {/* KPI Cards */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Properties Owned</p>
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/10 text-primary">
-              <Heart className="h-4 w-4" />
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 lg:grid-cols-4">
+        {/* Available Balance - Primary Focus */}
+        <div className="col-span-2 lg:col-span-1 rounded-2xl border-none bg-primary text-primary-foreground p-5 sm:p-6 shadow-md relative overflow-hidden group">
+          <div className="absolute inset-0 bg-gradient-to-br from-white/10 to-transparent pointer-events-none" />
+          <div className="flex items-center justify-between mb-3 sm:mb-4 relative z-10">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-primary-foreground/90">Available Balance</p>
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-white/20 text-white backdrop-blur-sm shadow-sm">
+              <Wallet className="h-4 w-4" />
             </span>
           </div>
-          <p className="font-serif text-2xl font-semibold text-foreground">{stats?.propertiesOwnedCount ?? 0}</p>
-          <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-            <Heart className="h-3 w-3 text-primary" /> Successfully acquired
-          </p>
-        </div>
-
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Invested</p>
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/8 text-primary">
-              <TrendingUp className="h-4 w-4" />
-            </span>
-          </div>
-          <p className="font-serif text-2xl font-semibold text-foreground">{formatMoney(stats?.totalInvested ?? 0)}</p>
-          <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-            <TrendingUp className="h-3 w-3 text-primary" /> {stats?.investmentCount ?? 0} Active · {stats?.completedCount ?? 0} Completed
-          </p>
-        </div>
-        
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Available Balance</p>
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-secondary/8 text-secondary">
-              <RefreshCw className="h-4 w-4" />
-            </span>
-          </div>
-          <p className="font-serif text-2xl font-semibold text-foreground">{formatMoney(stats?.availableBalance ?? 0)}</p>
-          <Button size="sm" variant="ghost" className="mt-2 h-7 text-xs font-medium text-primary hover:bg-primary/5 px-2 -ml-2" onClick={() => onNavigate("withdrawals")}>
-            Manage Funds <ArrowRight className="h-3 w-3 ml-1" />
+          <p className="font-serif text-3xl sm:text-4xl font-bold relative z-10 tracking-tight">{formatMoney(stats?.availableBalance ?? 0)}</p>
+          <Button size="sm" variant="ghost" className="mt-4 h-8 text-[11px] sm:text-xs font-semibold text-white hover:bg-white/20 px-3 rounded-lg relative z-10 w-fit" onClick={() => onNavigate("withdrawals")}>
+            Manage Funds <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
           </Button>
         </div>
 
-        <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total Returns</p>
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-primary/8 text-primary">
-              <ShieldCheck className="h-4 w-4" />
+        {/* Total Returns - Secondary Focus */}
+        <div className="col-span-2 lg:col-span-1 rounded-2xl border border-border/60 bg-card p-5 sm:p-6 shadow-sm hover:shadow-md transition-shadow">
+          <div className="flex items-center justify-between mb-3 sm:mb-4">
+            <p className="text-[11px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">Total Returns</p>
+            <span className="grid h-8 w-8 place-items-center rounded-xl bg-green-500/10 text-green-600 dark:text-green-400 shadow-sm">
+              <TrendingUp className="h-4 w-4" />
             </span>
           </div>
-          <p className="font-serif text-2xl font-semibold text-foreground">{formatMoney(stats?.totalReturns ?? 0)}</p>
-          <p className="mt-2 text-xs text-muted-foreground flex items-center gap-1">
-            <ShieldCheck className="h-3 w-3 text-primary" /> Payments processed securely
+          <p className="font-serif text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{formatMoney(stats?.totalReturns ?? 0)}</p>
+          <div className="mt-4 flex items-center gap-1.5 text-[10px] sm:text-[11px] font-semibold text-muted-foreground bg-secondary/30 w-fit px-2.5 py-1 rounded-md">
+            <ShieldCheck className="h-3.5 w-3.5 text-green-600 dark:text-green-400" /> Processed securely
+          </div>
+        </div>
+
+        {/* Total Invested */}
+        <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">Invested</p>
+              <span className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                <PiggyBank className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </span>
+            </div>
+            <p className="font-serif text-lg sm:text-2xl font-bold text-foreground tracking-tight">{formatMoney(stats?.totalInvested ?? 0)}</p>
+          </div>
+          <p className="mt-3 text-[10px] sm:text-[11px] font-medium text-muted-foreground">
+            {stats?.investmentCount ?? 0} Active · {stats?.completedCount ?? 0} Completed
+          </p>
+        </div>
+        
+        {/* Properties Owned */}
+        <div className="rounded-2xl border border-border/60 bg-card p-4 sm:p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground">Properties</p>
+              <span className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                <Home className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+              </span>
+            </div>
+            <p className="font-serif text-lg sm:text-2xl font-bold text-foreground tracking-tight">{stats?.propertiesOwnedCount ?? 0}</p>
+          </div>
+          <p className="mt-3 text-[10px] sm:text-[11px] font-medium text-muted-foreground flex items-center gap-1">
+            Successfully acquired
           </p>
         </div>
       </div>
