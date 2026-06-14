@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { History, FileText, Download, Filter, Search, TrendingUp, TrendingDown, RefreshCcw, XCircle, Loader2 } from "lucide-react";
+import { History, FileText, Filter, Search, TrendingUp, TrendingDown, RefreshCcw, XCircle, Loader2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -15,60 +15,32 @@ export function TransactionsPanel({ userId }: { userId: string }) {
   const [selectedReceiptPaymentId, setSelectedReceiptPaymentId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [cancellingId, setCancellingId] = useState<string | null>(null);
+  const [page, setPage] = useState(0);
+  const pageSize = 15;
   
-  const { data: items = [], isLoading, refetch } = useQuery({
-    queryKey: ["transactions", userId],
+  const { data, isLoading, refetch } = useQuery({
+    queryKey: ["transactions", userId, page, search],
     queryFn: async () => {
-      const [paymentsResponse, secondaryTxResponse] = await Promise.all([
-        supabase
-          .from("payments")
-          .select(`
-            *,
-            properties(title),
-            investment_properties(title)
-          `)
-          .eq("user_id", userId),
-        supabase
-          .from("secondary_market_transactions" as any)
-          .select(`
-            *,
-            secondary_market_listings!secondary_market_transactions_listing_id_fkey(
-              property_id,
-              investment_properties!secondary_market_listings_property_id_fkey(title, currency)
-            )
-          `)
-          .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
-      ]);
-
-      const payments = paymentsResponse.data ?? [];
-      const secondaryTx = secondaryTxResponse.data ?? [];
-
-      const mappedSecondaryTx = secondaryTx.map((tx: any) => {
-        const isBuyer = tx.buyer_id === userId;
-        return {
-          id: tx.id,
-          created_at: tx.created_at,
-          payment_type: isBuyer ? "marketplace_buy" : "marketplace_sell",
-          status: "success",
-          amount: Number(tx.units_traded) * Number(tx.price_per_unit),
-          currency: tx.secondary_market_listings?.investment_properties?.currency || "USD",
-          payment_method: tx.payment_method || "wallet_balance",
-          reference: `TX-${tx.id.substring(0, 8).toUpperCase()}`,
-          investment_properties: {
-            title: tx.secondary_market_listings?.investment_properties?.title || "Marketplace Trade"
-          },
-          properties: null,
-          isMarketplace: true,
-          units_traded: tx.units_traded,
-          price_per_unit: tx.price_per_unit
-        };
-      });
-
-      const allItems = [...payments, ...mappedSecondaryTx];
-      allItems.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-      return allItems;
+      let q = supabase
+        .from("unified_user_transactions")
+        .select("*", { count: "exact" })
+        .eq("user_id", userId)
+        .order("created_at", { ascending: false });
+        
+      if (search) {
+        q = q.or(`reference.ilike.%${search}%,payment_type.ilike.%${search}%,property_title.ilike.%${search}%,investment_property_title.ilike.%${search}%`);
+      }
+      
+      const { data, count, error } = await q.range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      if (error) throw error;
+      return { items: data || [], totalCount: count || 0 };
     },
   });
+
+  const items = data?.items || [];
+  const totalCount = data?.totalCount || 0;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
   const { data: receiptData } = useQuery({
     queryKey: ["receipt", selectedReceiptPaymentId],
@@ -103,11 +75,10 @@ export function TransactionsPanel({ userId }: { userId: string }) {
     }
   };
 
-  const filteredItems = items.filter(t => 
-    (t.payment_type || "").toLowerCase().includes(search.toLowerCase()) ||
-    (t.reference || "").toLowerCase().includes(search.toLowerCase()) ||
-    (t.investment_properties?.title || t.properties?.title || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(e.target.value);
+    setPage(0); // Reset to first page on search
+  };
   
   if (isLoading) return (
     <div className="space-y-4">
@@ -129,7 +100,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
               placeholder="Search reference or description..." 
               className="pl-10 rounded-xl bg-accent/50 border-border/40 focus-visible:ring-primary/20"
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={handleSearch}
             />
           </div>
           <Button variant="outline" size="icon" onClick={() => refetch()} className="rounded-xl border-border/40 hover:bg-accent">
@@ -138,7 +109,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
         </div>
       </div>
       
-      {filteredItems.length === 0 ? (
+      {items.length === 0 ? (
         <div className="rounded-xl border border-dashed border-border/60 p-16 text-center bg-secondary/5">
            <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-accent/50 mb-4">
               <History className="h-8 w-8 text-muted-foreground/40" />
@@ -150,7 +121,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
         <>
           {/* ── Mobile Card Layout ── */}
           <div className="grid grid-cols-1 gap-4 md:hidden">
-            {filteredItems.map((t: any) => {
+            {items.map((t: any) => {
               const isIncome = ["deposit", "referral_bonus", "investment_return", "marketplace_sell"].includes(t.payment_type);
               const isPending = t.status === "pending";
               return (
@@ -167,7 +138,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                            t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}
                         </p>
                         <p className="text-xs font-medium text-primary truncate max-w-[180px]">
-                          {t.investment_properties?.title || t.properties?.title || 
+                          {t.investment_property_title || t.property_title || 
                            (t.payment_type === 'referral_bonus' ? "Network Reward" : 
                             t.payment_type === 'investment_return' ? "Dividend Distribution" : 
                             t.payment_type === 'marketplace_buy' ? "Marketplace Purchase" :
@@ -214,18 +185,18 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                           variant="outline"
                           size="sm"
                           className="h-8 text-xs font-bold border-red-200 text-red-600 hover:bg-red-50/50"
-                          onClick={() => handleCancelPayment(t.id)}
-                          disabled={cancellingId === t.id}
+                          onClick={() => handleCancelPayment(t.transaction_id)}
+                          disabled={cancellingId === t.transaction_id}
                         >
-                          {cancellingId === t.id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Cancel"}
+                          {cancellingId === t.transaction_id ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : "Cancel"}
                         </Button>
                       )}
-                      {!t.isMarketplace && !isPending && (
+                      {!t.is_marketplace && !isPending && (
                         <Button 
                           variant="ghost" 
                           size="icon" 
                           className="h-10 w-10 rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"
-                          onClick={() => setSelectedReceiptPaymentId(t.id)}
+                          onClick={() => setSelectedReceiptPaymentId(t.transaction_id)}
                           title="View Receipt"
                         >
                           <FileText className="h-4 w-4" />
@@ -254,11 +225,11 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">
-                  {filteredItems.map((t: any) => {
+                  {items.map((t: any) => {
                     const isIncome = ["deposit", "referral_bonus", "investment_return", "marketplace_sell"].includes(t.payment_type);
                     const isPending = t.status === "pending";
                     return (
-                      <tr key={t.id} className="transition-colors hover:bg-secondary/10 group">
+                      <tr key={t.transaction_id} className="transition-colors hover:bg-secondary/10 group">
                         <td className="px-6 py-5 text-muted-foreground font-medium">
                           {new Date(t.created_at).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                         </td>
@@ -274,7 +245,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                                    t.payment_type ? t.payment_type.replace("_"," ") : "N/A"}
                                 </p>
                                 <p className="text-[10px] font-bold text-primary truncate max-w-[150px]">
-                                  {t.investment_properties?.title || t.properties?.title || 
+                                  {t.investment_property_title || t.property_title || 
                                    (t.payment_type === 'referral_bonus' ? "Network Reward" : 
                                     t.payment_type === 'investment_return' ? "Dividend Distribution" : 
                                     t.payment_type === 'marketplace_buy' ? "Marketplace Purchase" :
@@ -313,19 +284,19 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                                 variant="outline"
                                 size="sm"
                                 className="h-8 text-xs font-bold border-red-200 text-red-600 hover:bg-red-50/50 gap-1.5"
-                                onClick={() => handleCancelPayment(t.id)}
-                                disabled={cancellingId === t.id}
+                                onClick={() => handleCancelPayment(t.transaction_id)}
+                                disabled={cancellingId === t.transaction_id}
                               >
-                                {cancellingId === t.id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
+                                {cancellingId === t.transaction_id ? <Loader2 className="h-3 w-3 animate-spin" /> : <XCircle className="h-3.5 w-3.5" />}
                                 Cancel Transaction
                               </Button>
                             )}
-                            {!t.isMarketplace && !isPending && (
+                            {!t.is_marketplace && !isPending && (
                               <Button 
                                 variant="ghost" 
                                 size="icon" 
                                 className="h-8 w-8 rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
-                                onClick={() => setSelectedReceiptPaymentId(t.id)}
+                                onClick={() => setSelectedReceiptPaymentId(t.transaction_id)}
                                 title="View Receipt"
                               >
                                 <FileText className="h-4 w-4" />
@@ -338,9 +309,41 @@ export function TransactionsPanel({ userId }: { userId: string }) {
                   })}
                 </tbody>
               </table>
-      </div>
             </div>
           </div>
+        </div>
+          
+          {/* Pagination Controls */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4">
+              <p className="text-xs text-muted-foreground">
+                Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalCount)} of {totalCount} records
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="h-8 w-8 p-0 rounded-lg"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-xs font-medium px-2">
+                  Page {page + 1} of {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="h-8 w-8 p-0 rounded-lg"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          )}
         </>
       )}
       

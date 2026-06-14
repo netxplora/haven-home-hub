@@ -44,26 +44,15 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
     queryKey: ["dashboard-overview-stats", userId],
     suspense: false,
     queryFn: async () => {
-      const [investmentsResponse, returnsResponse, balanceResponse, reservationsResponse, purchasesResponse] = await Promise.all([
-        supabase.from("user_investments").select("amount_invested, total_amount, amount_paid, status").eq("user_id", userId),
-        supabase.from("returns").select("amount_received, distribution_date").eq("user_id", userId).order("distribution_date", { ascending: true }),
-        supabase.rpc("user_available_balance"),
-        supabase.from("reservations").select("id").eq("user_id", userId).in("status", ["pending", "pending_review", "approved", "awaiting_reservation_fee", "under_admin_review", "information_requested"]),
-        supabase.from("reservations").select("id").eq("user_id", userId).in("status", ["confirmed", "completed"])
-      ]);
+      const { data, error } = await supabase.rpc("get_investor_dashboard_summary", { p_user_id: userId });
+      if (error) throw error;
       
-      /* Only count investments with confirmed/active/completed status for totals */
-      const allInvestments = investmentsResponse.data ?? [];
-      const validStatuses = ["confirmed", "active", "completed"];
-      const activeInvestments = allInvestments.filter((inv: any) => validStatuses.includes(inv.status));
-      const completedInvestments = allInvestments.filter((inv: any) => inv.status === "completed");
-      const totalInvested = activeInvestments.reduce((acc: number, curr: any) => acc + Number(curr.total_amount ?? curr.amount_invested ?? 0), 0);
-      const investmentCount = activeInvestments.length;
-      const completedCount = completedInvestments.length;
-      const totalReturns = (returnsResponse.data ?? []).reduce((acc, curr) => acc + curr.amount_received, 0);
-      const availableBalance = Number(balanceResponse.data ?? 0);
+      const summary = data as any;
+      const investments = summary.investments;
+      const reservations = summary.reservations;
+      const returnsList = summary.returnsList || [];
       
-      const returnsByMonth = (returnsResponse.data ?? []).reduce((acc: any, curr) => {
+      const returnsByMonth = returnsList.reduce((acc: any, curr: any) => {
         if (!curr.distribution_date) return acc;
         const date = new Date(curr.distribution_date);
         if (isNaN(date.getTime())) return acc;
@@ -82,10 +71,16 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
         chartData.push({ name: "Start", Earnings: 0 });
       }
 
-      const activeReservationsCount = (reservationsResponse.data ?? []).length;
-      const propertiesOwnedCount = (purchasesResponse.data ?? []).length;
-
-      return { totalInvested, totalReturns, availableBalance, chartData, activeReservationsCount, propertiesOwnedCount, investmentCount, completedCount };
+      return { 
+        totalInvested: Number(investments.total_invested), 
+        totalReturns: returnsList.reduce((acc: number, curr: any) => acc + curr.amount_received, 0), 
+        availableBalance: Number(summary.availableBalance), 
+        chartData, 
+        activeReservationsCount: Number(reservations.active_count), 
+        propertiesOwnedCount: Number(reservations.owned_count), 
+        investmentCount: Number(investments.investment_count), 
+        completedCount: Number(investments.completed_count) 
+      };
     }
   });
 

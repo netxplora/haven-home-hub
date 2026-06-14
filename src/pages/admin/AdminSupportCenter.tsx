@@ -183,7 +183,7 @@ export function AdminSupportCenter() {
   // Realtime subscription for ticket list updates
   useEffect(() => {
     const channel = supabase
-      .channel("admin-support-tickets-realtime")
+      .channel(`admin-support-tickets-realtime-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "support_tickets" },

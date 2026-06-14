@@ -229,8 +229,8 @@ export default function PropertyDetail() {
   return (
     <SiteLayout>
       <SEO 
-        title={property.title} 
-        description={property.description?.slice(0, 160)} 
+        title={`${property.title} - ${property.property_type} in ${property.locations?.name || property.city || 'US'}`} 
+        description={`View this ${property.property_type} for ${formatPrice(Number(property.price), property.currency, property.property_type)}. ${property.description?.slice(0, 120)}...`} 
         image={resolveImage(property.cover_image_url)} 
         canonicalUrl={`https://haven-home-hub.vercel.app/properties/${property.slug}`}
       />

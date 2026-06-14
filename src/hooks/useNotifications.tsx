@@ -18,22 +18,36 @@ export type Notification = {
   created_at: string;
 };
 
-export function useNotifications() {
+export function useNotifications(page: number = 0, category: string = "all", pageSize: number = 15) {
   const { user } = useAuth();
   const qc = useQueryClient();
 
   const query = useQuery({
-    queryKey: ["notifications", user?.id],
+    queryKey: ["notifications", user?.id, page, category],
     enabled: !!user,
     queryFn: async () => {
-      const { data } = await supabase
+      let q = supabase
         .from("notifications")
-        .select("*")
-        .order("created_at", { ascending: false })
-        .limit(50);
-      return (data ?? []) as Notification[];
+        .select("*", { count: "exact" })
+        .eq("user_id", user!.id)
+        .order("created_at", { ascending: false });
+
+      if (category === "finances") {
+        q = q.in("type", ["investment", "investment_confirmed", "withdrawal", "payment_confirmed", "reservation", "booking_confirmed"]);
+      } else if (category === "security") {
+        q = q.in("type", ["kyc"]);
+      }
+
+      const { data, count, error } = await q.range(page * pageSize, (page + 1) * pageSize - 1);
+      
+      if (error) throw error;
+      return { items: (data ?? []) as Notification[], totalCount: count || 0 };
     },
   });
+
+  const items = query.data?.items ?? [];
+  const totalCount = query.data?.totalCount ?? 0;
+  const unread = items.filter((n) => !n.read_at).length;
 
   useEffect(() => {
     if (!user) return;
@@ -42,7 +56,9 @@ export function useNotifications() {
       .on(
         "postgres_changes",
         { event: "*", schema: "public", table: "notifications", filter: `user_id=eq.${user.id}` },
-        () => qc.invalidateQueries({ queryKey: ["notifications", user.id] }),
+        () => {
+           qc.invalidateQueries({ queryKey: ["notifications", user.id] });
+        }
       )
       .subscribe();
     return () => {
@@ -50,8 +66,6 @@ export function useNotifications() {
     };
   }, [user, qc]);
 
-  const items = query.data ?? [];
-  const unread = items.filter((n) => !n.read_at).length;
 
   async function markRead(id: string) {
     await supabase.from("notifications").update({ read_at: new Date().toISOString() }).eq("id", id);
@@ -68,5 +82,13 @@ export function useNotifications() {
     qc.invalidateQueries({ queryKey: ["notifications", user.id] });
   }
 
-  return { items, unread, isLoading: query.isLoading, markRead, markAllRead };
+  return { 
+    items, 
+    unread, 
+    isLoading: query.isLoading, 
+    markRead, 
+    markAllRead,
+    totalCount,
+    pageSize
+  };
 }

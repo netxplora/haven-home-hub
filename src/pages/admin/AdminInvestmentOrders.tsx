@@ -78,7 +78,7 @@ export function AdminInvestmentOrders() {
 
   useEffect(() => {
     const channel = supabase
-      .channel('admin-investment-orders-changes')
+      .channel(`admin-investment-orders-changes-${crypto.randomUUID()}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'user_investments' },

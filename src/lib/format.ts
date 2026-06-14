@@ -38,10 +38,13 @@ const localImages = import.meta.glob("/src/assets/*.{jpg,png,jpeg,webp}", {
   import: "default",
 }) as Record<string, string>;
 
-export function resolveImage(url?: string | null): string {
+export function resolveImage(url?: string | null, width?: number): string {
   if (!url) return "/placeholder.svg";
   if (url.startsWith("/src/assets/")) {
     return localImages[url] ?? url;
+  }
+  if (url.includes("/storage/v1/object/public/") && !url.includes("?")) {
+    return url.replace("/object/public/", "/object/render/image/public/") + `?format=webp&quality=80${width ? `&width=${width}` : ''}`;
   }
   return url;
 }

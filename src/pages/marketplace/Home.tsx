@@ -20,9 +20,12 @@ import { OrganizationJsonLd } from "@/components/site/JsonLd";
 import { toast } from "@/hooks/use-toast";
 import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 import { PromoBanner } from "@/components/site/PromoBanner";
-import { MarketIntelligence } from "@/components/site/MarketIntelligence";
-import { AIPropertyAdvisor } from "@/components/site/AIPropertyAdvisor";
-import { RegionTelemetry } from "@/components/marketing/RegionTelemetry";
+import { lazy, Suspense } from "react";
+
+const RegionTelemetry = lazy(() => import("@/components/marketing/RegionTelemetry").then(m => ({ default: m.RegionTelemetry })));
+const MarketIntelligence = lazy(() => import("@/components/site/MarketIntelligence").then(m => ({ default: m.MarketIntelligence })));
+const AIPropertyAdvisor = lazy(() => import("@/components/site/AIPropertyAdvisor").then(m => ({ default: m.AIPropertyAdvisor })));
+const HomeTestimonials = lazy(() => import("@/components/site/HomeTestimonials").then(m => ({ default: m.HomeTestimonials })));
 import useEmblaCarousel from "embla-carousel-react";
 
 
@@ -166,6 +169,10 @@ export default function Home() {
             poster="/hero_luxury_penthouse.webp"
             className="absolute inset-0 h-full w-full object-cover z-0"
           >
+            <source src="/hero_video_desktop.webm" type="video/webm" media="(min-width: 1024px)" />
+            <source src="/hero_video_desktop.mp4" type="video/mp4" media="(min-width: 1024px)" />
+            <source src="/hero_video_mobile.webm" type="video/webm" media="(max-width: 1023px)" />
+            <source src="/hero_video_mobile.mp4" type="video/mp4" media="(max-width: 1023px)" />
             <source src="/hero-video.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-black/40 z-[1]" />
@@ -337,7 +344,9 @@ export default function Home() {
       </section>
 
       {/* 4. DYNAMIC REGION TELEMETRY (CMS MANAGED) */}
-      <RegionTelemetry />
+      <Suspense fallback={<div className="h-96 w-full animate-pulse bg-muted" />}>
+        <RegionTelemetry />
+      </Suspense>
 
       {/* 5. INVESTMENT OPPORTUNITIES (FRACTIONAL PREVIEW) */}
       <section className="container-wide section-gap">
@@ -398,13 +407,17 @@ export default function Home() {
             <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Client Outcomes</span>
             <h2 className="font-serif text-3xl font-semibold text-foreground">Buyer & Investor Success Stories</h2>
           </div>
-          <HomeTestimonials />
+          <Suspense fallback={<div className="h-48 bg-card border border-border/50 rounded-2xl animate-pulse" />}>
+            <HomeTestimonials />
+          </Suspense>
         </div>
       </section>
 
       {/* 7. SMART MARKET INTELLIGENCE */}
       <section className="container-wide py-16">
-        <MarketIntelligence />
+        <Suspense fallback={<div className="min-h-[400px] w-full animate-pulse bg-muted rounded-xl" />}>
+          <MarketIntelligence />
+        </Suspense>
       </section>
 
       {/* 8. AGENT & DEVELOPER CREDIBILITY */}
@@ -479,7 +492,9 @@ export default function Home() {
           </div>
           <div className="w-full lg:w-96">
             {/* Renders the AI Property Advisor directly on the page to show platform capability */}
-            <AIPropertyAdvisor />
+            <Suspense fallback={<div className="h-[500px] w-full animate-pulse bg-muted rounded-xl" />}>
+              <AIPropertyAdvisor />
+            </Suspense>
           </div>
         </div>
       </section>
@@ -780,76 +795,6 @@ function HomeLocations() {
             </div>
           );
         })}
-      </div>
-    </div>
-  );
-}
-
-function HomeTestimonials() {
-  const [emblaRef] = useEmblaCarousel({ loop: true, align: "start" });
-
-  const { data: testimonials = [], isLoading } = useQuery({
-    queryKey: ["homepage-testimonials"],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("testimonials")
-        .select("*")
-        .eq("featured", true)
-        .order("created_at", { ascending: false })
-        .limit(6);
-      if (error) throw error;
-      return data ?? [];
-    },
-  });
-
-  if (isLoading) {
-    return (
-      <div className="grid md:grid-cols-3 gap-8">
-        {[1, 2, 3].map((i) => (
-          <div key={i} className="h-48 bg-card border border-border/50 rounded-2xl animate-pulse" />
-        ))}
-      </div>
-    );
-  }
-
-  if (testimonials.length === 0) {
-    return (
-      <div className="p-8 text-center text-muted-foreground border border-dashed rounded-xl border-border bg-card">
-        No testimonials available yet.
-      </div>
-    );
-  }
-
-  return (
-    <div className="overflow-hidden cursor-grab active:cursor-grabbing" ref={emblaRef}>
-      <div className="flex touch-pan-y -ml-4">
-        {testimonials.map((item: any) => (
-          <div key={item.id} className="min-w-0 shrink-0 basis-full sm:basis-1/2 md:basis-1/3 pl-4">
-            <div className="bg-card p-6 rounded-2xl border border-border/40 shadow-soft flex flex-col justify-between h-full select-none">
-              <div>
-                <div className="flex gap-1 text-primary mb-4">
-                  {Array.from({ length: 5 }).map((_, i) => (
-                    <Star key={i} className={`h-3.5 w-3.5 ${i < item.rating ? "fill-current" : "fill-transparent text-muted-foreground/30"}`} />
-                  ))}
-                </div>
-                <p className="text-muted-foreground italic mb-6 leading-relaxed text-xs">"{item.content}"</p>
-              </div>
-              <div className="flex items-center gap-3">
-                {item.image_url ? (
-                  <img src={item.image_url} alt={item.name} className="h-10 w-10 rounded-full object-cover border border-border/50" draggable={false} />
-                ) : (
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
-                    {item.name.charAt(0)}
-                  </div>
-                )}
-                <div>
-                  <h4 className="font-semibold text-foreground text-sm">{item.name}</h4>
-                  <p className="text-[10px] text-muted-foreground uppercase tracking-wider mt-0.5">{item.user_type}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
       </div>
     </div>
   );

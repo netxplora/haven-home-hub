@@ -138,7 +138,7 @@ function ChatThread({ conversationId }: { conversationId: string }) {
   // Realtime subscription
   useEffect(() => {
     const channel = supabase
-      .channel(`messages-${conversationId}`)
+      .channel(`messages-${conversationId}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes" as any,
         {

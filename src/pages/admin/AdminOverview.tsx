@@ -6,171 +6,19 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { Button } from "@/components/ui/button";
 
 export function AdminOverview() {
-  const { data: counts } = useQuery({
-    queryKey: ["admin-overview-counts"],
+  const { data } = useQuery({
+    queryKey: ["admin-dashboard-summary"],
     queryFn: async () => {
-      const [props, invest, users, agents, inquiries, bookings, locations, reservations, kycPending, pendingWithdrawals, pendingPayments, investVerifications, certificates] = await Promise.all([
-        supabase.from("properties").select("id", { count: "exact", head: true }),
-        supabase.from("investment_properties").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }),
-        supabase.from("agents").select("id", { count: "exact", head: true }),
-        supabase.from("inquiries").select("id", { count: "exact", head: true }).eq("status", "new"),
-        supabase.from("bookings").select("id", { count: "exact", head: true }).in("status", ["pending", "confirmed"]),
-        supabase.from("locations").select("id", { count: "exact", head: true }),
-        supabase.from("reservations").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("kyc_status", "pending"),
-        supabase.from("withdrawal_requests").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        supabase.from("payments").select("id", { count: "exact", head: true }).in("status", ["pending", "processing", "submitted", "under_review"]),
-        (supabase as any).from("user_investments").select("id", { count: "exact", head: true }).eq("status", "pending"),
-        (supabase as any).from("investment_certificates").select("id", { count: "exact", head: true }),
-      ]);
-      return {
-        properties: props.count || 0,
-        investments: invest.count || 0,
-        users: users.count || 0,
-        agents: agents.count || 0,
-        inquiries: inquiries.count || 0,
-        bookings: bookings.count || 0,
-        locations: locations.count || 0,
-        reservations: reservations.count || 0,
-        kycPending: kycPending.count || 0,
-        pendingWithdrawals: pendingWithdrawals.count || 0,
-        pendingPayments: pendingPayments.count || 0,
-        pendingVerifications: investVerifications.count || 0,
-        issuedCertificates: certificates.count || 0,
-      };
+      const { data: result, error } = await supabase.rpc("get_admin_dashboard_summary");
+      if (error) throw error;
+      return result as any;
     }
   });
 
-  const { data: lifecycleStats } = useQuery({
-    queryKey: ["admin-lifecycle-overview-stats"],
-    queryFn: async () => {
-      // Fetch properties
-      const { data: properties } = await supabase
-        .from("investment_properties")
-        .select("status, total_value, units_sold, unit_price, projected_return_min");
-      
-      // Fetch user investments
-      const { data: investments } = await supabase
-        .from("user_investments")
-        .select("status, total_amount, amount_invested, units_owned, user_id");
-
-      const propsList = properties ?? [];
-      const invsList = investments ?? [];
-
-      const totalAUM = propsList.reduce((sum, p) => sum + Number(p.total_value || 0), 0);
-      
-      // Total Funding Raised
-      const totalRaised = invsList
-        .filter(i => ['active', 'confirmed', 'roi_active', 'roi_paused', 'matured', 'completed'].includes(i.status))
-        .reduce((sum, i) => sum + Number(i.total_amount || i.amount_invested || 0), 0);
-
-      const activeCampaigns = propsList.filter(p => p.status === 'open').length;
-      const roiActiveProperties = propsList.filter(p => p.status === 'roi_active').length;
-      
-      // Distinct investors
-      const distinctInvestors = new Set(
-        invsList
-          .filter(i => ['active', 'confirmed', 'roi_active', 'roi_paused', 'matured', 'completed'].includes(i.status))
-          .map(i => i.user_id)
-      ).size;
-
-      const totalUnitsSold = propsList.reduce((sum, p) => sum + Number(p.units_sold || 0), 0);
-      
-      // Average ROI
-      const propsWithRoi = propsList.filter(p => Number(p.projected_return_min) > 0);
-      const averageROI = propsWithRoi.length > 0
-        ? Number((propsWithRoi.reduce((sum, p) => sum + Number(p.projected_return_min), 0) / propsWithRoi.length).toFixed(2))
-        : 0;
-
-      const maturingInvestments = invsList.filter(i => i.status === 'roi_active' || i.status === 'roi_paused' || i.status === 'active').length;
-      const maturedInvestments = invsList.filter(i => i.status === 'matured' || i.status === 'completed').length;
-
-      return {
-        totalAUM,
-        totalRaised,
-        activeCampaigns,
-        roiActiveProperties,
-        totalInvestors: distinctInvestors,
-        totalUnitsSold,
-        averageROI,
-        maturingInvestments,
-        maturedInvestments
-      };
-    }
-  });
-
-  // Installment analytics
-  const { data: installmentStats } = useQuery({
-    queryKey: ["admin-installment-overview"],
-    queryFn: async () => {
-      const { data } = await (supabase as any)
-        .from("user_investments")
-        .select("status, total_amount, amount_paid, remaining_balance")
-        .eq("investment_type", "installment");
-
-      const items = data ?? [];
-      const active = items.filter(i => i.status === "active" || i.status === "confirmed").length;
-      const overdue = items.filter(i => i.status === "overdue").length;
-      const outstanding = items.reduce((s, i) => s + Number(i.remaining_balance ?? 0), 0);
-      const collected = items.reduce((s, i) => s + Number(i.amount_paid ?? 0), 0);
-      return { total: items.length, active, overdue, outstanding, collected };
-    }
-  });
-
-  // Revenue analytics
-  const { data: revenueStats } = useQuery({
-    queryKey: ["admin-revenue-stats"],
-    queryFn: async () => {
-      const { data: successPayments } = await supabase
-        .from("payments")
-        .select("amount, currency, payment_type, created_at")
-        .eq("status", "success");
-
-      const payments = successPayments ?? [];
-      const totalRevenue = payments.reduce((s, p) => s + Number(p.amount || 0), 0);
-      const reservationRevenue = payments.filter(p => p.payment_type === "reservation").reduce((s, p) => s + Number(p.amount || 0), 0);
-      const investmentRevenue = payments.filter(p => p.payment_type === "investment").reduce((s, p) => s + Number(p.amount || 0), 0);
-      
-      // Monthly breakdown (last 6 months)
-      const now = new Date();
-      const monthlyData = [];
-      for (let i = 5; i >= 0; i--) {
-        const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1);
-        const monthPayments = payments.filter(p => {
-          const d = new Date(p.created_at);
-          return d >= month && d < nextMonth;
-        });
-        monthlyData.push({
-          label: month.toLocaleDateString(undefined, { month: 'short', year: '2-digit' }),
-          total: monthPayments.reduce((s, p) => s + Number(p.amount || 0), 0),
-          count: monthPayments.length,
-        });
-      }
-
-      // Property sales count & Partner Commission
-      const { data: soldProps } = await (supabase as any)
-        .from("properties")
-        .select("id, price, ownership_type, commission_rate")
-        .eq("status", "sold");
-
-      const soldPropertiesCount = soldProps?.length || 0;
-      
-      const partnerCommissionRevenue = (soldProps || [])
-        .filter(p => p.ownership_type === 'partner')
-        .reduce((sum, p) => sum + (Number(p.price || 0) * (Number(p.commission_rate || 0) / 100)), 0);
-      
-      return { 
-        totalRevenue: totalRevenue + partnerCommissionRevenue, 
-        reservationRevenue, 
-        investmentRevenue, 
-        partnerCommissionRevenue,
-        monthlyData, 
-        soldProperties: soldPropertiesCount 
-      };
-    }
-  });
+  const counts = data?.counts;
+  const lifecycleStats = data?.lifecycle;
+  const installmentStats = data?.installments;
+  const revenueStats = data?.revenue;
 
   const tiles = [
     { icon: Building2, label: "Properties Listed", value: String(counts?.properties ?? "—") },

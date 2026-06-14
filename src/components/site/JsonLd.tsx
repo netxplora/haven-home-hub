@@ -39,17 +39,22 @@ export function PropertyJsonLd({ property }: { property: any }) {
           },
         }
       : {}),
-    numberOfRooms: property.bedrooms || undefined,
-    floorSize: property.size_sqm
-      ? {
-          "@type": "QuantitativeValue",
-          value: property.size_sqm,
-          unitCode: "MTK",
-        }
-      : undefined,
-    ...(property.year_built
-      ? { yearBuilt: property.year_built }
-      : {}),
+    about: {
+      "@type": property.property_type === 'land' ? "Landform" : "Residence",
+      name: property.title,
+      numberOfRooms: property.bedrooms || undefined,
+      ...(property.bathrooms ? { numberOfBathroomsTotal: property.bathrooms } : {}),
+      floorSize: property.size_sqm
+        ? {
+            "@type": "QuantitativeValue",
+            value: property.size_sqm,
+            unitCode: "MTK",
+          }
+        : undefined,
+      ...(property.year_built
+        ? { yearBuilt: property.year_built }
+        : {}),
+    }
   };
 
   return (

@@ -21,6 +21,7 @@ import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
 import { useState, useEffect, useMemo } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { DocumentViewerModal } from "@/components/dashboard/DocumentViewerModal";
+import { SEO } from "@/components/site/SEO";
 
 export default function InvestPortfolioDetail() {
   const { id } = useParams();
@@ -226,6 +227,11 @@ export default function InvestPortfolioDetail() {
 
   return (
     <SiteLayout>
+      <SEO 
+        title={`Portfolio: ${prop.title} | Haven Home Hub`}
+        description={`View your investment portfolio details for ${prop.title}.`}
+        image={prop.cover_image_url}
+      />
       {/* ═══ HEADER ═══ */}
       <div className="bg-muted/30 border-b border-border/50">
         <div className="container-wide py-6">

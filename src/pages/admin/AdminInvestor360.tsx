@@ -795,7 +795,7 @@ function GlobalInvestorDirectory({ onSelectUser }: { onSelectUser: (id: string) 
   // Setup real-time sync for profiles and investments
   useEffect(() => {
     const channel = supabase
-      .channel("admin-global-directory-sync")
+      .channel(`admin-global-directory-sync-${crypto.randomUUID()}`)
       .on("postgres_changes", { event: "*", schema: "public", table: "profiles" }, () => qc.invalidateQueries({ queryKey: ["admin-global-directory"] }))
       .on("postgres_changes", { event: "*", schema: "public", table: "user_investments" }, () => qc.invalidateQueries({ queryKey: ["admin-global-directory"] }))
       .subscribe();

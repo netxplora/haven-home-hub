@@ -271,9 +271,9 @@ export default function Properties() {
   return (
     <SiteLayout>
       <SEO 
-        title={content.title} 
+        title={`${content.title}${city && city !== "all" ? ` in ${city}` : state && state !== "all" ? ` in ${state}` : country && country !== "all" ? ` in ${country}` : ""} | Haven Home Hub`}
         description={content.desc} 
-        canonicalUrl="https://haven-home-hub.vercel.app/properties" 
+        canonicalUrl={`https://haven-home-hub.vercel.app/properties${window.location.search}`} 
       />
 
       {/* ── Hero Section ──────────────────────────────────────── */}

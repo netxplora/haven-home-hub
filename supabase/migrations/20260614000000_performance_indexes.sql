@@ -16,3 +16,4 @@ CREATE INDEX IF NOT EXISTS idx_notifications_user_id ON notifications(user_id);
 
 -- Support Tickets
 CREATE INDEX IF NOT EXISTS idx_support_tickets_user_id ON support_tickets(user_id);
+

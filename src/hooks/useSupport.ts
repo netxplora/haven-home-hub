@@ -229,7 +229,7 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
     if (!ticketId) return;
 
     const channel = supabase
-      .channel(`support-msg-${ticketId}`)
+      .channel(`support-msg-${ticketId}-${crypto.randomUUID()}`)
       .on(
         "postgres_changes",
         {
@@ -257,7 +257,7 @@ export function useSupport(ticketId?: string, isAdminMode: boolean = false) {
     if (!ticketId) return;
 
     // Use a unique room for each ticket
-    const channel = supabase.channel(`presence-support-${ticketId}`, {
+    const channel = supabase.channel(`presence-support-${ticketId}-${crypto.randomUUID()}`, {
       config: {
         presence: {
           key: user?.id || "guest",

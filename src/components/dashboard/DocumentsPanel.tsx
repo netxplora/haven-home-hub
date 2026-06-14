@@ -20,7 +20,9 @@ import {
   Mail,
   XCircle,
   FileCheck2,
-  Calendar
+  Calendar,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { ESignatureModal } from "@/components/site/ESignatureModal";
 import { ReceiptDialog } from "@/components/dashboard/ReceiptDialog";
@@ -41,6 +43,9 @@ export function DocumentsPanel({ userId }: { userId: string }) {
   const [requestingDoc, setRequestingDoc] = useState(false);
   const [requestModalOpen, setRequestModalOpen] = useState(false);
   const [selectedRequestTypes, setSelectedRequestTypes] = useState<string[]>([]);
+  const [propertyDocsPage, setPropertyDocsPage] = useState(0);
+  const [receiptsPage, setReceiptsPage] = useState(0);
+  const pageSize = 10;
 
   // Preview Document Modal
   const [previewDoc, setPreviewDoc] = useState<any>(null);
@@ -76,23 +81,32 @@ export function DocumentsPanel({ userId }: { userId: string }) {
   });
 
   // 2. Property & Ownership Documents (Including dynamic ones)
-  const { data: propertyDocs = [], isLoading: isLoadingPropertyDocs, refetch: refetchPropertyDocs } = useQuery({
-    queryKey: ["user-documents", userId],
+  const { data: propertyDocsData, isLoading: isLoadingPropertyDocs, refetch: refetchPropertyDocs } = useQuery({
+    queryKey: ["user-documents", userId, propertyDocsPage, docSearch],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let q = supabase
         .from("user_documents")
         .select(`
           *,
           investment_properties(title, location),
           properties(title, address)
-        `)
+        `, { count: "exact" })
         .eq("user_id", userId)
         .neq("status", "deleted") // Exclude deleted documents
         .order("created_at", { ascending: false });
+
+      if (docSearch) {
+        q = q.or(`name.ilike.%${docSearch}%,metadata->>reference_id.ilike.%${docSearch}%`);
+      }
+
+      const { data, count, error } = await q.range(propertyDocsPage * pageSize, (propertyDocsPage + 1) * pageSize - 1);
       if (error) throw error;
-      return data || [];
+      return { items: data || [], totalCount: count || 0 };
     },
   });
+
+  const propertyDocs = propertyDocsData?.items || [];
+  const propertyDocsTotalPages = Math.ceil((propertyDocsData?.totalCount || 0) / pageSize);
 
   // Search & Filtering State
   const [docSearch, setDocSearch] = useState("");
@@ -158,18 +172,22 @@ export function DocumentsPanel({ userId }: { userId: string }) {
   });
 
   // 4. Transaction Receipts
-  const { data: receipts = [], isLoading: isLoadingReceipts } = useQuery({
-    queryKey: ["user-receipts", userId],
+  const { data: receiptsData, isLoading: isLoadingReceipts } = useQuery({
+    queryKey: ["user-receipts", userId, receiptsPage],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, count, error } = await supabase
         .from("receipts" as any)
-        .select("*")
+        .select("*", { count: "exact" })
         .eq("user_id", userId)
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: false })
+        .range(receiptsPage * pageSize, (receiptsPage + 1) * pageSize - 1);
       if (error) throw error;
-      return data || [];
+      return { items: data || [], totalCount: count || 0 };
     },
   });
+
+  const receipts = receiptsData?.items || [];
+  const receiptsTotalPages = Math.ceil((receiptsData?.totalCount || 0) / pageSize);
 
   const handleDownloadDoc = async (doc: any) => {
     if (doc.file_path.startsWith('generated://')) {
@@ -391,7 +409,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                   placeholder="Search documents..."
                   className="flex h-10 w-full sm:w-[250px] rounded-xl border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   value={docSearch}
-                  onChange={(e) => setDocSearch(e.target.value)}
+                  onChange={(e) => { setDocSearch(e.target.value); setPropertyDocsPage(0); }}
                 />
                 <Button onClick={() => setRequestModalOpen(true)} disabled={requestingDoc} variant="outline" className="rounded-xl font-bold w-full sm:w-auto">
                   {requestingDoc ? "Sending..." : <><Send className="h-4 w-4 mr-2" /> Request Documentation</>}
@@ -412,11 +430,6 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             ) : (
               <div className="grid gap-6">
                 {propertyDocs
-                  .filter((d: any) =>
-                    d.name.toLowerCase().includes(docSearch.toLowerCase()) ||
-                    (d.investment_properties?.title || "").toLowerCase().includes(docSearch.toLowerCase()) ||
-                    (d.properties?.title || "").toLowerCase().includes(docSearch.toLowerCase())
-                  )
                   .map((doc: any) => {
                     const docRef = doc.metadata?.reference_id || doc.id.split('-')[0].toUpperCase();
                     const isReady = doc.status !== 'pending' && doc.status !== 'processing';
@@ -551,6 +564,38 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                   })}
               </div>
             )}
+            
+            {/* Pagination Controls for Property Docs */}
+            {propertyDocsTotalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-border/40">
+                <p className="text-xs text-muted-foreground">
+                  Showing {propertyDocsPage * pageSize + 1} to {Math.min((propertyDocsPage + 1) * pageSize, propertyDocsData?.totalCount || 0)} of {propertyDocsData?.totalCount} records
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPropertyDocsPage((p) => Math.max(0, p - 1))}
+                    disabled={propertyDocsPage === 0}
+                    className="h-8 w-8 p-0 rounded-lg"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="text-xs font-medium px-2">
+                    Page {propertyDocsPage + 1} of {propertyDocsTotalPages}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPropertyDocsPage((p) => Math.min(propertyDocsTotalPages - 1, p + 1))}
+                    disabled={propertyDocsPage >= propertyDocsTotalPages - 1}
+                    className="h-8 w-8 p-0 rounded-lg"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -658,6 +703,38 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                     </div>
                   </div>
                 ))}
+              </div>
+            )}
+
+            {/* Pagination Controls for Receipts */}
+            {receiptsTotalPages > 1 && (
+              <div className="flex items-center justify-between pt-4 border-t border-border/40">
+                <p className="text-xs text-muted-foreground">
+                  Showing {receiptsPage * pageSize + 1} to {Math.min((receiptsPage + 1) * pageSize, receiptsData?.totalCount || 0)} of {receiptsData?.totalCount} records
+                </p>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setReceiptsPage((p) => Math.max(0, p - 1))}
+                    disabled={receiptsPage === 0}
+                    className="h-8 w-8 p-0 rounded-lg"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </Button>
+                  <div className="text-xs font-medium px-2">
+                    Page {receiptsPage + 1} of {receiptsTotalPages}
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setReceiptsPage((p) => Math.min(receiptsTotalPages - 1, p + 1))}
+                    disabled={receiptsPage >= receiptsTotalPages - 1}
+                    className="h-8 w-8 p-0 rounded-lg"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             )}
           </div>

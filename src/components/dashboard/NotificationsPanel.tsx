@@ -9,7 +9,9 @@ import {
   ShieldCheck, 
   User as UserIcon,
   Search,
-  FileText
+  FileText,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { useNotifications } from "@/hooks/useNotifications";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -17,8 +19,11 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export function NotificationsPanel() {
-  const { items, unread, isLoading, markRead, markAllRead } = useNotifications();
   const [activeTab, setActiveTab] = useState("all");
+  const [page, setPage] = useState(0);
+  const { items, unread, isLoading, markRead, markAllRead, totalCount, pageSize } = useNotifications(page, activeTab);
+  
+  const totalPages = Math.ceil((totalCount || 0) / (pageSize || 15));
 
   if (isLoading) return <Skeleton className="h-60 rounded-xl" />;
   
@@ -73,15 +78,8 @@ export function NotificationsPanel() {
     return new Date(dateStr).toLocaleDateString();
   }
 
-  const filteredItems = items.filter(n => {
-    if (activeTab === "all") return true;
-    if (activeTab === "finances") return ["investment", "investment_confirmed", "withdrawal", "payment_confirmed", "reservation", "booking_confirmed"].includes(n.type);
-    if (activeTab === "security") return ["kyc"].includes(n.type);
-    return true;
-  });
-
-  const unreadItems = filteredItems.filter(n => !n.read_at);
-  const readItems = filteredItems.filter(n => !!n.read_at);
+  const unreadItems = items.filter(n => !n.read_at);
+  const readItems = items.filter(n => !!n.read_at);
 
   return (
     <div className="space-y-6">
@@ -102,7 +100,7 @@ export function NotificationsPanel() {
         )}
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(v) => { setActiveTab(v); setPage(0); }} className="w-full">
         <TabsList className="bg-accent/50 p-1 rounded-xl h-auto flex-wrap sm:flex-nowrap">
           <TabsTrigger value="all" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">All</TabsTrigger>
           <TabsTrigger value="finances" className="rounded-lg py-2 px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm">Financial</TabsTrigger>
@@ -183,13 +181,44 @@ export function NotificationsPanel() {
             </div>
           )}
 
-          {filteredItems.length === 0 && (
+          {items.length === 0 && (
             <div className="py-20 text-center space-y-2">
               <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-accent/50">
                 <Search className="h-5 w-5 text-muted-foreground/50" />
               </div>
               <p className="text-muted-foreground font-medium">No recent updates</p>
-              <Button variant="ghost" size="sm" onClick={() => setActiveTab("all")}>Clear filters</Button>
+              <Button variant="ghost" size="sm" onClick={() => { setActiveTab("all"); setPage(0); }}>Clear filters</Button>
+            </div>
+          )}
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between pt-4 border-t border-border/40">
+              <p className="text-xs text-muted-foreground">
+                Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalCount || 0)} of {totalCount} records
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                  className="h-8 w-8 p-0 rounded-lg"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                <div className="text-xs font-medium px-2">
+                  Page {page + 1} of {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
+                  disabled={page >= totalPages - 1}
+                  className="h-8 w-8 p-0 rounded-lg"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           )}
         </div>
