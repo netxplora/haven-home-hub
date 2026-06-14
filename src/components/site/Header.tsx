@@ -62,6 +62,23 @@ export function Header() {
     hoverTimeoutRef.current = setTimeout(() => setPropertiesOpen(false), 150);
   }, []);
 
+  const prefetchRoute = (path: string) => {
+    // Dynamically import the chunk to prefetch it when user hovers
+    const baseRoute = path.split('?')[0];
+    switch(baseRoute) {
+      case "/explore": import("@/pages/marketplace/PropertyMapExplorer"); break;
+      case "/invest": import("@/pages/invest/InvestHome"); break;
+      case "/secondary-market": import("@/pages/marketplace/SecondaryMarket"); break;
+      case "/agents": import("@/pages/marketplace/Agents"); break;
+      case "/blog": import("@/pages/cms/BlogList"); break;
+      case "/about": import("@/pages/static/About"); break;
+      case "/properties": import("@/pages/marketplace/Properties"); break;
+      case "/dashboard": import("@/pages/dashboard/UserDashboard"); break;
+      case "/agent": import("@/pages/dashboard/AgentDashboard"); break;
+      case "/admin": import("@/pages/admin/AdminDashboard"); break;
+    }
+  };
+
   const avatarUrl = getAvatarUrl(profile?.avatar_url);
 
   // Compute the dynamic top value
@@ -144,6 +161,7 @@ export function Header() {
                     )}
                     <Link
                       to={item.to}
+                      onMouseEnter={() => prefetchRoute(item.to)}
                       onClick={() => setPropertiesOpen(false)}
                       className="block w-full px-3 py-2 text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent/50 rounded-lg transition-colors"
                     >
@@ -159,6 +177,7 @@ export function Header() {
             <NavLink
               key={item.to}
               to={item.to}
+              onMouseEnter={() => prefetchRoute(item.to)}
               className={({ isActive }) => navLinkClass(isActive)}
             >
               {item.label}

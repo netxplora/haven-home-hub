@@ -42,6 +42,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
   
   const { data: stats, isLoading } = useQuery({
     queryKey: ["dashboard-overview-stats", userId],
+    suspense: false,
     queryFn: async () => {
       const [investmentsResponse, returnsResponse, balanceResponse, reservationsResponse, purchasesResponse] = await Promise.all([
         supabase.from("user_investments").select("amount_invested, total_amount, amount_paid, status").eq("user_id", userId),

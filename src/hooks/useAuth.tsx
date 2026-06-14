@@ -27,7 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     // Listener FIRST
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_evt, sess) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((evt, sess) => {
       setSession(sess);
       setUser(sess?.user ?? null);
       if (sess?.user) {
@@ -37,8 +37,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           fetchProfile(sess.user.id);
         }, 0);
       } else {
-        setRoles([]);
-        setProfile(null);
+        // Only clear if explicitly signed out or user is actually null
+        if (evt === 'SIGNED_OUT') {
+          setRoles([]);
+          setProfile(null);
+        }
       }
     });
 
@@ -55,7 +58,46 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     });
 
-    return () => subscription.unsubscribe();
+    // Heartbeat & Visibility Recovery
+    const handleVisibilityOrFocus = async () => {
+      if (document.visibilityState === "visible") {
+        try {
+          const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+          if (error) {
+            console.warn("[Auth] Error getting/refreshing session on visibility change:", error);
+          } else if (currentSession) {
+            setSession(currentSession);
+            setUser(currentSession.user);
+          }
+        } catch (err) {
+          console.error("[Auth] Unexpected error on visibility change:", err);
+        }
+      }
+    };
+
+    window.addEventListener("visibilitychange", handleVisibilityOrFocus);
+    window.addEventListener("focus", handleVisibilityOrFocus);
+    window.addEventListener("online", handleVisibilityOrFocus);
+
+    const heartbeatInterval = setInterval(async () => {
+      if (document.visibilityState === "visible") {
+        const { data: { session: currentSession } } = await supabase.auth.getSession();
+        if (currentSession?.expires_at) {
+          const timeUntilExpiry = currentSession.expires_at - Math.floor(Date.now() / 1000);
+          if (timeUntilExpiry < 300) {
+            await supabase.auth.refreshSession();
+          }
+        }
+      }
+    }, 4 * 60 * 1000); // 4 minutes
+
+    return () => {
+      subscription.unsubscribe();
+      window.removeEventListener("visibilitychange", handleVisibilityOrFocus);
+      window.removeEventListener("focus", handleVisibilityOrFocus);
+      window.removeEventListener("online", handleVisibilityOrFocus);
+      clearInterval(heartbeatInterval);
+    };
   }, []);
 
   async function fetchRoles(userId: string) {

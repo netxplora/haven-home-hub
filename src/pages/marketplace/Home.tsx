@@ -150,19 +150,20 @@ export default function Home() {
   return (
     <SiteLayout>
       <SEO>
-        <link rel="preload" as="video" href="/hero-video.mp4" />
+        <link rel="preload" as="image" href="/hero_luxury_penthouse.webp" />
       </SEO>
       <OrganizationJsonLd />
 
       {/* 1. HERO SEARCH EXPERIENCE (SAFETY DOMINANT) */}
       <section className="relative overflow-hidden min-h-[580px] sm:min-h-[660px] lg:min-h-[720px] flex items-center">
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 bg-[url('/hero_luxury_penthouse.webp')] bg-cover bg-center bg-no-repeat">
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="metadata"
+            poster="/hero_luxury_penthouse.webp"
             className="absolute inset-0 h-full w-full object-cover z-0"
           >
             <source src="/hero-video.mp4" type="video/mp4" />

@@ -44,6 +44,7 @@ export function RegionTelemetry() {
                   <img 
                     src={region.cover_image_url} 
                     alt={region.name} 
+                    loading="lazy"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
                     onError={(e) => { e.currentTarget.src = "/placeholder.svg" }}
                   />

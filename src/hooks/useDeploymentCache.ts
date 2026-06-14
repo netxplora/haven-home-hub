@@ -34,11 +34,14 @@ export function useDeploymentCache() {
         // Write the new version key to localStorage
         localStorage.setItem(VERSION_KEY, CURRENT_BUILD_VERSION);
 
-        // Show a non-intrusive notification to the user
-        toast({
-          title: "System Update Applied",
-          description: "Caches have been refreshed to ensure complete feature alignment.",
-        });
+        // Show a non-intrusive notification to the user only on desktop
+        const isMobileOrTablet = window.innerWidth < 1024 || /mobile|iphone|ipad|ipod|android|blackberry|iemobile|opera mini/i.test(navigator.userAgent.toLowerCase());
+        if (!isMobileOrTablet) {
+          toast({
+            title: "System Update Applied",
+            description: "Caches have been refreshed to ensure complete feature alignment.",
+          });
+        }
       } catch (error) {
         console.error("[CacheBuster] Error clearing deployment cache:", error);
       }

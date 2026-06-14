@@ -94,11 +94,26 @@ function RealtimeGlobal() {
   return null;
 }
 
-// Minimal loading fallback — a subtle centered spinner
+// Improved loading fallback with skeleton structure for smoother transitions
 function PageLoader() {
   return (
-    <div className="min-h-[60vh] flex items-center justify-center">
-      <div className="h-8 w-8 rounded-full border-2 border-primary border-t-transparent animate-spin" />
+    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
+      <div className="h-16 border-b border-border/50 bg-card px-6 flex items-center justify-between hidden md:flex">
+        <div className="w-32 h-6 bg-muted rounded-md animate-pulse" />
+        <div className="flex gap-4">
+           <div className="w-16 h-6 bg-muted rounded-md animate-pulse" />
+           <div className="w-16 h-6 bg-muted rounded-md animate-pulse" />
+        </div>
+      </div>
+      <div className="flex-1 container-wide py-12 flex flex-col gap-6 w-full max-w-7xl mx-auto px-4">
+        <div className="w-1/3 h-8 bg-muted rounded-md animate-pulse" />
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+           <div className="h-32 bg-muted rounded-xl animate-pulse" />
+           <div className="h-32 bg-muted rounded-xl animate-pulse" />
+           <div className="h-32 bg-muted rounded-xl animate-pulse" />
+        </div>
+        <div className="h-64 bg-muted rounded-xl animate-pulse mt-4" />
+      </div>
     </div>
   );
 }
