@@ -231,25 +231,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Navbar Profile Extension */}
-        {user && (
-          <div className="flex items-center gap-3 w-full md:hidden pt-3 pb-1 mt-1 border-t border-border/30">
-            <Avatar className="h-9 w-9 border border-primary/20 bg-background shadow-sm">
-              <AvatarImage src={avatarUrl || ""} />
-              <AvatarFallback className="bg-primary/10 text-primary text-xs font-bold">
-                {getInitials(profile?.full_name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex flex-col min-w-0 flex-1">
-              <span className="text-sm font-bold text-foreground truncate leading-none mb-1">
-                {profile?.full_name || "Guest User"}
-              </span>
-              <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-bold truncate leading-none">
-                {accountType} Account
-              </span>
-            </div>
-          </div>
-        )}
 
         {/* Desktop Nav */}
         <nav className="hidden items-center gap-0.5 md:flex">
