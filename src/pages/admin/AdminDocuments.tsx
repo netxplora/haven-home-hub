@@ -1137,7 +1137,7 @@ export function AdminDocuments() {
               <div className="bg-white p-4 rounded-xl border border-slate-200">
                 <h4 className="text-[10px] uppercase font-bold text-slate-500 mb-2 border-b pb-2">Available Variables</h4>
                 <div className="flex flex-wrap gap-1">
-                  {["{{investor_name}}", "{{investor_email}}", "{{investor_phone}}", "{{property_name}}", "{{property_location}}", "{{purchase_amount}}", "{{amount_paid}}", "{{outstanding_balance}}", "{{payment_method}}", "{{issue_date}}", "{{document_reference}}", "{{verification_code}}", "{{units_owned}}", "{{amount_invested}}", "{{admin_signature}}", "{{company_seal}}", "{{company_logo}}", "{{ownership_details}}", "{{investment_details}}"].map(v => (
+                  {["{{company_name}}", "{{company_name_upper}}", "{{investor_name}}", "{{investor_email}}", "{{investor_phone}}", "{{property_name}}", "{{property_location}}", "{{purchase_amount}}", "{{amount_paid}}", "{{outstanding_balance}}", "{{payment_method}}", "{{issue_date}}", "{{document_reference}}", "{{verification_code}}", "{{units_owned}}", "{{amount_invested}}", "{{admin_signature}}", "{{company_seal}}", "{{company_logo}}", "{{ownership_details}}", "{{investment_details}}"].map(v => (
                     <code key={v} className="text-[9px] text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm hover:bg-slate-200 cursor-copy" onClick={() => {navigator.clipboard.writeText(v); toast.success("Copied!");}}>{v}</code>
                   ))}
                 </div>
