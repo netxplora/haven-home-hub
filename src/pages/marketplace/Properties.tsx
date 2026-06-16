@@ -40,28 +40,28 @@ const HERO_CONTENT: Record<string, { badge: string; title: string; subtitle: str
     title: "Buy Properties",
     subtitle: "Find your next home",
     desc: "Browse verified homes for sale — from family houses to modern apartments. Every listing is inspected and confirmed by our agency before going live.",
-    img: "/hero_buy_properties.png",
+    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_buy_properties.png",
   },
   rent: {
     badge: "For Rent",
     title: "Rent Homes",
     subtitle: "Quality rental living",
     desc: "Explore professionally managed apartments, furnished units, and urban rental spaces. Flexible terms, verified landlords, and move-in ready options.",
-    img: "/hero_rent_properties.png",
+    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_rent_properties.png",
   },
   land: {
     badge: "Land Listings",
     title: "Land Listings",
     subtitle: "Secure your plot",
     desc: "View surveyed land parcels with clear titles — residential plots, commercial sites, and development-ready acreage across all locations.",
-    img: "/hero_land_listings.png",
+    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_land_listings.png",
   },
   all: {
     badge: "All Listings",
     title: "All Properties",
     subtitle: "View all available properties",
     desc: "Search across homes for sale, rental properties, and land parcels. Every listing is verified and managed by our in-house agency team.",
-    img: "/hero_all_properties.png",
+    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_all_properties.png",
   },
 };
 

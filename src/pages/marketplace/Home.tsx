@@ -153,27 +153,27 @@ export default function Home() {
   return (
     <SiteLayout>
       <SEO>
-        <link rel="preload" as="image" href="/hero_luxury_penthouse.webp" />
+        <link rel="preload" as="image" href="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp" />
       </SEO>
       <OrganizationJsonLd />
 
       {/* 1. HERO SEARCH EXPERIENCE (SAFETY DOMINANT) */}
       <section className="relative overflow-hidden min-h-[580px] sm:min-h-[660px] lg:min-h-[720px] flex items-center">
-        <div className="absolute inset-0 bg-[url('/hero_luxury_penthouse.webp')] bg-cover bg-center bg-no-repeat">
+        <div className="absolute inset-0 bg-[url('https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp')] bg-cover bg-center bg-no-repeat">
           <video
             autoPlay
             loop
             muted
             playsInline
             preload="metadata"
-            poster="/hero_luxury_penthouse.webp"
+            poster="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp"
             className="absolute inset-0 h-full w-full object-cover z-0"
           >
             <source src="/hero_video_desktop.webm" type="video/webm" media="(min-width: 1024px)" />
             <source src="/hero_video_desktop.mp4" type="video/mp4" media="(min-width: 1024px)" />
             <source src="/hero_video_mobile.webm" type="video/webm" media="(max-width: 1023px)" />
             <source src="/hero_video_mobile.mp4" type="video/mp4" media="(max-width: 1023px)" />
-            <source src="/hero-video.mp4" type="video/mp4" />
+            <source src="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero-video.mp4" type="video/mp4" />
           </video>
           <div className="absolute inset-0 bg-black/40 z-[1]" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[1]" />

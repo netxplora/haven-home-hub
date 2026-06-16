@@ -27,7 +27,7 @@ const containerVariants = {
 
 const itemVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
 };
 
 export default function Auth() {
@@ -89,7 +89,7 @@ export default function Auth() {
       <div className="relative hidden lg:flex lg:flex-col lg:justify-center lg:items-center lg:p-14 overflow-hidden">
         {/* Animated Background Image */}
         <motion.div
-          className="absolute inset-0 z-0 bg-[url('/hero_luxury_penthouse.webp')] bg-cover bg-center"
+          className="absolute inset-0 z-0 bg-[url('https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp')] bg-cover bg-center"
           initial={{ scale: 1.05 }}
           animate={{ scale: 1 }}
           transition={{ duration: 10, ease: "easeOut" }}
@@ -145,7 +145,7 @@ export default function Auth() {
       <div className="relative flex flex-col justify-center bg-slate-50 dark:bg-slate-950 px-6 py-14 sm:px-14 min-h-screen">
         {/* Mobile Logo & Hero (Visible only on mobile/tablet) */}
         <div className="lg:hidden relative w-full -mt-14 mb-8 rounded-b-[2rem] overflow-hidden shadow-xl">
-          <div className="absolute inset-0 z-0 bg-[url('/hero_luxury_penthouse.webp')] bg-cover bg-center" />
+          <div className="absolute inset-0 z-0 bg-[url('https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp')] bg-cover bg-center" />
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/90 via-slate-900/60 to-primary/20" />
           <div className="relative z-20 flex flex-col items-center justify-center pt-20 pb-12 px-6 text-center">
             <Link to="/">
