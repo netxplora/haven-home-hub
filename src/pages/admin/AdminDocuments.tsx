@@ -1183,8 +1183,8 @@ export function AdminDocuments() {
                     {/* Header */}
                     <div className="flex justify-between items-start border-b-[3px] border-double border-slate-800 pb-5 mb-8">
                       <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 bg-slate-900 rounded-sm flex items-center justify-center shrink-0 shadow-sm">
-                          <span className="text-white font-serif font-bold text-2xl tracking-tighter">H</span>
+                        <div className="h-12 w-12 bg-primary rounded-sm flex items-center justify-center shrink-0 shadow-sm">
+                          <span className="text-primary-foreground font-serif font-bold text-2xl tracking-tighter">{brand.platform_name.charAt(0).toUpperCase()}</span>
                         </div>
                         <div>
                           <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-8 w-auto" />
@@ -1327,7 +1327,7 @@ export function AdminDocuments() {
                     .replace(/{{issue_date}}/g, new Date().toLocaleDateString())
                     .replace(/{{approval_date}}/g, new Date().toLocaleDateString())
                     .replace(/{{payment_date}}/g, new Date().toLocaleDateString())
-                    .replace(/{{document_reference}}/g, "HHH-TEST001")
+                    .replace(/{{document_reference}}/g, `${brand.platform_name.substring(0,3).toUpperCase()}-TEST001`)
                     .replace(/{{verification_code}}/g, "TESTVERIFICATION123")
                     .replace(/{{units_owned}}/g, "5")
                     .replace(/{{amount_invested}}/g, "$25,000.00")
@@ -1336,7 +1336,7 @@ export function AdminDocuments() {
                     .replace(/{{company_seal}}/g, '<div style="width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; font-family: sans-serif;">[Seal]</div>')
                     .replace(/{{property_title}}/g, '<span style="color: #64748b;">[Selected Property]</span>')
                     .replace(/{{property_location}}/g, '<span style="color: #64748b;">[Property Location]</span>')
-                    .replace(/{{company_logo}}/g, `<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">${brand.platform_name.toUpperCase()}</div>`)
+                    .replace(/{{company_logo}}/g, brand.logo_url ? `<img src="${brand.logo_url}" alt="${brand.platform_name}" style="max-height: 40px;" />` : `<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">${brand.platform_name.toUpperCase()}</div>`)
                     .replace(/{{signature_block}}/g, `<div style="margin-top: 40px; border-top: 1px solid #cbd5e1; width: 200px; padding-top: 10px;">${brand.platform_name} Authorized Signature</div>`)
                     .replace(/{{seal}}/g, '<div style="width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; transform: rotate(-15deg);">Official Seal</div>')
                     .replace(/{{ownership_details}}/g, 'Verified Ownership Share: 5 Unit(s)')

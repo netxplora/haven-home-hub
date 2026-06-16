@@ -92,7 +92,18 @@ export default function PrintDocument() {
   };
 
   // Derived values (safe even when doc is null)
-  const snapshotHtml = doc?.metadata?.document_snapshot || doc?.metadata?.content_html || "";
+  const rawHtml = doc?.metadata?.document_snapshot || doc?.metadata?.content_html || "";
+  let snapshotHtml = rawHtml;
+  if (snapshotHtml) {
+    snapshotHtml = snapshotHtml
+      .replace(/{{company_logo}}/g, brand.logo_url ? `<img src="${brand.logo_url}" alt="${brand.platform_name}" style="max-height: 40px; width: auto;" />` : `<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">${brand.platform_name.toUpperCase()}</div>`)
+      .replace(/{{signature_block}}/g, `<div id="signature-block"><div style="margin-top: 40px; border-top: 1px solid #cbd5e1; width: 200px; padding-top: 10px;">${brand.platform_name} Authorized Signature</div></div>`)
+      .replace(/{{seal}}/g, '')
+      .replace(/{{admin_signature}}/g, '')
+      .replace(/{{company_signature}}/g, '')
+      .replace(/{{company_seal}}/g, '');
+  }
+  
   const verifyCode = doc?.verification_code || doc?.metadata?.verification_code || "N/A";
   const docRef = doc?.metadata?.reference_id || doc?.id?.split("-")[0]?.toUpperCase() || "";
   const verifyUrl = `${window.location.origin}/verify-document/${doc?.id || ""}`;
