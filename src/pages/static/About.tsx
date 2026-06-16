@@ -58,7 +58,7 @@ export default function About() {
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-3 text-sm font-medium tracking-wider uppercase text-primary">About Us</p>
           <h1 className="max-w-3xl font-serif text-4xl font-semibold sm:text-5xl md:text-6xl text-white leading-tight">
-            A real estate agency built on honesty and local expertise.
+            A real estate agency built on <span className="text-secondary">honesty and local expertise.</span>
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-white/80 leading-relaxed">
             We are an agency-led platform that curates homes for sale, rentals, and land — supported by a team of full-time agents who know the market firsthand.

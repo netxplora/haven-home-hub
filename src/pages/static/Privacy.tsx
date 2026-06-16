@@ -16,7 +16,7 @@ export default function Privacy() {
         <div className="container-wide relative z-10 text-primary-foreground text-center">
           <p className="mb-2 text-sm font-medium tracking-wider text-primary uppercase">Legal</p>
           <h1 className="font-serif text-4xl font-semibold sm:text-5xl text-white">
-            Privacy Policy
+            Privacy <span className="text-secondary">Policy</span>
           </h1>
           <p className="mt-4 text-sm text-white/60">Last updated: May 1, 2026</p>
         </div>

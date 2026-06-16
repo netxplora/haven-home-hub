@@ -66,7 +66,7 @@ export default function Press() {
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-4 text-sm font-medium tracking-wider text-primary uppercase">Press & Media</p>
           <h1 className="font-serif text-4xl font-semibold sm:text-5xl md:text-6xl text-white leading-tight">
-            News and updates.
+            Press & <span className="text-secondary">Media</span>
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80 leading-relaxed">
             Company announcements, milestones, and external media coverage. Stay informed on the latest developments from the platform.

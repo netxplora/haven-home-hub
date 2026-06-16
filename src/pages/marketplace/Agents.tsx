@@ -51,7 +51,7 @@ export default function Agents() {
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-3 text-sm font-medium tracking-wider uppercase text-primary">Our Team</p>
           <h1 className="max-w-3xl font-serif text-4xl font-semibold sm:text-5xl md:text-6xl text-white leading-tight">
-            Meet our verified agents.
+            Meet our <span className="text-secondary">verified agents.</span>
           </h1>
           <p className="mt-5 max-w-2xl text-lg text-white/80 leading-relaxed">
             Real people, ready to help you find the right home. Connect with experts who know the market firsthand.

@@ -21,7 +21,7 @@ export default function Terms() {
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-2 text-sm font-medium tracking-wider uppercase text-primary">Legal</p>
           <h1 className="max-w-3xl font-serif text-4xl font-semibold sm:text-5xl text-white leading-tight">
-            Terms of Service
+            Terms of <span className="text-secondary">Service</span>
           </h1>
           <p className="mt-3 text-sm text-white/60">Last updated: May 1, 2026</p>
         </div>

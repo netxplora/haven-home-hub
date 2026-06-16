@@ -172,7 +172,7 @@ export default function ComparePage() {
           <div className="h-24 w-24 rounded-full bg-secondary/10 text-secondary flex items-center justify-center mb-6">
             <Scale className="h-10 w-10 text-secondary" />
           </div>
-          <h1 className="font-serif text-4xl font-bold mb-4">Compare Properties</h1>
+          <h1 className="font-serif text-4xl font-bold mb-4">Compare <span className="text-secondary">Properties</span></h1>
           <p className="text-muted-foreground text-lg max-w-md mx-auto mb-8">
             You haven't selected any properties to compare. Browse our marketplace and click the compare icon on properties you like.
           </p>
@@ -195,7 +195,7 @@ export default function ComparePage() {
             <Button variant="ghost" className="mb-4 pl-0 text-muted-foreground hover:text-foreground" onClick={() => navigate(-1)}>
               <ArrowLeft className="mr-2 h-4 w-4" /> Back to marketplace
             </Button>
-            <h1 className="font-serif text-4xl font-bold tracking-tight">Compare Properties</h1>
+            <h1 className="font-serif text-4xl font-bold tracking-tight">Compare <span className="text-secondary">Properties</span></h1>
             <p className="text-muted-foreground mt-2">Side-by-side analysis of your selected properties.</p>
           </div>
           

@@ -171,7 +171,7 @@ export default function InvestOpportunities() {
               Property Investment
             </span>
             <h1 className="font-serif text-4xl font-bold sm:text-6xl text-white tracking-tight leading-[1.1] mb-4">
-              Invest in Global <br className="hidden sm:block" /> Real Estate.
+              Invest in Global <br className="hidden sm:block" /> <span className="text-secondary">Real Estate.</span>
             </h1>
             <p className="text-lg sm:text-xl text-white/90 font-medium mb-8 max-w-2xl leading-relaxed">
               Build your legacy with rental properties. Access premium homes starting from low minimums.

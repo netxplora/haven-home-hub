@@ -61,7 +61,7 @@ export default function SecondaryMarket() {
                 <Activity className="h-3 w-3 mr-1" /> Live Trading
               </Badge>
               <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
-                Secondary Market
+                <span className="text-secondary">Secondary</span> Market
               </h1>
               <p className="mt-4 text-lg text-muted-foreground max-w-2xl leading-relaxed">
                 Purchase fractional shares directly from other investors. Access fully funded properties instantly without waiting for new offerings.

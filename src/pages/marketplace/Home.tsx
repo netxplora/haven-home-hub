@@ -89,19 +89,11 @@ export default function Home() {
     badge: "Curated by our agency"
   };
 
-  const ACTIVITY_FEED = [
-    "New fractional investment completed in Miami, FL",
-    "Luxury Villa reserved in Los Angeles, CA",
-    "Premium Apartment listed in Austin, TX",
-    "Investment target reached for Houston property",
-    "New property added in Denver, CO"
-  ];
-
-  const TESTIMONIALS = [
-    { quote: "The most transparent real estate investment platform I've used. Returns are consistent and tracking is effortless.", author: "James T.", role: "Fractional Investor" },
-    { quote: "Found our dream home in a week. The agents are genuine professionals who actually understand the local market.", author: "Sarah M.", role: "Homebuyer" },
-    { quote: "Managing my portfolio of fractional properties has never been easier. The dashboard is clean and reliable.", author: "Robert K.", role: "Portfolio Manager" },
-  ];
+  const about = contentMap.homepage_about || {
+    badge: "Platform Overview",
+    title: "Building wealth through real estate.",
+    description: "We provide unparalleled access to premium real estate investments, carefully vetted by industry professionals. Whether you are looking for fractional ownership or full acquisitions, our platform ensures a transparent, secure, and seamless transaction experience."
+  };
 
   const WHY_INVEST = [
     { icon: ShieldCheck, title: "Verified Listings", desc: "Every property undergoes rigorous legal and physical inspection." },
@@ -117,6 +109,28 @@ export default function Home() {
     { label: "Properties Sold", value: "450+" },
     { label: "Cities Covered", value: "12" },
     { label: "Active Investors", value: "3,200+" }
+  ];
+
+  const dynamicStats = Array.isArray(contentMap.homepage_stats) && contentMap.homepage_stats.length > 0
+    ? contentMap.homepage_stats
+    : STATS;
+
+  const dynamicBenefits = Array.isArray(contentMap.homepage_benefits) && contentMap.homepage_benefits.length > 0
+    ? contentMap.homepage_benefits
+    : WHY_INVEST;
+
+  const ACTIVITY_FEED = [
+    "New fractional investment completed in Miami, FL",
+    "Luxury Villa reserved in Los Angeles, CA",
+    "Premium Apartment listed in Austin, TX",
+    "Investment target reached for Houston property",
+    "New property added in Denver, CO"
+  ];
+
+  const TESTIMONIALS = [
+    { quote: "The most transparent real estate investment platform I've used. Returns are consistent and tracking is effortless.", author: "James T.", role: "Fractional Investor" },
+    { quote: "Found our dream home in a week. The agents are genuine professionals who actually understand the local market.", author: "Sarah M.", role: "Homebuyer" },
+    { quote: "Managing my portfolio of fractional properties has never been easier. The dashboard is clean and reliable.", author: "Robert K.", role: "Portfolio Manager" },
   ];
 
   const EDUCATION_STEPS = [
@@ -401,6 +415,69 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* NEW: DYNAMIC ABOUT US SECTION */}
+      {about && (
+        <section className="container-wide py-20 border-t border-border/40">
+          <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
+            <div className="relative">
+              <div className="absolute inset-0 bg-secondary/10 translate-x-4 translate-y-4 rounded-3xl" />
+              <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80" alt="About Us" className="relative rounded-3xl z-10 border border-border shadow-xl object-cover aspect-[4/3]" />
+            </div>
+            <div className="space-y-6">
+              <span className="text-xs font-semibold tracking-widest text-primary uppercase block">{about.badge || "Platform Overview"}</span>
+              <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight leading-[1.1]">{about.title}</h2>
+              <p className="text-muted-foreground text-lg leading-relaxed">{about.description}</p>
+              <div className="pt-4 flex gap-4">
+                 <Button asChild size="lg" className="rounded-full px-8 h-12 bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider">
+                   <Link to="/about">Learn more about us</Link>
+                 </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* NEW: DYNAMIC BENEFITS SECTION */}
+      <section className="py-24 bg-secondary/5 border-y border-border/40">
+        <div className="container-wide">
+          <div className="mb-16 text-center max-w-2xl mx-auto">
+            <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Why Choose Us</span>
+            <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight">Structured, transparent, patient.</h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+            {dynamicBenefits.map((b: any, i: number) => {
+               // Assign icons sequentially if they are dynamic
+               const icons = [ShieldCheck, LineChart, Lock, PieChart, CheckCircle, Sparkles, Building2, TrendingUp];
+               const Icon = b.icon || icons[i % icons.length];
+               return (
+                 <div key={i} className="rounded-3xl border border-border/60 bg-card p-8 hover-lift shadow-sm transition-all group">
+                   <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary mb-6 shadow-sm transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+                     <Icon className="h-6 w-6" />
+                   </span>
+                   <h3 className="font-serif text-xl font-bold text-foreground mb-3">{b.title}</h3>
+                   <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
+                 </div>
+               );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* NEW: DYNAMIC STATS SECTION */}
+      <section className="container-wide py-24 text-center">
+         <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">By The Numbers</span>
+         <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground mb-16 tracking-tight">Our Historical Performance</h2>
+         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
+           {dynamicStats.map((stat: any, i: number) => (
+             <div key={i} className="p-6 bg-card border border-border/50 rounded-3xl shadow-sm hover-lift">
+               <p className="font-serif text-4xl sm:text-5xl font-bold text-secondary mb-3">{stat.value}</p>
+               <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
+             </div>
+           ))}
+         </div>
+      </section>
+
 
       {/* 6. BUYER SUCCESS STORIES (TESTIMONIALS) */}
       <section className="bg-primary/5 border-y border-border/40 py-16">

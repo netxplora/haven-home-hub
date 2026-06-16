@@ -355,6 +355,30 @@ function HomepageContentTab({ qc }: any) {
     }));
   };
 
+  const updateSectionArray = (key: string, index: number, field: string, value: string) => {
+    setForm(prev => {
+      const arr = [...(prev[key] || [])];
+      if (!arr[index]) arr[index] = {};
+      arr[index] = { ...arr[index], [field]: value };
+      return { ...prev, [key]: arr };
+    });
+  };
+
+  const addToArray = (key: string, defaultItem: any) => {
+    setForm(prev => ({
+      ...prev,
+      [key]: [...(prev[key] || []), defaultItem]
+    }));
+  };
+
+  const removeFromArray = (key: string, index: number) => {
+    setForm(prev => {
+      const arr = [...(prev[key] || [])];
+      arr.splice(index, 1);
+      return { ...prev, [key]: arr };
+    });
+  };
+
   async function saveHomepageContent(e: React.FormEvent) {
     e.preventDefault();
     setSaving(true);
@@ -372,6 +396,9 @@ function HomepageContentTab({ qc }: any) {
 
   const hero = form.homepage_hero || {};
   const invest = form.homepage_invest_cta || {};
+  const about = form.homepage_about || {};
+  const stats = Array.isArray(form.homepage_stats) ? form.homepage_stats : [];
+  const benefits = Array.isArray(form.homepage_benefits) ? form.homepage_benefits : [];
 
   return (
     <form onSubmit={saveHomepageContent} className="space-y-8 max-w-4xl">
@@ -392,7 +419,79 @@ function HomepageContentTab({ qc }: any) {
       </div>
 
       <div className="space-y-4 rounded-xl border border-border p-6 bg-card">
-        <h3 className="font-semibold font-serif text-xl border-b border-border pb-3">Invest Call to Action</h3>
+        <h3 className="font-semibold font-serif text-xl border-b border-border pb-3">About Us Section</h3>
+        <div className="space-y-2">
+          <Label>Badge / Eyebrow Text</Label>
+          <Input value={about.badge || ""} onChange={(e) => updateSection("homepage_about", "badge", e.target.value)} placeholder="e.g. Platform Overview" />
+        </div>
+        <div className="space-y-2">
+          <Label>Title</Label>
+          <Input value={about.title || ""} onChange={(e) => updateSection("homepage_about", "title", e.target.value)} placeholder="e.g. Building wealth through real estate." />
+        </div>
+        <div className="space-y-2">
+          <Label>Description</Label>
+          <Textarea value={about.description || ""} onChange={(e) => updateSection("homepage_about", "description", e.target.value)} rows={4} />
+        </div>
+      </div>
+
+      <div className="space-y-4 rounded-xl border border-border p-6 bg-card">
+        <div className="flex justify-between items-center border-b border-border pb-3">
+          <h3 className="font-semibold font-serif text-xl">Platform Statistics</h3>
+          <Button type="button" variant="outline" size="sm" onClick={() => addToArray("homepage_stats", { label: "", value: "" })}>
+            <Plus className="h-4 w-4 mr-2" /> Add Stat
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {stats.map((stat: any, i: number) => (
+            <div key={i} className="flex items-end gap-4 bg-secondary/10 p-4 rounded-lg">
+              <div className="flex-1 space-y-2">
+                <Label>Value (e.g. $142M)</Label>
+                <Input value={stat.value || ""} onChange={(e) => updateSectionArray("homepage_stats", i, "value", e.target.value)} />
+              </div>
+              <div className="flex-1 space-y-2">
+                <Label>Label (e.g. Assets Funded)</Label>
+                <Input value={stat.label || ""} onChange={(e) => updateSectionArray("homepage_stats", i, "label", e.target.value)} />
+              </div>
+              <Button type="button" variant="ghost" size="icon" onClick={() => removeFromArray("homepage_stats", i)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          ))}
+          {stats.length === 0 && <p className="text-sm text-muted-foreground italic">No stats added yet.</p>}
+        </div>
+      </div>
+
+      <div className="space-y-4 rounded-xl border border-border p-6 bg-card">
+        <div className="flex justify-between items-center border-b border-border pb-3">
+          <h3 className="font-semibold font-serif text-xl">Why Choose Us (Benefits)</h3>
+          <Button type="button" variant="outline" size="sm" onClick={() => addToArray("homepage_benefits", { title: "", desc: "" })}>
+            <Plus className="h-4 w-4 mr-2" /> Add Benefit
+          </Button>
+        </div>
+        <div className="space-y-4">
+          {benefits.map((benefit: any, i: number) => (
+            <div key={i} className="flex items-start gap-4 bg-secondary/10 p-4 rounded-lg">
+              <div className="flex-1 space-y-4">
+                <div className="space-y-2">
+                  <Label>Title</Label>
+                  <Input value={benefit.title || ""} onChange={(e) => updateSectionArray("homepage_benefits", i, "title", e.target.value)} />
+                </div>
+                <div className="space-y-2">
+                  <Label>Description</Label>
+                  <Textarea value={benefit.desc || ""} onChange={(e) => updateSectionArray("homepage_benefits", i, "desc", e.target.value)} rows={2} />
+                </div>
+              </div>
+              <Button type="button" variant="ghost" size="icon" onClick={() => removeFromArray("homepage_benefits", i)} className="mt-8">
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          ))}
+          {benefits.length === 0 && <p className="text-sm text-muted-foreground italic">No benefits added yet.</p>}
+        </div>
+      </div>
+
+      <div className="space-y-4 rounded-xl border border-border p-6 bg-card">
+        <h3 className="font-semibold font-serif text-xl border-b border-border pb-3">Invest Call to Action (Bottom)</h3>
         <div className="space-y-2">
           <Label>Badge Text</Label>
           <Input value={invest.badge || ""} onChange={(e) => updateSection("homepage_invest_cta", "badge", e.target.value)} />
@@ -407,9 +506,9 @@ function HomepageContentTab({ qc }: any) {
         </div>
       </div>
 
-      <div className="flex justify-end">
-        <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 px-8">
-          {saving ? "Saving Changes..." : "Save Homepage Content"}
+      <div className="flex justify-end sticky bottom-6 z-10">
+        <Button type="submit" disabled={saving} className="bg-primary text-primary-foreground hover:bg-primary/90 px-10 h-14 rounded-full shadow-xl font-bold">
+          {saving ? "Saving Changes..." : "Save All Homepage Content"}
         </Button>
       </div>
     </form>

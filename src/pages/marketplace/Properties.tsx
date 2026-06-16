@@ -295,7 +295,7 @@ export default function Properties() {
             <span className="inline-block px-3 py-1 mb-5 text-xs font-semibold tracking-wider uppercase bg-primary text-primary-foreground rounded-full shadow-lg">
               {content.badge}
             </span>
-            <h1 className="font-serif text-4xl font-bold sm:text-6xl text-white tracking-tight leading-[1.1] mb-4">
+            <h1 className="font-serif text-4xl font-bold sm:text-6xl text-secondary tracking-tight leading-[1.1] mb-4">
               {content.title}
             </h1>
             <p className="text-lg sm:text-xl text-white/90 font-medium mb-6">
