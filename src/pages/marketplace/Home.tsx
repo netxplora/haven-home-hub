@@ -187,7 +187,7 @@ export default function Home() {
               <ShieldCheck className="h-4 w-4 text-primary" /> Premium Real Estate Platform
             </p>
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] text-white tracking-tight drop-shadow-md">
-              Invest in verified properties with complete confidence.
+              Invest in <span className="text-secondary">verified properties</span> with complete confidence.
             </h1>
             <p className="mt-6 max-w-2xl text-base sm:text-lg text-white/90 font-medium leading-relaxed drop-shadow-sm">
               Access a curated portfolio of thoroughly inspected residential and commercial real estate. Buy, rent, or co-invest alongside industry professionals.

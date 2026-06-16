@@ -118,7 +118,7 @@ export default function InvestHome() {
               <ShieldCheck className="h-4 w-4 text-primary" /> Premium Real Estate Investment
             </p>
             <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] text-white tracking-tight drop-shadow-md">
-              Build wealth through premium real estate.
+              Build wealth through <span className="text-secondary">premium real estate</span>.
             </h1>
             <p className="mt-6 max-w-2xl text-lg text-white/90 font-medium leading-relaxed drop-shadow-sm">
               Co-invest in professionally managed commercial and residential properties. Earn scheduled rental income and benefit from long-term property appreciation.
