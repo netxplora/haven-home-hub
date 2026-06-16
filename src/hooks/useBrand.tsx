@@ -2,6 +2,7 @@ import { createContext, useContext, ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { BrandService, BrandSettings, BrandDefaults } from "@/lib/brandService";
 import { Helmet } from "react-helmet-async";
+import { hexToHslTailwind } from "@/lib/utils";
 
 interface BrandContextType {
   brand: BrandSettings;
@@ -36,6 +37,10 @@ export const BrandProvider = ({ children }: { children: ReactNode }) => {
             :root {
               --brand-primary: ${brand.primary_color};
               --brand-secondary: ${brand.secondary_color};
+              
+              /* Overwrite tailwind core tokens using HSL derived from DB Hex */
+              --primary: ${hexToHslTailwind(brand.primary_color)};
+              --secondary: ${hexToHslTailwind(brand.secondary_color)};
             }
           `}
         </style>

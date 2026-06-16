@@ -183,28 +183,29 @@ export default function Home() {
 
         <div className="container-wide relative z-10 py-20">
           <div className="max-w-4xl animate-fade-in-up">
-            <p className="mb-4 inline-flex items-center gap-1.5 rounded-full bg-white/10 px-4 py-1 text-xs font-bold text-white uppercase tracking-wider backdrop-blur-md border border-white/20 shadow-sm">
-              <ShieldCheck className="h-3.5 w-3.5 text-primary" /> Vetted Property Marketplace
+            <p className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white uppercase tracking-widest backdrop-blur-md border border-white/20 shadow-sm">
+              <ShieldCheck className="h-4 w-4 text-primary" /> Premium Real Estate Platform
             </p>
-            <h1 className="font-serif text-4xl font-bold leading-[1.1] text-white sm:text-5xl lg:text-6xl tracking-tight">
-              Verified homes, trusted agents, smarter property decisions.
+            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] text-white tracking-tight drop-shadow-md">
+              Invest in verified properties with complete confidence.
             </h1>
-            <p className="mt-4 max-w-xl text-base sm:text-lg text-white/80 font-light leading-relaxed">
-              Every listing undergoes physical inspection and title validation. Search transparent options across the United States.
+            <p className="mt-6 max-w-2xl text-base sm:text-lg text-white/90 font-medium leading-relaxed drop-shadow-sm">
+              Access a curated portfolio of thoroughly inspected residential and commercial real estate. Buy, rent, or co-invest alongside industry professionals.
             </p>
 
-            {/* Advanced Search Form */}
-            <div className="mt-8 bg-card border border-border/40 p-4 rounded-2xl shadow-lg w-full max-w-3xl focus-guidance">
-
-
-              <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+            {/* Premium Glassmorphism Search Bar */}
+            <div className="mt-10 bg-white/10 backdrop-blur-xl border border-white/20 p-2 sm:p-3 rounded-2xl sm:rounded-full shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] w-full max-w-4xl focus-guidance">
+              <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-center gap-2 w-full">
+                
                 {/* Location select */}
-                <div className="space-y-1 text-left">
-                  <label className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Region</label>
+                <div className="flex-1 w-full relative">
+                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                    <MapPin className="h-4 w-4 text-white/80" />
+                  </div>
                   <select
                     value={searchLocation}
                     onChange={(e) => setSearchLocation(e.target.value)}
-                    className="w-full h-10 border border-border rounded-lg bg-background text-xs px-2 focus:ring-1 focus:ring-primary focus:outline-none"
+                    className="w-full h-14 pl-11 pr-4 border-0 rounded-xl sm:rounded-full bg-white/5 hover:bg-white/10 text-white focus:ring-2 focus:ring-primary/50 focus:outline-none appearance-none transition-colors text-sm font-medium [&>option]:text-slate-900 cursor-pointer"
                   >
                     <option value="">Any Region</option>
                     {exploreLocations.map((loc: any) => (
@@ -213,43 +214,42 @@ export default function Home() {
                   </select>
                 </div>
 
+                <div className="hidden sm:block w-px h-8 bg-white/20"></div>
+
                 {/* Budget selector */}
-                <div className="space-y-1 text-left">
-                  <label className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider">Max Budget</label>
+                <div className="flex-1 w-full relative">
                   <select
                     value={searchBudget}
                     onChange={(e) => setSearchBudget(e.target.value)}
-                    className="w-full h-10 border border-border rounded-lg bg-background text-xs px-2 focus:ring-1 focus:ring-primary focus:outline-none"
+                    className="w-full h-14 px-5 border-0 rounded-xl sm:rounded-full bg-white/5 hover:bg-white/10 text-white focus:ring-2 focus:ring-primary/50 focus:outline-none appearance-none transition-colors text-sm font-medium [&>option]:text-slate-900 cursor-pointer"
                   >
-                    <option value="">No Limit</option>
-                    <option value="under500k">Under $500k</option>
-                    <option value="500k-1m">$500k - $1M</option>
-                    <option value="1m-2.5m">$1M - $2.5M</option>
-                    <option value="above2.5m">Above $2.5M</option>
+                    <option value="">No Budget Limit</option>
+                    <option value="under500k">Under $500,000</option>
+                    <option value="500k-1m">$500,000 - $1,000,000</option>
+                    <option value="1m-2.5m">$1,000,000 - $2,500,000</option>
+                    <option value="above2.5m">Above $2,500,000</option>
                   </select>
                 </div>
 
-                {/* Verified Only Check */}
-                <div className="flex items-center gap-2 h-10 px-2 justify-start">
-                  <input
-                    type="checkbox"
-                    id="verifiedCheck"
-                    checked={verifiedOnly}
-                    onChange={(e) => setVerifiedOnly(e.target.checked)}
-                    className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
-                  />
-                  <label htmlFor="verifiedCheck" className="text-xs font-bold text-foreground cursor-pointer select-none">
-                    Verified Only
-                  </label>
-                </div>
-
                 {/* Search Button */}
-                <Button type="submit" size="lg" className="h-10 rounded-lg bg-primary text-white hover:bg-primary/95 font-bold text-xs uppercase tracking-wider">
-                  <Search className="mr-1.5 h-3.5 w-3.5" /> Search Checked
+                <Button type="submit" size="lg" className="w-full sm:w-auto h-14 px-8 rounded-xl sm:rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm tracking-wide shadow-lg">
+                  <Search className="mr-2 h-4 w-4" /> Search
                 </Button>
               </form>
+            </div>
 
-
+            {/* Verified Only Toggle */}
+            <div className="mt-4 flex items-center justify-start gap-2 pl-2 sm:pl-6">
+              <input
+                type="checkbox"
+                id="verifiedCheck"
+                checked={verifiedOnly}
+                onChange={(e) => setVerifiedOnly(e.target.checked)}
+                className="h-4 w-4 rounded border-white/40 bg-white/10 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+              />
+              <label htmlFor="verifiedCheck" className="text-sm font-medium text-white/90 drop-shadow-sm cursor-pointer select-none">
+                Show verified listings only
+              </label>
             </div>
           </div>
         </div>
