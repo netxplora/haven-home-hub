@@ -1,6 +1,6 @@
 {
-  "name": "Haven Home Hub",
-  "short_name": "Haven",
+  "name": "Property Platform",
+  "short_name": "Property",
   "description": "Find verified property listings across the United States.",
   "start_url": "/",
   "display": "standalone",

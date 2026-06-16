@@ -129,7 +129,7 @@ export function InteractivePropertyMap({
         const query = encodeURIComponent(searchKey);
         const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${query}&format=json&limit=1`, {
           headers: {
-            "User-Agent": "HavenHomeHub/1.0 (admin@havenhomehub.local)"
+            "User-Agent": "PropertyPlatform/1.0"
           }
         });
 
@@ -150,7 +150,7 @@ export function InteractivePropertyMap({
             const cityQuery = encodeURIComponent(parts[parts.length - 2].trim() + ", " + parts[parts.length - 1].trim());
             const cityRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${cityQuery}&format=json&limit=1`, {
               headers: {
-                "User-Agent": "HavenHomeHub/1.0 (admin@havenhomehub.local)"
+                "User-Agent": "PropertyPlatform/1.0"
               }
             });
             const cityData = await cityRes.json();

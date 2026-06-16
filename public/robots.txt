@@ -3,15 +3,21 @@ Allow: /
 Allow: /properties/
 Allow: /explore
 Allow: /about
-Allow: /contact
 Allow: /blog/
+Allow: /agents
+Allow: /invest
+Allow: /invest/opportunities
 
 Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /agent/
 Disallow: /invest/portfolio/
+Disallow: /invest/certificate/
 Disallow: /api/
 Disallow: /auth/
+Disallow: /reset-password
+Disallow: /forgot-password
+Disallow: /payments/
 Disallow: /*?*
 
 Sitemap: https://havenhomehub.com/sitemap.xml
