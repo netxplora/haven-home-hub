@@ -17,6 +17,7 @@ import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { SEO } from "@/components/site/SEO";
 import { Header } from "@/components/site/Header";
+import { useBrand } from "@/hooks/useBrand";
 
 // Fix leaflet default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -47,6 +48,7 @@ function MapResizer() {
 }
 
 export default function PropertyMapExplorer() {
+  const { brand } = useBrand();
   const [filterType, setFilterType] = useState<string>("all");
   const [priceRange, setPriceRange] = useState<[number, number]>([0, 5000000]);
   const [minYield, setMinYield] = useState<number>(0);
@@ -134,7 +136,7 @@ export default function PropertyMapExplorer() {
   return (
     <>
       <SEO 
-        title="Interactive Property Map Explorer | Haven Home Hub" 
+        title={`Interactive Property Map Explorer | ${brand.platform_name}`} 
         description="Discover premium real estate and fractional investment opportunities on our advanced interactive map."
       />
       

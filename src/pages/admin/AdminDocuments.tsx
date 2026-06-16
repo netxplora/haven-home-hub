@@ -32,8 +32,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
+import { useBrand } from "@/hooks/useBrand";
 
 export function AdminDocuments() {
+  const { brand } = useBrand();
   const qc = useQueryClient();
   const [activeSubTab, setActiveSubTab] = useState<"docs" | "templates" | "signatures" | "requests" | "audit">("requests");
   
@@ -1048,7 +1050,7 @@ export function AdminDocuments() {
             <div className="space-y-2">
               <label className="text-xs uppercase font-bold text-muted-foreground">Document Title</label>
               <Input 
-                placeholder="e.g., Title Insurance for Haven Alpha" 
+                placeholder="e.g., Title Insurance for Acme Alpha" 
                 value={documentName}
                 onChange={(e) => setDocumentName(e.target.value)}
                 className="rounded-xl"
@@ -1185,7 +1187,7 @@ export function AdminDocuments() {
                           <span className="text-white font-serif font-bold text-2xl tracking-tighter">H</span>
                         </div>
                         <div>
-                          <img src="/logo.png" alt="Haven Home Hub" className="h-8 w-auto" />
+                          <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-8 w-auto" />
                           <p className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mt-1">Certified Legal Documentation</p>
                         </div>
                       </div>
@@ -1313,7 +1315,7 @@ export function AdminDocuments() {
                     .replace(/{{investor_email}}/g, "john.doe@example.com")
                     .replace(/{{investor_phone}}/g, "+1 555-0198")
                     .replace(/{{investor_address}}/g, "123 Fake Street, CA")
-                    .replace(/{{property_name}}/g, "Haven Royal Estate")
+                    .replace(/{{property_name}}/g, "Acme Royal Estate")
                     .replace(/{{property_location}}/g, "Beverly Hills, CA")
                     .replace(/{{property_type}}/g, "Luxury Villa")
                     .replace(/{{property_id}}/g, "PRP-8A9X")
@@ -1332,7 +1334,11 @@ export function AdminDocuments() {
                     .replace(/{{admin_signature}}/g, '<div style="border-bottom: 1px solid #000; width: 150px; height: 50px; display: flex; align-items: end; padding-bottom: 5px; color: #666; font-family: sans-serif; font-size: 10px;">[Admin Signature Image]</div>')
                     .replace(/{{company_signature}}/g, '<div style="border-bottom: 1px solid #000; width: 150px; height: 50px; display: flex; align-items: end; padding-bottom: 5px; color: #666; font-family: sans-serif; font-size: 10px;">[Company Signature Image]</div>')
                     .replace(/{{company_seal}}/g, '<div style="width: 80px; height: 80px; border-radius: 50%; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; color: #999; font-size: 10px; font-family: sans-serif;">[Seal]</div>')
-                    .replace(/{{company_logo}}/g, '<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">HAVEN HOME HUB</div>')
+                    .replace(/{{property_title}}/g, '<span style="color: #64748b;">[Selected Property]</span>')
+                    .replace(/{{property_location}}/g, '<span style="color: #64748b;">[Property Location]</span>')
+                    .replace(/{{company_logo}}/g, `<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">${brand.platform_name.toUpperCase()}</div>`)
+                    .replace(/{{signature_block}}/g, `<div style="margin-top: 40px; border-top: 1px solid #cbd5e1; width: 200px; padding-top: 10px;">${brand.platform_name} Authorized Signature</div>`)
+                    .replace(/{{seal}}/g, '<div style="width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; transform: rotate(-15deg);">Official Seal</div>')
                     .replace(/{{ownership_details}}/g, 'Verified Ownership Share: 5 Unit(s)')
                     .replace(/{{investment_details}}/g, 'Investment Value: $25,000.00')
                 }} />

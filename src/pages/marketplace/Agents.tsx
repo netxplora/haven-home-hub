@@ -8,8 +8,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Reviews } from "@/components/site/Reviews";
 import { AgentReviews, AgentRatingBadge } from "@/components/site/AgentReviews";
 import { SEO } from "@/components/site/SEO";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function Agents() {
+  const { brand } = useBrand();
   const { data: agents = [] } = useQuery({
     queryKey: ["all-agents"],
     queryFn: async () => {
@@ -34,12 +36,12 @@ export default function Agents() {
   });
   return (
     <SiteLayout>
-      <SEO title="Our Agents" description="Connect with verified Haven Home Hub agents. Real people, ready to help you find the right home." />
+      <SEO title="Our Agents" description={`Connect with verified ${brand.platform_name} agents. Real people, ready to help you find the right home.`} />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[350px] sm:min-h-[400px] lg:min-h-[450px] flex items-center bg-black">
         <img 
           src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80" 
-          alt="Haven Home Hub Agents" 
+          alt={`${brand.platform_name} Agents`} 
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />

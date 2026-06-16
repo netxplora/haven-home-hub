@@ -21,6 +21,7 @@ import { toast } from "@/hooks/use-toast";
 import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 import { PromoBanner } from "@/components/site/PromoBanner";
 import { lazy, Suspense } from "react";
+import { useBrand } from "@/hooks/useBrand";
 
 const RegionTelemetry = lazy(() => import("@/components/marketing/RegionTelemetry").then(m => ({ default: m.RegionTelemetry })));
 const MarketIntelligence = lazy(() => import("@/components/site/MarketIntelligence").then(m => ({ default: m.MarketIntelligence })));
@@ -31,6 +32,7 @@ import useEmblaCarousel from "embla-carousel-react";
 
 
 export default function Home() {
+  const { brand } = useBrand();
   const navigate = useNavigate();
   const [searchType, setSearchType] = useState<"buy" | "rent" | "invest">("buy");
   const [searchLocation, setSearchLocation] = useState("");
@@ -473,7 +475,7 @@ export default function Home() {
             <span className="text-xs font-semibold tracking-widest uppercase text-primary block">Seamless Access</span>
             <h2 className="font-serif text-3xl font-semibold text-foreground tracking-tight">Manage Your Portfolio Anywhere</h2>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Whether you are at your desk or on the move, Haven Home Hub provides a consistent, secure, and responsive experience across all your devices.
+              Whether you are at your desk or on the move, {brand.platform_name} provides a consistent, secure, and responsive experience across all your devices.
             </p>
             <p className="text-sm text-muted-foreground leading-relaxed">
               Instantly review property disclosures, sign legal agreements, and communicate directly with your dedicated real estate advisors. Track your fractional co-investments and monitor monthly performance metrics without interruption.
@@ -597,7 +599,7 @@ function BlogTeaser() {
                 src={post.cover_image_url}
                 alt={post.title}
                 className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                crossOrigin="anonymous"
+                loading="lazy"
               />
             </div>
           ) : (

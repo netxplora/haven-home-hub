@@ -15,9 +15,11 @@ import { CurrencyToggle } from "@/components/site/CurrencyToggle";
 import { getAvatarUrl } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useBrand } from "@/hooks/useBrand";
 
 export function Header() {
   const { user, profile, isAdmin, isAgent, signOut } = useAuth();
+  const { brand } = useBrand();
   
   let accountType = "Investor";
   if (isAdmin) accountType = "Admin";
@@ -136,8 +138,8 @@ export function Header() {
         
         <div className="flex w-full md:w-auto h-[48px] md:h-full items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center shrink-0" aria-label="Haven Home Hub home">
-            <img src="/logo.png" alt="Haven Home Hub" className="h-10 md:h-12 w-auto" />
+          <Link to="/" className="flex items-center shrink-0" aria-label={`${brand.platform_name} home`}>
+            <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-10 md:h-12 w-auto" />
           </Link>
           
           {/* Mobile Hamburger & Notification */}

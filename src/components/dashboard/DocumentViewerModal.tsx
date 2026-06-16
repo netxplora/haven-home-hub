@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Eye, Download, ShieldCheck, Loader2, AlertCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import DOMPurify from "dompurify";
+import { useBrand } from "@/hooks/useBrand";
 
 interface DocumentViewerModalProps {
   open: boolean;
@@ -12,6 +13,7 @@ interface DocumentViewerModalProps {
 }
 
 export function DocumentViewerModal({ open, onOpenChange, document }: DocumentViewerModalProps) {
+  const { brand } = useBrand();
   const [signedUrl, setSignedUrl] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -114,7 +116,7 @@ export function DocumentViewerModal({ open, onOpenChange, document }: DocumentVi
                 <div className="relative z-10">
                   <div className="flex justify-between items-start border-b-[3px] border-double border-slate-800 pb-4 mb-8">
                     <div className="flex items-center gap-3">
-                      <img src="/logo.png" alt="Haven Home Hub" className="h-8 w-auto" />
+                      <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-8 w-auto" />
                       <div>
                         <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold mt-0.5">Certified Legal Documentation</p>
                       </div>

@@ -3,6 +3,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Building2, Handshake, MapPin, ShieldCheck, Users } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
+import { useBrand } from "@/hooks/useBrand";
 
 const stats = [
   { label: "Properties listed", value: "500+" },
@@ -35,18 +36,19 @@ const values = [
 ];
 
 export default function About() {
+  const { brand } = useBrand();
   return (
     <SiteLayout>
       <SEO 
         title="About Us" 
-        description="Learn about Haven Home Hub — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States." 
-        canonicalUrl="https://haven-home-hub.vercel.app/about" 
+        description={`Learn about ${brand.platform_name} — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States.`} 
+        canonicalUrl={`${window.location.origin}/about`}
       />
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[550px] flex items-center bg-black">
         <img 
           src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80" 
-          alt="Haven Home Hub Corporate Office" 
+          alt={`${brand.platform_name} Corporate Office`} 
           className="absolute inset-0 h-full w-full object-cover"
           crossOrigin="anonymous"
         />
@@ -84,7 +86,7 @@ export default function About() {
             </h2>
             <div className="mt-6 space-y-4 text-muted-foreground leading-relaxed">
               <p>
-                Haven Home Hub was founded with a straightforward idea: people deserve a better way to find their next home. Instead of flooding a marketplace with unverified listings, we built an agency model where every property is visited, photographed, and validated by our team before it becomes available.
+                {brand.platform_name} was founded with a straightforward idea: people deserve a better way to find their next home. Instead of flooding a marketplace with unverified listings, we built an agency model where every property is visited, photographed, and validated by our team before it becomes available.
               </p>
               <p>
                 Today, we operate across multiple cities with a growing team of specialized agents. Whether you are buying your first apartment, leasing commercial space, or investing in fractional property ownership, our process stays the same — honest, hands-on, and results-focused.

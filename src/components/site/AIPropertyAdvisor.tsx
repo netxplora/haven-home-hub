@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MessageSquare, Send, Bot, RefreshCw, Landmark, ShieldCheck, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useBrand } from "@/hooks/useBrand";
 
 interface Message {
   sender: "user" | "advisor";
@@ -16,10 +17,11 @@ interface Message {
 }
 
 export function AIPropertyAdvisor() {
+  const { brand } = useBrand();
   const [messages, setMessages] = useState<Message[]>([
     {
       sender: "advisor",
-      text: "Welcome to Haven Home Hub. I am your property transaction advisor. To help guide your property decisions in the United States, what is your primary goal today?",
+      text: `Welcome to ${brand.platform_name}. I am your property transaction advisor. To help guide your property decisions in the United States, what is your primary goal today?`,
       options: ["Buy a Family Home", "Rent a Premium Apartment", "Co-invest Fractionally", "Check Market Trends"]
     }
   ]);

@@ -62,35 +62,12 @@ const EMPTY_FORM: Omit<PaymentMethod, "id" | "created_at" | "updated_at"> = {
 };
 
 // ────────────────────────────────────────────
-// Config field definitions per category
-// ────────────────────────────────────────────
-const CONFIG_FIELDS: Record<PaymentCategory, { key: string; label: string; placeholder: string; type?: string }[]> = {
-  bank_transfer: [
-    { key: "bank_name", label: "Bank Name", placeholder: "e.g. First Bank" },
-    { key: "account_name", label: "Account Name", placeholder: "e.g. Haven Home Hub Ltd" },
-    { key: "account_number", label: "Account Number", placeholder: "e.g. 0123456789" },
-    { key: "swift_code", label: "SWIFT / BIC Code", placeholder: "e.g. FBNINGLA" },
-    { key: "routing_number", label: "Routing / Sort Code", placeholder: "Optional" },
-    { key: "country", label: "Country", placeholder: "e.g. United States" },
-  ],
-  digital_currency: [
-    { key: "wallet_address", label: "Wallet Address", placeholder: "e.g. 0x1234...abcd" },
-    { key: "wallet_network", label: "Network", placeholder: "e.g. ERC-20, BEP-20, TRC-20" },
-    { key: "wallet_label", label: "Currency Symbol", placeholder: "e.g. USDT, BTC, ETH" },
-    { key: "supported_currency", label: "Supported Currency", placeholder: "e.g. USDT" },
-    { key: "qr_code_url", label: "QR Code Image URL", placeholder: "Optional image URL" },
-  ],
-  third_party_provider: [
-    { key: "provider_url", label: "Provider URL", placeholder: "e.g. https://moonpay.com" },
-    { key: "supported_methods", label: "Supported Methods", placeholder: "e.g. Card, Apple Pay" },
-    { key: "country_support", label: "Supported Countries", placeholder: "e.g. Global, US, UK, NG" },
-  ],
-};
-
-// ────────────────────────────────────────────
 // Component
 // ────────────────────────────────────────────
+import { useBrand } from "@/hooks/useBrand";
+
 export function AdminPaymentMethods() {
+  const { brand } = useBrand();
   const qc = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -98,6 +75,29 @@ export function AdminPaymentMethods() {
   const [saving, setSaving] = useState(false);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [filterCategory, setFilterCategory] = useState<PaymentCategory | "all">("all");
+
+  const CONFIG_FIELDS: Record<PaymentCategory, { key: string; label: string; placeholder: string; type?: string }[]> = {
+    bank_transfer: [
+      { key: "bank_name", label: "Bank Name", placeholder: "e.g. First Bank" },
+      { key: "account_name", label: "Account Name", placeholder: `e.g. ${brand.platform_name} Ltd` },
+      { key: "account_number", label: "Account Number", placeholder: "e.g. 0123456789" },
+      { key: "swift_code", label: "SWIFT / BIC Code", placeholder: "e.g. FBNINGLA" },
+      { key: "routing_number", label: "Routing / Sort Code", placeholder: "Optional" },
+      { key: "country", label: "Country", placeholder: "e.g. United States" },
+    ],
+    digital_currency: [
+      { key: "wallet_address", label: "Wallet Address", placeholder: "e.g. 0x1234...abcd" },
+      { key: "wallet_network", label: "Network", placeholder: "e.g. ERC-20, BEP-20, TRC-20" },
+      { key: "wallet_label", label: "Currency Symbol", placeholder: "e.g. USDT, BTC, ETH" },
+      { key: "supported_currency", label: "Supported Currency", placeholder: "e.g. USDT" },
+      { key: "qr_code_url", label: "QR Code Image URL", placeholder: "Optional image URL" },
+    ],
+    third_party_provider: [
+      { key: "provider_url", label: "Provider URL", placeholder: "e.g. https://moonpay.com" },
+      { key: "supported_methods", label: "Supported Methods", placeholder: "e.g. Card, Apple Pay" },
+      { key: "country_support", label: "Supported Countries", placeholder: "e.g. Global, US, UK, NG" },
+    ],
+  };
 
   const { data: methods = [], isLoading } = useQuery({
     queryKey: ["admin-payment-methods"],

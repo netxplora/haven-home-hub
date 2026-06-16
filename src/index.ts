@@ -84,6 +84,6 @@ async function pollJobs() {
 }
 
 // Start worker loop
-console.log("🚀 Haven Home Hub - Background Extraction Worker Started");
+console.log("🚀 Background Extraction Worker Started");
 setInterval(pollJobs, 10000);
 pollJobs(); // Initial run

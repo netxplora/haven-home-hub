@@ -6,8 +6,10 @@ import { QRCodeSVG } from "qrcode.react";
 import { ShieldCheck, Printer, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import DOMPurify from "dompurify";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function PrintDocument() {
+  const { brand } = useBrand();
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const [signatureUrl, setSignatureUrl] = useState<string | null>(null);
@@ -190,7 +192,7 @@ export default function PrintDocument() {
           <div className="flex justify-between items-start border-b-[3px] border-double border-slate-800 pb-6 mb-10">
             <div className="flex items-center gap-4">
               <div>
-                <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto" />
+                <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-10 w-auto" />
                 <p className="text-[10px] uppercase tracking-widest text-slate-500 font-bold mt-1">Certified Legal Documentation Service</p>
               </div>
             </div>
@@ -219,7 +221,7 @@ export default function PrintDocument() {
                     </div>
                   )}
                 </div>
-                <p className="text-sm font-semibold text-slate-800 border-t border-slate-100 pt-2">Registrar, Haven Home Hub</p>
+                <p className="text-sm font-semibold text-slate-800 border-t border-slate-100 pt-2">Registrar, {brand.platform_name}</p>
               </div>
               
               <div className="flex flex-col items-end space-y-4">
@@ -245,7 +247,7 @@ export default function PrintDocument() {
               <ShieldCheck className="h-4 w-4 text-slate-900" /> OFFICIAL DIGITAL VERIFICATION
             </h4>
             <p className="text-[10px] text-slate-500 leading-relaxed font-sans max-w-md">
-              This document is digitally verified and permanently registered in the Haven Home Hub legal registry. Scan the QR code or verify online using the unique reference code.
+              This document is digitally verified and permanently registered in the {brand.platform_name} legal registry. Scan the QR code or verify online using the unique reference code.
             </p>
             <div className="grid grid-cols-2 gap-x-4 pt-3 text-[9px] font-mono text-slate-600 uppercase tracking-wider">
               <p>Registry ID: <span className="text-slate-900 font-bold ml-1">{doc.id.split('-')[0]}</span></p>

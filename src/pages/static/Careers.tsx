@@ -10,6 +10,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
+import { useBrand } from "@/hooks/useBrand";
 const openings = [
   {
     title: "Senior Property Agent",
@@ -80,6 +81,7 @@ const perks = [
 ];
 
 export default function Careers() {
+  const { brand } = useBrand();
   const [searchQuery, setSearchQuery] = useState("");
   const [deptFilter, setDeptFilter] = useState("All");
   const [locFilter, setLocFilter] = useState("All");
@@ -112,14 +114,14 @@ export default function Careers() {
 
   return (
     <SiteLayout>
-      <SEO title="Careers" description="Join the Haven Home Hub team. We are looking for driven professionals to help us build the most trusted real estate platform in the United States." />
+      <SEO title="Careers" description={`Join the ${brand.platform_name} team. We are looking for driven professionals to help us build the most trusted real estate platform in the United States.`} />
       
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[500px] sm:min-h-[600px] flex items-center bg-black pt-20">
         <div className="absolute inset-0">
           <img
             src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1920&q=80"
-            alt="Haven Home Hub team collaboration"
+            alt={`${brand.platform_name} team collaboration`}
             className="h-full w-full object-cover scale-105"
             crossOrigin="anonymous"
           />
@@ -172,7 +174,7 @@ export default function Careers() {
             </h2>
             <div className="mt-8 space-y-6 text-muted-foreground leading-relaxed text-lg">
               <p>
-                At Haven Home Hub, we believe great work happens when people are given autonomy, clear goals, and the resources to succeed. Our team operates with a flat hierarchy where every voice matters.
+                At {brand.platform_name}, we believe great work happens when people are given autonomy, clear goals, and the resources to succeed. Our team operates with a flat hierarchy where every voice matters.
               </p>
               <p>
                 We invest heavily in our people through structured training programs, industry certifications, and regular mentorship sessions. Whether you are an experienced real estate professional or making a career transition, we provide the tools and support you need to grow.
@@ -300,8 +302,8 @@ export default function Careers() {
             We are always looking for talented people. Send your CV directly to our recruiting team and we will keep you in mind for future openings.
           </p>
           <div className="mt-8">
-            <a href="mailto:careers@havenhomehub.com" className="inline-flex items-center justify-center rounded-xl bg-background border border-border px-8 py-4 text-lg font-bold text-primary hover:bg-muted transition-colors shadow-sm">
-              careers@havenhomehub.com
+            <a href={`mailto:${brand.support_email}`} className="inline-flex items-center justify-center rounded-xl bg-background border border-border px-8 py-4 text-lg font-bold text-primary hover:bg-muted transition-colors shadow-sm">
+              {brand.support_email}
             </a>
           </div>
         </div>

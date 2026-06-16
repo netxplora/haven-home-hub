@@ -2,6 +2,7 @@ import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Printer, ShieldCheck, CheckCircle2, Download, ExternalLink, CalendarClock, ChartLine } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
+import { useBrand } from "@/hooks/useBrand";
 
 interface ReceiptDialogProps {
   open: boolean;
@@ -10,6 +11,8 @@ interface ReceiptDialogProps {
 }
 
 export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
+  const { brand } = useBrand();
+  
   if (!receipt) return null;
 
   const handlePrint = () => {
@@ -65,7 +68,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             {/* Header Section */}
             <div className="flex flex-col sm:flex-row justify-between items-start gap-6 border-b border-gray-200 pb-8 mb-8">
               <div className="flex items-start gap-4">
-                <img src="/logo.png" alt="Haven Home Hub" className="h-12 w-auto" />
+                <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-12 w-auto" />
                 <div>
                   <p className="text-sm font-medium text-gray-500 uppercase tracking-widest mt-1">Official Transaction Receipt</p>
                   <p className="text-xs text-gray-400 mt-1">123 Premium Blvd, Financial District</p>
@@ -317,10 +320,10 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             <div className="border-t border-gray-200 pt-6 mt-12 flex flex-col sm:flex-row justify-between items-center gap-4 text-center sm:text-left">
               <div className="flex items-center justify-center sm:justify-start gap-2 text-gray-400">
                 <ShieldCheck className="h-4 w-4" />
-                <span className="text-xs font-medium">Cryptographically verifiable on Haven Ledger</span>
+                <span className="text-xs font-medium">Cryptographically verifiable on {brand.platform_name} Ledger</span>
               </div>
               <p className="text-xs font-medium text-gray-500">
-                Issued by Haven Home Hub Financial Operations
+                Issued by {brand.platform_name} Financial Operations
               </p>
             </div>
             

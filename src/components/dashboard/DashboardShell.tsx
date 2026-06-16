@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { supabase } from "@/integrations/supabase/client";
+import { useBrand } from "@/hooks/useBrand";
 
 export interface NavItem {
   id: string;
@@ -65,6 +66,7 @@ export function DashboardShell({
   description 
 }: DashboardShellProps) {
   const { user, profile, signOut, isAdmin, isAgent } = useAuth();
+  const { brand } = useBrand();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const avatarUrl = getAvatarUrl(profile?.avatar_url);
@@ -79,7 +81,7 @@ export function DashboardShell({
       {/* Logo */}
       <div className="flex h-[68px] items-center px-6 border-b border-border/50">
         <Link to="/" className="flex items-center gap-2.5 font-serif text-lg font-semibold text-foreground">
-          <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto" />
+          <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-10 w-auto" />
         </Link>
       </div>
 
@@ -157,7 +159,7 @@ export function DashboardShell({
         {/* Mobile Header */}
         <header className="sticky top-0 z-40 flex h-14 items-center justify-between border-b border-border/50 bg-background/90 backdrop-blur-md px-4 lg:hidden">
           <Link to="/" className="flex items-center gap-2 font-serif text-base font-semibold text-foreground">
-            <img src="/logo.png" alt="Haven Home Hub" className="h-8 w-auto" />
+            <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-8 w-auto" />
           </Link>
           
           <Sheet open={isMobileOpen} onOpenChange={setIsMobileOpen}>
@@ -215,7 +217,7 @@ export function DashboardShell({
         </main>
 
         <footer className="border-t border-border/50 py-5 text-center text-xs text-muted-foreground bg-background">
-          © {new Date().getFullYear()} Haven Home Hub. All rights reserved.
+          © {new Date().getFullYear()} {brand.legal_name || brand.platform_name}. All rights reserved.
         </footer>
       </div>
     </div>

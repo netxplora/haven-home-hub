@@ -151,7 +151,7 @@ export default function InvestOpportunities() {
       <SEO 
         title="Investment Opportunities" 
         description="Browse premium income-generating property investments with high returns and flexible entry." 
-        canonicalUrl="https://haven-home-hub.vercel.app/invest/opportunities" 
+        canonicalUrl={`${window.location.origin}/invest/opportunities`}
       />
 
       {/* ── Hero Section ──────────────────────────────────────── */}

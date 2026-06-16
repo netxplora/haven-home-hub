@@ -34,12 +34,14 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useBrand } from "@/hooks/useBrand";
 
 // Common Emojis for quick reactions
 const QUICK_EMOJIS = ["👋", "👍", "🙏", "❤️", "😊", "❓"];
 
 export function SupportWidget() {
   const { user } = useAuth();
+  const { brand } = useBrand();
   const location = useLocation();
   const [isOpen, setIsOpen] = useState(false);
   const [activeTicketId, setActiveTicketId] = useState<string | null>(null);
@@ -307,8 +309,8 @@ export function SupportWidget() {
           ) : (
             <div className="relative">
               <Avatar className="h-9 w-9 border-2 border-white/20 bg-white/10">
-                <AvatarImage src="/favicon.ico" className="object-contain p-1.5" />
-                <AvatarFallback className="bg-transparent font-bold font-serif text-white">H</AvatarFallback>
+                <AvatarImage src={brand.favicon_url || "/favicon.ico"} className="object-contain p-1.5" />
+                <AvatarFallback className="bg-transparent font-bold font-serif text-white">{brand.platform_name.charAt(0)}</AvatarFallback>
               </Avatar>
               <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-green-400 border-2 border-primary animate-pulse" />
             </div>
@@ -325,7 +327,7 @@ export function SupportWidget() {
             ) : (
               <>
                 <h4 className="font-serif text-sm font-bold leading-tight">
-                  Haven Support
+                  {brand.platform_name} Support
                 </h4>
                 <p className="text-[10px] text-white/80 font-medium">
                   {isAgentOnline ? "We typically reply in a few minutes" : "Leave a message, we'll be back soon"}
@@ -641,7 +643,7 @@ export function SupportWidget() {
               <h2 className="text-2xl font-serif font-bold text-foreground leading-tight mb-2">
                 Hello there! <Smile className="inline h-6 w-6 text-amber-500 mb-1" />
               </h2>
-              <p className="text-sm text-muted-foreground">What brings you to Haven Home Hub today?</p>
+              <p className="text-sm text-muted-foreground">What brings you to {brand.platform_name} today?</p>
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 pb-6 space-y-6">

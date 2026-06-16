@@ -12,8 +12,10 @@ import remarkGfm from "remark-gfm";
 import { SEO } from "@/components/site/SEO";
 import { BlogPostJsonLd } from "@/components/site/JsonLd";
 import { toast } from "@/hooks/use-toast";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function BlogPost() {
+  const { brand } = useBrand();
   const { slug } = useParams();
 
   const { data: post, isLoading, error } = useQuery({
@@ -259,7 +261,7 @@ export default function BlogPost() {
                       </div>
                     ) : (
                       <div className="aspect-[16/10] bg-accent flex items-center justify-center">
-                        <span className="text-muted-foreground font-serif text-xl">Haven Home Hub</span>
+                        <span className="text-muted-foreground font-serif text-xl">{brand.platform_name}</span>
                       </div>
                     )}
                     <div className="flex flex-1 flex-col p-6">

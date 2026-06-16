@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { ArrowLeft, Mail, CheckCircle2 } from "lucide-react";
+import { useBrand } from "@/hooks/useBrand";
 import { motion } from "framer-motion";
 
 const containerVariants = {
@@ -22,6 +23,7 @@ const itemVariants = {
 };
 
 export default function ForgotPassword() {
+  const { brand } = useBrand();
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [sent, setSent] = useState(false);
@@ -64,7 +66,7 @@ export default function ForgotPassword() {
         >
           <motion.div variants={itemVariants} className="mb-8">
             <Link to="/">
-              <img src="/logo.png" alt="Haven Home Hub" className="h-12 w-auto invert drop-shadow-xl" />
+              <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-12 w-auto invert drop-shadow-xl" />
             </Link>
           </motion.div>
 
@@ -84,7 +86,7 @@ export default function ForgotPassword() {
         </motion.div>
 
         <div className="absolute bottom-8 left-0 right-0 text-center z-20">
-          <p className="text-xs text-white/40 font-medium">© {new Date().getFullYear()} Haven Home Hub</p>
+          <p className="text-xs text-white/40 font-medium">© {new Date().getFullYear()} {brand.legal_name || brand.platform_name}</p>
         </div>
       </div>
 
@@ -96,7 +98,7 @@ export default function ForgotPassword() {
           <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/90 via-slate-900/60 to-primary/20" />
           <div className="relative z-20 flex flex-col items-center justify-center pt-20 pb-12 px-6 text-center">
             <Link to="/">
-              <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto invert drop-shadow-xl mb-6" />
+              <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-10 w-auto invert drop-shadow-xl mb-6" />
             </Link>
             <h2 className="font-serif text-2xl font-bold leading-tight text-white tracking-tight drop-shadow-md">
               Secure account recovery.

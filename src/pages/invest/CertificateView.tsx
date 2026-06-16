@@ -7,8 +7,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney } from "@/lib/invest";
 import { format } from "date-fns";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function CertificateView() {
+  const { brand } = useBrand();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -117,10 +119,10 @@ export default function CertificateView() {
           {/* Header */}
           <div className="bg-primary/5 p-12 text-center border-b border-primary/10">
             <div className="mx-auto w-24 mb-6">
-              <img src="/logo.png" alt="Haven Home Hub" className="w-full h-auto" />
+              <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="w-full h-auto" />
             </div>
             <h1 className="font-serif text-5xl font-bold tracking-tight mb-4">Official Investment Certificate</h1>
-            <p className="text-lg text-muted-foreground uppercase tracking-widest font-bold">Haven Home Hub Real Estate Trust</p>
+            <p className="text-lg text-muted-foreground uppercase tracking-widest font-bold">{brand.platform_name} Real Estate Trust</p>
             <div className="mt-6 inline-flex items-center gap-2 bg-background px-4 py-2 rounded-full text-xs font-mono font-bold border border-border shadow-sm">
               CERT ID: {cert.certificate_id}
             </div>
@@ -174,7 +176,7 @@ export default function CertificateView() {
           <div className="bg-muted/50 p-12 flex items-center justify-between border-t border-border">
             <div className="space-y-1">
               <div className="w-48 border-b-2 border-primary/50 pb-2">
-                <img src="/logo.png" alt="Haven Home Hub Auth" className="h-8 w-auto opacity-50 grayscale" />
+                <img src={brand.logo_url || "/logo.png"} alt={`${brand.platform_name} Auth`} className="h-8 w-auto opacity-50 grayscale" />
               </div>
               <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold mt-2">Authorized Signature</p>
             </div>

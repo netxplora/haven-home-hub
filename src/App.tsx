@@ -58,6 +58,7 @@ import { SupportWidget } from "./components/site/SupportWidget";
 import { useDeploymentCache } from "./hooks/useDeploymentCache";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
+import { BrandProvider } from "./hooks/useBrand";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -72,6 +73,7 @@ const queryClient = new QueryClient({
 });
 
 // Configure custom caching defaults for public static data to reduce repeated API requests
+queryClient.setQueryDefaults(["brand-settings"], { staleTime: 30 * 60 * 1000 });
 queryClient.setQueryDefaults(["properties"], { staleTime: 5 * 60 * 1000 });
 queryClient.setQueryDefaults(["property"], { staleTime: 5 * 60 * 1000 });
 queryClient.setQueryDefaults(["locations"], { staleTime: 15 * 60 * 1000 });
@@ -131,6 +133,7 @@ const App = () => (
           <CompareWidget />
           <RealtimeGlobal />
           <GlobalErrorBoundary>
+          <BrandProvider>
           <AuthProvider>
             <SupportWidget />
             <Suspense fallback={<PageLoader />}>
@@ -181,6 +184,7 @@ const App = () => (
               </Routes>
             </Suspense>
           </AuthProvider>
+          </BrandProvider>
           </GlobalErrorBoundary>
         </BrowserRouter>
         </TooltipProvider>

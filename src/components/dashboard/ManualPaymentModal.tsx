@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useAuth } from "@/hooks/useAuth";
 import { useQuery } from "@tanstack/react-query";
 import { PaymentMethodPicker } from "@/components/payments/PaymentMethodPicker";
+import { useBrand } from "@/hooks/useBrand";
 
 interface ManualPaymentModalProps {
   open: boolean;
@@ -51,6 +52,7 @@ export function ManualPaymentModal({
   open, onClose, method, amount, currency, paymentType, targetId, bookingId, metadata = {}, holdHours, isInvestmentProperty = false, onSuccess, propertyData, isInstallment, installmentConfig
 }: ManualPaymentModalProps) {
   const { user } = useAuth();
+  const { brand } = useBrand();
   
   const [step, setStep] = useState<Step>("method_select");
 
@@ -635,7 +637,7 @@ export function ManualPaymentModal({
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Account Name</p>
-                  <p className="font-semibold">{configs?.bank_account_name || "Haven Home Hub LLC"}</p>
+                  <p className="font-semibold">{configs?.bank_account_name || brand.legal_name}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">Account Number</p>

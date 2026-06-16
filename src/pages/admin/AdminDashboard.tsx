@@ -38,12 +38,13 @@ import { AdminKYC } from "./AdminKYC";
 import { AdminSettings } from "./AdminSettings";
 import { AdminPaymentMethods } from "./AdminPaymentMethods";
 import { AdminReviews } from "./AdminReviews";
-import { AdminPropertyImport } from "./AdminPropertyImport";
 import { AdminFinanceCenter } from "./AdminFinanceCenter";
 import { DashboardShell, NavItem } from "@/components/dashboard/DashboardShell";
 import { AdminUsers } from "./AdminUsers";
-import { AdminReferrals } from "./AdminReferrals";
+import { Palette } from "lucide-react";
 import { AdminDocuments } from "./AdminDocuments";
+import { AdminBrandSettings } from "./AdminBrandSettings";
+import { AdminReferrals } from "./AdminReferrals";
 import { AdminInvestor360 } from "./AdminInvestor360";
 import { AdminSupportCenter } from "./AdminSupportCenter";
 import { AdminInvestmentOrders } from "./AdminInvestmentOrders";
@@ -76,6 +77,7 @@ const navItems: NavItem[] = [
   { id: "referrals", label: "Referral Program", icon: Award },
   // Settings & System
   { id: "payment-methods", label: "Payment Methods", icon: CreditCard },
+  { id: "brand-settings", label: "Brand Settings", icon: Palette },
   { id: "settings", label: "Settings", icon: Settings },
 ];
 
@@ -124,6 +126,7 @@ export default function Admin() {
         {activeTab === "documents" && <AdminDocuments />}
         {activeTab === "referrals" && <AdminReferrals />}
         {activeTab === "payment-methods" && <AdminPaymentMethods />}
+        {activeTab === "brand-settings" && <AdminBrandSettings />}
         {activeTab === "investor-360" && <AdminInvestor360 initialUserId={investor360Id} onBack={() => setActiveTab("overview")} />}
         {activeTab === "invest-orders" && <AdminInvestmentOrders />}
         {activeTab === "settings" && <AdminSettings />}

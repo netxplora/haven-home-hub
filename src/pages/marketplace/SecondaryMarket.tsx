@@ -3,6 +3,7 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { SEO } from "@/components/site/SEO";
 import { useSecondaryMarket } from "@/hooks/useSecondaryMarket";
 import { useAuth } from "@/hooks/useAuth";
+import { useBrand } from "@/hooks/useBrand";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,7 @@ import {
 } from "@/components/ui/dialog";
 
 export default function SecondaryMarket() {
+  const { brand } = useBrand();
   const { listings, isLoadingListings, purchaseListing, isPurchasing } = useSecondaryMarket();
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,8 +49,8 @@ export default function SecondaryMarket() {
   return (
     <SiteLayout>
       <SEO 
-        title="Secondary Market | Haven Home Hub" 
-        description="Trade fractional property shares securely with other investors on the Haven Home Hub Secondary Market." 
+        title={`Secondary Market | ${brand.platform_name}`} 
+        description={`Trade fractional property shares securely with other investors on the ${brand.platform_name} Secondary Market.`} 
       />
       
       <div className="bg-muted/30 py-12 md:py-16 border-b border-border/50 pt-24">

@@ -13,6 +13,7 @@ import { toast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { CmsMediaUploader } from "@/components/admin/CmsMediaUploader";
 import { AdminBroadcasts } from "./AdminBroadcasts";
 import { AdminAdvertisements } from "./AdminAdvertisements";
 import { AdminActivityFeed } from "./AdminActivityFeed";
@@ -494,10 +495,12 @@ function PostForm({ initial, categories, onClose }: any) {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Cover Image URL</Label>
-          <Input value={f.cover_image_url} onChange={(e) => setF({ ...f, cover_image_url: e.target.value })} placeholder="https://..." className="h-12 rounded-xl" />
-        </div>
+        <CmsMediaUploader
+          value={f.cover_image_url}
+          onChange={(url) => setF({ ...f, cover_image_url: url })}
+          folder="blog-covers"
+          label="Cover Image"
+        />
 
         <div className="space-y-2">
           <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Excerpt (Short summary)</Label>

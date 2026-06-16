@@ -1,10 +1,12 @@
 import { Helmet } from "react-helmet-async";
+import { useBrand } from "@/hooks/useBrand";
 
-const SITE_NAME = "Haven Home Hub";
 const SITE_URL = typeof window !== "undefined" ? window.location.origin : "https://verdantestate.com";
 
 /** Generate JSON-LD for a property listing (RealEstateListing schema) */
 export function PropertyJsonLd({ property }: { property: any }) {
+  const { brand } = useBrand();
+  
   if (!property) return null;
 
   const schema = {
@@ -66,6 +68,8 @@ export function PropertyJsonLd({ property }: { property: any }) {
 
 /** Generate JSON-LD for a blog post (Article schema) */
 export function BlogPostJsonLd({ post }: { post: any }) {
+  const { brand } = useBrand();
+
   if (!post) return null;
 
   const schema = {
@@ -79,12 +83,12 @@ export function BlogPostJsonLd({ post }: { post: any }) {
     url: `${SITE_URL}/blog/${post.slug}`,
     author: {
       "@type": "Organization",
-      name: SITE_NAME,
+      name: brand.platform_name,
       url: SITE_URL,
     },
     publisher: {
       "@type": "Organization",
-      name: SITE_NAME,
+      name: brand.platform_name,
       url: SITE_URL,
     },
     mainEntityOfPage: {
@@ -102,10 +106,12 @@ export function BlogPostJsonLd({ post }: { post: any }) {
 
 /** Generate JSON-LD for the organization (homepage) */
 export function OrganizationJsonLd() {
+  const { brand } = useBrand();
+
   const schema = {
     "@context": "https://schema.org",
     "@type": "RealEstateAgent",
-    name: SITE_NAME,
+    name: brand.platform_name,
     url: SITE_URL,
     description: "A trusted, agency-led real estate platform. Browse verified properties for sale, rent, and land.",
     sameAs: [],

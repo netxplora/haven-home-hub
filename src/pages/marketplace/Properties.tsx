@@ -8,6 +8,7 @@ import { PropertyMap } from "@/components/site/PropertyMap";
 import { PromoBanner } from "@/components/site/PromoBanner";
 import { SaveSearchButton } from "@/components/site/SavedSearch";
 import { enrichProperty } from "@/lib/format";
+import { useBrand } from "@/hooks/useBrand";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -76,6 +77,7 @@ const PROPERTY_CATEGORIES = [
 ];
 
 export default function Properties() {
+  const { brand } = useBrand();
   const [params, setParams] = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [viewMode, setViewMode] = useState<"list" | "map">("list");
@@ -271,9 +273,9 @@ export default function Properties() {
   return (
     <SiteLayout>
       <SEO 
-        title={`${content.title}${city && city !== "all" ? ` in ${city}` : state && state !== "all" ? ` in ${state}` : country && country !== "all" ? ` in ${country}` : ""} | Haven Home Hub`}
+        title={`${content.title}${city && city !== "all" ? ` in ${city}` : state && state !== "all" ? ` in ${state}` : country && country !== "all" ? ` in ${country}` : ""} | ${brand.platform_name}`}
         description={content.desc} 
-        canonicalUrl={`https://haven-home-hub.vercel.app/properties${window.location.search}`} 
+        canonicalUrl={`${window.location.origin}/properties${window.location.search}`}
       />
 
       {/* ── Hero Section ──────────────────────────────────────── */}

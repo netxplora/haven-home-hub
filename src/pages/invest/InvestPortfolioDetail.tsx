@@ -22,8 +22,10 @@ import { useState, useEffect, useMemo } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { DocumentViewerModal } from "@/components/dashboard/DocumentViewerModal";
 import { SEO } from "@/components/site/SEO";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function InvestPortfolioDetail() {
+  const { brand } = useBrand();
   const { id } = useParams();
   const navigate = useNavigate();
   const qc = useQueryClient();
@@ -228,7 +230,7 @@ export default function InvestPortfolioDetail() {
   return (
     <SiteLayout>
       <SEO 
-        title={`Portfolio: ${prop.title} | Haven Home Hub`}
+        title={`Portfolio: ${prop.title} | ${brand.platform_name}`}
         description={`View your investment portfolio details for ${prop.title}.`}
         image={prop.cover_image_url}
       />
@@ -753,7 +755,7 @@ export default function InvestPortfolioDetail() {
                   </div>
                   <div>
                     <h4 className="font-serif text-lg font-bold text-foreground">Ownership Certificate</h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">Official asset ownership documentation issued by Haven Home Hub</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">Official asset ownership documentation issued by {brand.platform_name}</p>
                   </div>
                 </div>
                 <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 font-bold uppercase tracking-wider text-[9px] px-3 py-1 flex items-center gap-1.5">
@@ -1113,7 +1115,7 @@ export default function InvestPortfolioDetail() {
                 <p className="text-[11px] text-muted-foreground/80 leading-relaxed">
                   All documents displayed on this page are securely stored and encrypted. Digital signatures are legally binding 
                   under applicable electronic signature laws. Documents are timestamped and cannot be altered after execution. 
-                  For any document-related inquiries, contact our legal team at support@havenhomehub.com.
+                  For any document-related inquiries, contact our legal team at {brand.support_email}.
                 </p>
               </div>
             </div>

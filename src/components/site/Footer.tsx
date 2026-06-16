@@ -1,7 +1,9 @@
 import { Link } from "react-router-dom";
 import { Building2, Mail, Phone, MapPin } from "lucide-react";
+import { useBrand } from "@/hooks/useBrand";
 
 export function Footer() {
+  const { brand } = useBrand();
   
   return (
     <footer className="border-t border-border bg-foreground text-primary-foreground">
@@ -9,7 +11,7 @@ export function Footer() {
         {/* Brand */}
         <div>
           <Link to="/" className="flex items-center gap-2.5 font-serif text-lg font-semibold text-white">
-            <img src="/logo.png" alt="Haven Home Hub" className="h-10 w-auto" />
+            <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-10 w-auto" />
           </Link>
           <p className="mt-4 text-sm text-white/50 leading-relaxed max-w-xs">
             {"A trusted, agency-led real estate platform. Every property is hand-curated and verified by our professional team."}
@@ -51,7 +53,7 @@ export function Footer() {
             </li>
             <li className="flex items-start gap-2.5">
               <Mail className="h-4 w-4 mt-0.5 text-primary shrink-0" />
-              <span>hello@verdantestate.com</span>
+              <span>{brand.support_email}</span>
             </li>
           </ul>
         </div>
@@ -60,7 +62,7 @@ export function Footer() {
       <div className="border-t border-white/8">
         <div className="container-wide flex flex-col sm:flex-row items-center justify-between gap-3 py-5">
           <p className="text-xs text-white/35">
-            © {new Date().getFullYear()} Haven Home Hub. {"All listings curated and verified by our agency."}
+            © {new Date().getFullYear()} {brand.legal_name || brand.platform_name}. {"All listings curated and verified by our agency."}
           </p>
           <div className="flex items-center gap-4 text-xs text-white/35">
             <Link to="/privacy" className="hover:text-white/60 transition-colors">{"Privacy"}</Link>

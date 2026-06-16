@@ -1,4 +1,5 @@
 import { Helmet } from "react-helmet-async";
+import { useBrand } from "@/hooks/useBrand";
 
 interface SEOProps {
   title?: string;
@@ -10,10 +11,10 @@ interface SEOProps {
   children?: React.ReactNode;
 }
 
-const SITE_NAME = "Haven Home Hub";
-const DEFAULT_DESCRIPTION = "Find verified property listings across the United States — buy, rent, or invest with trusted agents on Haven Home Hub.";
-
 export function SEO({ title, description, image, url, type = "website", canonicalUrl, children }: SEOProps) {
+  const { brand } = useBrand();
+  const SITE_NAME = brand.platform_name;
+  const DEFAULT_DESCRIPTION = `Find verified property listings across the United States — buy, rent, or invest with trusted agents on ${SITE_NAME}.`;
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Find Your Next Property in the US`;
   const desc = description || DEFAULT_DESCRIPTION;
 

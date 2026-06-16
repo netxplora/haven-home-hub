@@ -7,8 +7,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/site/SEO";
 import { BookOpen, Calendar } from "lucide-react";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function BlogList() {
+  const { brand } = useBrand();
   const { data: posts, isLoading } = useQuery({
     queryKey: ["public-blog-posts"],
     queryFn: async () => {
@@ -23,7 +25,7 @@ export default function BlogList() {
 
   return (
     <SiteLayout>
-      <SEO title="Blog — Insights & News" description="Market analysis, investment guides, property buying tips, and platform updates from the Haven Home Hub team." />
+      <SEO title="Blog — Insights & News" description={`Market analysis, investment guides, property buying tips, and platform updates from the ${brand.platform_name} team.`} />
       
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[340px] sm:min-h-[400px] flex items-center justify-center bg-black">
@@ -42,7 +44,7 @@ export default function BlogList() {
             Insights & News
           </h1>
           <p className="mt-5 text-lg text-white/80 max-w-2xl mx-auto leading-relaxed font-light">
-            Market analysis, investment guides, property buying tips, and platform updates from the Haven Home Hub team.
+            Market analysis, investment guides, property buying tips, and platform updates from the {brand.platform_name} team.
           </p>
         </div>
       </div>
@@ -106,7 +108,7 @@ export default function BlogList() {
                       />
                     ) : (
                       <div className="h-full w-full bg-accent flex items-center justify-center min-h-[280px]">
-                        <span className="text-muted-foreground font-serif text-2xl">Haven Home Hub</span>
+                        <span className="text-muted-foreground font-serif text-2xl">{brand.platform_name}</span>
                       </div>
                     )}
                   </div>
@@ -163,7 +165,7 @@ export default function BlogList() {
                       </div>
                     ) : (
                       <div className="aspect-[16/10] bg-accent flex items-center justify-center">
-                        <span className="text-muted-foreground font-serif text-xl">Haven Home Hub</span>
+                        <span className="text-muted-foreground font-serif text-xl">{brand.platform_name}</span>
                       </div>
                     )}
 

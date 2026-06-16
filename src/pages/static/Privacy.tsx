@@ -1,10 +1,12 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { SEO } from "@/components/site/SEO";
+import { useBrand } from "@/hooks/useBrand";
 
 export default function Privacy() {
+  const { brand } = useBrand();
   return (
     <SiteLayout>
-      <SEO title="Privacy Policy" description="Haven Home Hub Privacy Policy. Learn how we collect, use, and protect your information." />
+      <SEO title="Privacy Policy" description={`${brand.platform_name} Privacy Policy. Learn how we collect, use, and protect your information.`} />
       {/* Header */}
       <section className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-black">
         <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?auto=format&fit=crop&w=1920&q=80')] bg-cover bg-center" />
@@ -101,8 +103,8 @@ export default function Privacy() {
               For privacy-related questions, data requests, or concerns, contact us at
             </p>
             <div className="mt-4">
-              <a href="mailto:privacy@verdantestate.com" className="inline-flex items-center text-lg font-medium text-primary hover:underline transition-all">
-                privacy@verdantestate.com
+              <a href={`mailto:${brand.support_email}`} className="inline-flex items-center text-lg font-medium text-primary hover:underline transition-all">
+                {brand.support_email}
               </a>
             </div>
           </div>

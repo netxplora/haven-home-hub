@@ -232,7 +232,7 @@ export default function PropertyDetail() {
         title={`${property.title} - ${property.property_type} in ${property.locations?.name || property.city || 'US'}`} 
         description={`View this ${property.property_type} for ${formatPrice(Number(property.price), property.currency, property.property_type)}. ${property.description?.slice(0, 120)}...`} 
         image={resolveImage(property.cover_image_url)} 
-        canonicalUrl={`https://haven-home-hub.vercel.app/properties/${property.slug}`}
+        canonicalUrl={`${window.location.origin}/properties/${property.slug}`}
       />
       <PropertyJsonLd property={property} />
       
