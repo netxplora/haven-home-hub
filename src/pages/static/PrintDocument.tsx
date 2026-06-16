@@ -98,6 +98,8 @@ export default function PrintDocument() {
     snapshotHtml = snapshotHtml
       .replace(/{{company_logo}}/g, brand.logo_url ? `<img src="${brand.logo_url}" alt="${brand.platform_name}" style="max-height: 40px; width: auto;" />` : `<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">${brand.platform_name.toUpperCase()}</div>`)
       .replace(/{{signature_block}}/g, `<div id="signature-block"><div style="margin-top: 40px; border-top: 1px solid #cbd5e1; width: 200px; padding-top: 10px;">${brand.platform_name} Authorized Signature</div></div>`)
+      .replace(/{{company_name}}/g, brand.platform_name)
+      .replace(/{{company_name_upper}}/g, brand.platform_name.toUpperCase())
       .replace(/{{seal}}/g, '')
       .replace(/{{admin_signature}}/g, '')
       .replace(/{{company_signature}}/g, '')

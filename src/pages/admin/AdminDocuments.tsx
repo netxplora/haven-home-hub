@@ -1338,6 +1338,8 @@ export function AdminDocuments() {
                     .replace(/{{property_location}}/g, '<span style="color: #64748b;">[Property Location]</span>')
                     .replace(/{{company_logo}}/g, brand.logo_url ? `<img src="${brand.logo_url}" alt="${brand.platform_name}" style="max-height: 40px;" />` : `<div style="font-weight: bold; font-family: sans-serif; font-size: 18px;">${brand.platform_name.toUpperCase()}</div>`)
                     .replace(/{{signature_block}}/g, `<div style="margin-top: 40px; border-top: 1px solid #cbd5e1; width: 200px; padding-top: 10px;">${brand.platform_name} Authorized Signature</div>`)
+                    .replace(/{{company_name}}/g, brand.platform_name)
+                    .replace(/{{company_name_upper}}/g, brand.platform_name.toUpperCase())
                     .replace(/{{seal}}/g, '<div style="width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; transform: rotate(-15deg);">Official Seal</div>')
                     .replace(/{{ownership_details}}/g, 'Verified Ownership Share: 5 Unit(s)')
                     .replace(/{{investment_details}}/g, 'Investment Value: $25,000.00')
