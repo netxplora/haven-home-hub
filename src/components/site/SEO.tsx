@@ -17,6 +17,8 @@ export function SEO({ title, description, image, url, type = "website", canonica
   const DEFAULT_DESCRIPTION = `Find verified property listings across the United States — buy, rent, or invest with trusted agents on ${SITE_NAME}.`;
   const fullTitle = title ? `${title} | ${SITE_NAME}` : `${SITE_NAME} — Find Your Next Property in the US`;
   const desc = description || DEFAULT_DESCRIPTION;
+  const currentUrl = url || (typeof window !== "undefined" ? window.location.href : "");
+  const ogImage = image || brand.logo_url || "/logo.png";
 
   return (
     <Helmet>
@@ -25,14 +27,16 @@ export function SEO({ title, description, image, url, type = "website", canonica
       <meta property="og:title" content={fullTitle} />
       <meta property="og:description" content={desc} />
       <meta property="og:type" content={type} />
+      <meta property="og:site_name" content={SITE_NAME} />
       {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
-      {image && <meta property="og:image" content={image} />}
-      {url && <meta property="og:url" content={url} />}
+      <meta property="og:image" content={ogImage} />
+      {currentUrl && <meta property="og:url" content={currentUrl} />}
       <meta name="twitter:card" content="summary_large_image" />
       <meta name="twitter:title" content={fullTitle} />
       <meta name="twitter:description" content={desc} />
-      {image && <meta name="twitter:image" content={image} />}
+      <meta name="twitter:image" content={ogImage} />
       {children}
     </Helmet>
   );
 }
+

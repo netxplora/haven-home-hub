@@ -119,26 +119,6 @@ export default function Home() {
     ? contentMap.homepage_benefits
     : WHY_INVEST;
 
-  const ACTIVITY_FEED = [
-    "New fractional investment completed in Miami, FL",
-    "Luxury Villa reserved in Los Angeles, CA",
-    "Premium Apartment listed in Austin, TX",
-    "Investment target reached for Houston property",
-    "New property added in Denver, CO"
-  ];
-
-  const TESTIMONIALS = [
-    { quote: "The most transparent real estate investment platform I've used. Returns are consistent and tracking is effortless.", author: "James T.", role: "Fractional Investor" },
-    { quote: "Found our dream home in a week. The agents are genuine professionals who actually understand the local market.", author: "Sarah M.", role: "Homebuyer" },
-    { quote: "Managing my portfolio of fractional properties has never been easier. The dashboard is clean and reliable.", author: "Robert K.", role: "Portfolio Manager" },
-  ];
-
-  const EDUCATION_STEPS = [
-    { step: "1", title: "Browse Offerings", desc: "Review vetted properties with detailed financials, appraisals, and projected returns." },
-    { step: "2", title: "Invest Securely", desc: "Purchase your preferred number of fractions using our secure, compliant payment gateway." },
-    { step: "3", title: "Receive Certificates", desc: "Gain legally binding digital ownership certificates directly in your investor dashboard." },
-    { step: "4", title: "Earn & Track", desc: "Monitor monthly rental yields and track asset appreciation in real-time." }
-  ];
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,7 +148,7 @@ export default function Home() {
 
   return (
     <SiteLayout>
-      <SEO>
+      <SEO image="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp">
         <link rel="preload" as="image" href="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp" />
       </SEO>
       <OrganizationJsonLd />
@@ -708,26 +688,7 @@ function BlogTeaser() {
   );
 }
 
-function ActivityTicker({ items }: { items: string[] }) {
-  const [index, setIndex] = useState(0);
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIndex((prev) => (prev + 1) % items.length);
-    }, 4500);
-    return () => clearInterval(interval);
-  }, [items.length]);
-
-  return (
-    <div className="absolute inset-0 transition-transform duration-700 ease-in-out" style={{ transform: `translateY(-${index * 24}px)` }}>
-      {items.map((activity, i) => (
-        <div key={i} className="h-6 flex items-center text-sm font-medium text-muted-foreground whitespace-nowrap">
-          {activity}
-        </div>
-      ))}
-    </div>
-  );
-}
 
 function NewsletterForm() {
   const [email, setEmail] = useState("");

@@ -177,7 +177,7 @@ export function DashboardShell({
           </Sheet>
         </header>
 
-        <main className="flex-1 w-full min-w-0">
+        <main id="main-content" tabIndex={-1} className="flex-1 w-full min-w-0 outline-none">
           <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 w-full">
             {/* Page Header */}
             <header className="mb-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">

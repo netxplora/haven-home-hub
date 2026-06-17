@@ -400,3 +400,34 @@ html {
   top: 0;
 }
 
+/* ── Prevent horizontal page overflow ── */
+html, body {
+  overflow-x: hidden;
+}
+
+/* ── Responsive table wrapper for admin panels ── */
+.responsive-table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+}
+
+.responsive-table-wrap::-webkit-scrollbar {
+  height: 6px;
+}
+
+.responsive-table-wrap::-webkit-scrollbar-thumb {
+  background: hsl(var(--border));
+  border-radius: 999px;
+}
+
+/* ── Auto-responsive tables inside dashboard panels ── */
+/* Any div that directly contains a table inherits scroll behavior */
+@media (max-width: 1024px) {
+  [id="main-content"] table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+}

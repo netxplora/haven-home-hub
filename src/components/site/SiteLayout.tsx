@@ -11,7 +11,7 @@ export function SiteLayout({ children }: { children: React.ReactNode }) {
     <div className="flex min-h-screen flex-col">
       <AnnouncementBar />
       <Header />
-      <main id="main-content" className="flex-1">{children}</main>
+      <main id="main-content" tabIndex={-1} className="flex-1 outline-none">{children}</main>
       <Suspense fallback={<div className="h-64 bg-muted animate-pulse mt-auto" />}>
         <Footer />
         <PopupManager />

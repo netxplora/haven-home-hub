@@ -1,7 +1,7 @@
 import { Helmet } from "react-helmet-async";
 import { useBrand } from "@/hooks/useBrand";
 
-const SITE_URL = typeof window !== "undefined" ? window.location.origin : "https://verdantestate.com";
+const SITE_URL = typeof window !== "undefined" ? window.location.origin : "";
 
 /** Generate JSON-LD for a property listing (RealEstateListing schema) */
 export function PropertyJsonLd({ property }: { property: any }) {

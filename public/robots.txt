@@ -7,12 +7,19 @@ Allow: /blog/
 Allow: /agents
 Allow: /invest
 Allow: /invest/opportunities
+Allow: /careers
+Allow: /press
+Allow: /secondary-market
+Allow: /privacy
+Allow: /terms
 
 Disallow: /admin/
 Disallow: /dashboard/
 Disallow: /agent/
 Disallow: /invest/portfolio/
 Disallow: /invest/certificate/
+Disallow: /print-document/
+Disallow: /verify-document/
 Disallow: /api/
 Disallow: /auth/
 Disallow: /reset-password
