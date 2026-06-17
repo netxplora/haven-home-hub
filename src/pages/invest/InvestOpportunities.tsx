@@ -26,6 +26,8 @@ import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import type { InvestmentProperty } from "@/lib/invest";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthGateModal } from "@/components/auth/AuthGateModal";
 
 const INVESTMENT_CATEGORIES = [
   { value: "all", label: "All Categories" },
@@ -36,8 +38,19 @@ const INVESTMENT_CATEGORIES = [
 ];
 
 export default function InvestOpportunities() {
+  const { user } = useAuth();
   const [params, setParams] = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
+
+  const { data: siteContent = [] } = useQuery({
+    queryKey: ["public-site-content"],
+    queryFn: async () => {
+      const { data } = await supabase.from("site_content").select("*");
+      return data ?? [];
+    },
+  });
+
+  const heroImageUrl = siteContent.find((c: any) => c.section_key === "invest_hero_image")?.content_value?.url || "https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?auto=format&fit=crop&w=1920&q=80";
 
   // Filter States from URL
   const q = params.get("q") ?? "";
@@ -157,7 +170,7 @@ export default function InvestOpportunities() {
       {/* ── Hero Section ──────────────────────────────────────── */}
       <section className="relative overflow-hidden bg-black min-h-[480px] sm:min-h-[520px] flex items-center">
         <img
-          src="https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?auto=format&fit=crop&w=1920&q=80"
+          src={heroImageUrl}
           alt="Investment Hero"
           className="absolute inset-0 h-full w-full object-cover"
         />
@@ -414,7 +427,8 @@ export default function InvestOpportunities() {
       )}
 
       {/* ── Main Grid ─────────────────────────────────────────── */}
-      <div className="container-wide py-12 min-h-[60vh]">
+      <div className="container-wide py-12 min-h-[60vh] relative">
+        {!user && <AuthGateModal />}
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {Array.from({ length: 6 }).map((_, i) => (

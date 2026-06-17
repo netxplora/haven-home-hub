@@ -41,9 +41,11 @@ export default function Auth() {
   const [showPwd, setShowPwd] = useState(false);
   const [showRegPwd, setShowRegPwd] = useState(false);
 
+  const returnUrl = params.get("returnUrl") || "/dashboard";
+
   useEffect(() => {
-    if (user) navigate("/dashboard");
-  }, [user, navigate]);
+    if (user) navigate(returnUrl);
+  }, [user, navigate, returnUrl]);
 
   async function signIn(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -57,7 +59,7 @@ export default function Auth() {
     if (error) {
       toast({ title: "Sign in failed", description: error.message, variant: "destructive" });
     } else {
-      navigate("/dashboard");
+      navigate(returnUrl);
     }
   }
 
@@ -81,7 +83,7 @@ export default function Auth() {
       toast({ title: "Sign up failed", description: error.message, variant: "destructive" });
     } else {
       toast({ title: "Account created", description: "You're all set — welcome!" });
-      navigate("/dashboard");
+      navigate(returnUrl);
     }
   }
 

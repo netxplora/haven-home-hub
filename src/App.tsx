@@ -59,6 +59,7 @@ import { useDeploymentCache } from "./hooks/useDeploymentCache";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
 import { BrandProvider } from "./hooks/useBrand";
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -153,20 +154,20 @@ const App = () => (
               <Route path="/reset-password" element={<ResetPassword />} />
               
               {/* Dashboards */}
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/agent" element={<AgentDashboard />} />
-              <Route path="/admin" element={<Admin />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/agent" element={<ProtectedRoute><AgentDashboard /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
               
               {/* Invest */}
               <Route path="/invest" element={<InvestHome />} />
               <Route path="/invest/opportunities" element={<InvestOpportunities />} />
               <Route path="/invest/portfolio" element={<Navigate to="/dashboard?tab=investments" replace />} />
-              <Route path="/invest/portfolio/:id" element={<InvestPortfolioDetail />} />
-              <Route path="/invest/withdrawals" element={<Withdrawals />} />
+              <Route path="/invest/portfolio/:id" element={<ProtectedRoute><InvestPortfolioDetail /></ProtectedRoute>} />
+              <Route path="/invest/withdrawals" element={<ProtectedRoute><Withdrawals /></ProtectedRoute>} />
               <Route path="/invest/:slug" element={<InvestDetail />} />
-              <Route path="/payments/:id" element={<PaymentStatus />} />
-              <Route path="/invest/certificate/:id" element={<CertificateView />} />
-              <Route path="/print-document/:id" element={<PrintDocument />} />
+              <Route path="/payments/:id" element={<ProtectedRoute><PaymentStatus /></ProtectedRoute>} />
+              <Route path="/invest/certificate/:id" element={<ProtectedRoute><CertificateView /></ProtectedRoute>} />
+              <Route path="/print-document/:id" element={<ProtectedRoute><PrintDocument /></ProtectedRoute>} />
               <Route path="/verify-document/:id" element={<VerifyDocument />} />
 
               {/* Static Pages */}

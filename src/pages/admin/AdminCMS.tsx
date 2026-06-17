@@ -396,6 +396,7 @@ function HomepageContentTab({ qc }: any) {
 
   const hero = form.homepage_hero || {};
   const invest = form.homepage_invest_cta || {};
+  const investHero = form.invest_hero_image || {};
   const about = form.homepage_about || {};
   const stats = Array.isArray(form.homepage_stats) ? form.homepage_stats : [];
   const benefits = Array.isArray(form.homepage_benefits) ? form.homepage_benefits : [];
@@ -415,6 +416,22 @@ function HomepageContentTab({ qc }: any) {
         <div className="space-y-2">
           <Label>Subtitle</Label>
           <Textarea value={hero.subtitle || ""} onChange={(e) => updateSection("homepage_hero", "subtitle", e.target.value)} />
+        </div>
+      </div>
+
+      <div className="space-y-4 rounded-xl border border-border p-6 bg-card">
+        <h3 className="font-semibold font-serif text-xl border-b border-border pb-3">Investment Opportunities Pages</h3>
+        <div className="space-y-2">
+          <Label>Listing Page Hero Image</Label>
+          <CmsMediaUploader
+            value={investHero.url || ""}
+            onChange={(url) => setForm((prev: any) => ({ ...prev, invest_hero_image: { url } }))}
+            folder="site-assets"
+            label="Hero Image"
+          />
+          <p className="text-xs text-muted-foreground mt-2">
+            This image appears at the top of the `/invest/opportunities` listing page.
+          </p>
         </div>
       </div>
 
