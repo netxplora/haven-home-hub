@@ -36,6 +36,7 @@ CREATE TRIGGER tr_brand_settings_single_row
     FOR EACH ROW EXECUTE FUNCTION public.enforce_single_brand_row();
 
 -- 3. AUTO-UPDATE updated_at
+DROP TRIGGER IF EXISTS tr_brand_settings_updated ON public.brand_settings;
 CREATE TRIGGER tr_brand_settings_updated
     BEFORE UPDATE ON public.brand_settings
     FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
@@ -48,30 +49,34 @@ INSERT INTO public.brand_settings (
     secondary_color,
     support_email,
     legal_name
-) VALUES (
+)
+SELECT 
     'Haven Home Hub',
     'Smart Property Investment',
     '#B8860B',
     '#0F172A',
     'support@havenhomehub.com',
     'Haven Home Hub LLC'
-);
+WHERE NOT EXISTS (SELECT 1 FROM public.brand_settings);
 
 -- 5. ENABLE RLS
 ALTER TABLE public.brand_settings ENABLE ROW LEVEL SECURITY;
 
 -- Public read access (everyone can see brand settings)
+DROP POLICY IF EXISTS "Brand settings are publicly readable" ON public.brand_settings;
 CREATE POLICY "Brand settings are publicly readable"
     ON public.brand_settings FOR SELECT
     USING (true);
 
 -- Admin-only write access
+DROP POLICY IF EXISTS "Admins can update brand settings" ON public.brand_settings;
 CREATE POLICY "Admins can update brand settings"
     ON public.brand_settings FOR UPDATE TO authenticated
     USING (public.has_role(auth.uid(), 'admin'))
     WITH CHECK (public.has_role(auth.uid(), 'admin'));
 
 -- Prevent deletes entirely
+DROP POLICY IF EXISTS "Nobody can delete brand settings" ON public.brand_settings;
 CREATE POLICY "Nobody can delete brand settings"
     ON public.brand_settings FOR DELETE
     USING (false);
