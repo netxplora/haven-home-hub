@@ -50,10 +50,10 @@ export function AuthGateModal() {
           <Button
             variant="ghost"
             className="w-full h-12 mt-2 text-sm font-semibold rounded-xl text-muted-foreground hover:text-foreground"
-            onClick={() => navigate("/invest/opportunities")}
+            onClick={() => navigate("/invest")}
           >
             <Search className="mr-2 h-4 w-4" />
-            Continue Browsing Properties
+            Back to Investment Page
           </Button>
         </div>
 
