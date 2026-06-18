@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { QueryClient, QueryClientProvider, QueryCache } from "@tanstack/react-query";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
@@ -61,7 +61,15 @@ import { ScrollToTop } from "./components/ScrollToTop";
 import { BrandProvider } from "./hooks/useBrand";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
+import { toast } from "sonner";
+
 const queryClient = new QueryClient({
+  queryCache: new QueryCache({
+    onError: (error) => {
+      console.error("Query Error:", error);
+      toast.error("Unable to load data. Please check your connection and try again.");
+    },
+  }),
   defaultOptions: {
     queries: {
       staleTime: 2 * 60 * 1000, // 2 minutes default stale time

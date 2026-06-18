@@ -33,6 +33,7 @@ import {
 import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
+import { EmptyState } from "@/components/ui/EmptyState";
 
 /* ── Hero content per property type ────────────────────────── */
 const HERO_CONTENT: Record<string, { badge: string; title: string; subtitle: string; desc: string; img: string }> = {
@@ -718,17 +719,15 @@ export default function Properties() {
             ))}
           </div>
         ) : properties.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-32 text-center">
-            <div className="h-20 w-20 bg-secondary rounded-full flex items-center justify-center mb-6">
-              <Filter className="h-10 w-10 text-muted-foreground/40" />
-            </div>
-            <h2 className="font-serif text-3xl font-bold mb-4">No matching properties</h2>
-            <p className="text-muted-foreground max-w-md mb-8 text-lg">
-              We couldn't find any properties matching your current criteria. Try adjusting your filters or search terms.
-            </p>
-            <Button size="lg" onClick={clearAll} className="rounded-full px-8 shadow-card">
-              Reset all filters
-            </Button>
+          <div className="flex flex-col items-center justify-center py-16 text-center">
+            <EmptyState 
+              title="No matching properties" 
+              description="We couldn't find any properties matching your current criteria. Try adjusting your filters or search terms."
+              action={{
+                label: "Reset all filters",
+                onClick: clearAll
+              }}
+            />
           </div>
         ) : viewMode === "map" ? (
           <div className="animate-in fade-in duration-500">
