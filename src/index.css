@@ -10,67 +10,61 @@
 
 @layer base {
   :root {
-    /* NomadKit Design System */
-    --background: 45 100% 98%;     /* #FFFDF7 */
-    --foreground: 20 10% 10%;
+    /* Base Colors */
+    --background: 210 40% 98%;     /* #F8FAFC (Slate 50) */
+    --foreground: 222 47% 11%;     /* #0F172A (Slate 900) */
 
     --card: 0 0% 100%;             /* #FFFFFF */
-    --card-foreground: 20 10% 10%;
+    --card-foreground: 222 47% 11%;
 
     --popover: 0 0% 100%;          /* #FFFFFF */
-    --popover-foreground: 20 10% 10%;
+    --popover-foreground: 222 47% 11%;
 
-    /* Brand Colors */
-    --primary: 30 54% 64%;         /* #D4A373 (Primary Sand) */
+    /* Brand Colors (Fallback for Emerald Green) */
+    --primary: 160 84% 39%;        /* #10B981 (Emerald 500) */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 192 91% 36%;      /* #0891B2 (Secondary Ocean) */
+    --secondary: 222 47% 11%;      /* #0F172A (Navy/Slate) */
     --secondary-foreground: 0 0% 100%;
 
-    --accent: 45 50% 95%;          /* light sand accent */
-    --accent-foreground: 30 54% 64%;
+    --accent: 152 76% 96%;         /* #D1FAE5 (Emerald 100) */
+    --accent-foreground: 160 84% 39%;
 
-    --muted: 45 20% 95%;           
-    --muted-foreground: 20 5% 45%; 
+    --muted: 210 40% 96%;          /* #F1F5F9 */
+    --muted-foreground: 215 16% 47%; /* #64748B */
 
     /* Status Colors */
     --destructive: 0 72% 51%;      /* #DC2626 (Error) */
     --destructive-foreground: 0 0% 100%;
 
-    --success: 143 64% 24%;        /* #166534 (Success / Tertiary Forest) */
+    --success: 142 71% 45%;        /* #22C55E (Success) */
     --success-foreground: 0 0% 100%;
 
     --warning: 41 96% 40%;         /* #CA8A04 (Warning) */
     --warning-foreground: 0 0% 100%;
 
-    --info: 192 91% 36%;           /* #0891B2 (Info) */
+    --info: 199 89% 48%;           /* #0EA5E9 (Info) */
     --info-foreground: 0 0% 100%;
 
     /* Borders */
-    --border: 30 20% 90%;          
-    --input: 30 20% 90%;          
-    --ring: 30 54% 64%;            /* #D4A373 */
+    --border: 214 32% 91%;         /* #E2E8F0 */
+    --input: 214 32% 91%;          
+    --ring: 160 84% 39%;           /* #10B981 */
 
     --radius: 8px;
 
     --gradient-hero: linear-gradient(180deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.40) 50%, rgba(15, 23, 42, 0.95) 100%);
-    --gradient-hero-rose: linear-gradient(135deg, rgba(74, 222, 128, 0.15) 0%, rgba(15, 23, 42, 0.90) 100%);
+    --gradient-hero-rose: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.90) 100%);
 
-    --sidebar-background: 60 100% 97%;
+    --sidebar-background: 210 40% 98%;
     --sidebar-foreground: 222 47% 11%;
-    --sidebar-primary: 43 91% 38%;
+    --sidebar-primary: 160 84% 39%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-background: 217 33% 17%;
-    --sidebar-foreground: 210 40% 96%;
-    --sidebar-primary: 142 71% 45%;
-    --sidebar-primary-foreground: 222 47% 11%;
-    --sidebar-accent: 215 25% 27%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 215 25% 27%;
-    --sidebar-ring: 142 71% 45%;
+    --sidebar-accent: 214 32% 91%;
+    --sidebar-accent-foreground: 222 47% 11%;
+    --sidebar-border: 214 32% 91%;
+    --sidebar-ring: 160 84% 39%;
   }
-
-
 }
 
 @layer base {

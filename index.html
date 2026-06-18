@@ -3,7 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#B8860B" />
+    <meta id="meta-theme-color" name="theme-color" content="#10B981" />
+    <script>
+      (function() {
+        try {
+          var settings = localStorage.getItem("haven_brand_settings");
+          if (settings) {
+            var brand = JSON.parse(settings);
+            var root = document.documentElement;
+            if (brand.primary_color) {
+              root.style.setProperty('--brand-primary', brand.primary_color);
+              document.getElementById('meta-theme-color').content = brand.primary_color;
+            }
+            if (brand.background_color) root.style.setProperty('--brand-background', brand.background_color);
+            if (brand.skeleton_color) root.style.setProperty('--brand-skeleton', brand.skeleton_color);
+            if (brand.loading_color) root.style.setProperty('--brand-loading', brand.loading_color);
+          }
+        } catch (e) { console.error("Error loading brand settings", e); }
+      })();
+    </script>
 
     <!-- App identity -->
     <meta name="author" content="Property Platform" />
@@ -43,31 +61,31 @@
         display: flex;
         flex-direction: column;
         min-height: 100vh;
-        background: #FEF3C7;
+        background: var(--brand-background, #F8FAFC);
         font-family: 'Inter', sans-serif;
       ">
         <!-- Skeleton navbar -->
         <div style="
           height: 64px;
           background: #ffffff;
-          border-bottom: 1px solid #E5E7EB;
+          border-bottom: 1px solid var(--brand-skeleton, #E2E8F0);
           display: flex;
           align-items: center;
           padding: 0 1.5rem;
           gap: 1rem;
         ">
-          <div style="width: 130px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
+          <div style="width: 130px; height: 28px; background: var(--brand-skeleton, #E2E8F0); border-radius: 6px;"></div>
           <div style="flex: 1;"></div>
-          <div style="width: 72px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
-          <div style="width: 72px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
-          <div style="width: 72px; height: 28px; background: #F3F4F6; border-radius: 6px;"></div>
-          <div style="width: 90px; height: 36px; background: #E8D5A3; border-radius: 8px;"></div>
+          <div style="width: 72px; height: 28px; background: var(--brand-skeleton, #E2E8F0); border-radius: 6px;"></div>
+          <div style="width: 72px; height: 28px; background: var(--brand-skeleton, #E2E8F0); border-radius: 6px;"></div>
+          <div style="width: 72px; height: 28px; background: var(--brand-skeleton, #E2E8F0); border-radius: 6px;"></div>
+          <div style="width: 90px; height: 36px; background: var(--brand-loading, #10B981); border-radius: 8px;"></div>
         </div>
 
         <!-- Skeleton hero -->
         <div style="
           height: 480px;
-          background: linear-gradient(135deg, #f5ead4 0%, #ede0b8 100%);
+          background: var(--brand-background, #F8FAFC);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -90,9 +108,9 @@
           margin: 0 auto;
           width: 100%;
         ">
-          <div style="flex: 1; height: 280px; background: #F3F4F6; border-radius: 12px;"></div>
-          <div style="flex: 1; height: 280px; background: #F3F4F6; border-radius: 12px;"></div>
-          <div style="flex: 1; height: 280px; background: #F3F4F6; border-radius: 12px;"></div>
+          <div style="flex: 1; height: 280px; background: var(--brand-skeleton, #E2E8F0); border-radius: 12px;"></div>
+          <div style="flex: 1; height: 280px; background: var(--brand-skeleton, #E2E8F0); border-radius: 12px;"></div>
+          <div style="flex: 1; height: 280px; background: var(--brand-skeleton, #E2E8F0); border-radius: 12px;"></div>
         </div>
       </div>
     </div>

@@ -10,6 +10,18 @@ export interface BrandSettings {
   secondary_color: string;
   support_email: string;
   legal_name: string;
+  accent_color: string;
+  background_color: string;
+  card_color: string;
+  button_style: string;
+  navigation_color: string;
+  dashboard_color: string;
+  loading_color: string;
+  skeleton_color: string;
+  chart_palette: string[];
+  notification_color: string;
+  progress_bar_color: string;
+  document_accent_color: string;
   updated_at?: string;
 }
 
@@ -22,10 +34,22 @@ export const BrandDefaults: BrandSettings = {
   tagline: "Smart Property Investment",
   logo_url: null,
   favicon_url: null,
-  primary_color: "#B8860B",
-  secondary_color: "#0F172A",
+  primary_color: "#10B981", // Emerald Green
+  secondary_color: "#0F172A", // Navy/Slate
   support_email: "support@havenhomehub.com",
   legal_name: "Haven Home Hub LLC",
+  accent_color: "#D1FAE5",
+  background_color: "#F8FAFC",
+  card_color: "#FFFFFF",
+  button_style: "rounded-md",
+  navigation_color: "#FFFFFF",
+  dashboard_color: "#F1F5F9",
+  loading_color: "#10B981",
+  skeleton_color: "#E2E8F0",
+  chart_palette: ["#10B981", "#34D399", "#6EE7B7", "#059669", "#047857"],
+  notification_color: "#10B981",
+  progress_bar_color: "#10B981",
+  document_accent_color: "#10B981",
 };
 
 /**
@@ -49,7 +73,17 @@ export class BrandService {
       return BrandDefaults;
     }
 
-    return data || BrandDefaults;
+    if (!data) return BrandDefaults;
+
+    // Merge with defaults so any NULL DB columns fall back gracefully
+    // (e.g. newly added columns that haven't been populated yet)
+    const merged: Record<string, unknown> = { ...BrandDefaults };
+    for (const [key, value] of Object.entries(data)) {
+      if (value !== null && value !== undefined) {
+        merged[key] = value;
+      }
+    }
+    return merged as BrandSettings;
   }
 
   /**

@@ -6,10 +6,7 @@ import {
 } from "recharts";
 import { formatMoney } from "@/lib/invest";
 
-const COLORS = [
-  "#F43F5E", "#CA8A04", "#0D9488", "#8b5cf6", "#3b82f6",
-  "#16A34A", "#D97706", "#6366f1", "#06b6d4", "#84cc16",
-];
+import { useBrand } from "@/hooks/useBrand";
 
 interface PortfolioChartsProps {
   investments: any[];
@@ -18,6 +15,11 @@ interface PortfolioChartsProps {
 }
 
 export function PortfolioCharts({ investments, returns, payments }: PortfolioChartsProps) {
+  const { brand } = useBrand();
+  const COLORS = brand.chart_palette?.length > 0 ? brand.chart_palette : [
+    "#10B981", "#34D399", "#6EE7B7", "#059669", "#047857",
+  ];
+
   // ── Asset Allocation (Donut) ──
   const allocationData = useMemo(() => {
     const confirmed = investments.filter(
@@ -143,8 +145,8 @@ export function PortfolioCharts({ investments, returns, payments }: PortfolioCha
               <AreaChart data={roiData}>
                 <defs>
                   <linearGradient id="roiGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#0D9488" stopOpacity={0.3} />
-                    <stop offset="95%" stopColor="#0D9488" stopOpacity={0} />
+                    <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
                   </linearGradient>
                 </defs>
                 <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
@@ -162,7 +164,7 @@ export function PortfolioCharts({ investments, returns, payments }: PortfolioCha
                 <Area
                   type="monotone"
                   dataKey="cumulative"
-                  stroke="#0D9488"
+                  stroke="hsl(var(--primary))"
                   strokeWidth={2}
                   fill="url(#roiGrad)"
                   name="Total Returns"
@@ -193,8 +195,8 @@ export function PortfolioCharts({ investments, returns, payments }: PortfolioCha
                   }}
                 />
                 <Legend iconType="circle" wrapperStyle={{ fontSize: "12px" }} />
-                <Bar dataKey="invested" fill="#F43F5E" name="Invested" radius={[4, 4, 0, 0]} />
-                <Bar dataKey="returned" fill="#0D9488" name="Returns" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="invested" fill="hsl(var(--primary))" name="Invested" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="returned" fill="hsl(var(--secondary))" name="Returns" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           </div>

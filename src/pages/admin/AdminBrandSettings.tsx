@@ -6,7 +6,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
 import { CmsMediaUploader } from "@/components/admin/CmsMediaUploader";
-import { RefreshCw, Save, Undo2, CheckCircle2 } from "lucide-react";
+import { RefreshCw, Save, Undo2, CheckCircle2, Plus, X } from "lucide-react";
+
+// Helper component for color inputs
+function ColorPickerInput({ label, value, onChange }: { label: string, value: string, onChange: (val: string) => void }) {
+  return (
+    <div className="space-y-2">
+      <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1 flex items-center justify-between">
+        <span>{label}</span>
+        <span className="font-mono lowercase text-[10px]">{value}</span>
+      </Label>
+      <div className="flex gap-3">
+        <Input
+          type="color"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 w-16 p-1 rounded-lg cursor-pointer"
+        />
+        <Input
+          type="text"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="h-10 rounded-xl flex-1 font-mono uppercase text-sm"
+          pattern="^#+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$"
+        />
+      </div>
+    </div>
+  );
+}
 
 export function AdminBrandSettings() {
   const { brand, refresh } = useBrand();
@@ -125,47 +152,95 @@ export function AdminBrandSettings() {
           </div>
 
           <div className="grid gap-6 sm:grid-cols-2 pt-4">
+            <ColorPickerInput 
+              label="Primary Color" 
+              value={f.primary_color} 
+              onChange={(val) => setF({ ...f, primary_color: val })} 
+            />
+            <ColorPickerInput 
+              label="Secondary Color" 
+              value={f.secondary_color} 
+              onChange={(val) => setF({ ...f, secondary_color: val })} 
+            />
+          </div>
+        </div>
+
+        {/* Advanced Color System */}
+        <div className="space-y-6 rounded-xl border border-border p-6 bg-card shadow-sm">
+          <div className="border-b border-border pb-3 mb-4">
+            <h3 className="font-semibold font-serif text-lg">Advanced Color System</h3>
+            <p className="text-xs text-muted-foreground">Fine-grained control over UI element colors across the platform.</p>
+          </div>
+          
+          <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+            <ColorPickerInput label="Accent Color" value={f.accent_color || ""} onChange={(val) => setF({ ...f, accent_color: val })} />
+            <ColorPickerInput label="Background Color" value={f.background_color || ""} onChange={(val) => setF({ ...f, background_color: val })} />
+            <ColorPickerInput label="Card Color" value={f.card_color || ""} onChange={(val) => setF({ ...f, card_color: val })} />
+            <ColorPickerInput label="Navigation Color" value={f.navigation_color || ""} onChange={(val) => setF({ ...f, navigation_color: val })} />
+            <ColorPickerInput label="Dashboard Color" value={f.dashboard_color || ""} onChange={(val) => setF({ ...f, dashboard_color: val })} />
+            <ColorPickerInput label="Loading Color" value={f.loading_color || ""} onChange={(val) => setF({ ...f, loading_color: val })} />
+            <ColorPickerInput label="Skeleton Color" value={f.skeleton_color || ""} onChange={(val) => setF({ ...f, skeleton_color: val })} />
+            <ColorPickerInput label="Notification Color" value={f.notification_color || ""} onChange={(val) => setF({ ...f, notification_color: val })} />
+            <ColorPickerInput label="Progress Bar Color" value={f.progress_bar_color || ""} onChange={(val) => setF({ ...f, progress_bar_color: val })} />
+            <ColorPickerInput label="Document Accent" value={f.document_accent_color || ""} onChange={(val) => setF({ ...f, document_accent_color: val })} />
+            
             <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1 flex items-center justify-between">
-                <span>Primary Color</span>
-                <span className="font-mono lowercase text-[10px]">{f.primary_color}</span>
-              </Label>
-              <div className="flex gap-3">
-                <Input
-                  type="color"
-                  value={f.primary_color}
-                  onChange={(e) => setF({ ...f, primary_color: e.target.value })}
-                  className="h-10 w-16 p-1 rounded-lg cursor-pointer"
-                />
-                <Input
-                  type="text"
-                  value={f.primary_color}
-                  onChange={(e) => setF({ ...f, primary_color: e.target.value })}
-                  className="h-10 rounded-xl flex-1 font-mono uppercase text-sm"
-                  pattern="^#+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$"
-                />
-              </div>
+              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1">Button Style</Label>
+              <select 
+                className="flex h-10 w-full items-center justify-between rounded-xl border border-input bg-background px-3 py-2 text-sm"
+                value={f.button_style || "rounded-md"}
+                onChange={(e) => setF({ ...f, button_style: e.target.value })}
+              >
+                <option value="rounded-none">Square (Sharp)</option>
+                <option value="rounded-md">Slightly Rounded</option>
+                <option value="rounded-xl">Very Rounded</option>
+                <option value="rounded-full">Pill (Fully Rounded)</option>
+              </select>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1 flex items-center justify-between">
-                <span>Secondary Color</span>
-                <span className="font-mono lowercase text-[10px]">{f.secondary_color}</span>
-              </Label>
-              <div className="flex gap-3">
-                <Input
-                  type="color"
-                  value={f.secondary_color}
-                  onChange={(e) => setF({ ...f, secondary_color: e.target.value })}
-                  className="h-10 w-16 p-1 rounded-lg cursor-pointer"
-                />
-                <Input
-                  type="text"
-                  value={f.secondary_color}
-                  onChange={(e) => setF({ ...f, secondary_color: e.target.value })}
-                  className="h-10 rounded-xl flex-1 font-mono uppercase text-sm"
-                  pattern="^#+([a-fA-F0-9]{6}|[a-fA-F0-9]{3})$"
-                />
-              </div>
+          </div>
+
+          <div className="pt-4 border-t border-border mt-4">
+            <Label className="text-xs font-bold uppercase tracking-wider text-muted-foreground ml-1 block mb-3">Chart Color Palette</Label>
+            <div className="flex flex-wrap gap-2 mb-3">
+              {(f.chart_palette || []).map((color, index) => (
+                <div key={index} className="flex items-center gap-1 bg-muted px-2 py-1 rounded-md border border-border">
+                  <div className="w-4 h-4 rounded-full border border-black/10" style={{ backgroundColor: color }}></div>
+                  <span className="font-mono text-[10px] uppercase">{color}</span>
+                  <button 
+                    type="button"
+                    onClick={() => {
+                      const newPalette = [...(f.chart_palette || [])];
+                      newPalette.splice(index, 1);
+                      setF({ ...f, chart_palette: newPalette });
+                    }}
+                    className="ml-1 text-muted-foreground hover:text-destructive"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <Input
+                id="new-chart-color"
+                type="color"
+                defaultValue="#10B981"
+                className="h-10 w-16 p-1 rounded-lg cursor-pointer"
+              />
+              <Button 
+                type="button" 
+                variant="outline" 
+                size="sm"
+                className="h-10"
+                onClick={() => {
+                  const input = document.getElementById("new-chart-color") as HTMLInputElement;
+                  if (input && input.value) {
+                    setF({ ...f, chart_palette: [...(f.chart_palette || []), input.value] });
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add Color to Palette
+              </Button>
             </div>
           </div>
         </div>
