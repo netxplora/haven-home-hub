@@ -28,7 +28,7 @@ import { SecondaryListingsSection } from "@/components/invest/SecondaryListingsS
 
 export default function InvestDetail() {
   const { slug } = useParams();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [open, setOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [units, setUnits] = useState<number>(1);
@@ -91,8 +91,11 @@ export default function InvestDetail() {
 
   const kycApproved = kycStatus === "approved";
 
-  if (isLoading) {
+  if (authLoading || isLoading) {
     return <SiteLayout><div className="container-wide py-10"><Skeleton className="h-[500px]" /></div></SiteLayout>;
+  }
+  if (!user) {
+    return <Navigate to="/auth" replace />;
   }
   if (!data) return <Navigate to="/invest/opportunities" replace />;
 

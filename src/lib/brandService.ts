@@ -83,7 +83,7 @@ export class BrandService {
         merged[key] = value;
       }
     }
-    return merged as BrandSettings;
+    return merged as unknown as BrandSettings;
   }
 
   /**

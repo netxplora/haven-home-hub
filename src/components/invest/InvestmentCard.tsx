@@ -1,10 +1,15 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Layers, MapPin, TrendingUp, ArrowUpRight } from "lucide-react";
 import { resolveImage } from "@/lib/format";
 import { formatMoney, fundingPercent, type InvestmentProperty } from "@/lib/invest";
+import { useAuth } from "@/hooks/useAuth";
+import { AuthGateModal } from "@/components/auth/AuthGateModal";
 
 export const InvestmentCard = memo(function InvestmentCard({ p }: { p: InvestmentProperty }) {
+  const { user } = useAuth();
+  const [showAuthGate, setShowAuthGate] = useState(false);
+
   const pct = fundingPercent(p);
   const hasInstallment = !!p.installment_available;
   const minDownPct = Number(p.min_down_payment_pct ?? 20);
@@ -12,22 +17,32 @@ export const InvestmentCard = memo(function InvestmentCard({ p }: { p: Investmen
     ? Math.round((Number(p.min_investment) * (1 - minDownPct / 100)) / 12)
     : 0;
 
+  const handleClick = (e: React.MouseEvent) => {
+    if (!user) {
+      e.preventDefault();
+      setShowAuthGate(true);
+    }
+  };
+
   return (
-    <Link
-      to={`/invest/${p.slug}`}
-      className="group flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-card shadow-soft transition-all duration-550 ease-out hover:shadow-card hover:border-primary/30 hover:-translate-y-1.5"
-    >
-      {/* Image with Gradient & Overlay */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-        <img
-          src={resolveImage(p.cover_image_url)}
-          alt={p.title}
-          loading="lazy"
-          width={1280}
-          height={960}
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-550" />
+    <>
+      {showAuthGate && <AuthGateModal onClose={() => setShowAuthGate(false)} />}
+      <Link
+        to={`/invest/${p.slug}`}
+        onClick={handleClick}
+        className="group flex flex-col overflow-hidden rounded-2xl border border-border/40 bg-card shadow-soft transition-all duration-550 ease-out hover:shadow-card hover:border-primary/30 hover:-translate-y-1.5"
+      >
+        {/* Image with Gradient & Overlay */}
+        <div className="relative aspect-[4/3] overflow-hidden bg-muted">
+          <img
+            src={resolveImage(p.cover_image_url)}
+            alt={p.title}
+            loading="lazy"
+            width={1280}
+            height={960}
+            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-550" />
         
         {/* Elite Glassmorphic Return badge */}
         <div className="absolute left-4 top-4 inline-flex items-center gap-1.5 rounded-xl bg-background/80 backdrop-blur-md border border-white/20 px-3 py-1.7 text-xs font-semibold text-foreground shadow-sm">
@@ -100,5 +115,6 @@ export const InvestmentCard = memo(function InvestmentCard({ p }: { p: Investmen
         </div>
       </div>
     </Link>
+    </>
   );
 });

@@ -1,8 +1,8 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Lock, Search } from "lucide-react";
+import { Lock, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export function AuthGateModal() {
+export function AuthGateModal({ onClose }: { onClose?: () => void }) {
   const location = useLocation();
   const navigate = useNavigate();
   const returnUrl = encodeURIComponent(location.pathname);
@@ -50,10 +50,10 @@ export function AuthGateModal() {
           <Button
             variant="ghost"
             className="w-full h-12 mt-2 text-sm font-semibold rounded-xl text-muted-foreground hover:text-foreground"
-            onClick={() => navigate("/invest")}
+            onClick={() => onClose ? onClose() : navigate("/invest")}
           >
-            <Search className="mr-2 h-4 w-4" />
-            Back to Investment Page
+            <X className="mr-2 h-4 w-4" />
+            Close
           </Button>
         </div>
 
