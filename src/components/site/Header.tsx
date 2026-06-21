@@ -11,7 +11,6 @@ import {
   Sheet, SheetContent, SheetTrigger,
 } from "@/components/ui/sheet";
 import { NotificationBell } from "@/components/site/NotificationBell";
-import { CurrencyToggle } from "@/components/site/CurrencyToggle";
 import { getAvatarUrl } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -209,9 +208,6 @@ export function Header() {
                   <div className="border-t border-border/50 px-6 py-5 space-y-3">
                     <div className="flex items-center justify-between pb-2 border-b border-border/30 mb-2 gap-2">
                       <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">{"Settings"}</span>
-                      <div className="flex gap-2">
-                        <CurrencyToggle />
-                      </div>
                     </div>
                     {user ? (
                       <>
@@ -298,8 +294,6 @@ export function Header() {
 
         {/* Desktop Actions */}
         <div className="hidden items-center gap-2 md:flex">
-          
-          <CurrencyToggle />
           {user ? (
             <>
               <NotificationBell />
