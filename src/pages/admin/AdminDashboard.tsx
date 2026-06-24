@@ -49,7 +49,8 @@ import { AdminInvestor360 } from "./AdminInvestor360";
 import { AdminSupportCenter } from "./AdminSupportCenter";
 import { AdminInvestmentOrders } from "./AdminInvestmentOrders";
 import { AdminTestimonials } from "./AdminTestimonials";
-import { Award, CreditCard, ClipboardList, Quote } from "lucide-react";
+import { AdminCareers } from "./careers/AdminCareers";
+import { Award, CreditCard, ClipboardList, Quote, Briefcase } from "lucide-react";
 
 const navItems: NavItem[] = [
   // Dashboard & Analytics
@@ -71,6 +72,7 @@ const navItems: NavItem[] = [
   { id: "kyc", label: "KYC Verification", icon: Fingerprint },
   // Content & Marketing
   { id: "cms", label: "Website Content", icon: FileText },
+  { id: "careers", label: "Careers Management", icon: Briefcase },
   { id: "testimonials", label: "Testimonials", icon: Quote },
   { id: "reviews", label: "Agent Reviews", icon: Star },
   { id: "documents", label: "Documents", icon: FileText },
@@ -121,15 +123,16 @@ export default function Admin() {
         {activeTab === "kyc" && <AdminKYC />}
         {activeTab === "reviews" && <AdminReviews />}
         {activeTab === "testimonials" && <AdminTestimonials />}
-        {activeTab === "users" && <AdminUsers />}
-        {activeTab === "cms" && <AdminCMS />}
-        {activeTab === "documents" && <AdminDocuments />}
-        {activeTab === "referrals" && <AdminReferrals />}
-        {activeTab === "payment-methods" && <AdminPaymentMethods />}
-        {activeTab === "brand-settings" && <AdminBrandSettings />}
-        {activeTab === "investor-360" && <AdminInvestor360 initialUserId={investor360Id} onBack={() => setActiveTab("overview")} />}
-        {activeTab === "invest-orders" && <AdminInvestmentOrders />}
-        {activeTab === "settings" && <AdminSettings />}
+        { activeTab === "users" && <AdminUsers /> }
+        { activeTab === "cms" && <AdminCMS /> }
+        { activeTab === "careers" && <AdminCareers /> }
+        { activeTab === "documents" && <AdminDocuments /> }
+        { activeTab === "referrals" && <AdminReferrals /> }
+        { activeTab === "payment-methods" && <AdminPaymentMethods /> }
+        { activeTab === "brand-settings" && <AdminBrandSettings /> }
+        { activeTab === "investor-360" && <AdminInvestor360 initialUserId={investor360Id} onBack={() => setActiveTab("overview")} /> }
+        { activeTab === "invest-orders" && <AdminInvestmentOrders /> }
+        { activeTab === "settings" && <AdminSettings /> }
       </div>
     </DashboardShell>
   );

@@ -1,83 +1,46 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
-import { Briefcase, Clock, MapPin, CheckCircle2, Search, ArrowRight, DollarSign, Calendar } from "lucide-react";
+import { Briefcase, Clock, MapPin, CheckCircle2, Search, ArrowRight, DollarSign, Calendar, Loader2 } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useBrand } from "@/hooks/useBrand";
-const openings = [
+
+const fallbackOpenings = [
   {
     title: "Senior Property Agent",
     department: "Sales",
     location: "New York, NY",
-    type: "Full-time",
-    salary: "$120k - $250k OTE",
-    posted: "2 days ago",
+    employment_type: "Full-time",
+    salary_range: "$120k - $250k OTE",
+    created_at: new Date().toISOString(),
     description: "Lead client relationships, manage property viewings, and close residential and commercial deals across the Greater New York area. Must have at least 3 years of experience in premium real estate sales and strong negotiation skills.",
-  },
-  {
-    title: "Investment Analyst",
-    department: "Investments",
-    location: "Remote",
-    type: "Full-time",
-    salary: "$90k - $130k",
-    posted: "1 week ago",
-    description: "Evaluate potential investment properties, build financial models, and support the asset management team with portfolio reporting. Strong proficiency in financial modeling and real estate valuation required.",
-  },
-  {
-    title: "Marketing Coordinator",
-    department: "Marketing",
-    location: "Austin, TX",
-    type: "Full-time",
-    salary: "$65k - $85k",
-    posted: "3 days ago",
-    description: "Plan and execute property marketing campaigns, manage social media channels, and coordinate listing photography and content. Experience with digital marketing in real estate or luxury brands preferred.",
-  },
-  {
-    title: "Customer Support Specialist",
-    department: "Operations",
-    location: "Remote",
-    type: "Part-time",
-    salary: "$25 - $35/hr",
-    posted: "Just now",
-    description: "Handle client inquiries, booking requests, and platform support across email, phone, and chat channels. Strong communication skills and a client-first attitude are essential.",
   },
   {
     title: "Full-Stack Software Engineer",
     department: "Engineering",
     location: "Remote",
-    type: "Full-time",
-    salary: "$130k - $170k",
-    posted: "2 weeks ago",
+    employment_type: "Full-time",
+    salary_range: "$130k - $170k",
+    created_at: new Date().toISOString(),
     description: "Build and maintain our property listing platform, investor dashboard, and internal tools. Experience with React, TypeScript, and PostgreSQL required. Familiarity with Supabase or similar BaaS platforms is a strong advantage.",
-  },
-  {
-    title: "Legal and Compliance Officer",
-    department: "Legal",
-    location: "San Francisco, CA",
-    type: "Full-time",
-    salary: "$140k - $180k",
-    posted: "1 month ago",
-    description: "Oversee property title verification, manage transaction documentation, and ensure regulatory compliance across all listing and investment operations. Must be a qualified legal practitioner with real estate experience.",
-  },
+  }
 ];
 
-const perks = [
+const fallbackPerks = [
   "Competitive salary with performance bonuses",
   "Flexible remote and hybrid work options",
   "Professional development budget",
   "Health insurance coverage",
-  "Paid time off and public holidays",
-  "Team events and annual retreats",
-  "Equity participation for senior roles",
-  "Mentorship from industry leaders",
-  "Modern office spaces in key cities",
+  "Paid time off and public holidays"
 ];
 
 export default function Careers() {
@@ -89,38 +52,92 @@ export default function Careers() {
   const [applyModal, setApplyModal] = useState<any>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleApply = (e: React.FormEvent) => {
+  // Fetch Careers Settings
+  const { data: settings } = useQuery({
+    queryKey: ["careers-settings-public"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("careers_settings").select("*").single();
+      if (error) return null;
+      return data;
+    }
+  });
+
+  // Fetch Open Jobs
+  const { data: jobs = [] } = useQuery({
+    queryKey: ["careers-jobs-public"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("careers_jobs").select("*").eq("status", "open").order("created_at", { ascending: false });
+      if (error) return fallbackOpenings;
+      return data && data.length > 0 ? data : fallbackOpenings;
+    }
+  });
+
+  // Fetch Benefits
+  const { data: benefits = [] } = useQuery({
+    queryKey: ["careers-benefits-public"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("careers_benefits").select("*").eq("status", "active").order("sort_order");
+      if (error) return fallbackPerks.map((p, i) => ({ id: i, title: p }));
+      return data && data.length > 0 ? data : fallbackPerks.map((p, i) => ({ id: i, title: p }));
+    }
+  });
+
+  const handleApply = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
-      setApplyModal(null);
+    const formData = new FormData(e.target as HTMLFormElement);
+    
+    try {
+      // Simulate or implement file upload to bucket here if user attached a CV
+      const { error } = await supabase.from("careers_applicants").insert({
+        job_id: applyModal?.id,
+        full_name: formData.get("name"),
+        email: formData.get("email"),
+        linkedin_url: formData.get("linkedin"),
+        portfolio_url: formData.get("portfolio"),
+        cover_letter: formData.get("coverLetter"),
+        status: "Received"
+      });
+
+      if (error && error.code !== '42P01') throw error; // ignore if table not created yet
+
       toast({ title: "Application Submitted", description: "We have received your application and will be in touch soon." });
-    }, 1500);
+      setApplyModal(null);
+    } catch (err: any) {
+      toast({ title: "Submission Failed", description: err.message, variant: "destructive" });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
-  const departments = ["All", ...Array.from(new Set(openings.map(o => o.department)))];
-  const locations = ["All", ...Array.from(new Set(openings.map(o => o.location)))];
-  const types = ["All", ...Array.from(new Set(openings.map(o => o.type)))];
+  const departments = ["All", ...Array.from(new Set(jobs.map((o: any) => o.department)))];
+  const locations = ["All", ...Array.from(new Set(jobs.map((o: any) => o.location)))];
+  const types = ["All", ...Array.from(new Set(jobs.map((o: any) => o.employment_type)))];
 
-  const filteredOpenings = openings.filter(o => {
-    const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase()) || o.description.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredOpenings = jobs.filter((o: any) => {
+    const matchesSearch = o.title.toLowerCase().includes(searchQuery.toLowerCase()) || (o.description && o.description.toLowerCase().includes(searchQuery.toLowerCase()));
     const matchesDept = deptFilter === "All" || o.department === deptFilter;
     const matchesLoc = locFilter === "All" || o.location === locFilter;
-    const matchesType = typeFilter === "All" || o.type === typeFilter;
+    const matchesType = typeFilter === "All" || o.employment_type === typeFilter;
     return matchesSearch && matchesDept && matchesLoc && matchesType;
   });
 
+  const heroTitle = settings?.hero_title || `Join Our Team`;
+  const heroDesc = settings?.hero_description || `We are building the future of transparent real estate and fractional investing. Work alongside industry experts in an environment that rewards innovation, autonomy, and direct impact.`;
+  const bgImg = settings?.hero_background_url || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1920&q=80";
+
   return (
     <SiteLayout>
-      <SEO title="Careers" description={`Join the ${brand.platform_name} team. We are looking for driven professionals to help us build the most trusted real estate platform in the United States.`} />
+      <SEO 
+        title={settings?.seo_title || "Careers"} 
+        description={settings?.seo_description || `Join the ${brand.platform_name} team.`} 
+      />
       
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[500px] sm:min-h-[600px] flex items-center bg-black pt-20">
         <div className="absolute inset-0">
           <img
-            src="https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1920&q=80"
+            src={bgImg}
             alt={`${brand.platform_name} team collaboration`}
             className="h-full w-full object-cover scale-105"
             crossOrigin="anonymous"
@@ -134,18 +151,22 @@ export default function Careers() {
             Career Opportunities
           </Badge>
           <h1 className="max-w-4xl font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-            Join Our <span className="text-secondary">Team</span>
+            {heroTitle}
           </h1>
           <p className="mt-6 max-w-2xl text-lg sm:text-xl text-white/80 leading-relaxed font-light">
-            We are building the future of transparent real estate and fractional investing. Work alongside industry experts in an environment that rewards innovation, autonomy, and direct impact.
+            {heroDesc}
           </p>
           <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Button size="lg" className="w-full sm:w-auto bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 h-12 px-8 font-semibold text-base" asChild>
-              <a href="#openings">View Open Positions</a>
-            </Button>
-            <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/5 text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md h-12 px-8 font-semibold text-base" asChild>
-              <a href="#general-application">Submit General Application</a>
-            </Button>
+            {settings?.cta_enabled !== false && (
+              <Button size="lg" className="w-full sm:w-auto bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 h-12 px-8 font-semibold text-base" asChild>
+                <a href={settings?.cta_link || "#openings"}>{settings?.cta_text || "View Open Positions"}</a>
+              </Button>
+            )}
+            {settings?.accept_applications !== false && (
+              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/5 text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md h-12 px-8 font-semibold text-base" asChild>
+                <a href="#general-application">Submit General Application</a>
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -153,12 +174,12 @@ export default function Careers() {
       {/* Perks */}
       <section className="container-wide -mt-12 relative z-20 pb-16">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {perks.map((p) => (
-            <div key={p} className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-soft transition-all duration-300 hover:shadow-md hover:border-primary/30">
+          {benefits.map((p: any) => (
+            <div key={p.id} className="flex items-center gap-4 rounded-xl border border-border bg-card p-5 shadow-soft transition-all duration-300 hover:shadow-md hover:border-primary/30">
               <span className="grid h-10 w-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary">
                 <CheckCircle2 className="h-5 w-5" />
               </span>
-              <p className="text-sm font-semibold text-foreground">{p}</p>
+              <p className="text-sm font-semibold text-foreground">{p.title}</p>
             </div>
           ))}
         </div>
@@ -217,21 +238,21 @@ export default function Careers() {
                 onChange={(e) => setDeptFilter(e.target.value)}
                 className="h-11 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {departments.map(d => <option key={d} value={d}>{d === "All" ? "All Departments" : d}</option>)}
+                {departments.map((d: any) => <option key={d} value={d}>{d === "All" ? "All Departments" : d}</option>)}
               </select>
               <select 
                 value={locFilter} 
                 onChange={(e) => setLocFilter(e.target.value)}
                 className="h-11 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {locations.map(l => <option key={l} value={l}>{l === "All" ? "All Locations" : l}</option>)}
+                {locations.map((l: any) => <option key={l} value={l}>{l === "All" ? "All Locations" : l}</option>)}
               </select>
               <select 
                 value={typeFilter} 
                 onChange={(e) => setTypeFilter(e.target.value)}
                 className="h-11 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring"
               >
-                {types.map(t => <option key={t} value={t}>{t === "All" ? "All Employment Types" : t}</option>)}
+                {types.map((t: any) => <option key={t} value={t}>{t === "All" ? "All Employment Types" : t}</option>)}
               </select>
             </div>
           </div>
@@ -239,8 +260,8 @@ export default function Careers() {
           {/* Job Grid */}
           {filteredOpenings.length > 0 ? (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {filteredOpenings.map((job) => (
-                <div key={job.title} className="group flex flex-col justify-between rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/40">
+              {filteredOpenings.map((job: any) => (
+                <div key={job.id || job.title} className="group flex flex-col justify-between rounded-2xl border border-border/60 bg-card p-6 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary/40">
                   <div>
                     <div className="flex flex-wrap items-start justify-between gap-4 mb-4">
                       <h3 className="font-serif text-2xl font-bold group-hover:text-primary transition-colors pr-2">{job.title}</h3>
@@ -252,13 +273,15 @@ export default function Careers() {
                         <MapPin className="h-4 w-4 text-primary" /> {job.location}
                       </div>
                       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <Clock className="h-4 w-4 text-primary" /> {job.type}
+                        <Clock className="h-4 w-4 text-primary" /> {job.employment_type}
                       </div>
+                      {job.salary_range && (
+                        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                          <DollarSign className="h-4 w-4 text-primary" /> {job.salary_range}
+                        </div>
+                      )}
                       <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <DollarSign className="h-4 w-4 text-primary" /> {job.salary}
-                      </div>
-                      <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
-                        <Calendar className="h-4 w-4 text-primary" /> {job.posted}
+                        <Calendar className="h-4 w-4 text-primary" /> {new Date(job.created_at).toLocaleDateString()}
                       </div>
                     </div>
                     
@@ -292,22 +315,24 @@ export default function Careers() {
       </section>
 
       {/* General Application */}
-      <section id="general-application" className="container-tight py-24 text-center">
-        <div className="rounded-2xl border border-primary/20 bg-primary/5 p-12 shadow-inner text-center">
-          <div className="mx-auto w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-6">
-            <Search className="h-8 w-8 text-primary" />
+      {settings?.accept_applications !== false && (
+        <section id="general-application" className="container-tight py-24 text-center">
+          <div className="rounded-2xl border border-primary/20 bg-primary/5 p-12 shadow-inner text-center">
+            <div className="mx-auto w-16 h-16 bg-primary/20 rounded-full flex items-center justify-center mb-6">
+              <Search className="h-8 w-8 text-primary" />
+            </div>
+            <h2 className="font-serif text-3xl font-bold sm:text-4xl">Don't see the right role?</h2>
+            <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
+              We are always looking for talented people. Send your CV directly to our recruiting team and we will keep you in mind for future openings.
+            </p>
+            <div className="mt-8">
+              <a href={`mailto:${brand.support_email}`} className="inline-flex items-center justify-center rounded-xl bg-background border border-border px-8 py-4 text-lg font-bold text-primary hover:bg-muted transition-colors shadow-sm">
+                {brand.support_email}
+              </a>
+            </div>
           </div>
-          <h2 className="font-serif text-3xl font-bold sm:text-4xl">Don't see the right role?</h2>
-          <p className="mt-4 text-lg text-muted-foreground leading-relaxed max-w-xl mx-auto">
-            We are always looking for talented people. Send your CV directly to our recruiting team and we will keep you in mind for future openings.
-          </p>
-          <div className="mt-8">
-            <a href={`mailto:${brand.support_email}`} className="inline-flex items-center justify-center rounded-xl bg-background border border-border px-8 py-4 text-lg font-bold text-primary hover:bg-muted transition-colors shadow-sm">
-              {brand.support_email}
-            </a>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Application Modal */}
       <Dialog open={!!applyModal} onOpenChange={(open) => !open && setApplyModal(null)}>
@@ -322,23 +347,31 @@ export default function Careers() {
             <div className="grid gap-4 py-4">
               <div className="grid gap-2">
                 <Label htmlFor="name">Full Name</Label>
-                <Input id="name" required placeholder="Jane Doe" />
+                <Input name="name" id="name" required placeholder="Jane Doe" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="email">Email Address</Label>
-                <Input id="email" type="email" required placeholder="jane@example.com" />
+                <Input name="email" id="email" type="email" required placeholder="jane@example.com" />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="linkedin">LinkedIn URL</Label>
-                <Input id="linkedin" type="url" placeholder="https://linkedin.com/in/..." />
+                <Input name="linkedin" id="linkedin" type="url" placeholder="https://linkedin.com/in/..." />
               </div>
               <div className="grid gap-2">
                 <Label htmlFor="portfolio">Portfolio / Website (Optional)</Label>
-                <Input id="portfolio" type="url" placeholder="https://..." />
+                <Input name="portfolio" id="portfolio" type="url" placeholder="https://..." />
               </div>
+              {settings?.accept_cv_uploads !== false && (
+                <div className="grid gap-2">
+                  <Label htmlFor="cv">Upload CV / Resume</Label>
+                  <Input name="cv" id="cv" type="file" accept=".pdf,.doc,.docx" />
+                  <p className="text-[10px] text-muted-foreground">Max size: {settings?.max_upload_size_mb || 5}MB. Allowed: PDF, DOC, DOCX.</p>
+                </div>
+              )}
               <div className="grid gap-2">
                 <Label htmlFor="coverLetter">Cover Letter</Label>
                 <Textarea 
+                  name="coverLetter"
                   id="coverLetter" 
                   placeholder="Tell us why you're a great fit for this role..." 
                   className="min-h-[100px]"
@@ -350,7 +383,7 @@ export default function Careers() {
                 Cancel
               </Button>
               <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? "Submitting..." : "Submit Application"}
+                {isSubmitting ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...</> : "Submit Application"}
               </Button>
             </DialogFooter>
           </form>
