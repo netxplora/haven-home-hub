@@ -138,10 +138,12 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Storage Policies for applications bucket
 -- Admins can do anything
+DROP POLICY IF EXISTS "Admins have full access to applications" ON storage.objects;
 CREATE POLICY "Admins have full access to applications" ON storage.objects
 FOR ALL USING (bucket_id = 'applications' AND EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
 
 -- Public can upload new CVs (insert only)
+DROP POLICY IF EXISTS "Public can upload applications" ON storage.objects;
 CREATE POLICY "Public can upload applications" ON storage.objects
 FOR INSERT WITH CHECK (bucket_id = 'applications');
 
@@ -159,27 +161,60 @@ ALTER TABLE public.careers_applicants ENABLE ROW LEVEL SECURITY;
 -- -------------------------------------------------------------
 -- Public Read Policies
 -- -------------------------------------------------------------
+DROP POLICY IF EXISTS "Public read careers_settings" ON public.careers_settings;
 CREATE POLICY "Public read careers_settings" ON public.careers_settings FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read active careers_benefits" ON public.careers_benefits;
 CREATE POLICY "Public read active careers_benefits" ON public.careers_benefits FOR SELECT USING (status = 'active');
+
+DROP POLICY IF EXISTS "Public read careers_job_categories" ON public.careers_job_categories;
 CREATE POLICY "Public read careers_job_categories" ON public.careers_job_categories FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Public read open careers_jobs" ON public.careers_jobs;
 CREATE POLICY "Public read open careers_jobs" ON public.careers_jobs FOR SELECT USING (status = 'open');
+
+DROP POLICY IF EXISTS "Public read active careers_culture" ON public.careers_culture;
 CREATE POLICY "Public read active careers_culture" ON public.careers_culture FOR SELECT USING (status = 'active');
+
+DROP POLICY IF EXISTS "Public read active careers_testimonials" ON public.careers_testimonials;
 CREATE POLICY "Public read active careers_testimonials" ON public.careers_testimonials FOR SELECT USING (status = 'active');
+
+DROP POLICY IF EXISTS "Public read active careers_process" ON public.careers_process;
 CREATE POLICY "Public read active careers_process" ON public.careers_process FOR SELECT USING (status = 'active');
+
+DROP POLICY IF EXISTS "Public read active careers_faqs" ON public.careers_faqs;
 CREATE POLICY "Public read active careers_faqs" ON public.careers_faqs FOR SELECT USING (status = 'active');
 
 -- Public Insert for Applicants
+DROP POLICY IF EXISTS "Public insert careers_applicants" ON public.careers_applicants;
 CREATE POLICY "Public insert careers_applicants" ON public.careers_applicants FOR INSERT WITH CHECK (true);
 
 -- -------------------------------------------------------------
 -- Admin All Access Policies
 -- -------------------------------------------------------------
+DROP POLICY IF EXISTS "Admin all careers_settings" ON public.careers_settings;
 CREATE POLICY "Admin all careers_settings" ON public.careers_settings FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_benefits" ON public.careers_benefits;
 CREATE POLICY "Admin all careers_benefits" ON public.careers_benefits FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_job_categories" ON public.careers_job_categories;
 CREATE POLICY "Admin all careers_job_categories" ON public.careers_job_categories FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_jobs" ON public.careers_jobs;
 CREATE POLICY "Admin all careers_jobs" ON public.careers_jobs FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_culture" ON public.careers_culture;
 CREATE POLICY "Admin all careers_culture" ON public.careers_culture FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_testimonials" ON public.careers_testimonials;
 CREATE POLICY "Admin all careers_testimonials" ON public.careers_testimonials FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_process" ON public.careers_process;
 CREATE POLICY "Admin all careers_process" ON public.careers_process FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_faqs" ON public.careers_faqs;
 CREATE POLICY "Admin all careers_faqs" ON public.careers_faqs FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));
+
+DROP POLICY IF EXISTS "Admin all careers_applicants" ON public.careers_applicants;
 CREATE POLICY "Admin all careers_applicants" ON public.careers_applicants FOR ALL USING (EXISTS (SELECT 1 FROM public.user_roles WHERE user_id = auth.uid() AND role = 'admin'));

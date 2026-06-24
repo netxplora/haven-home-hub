@@ -336,7 +336,7 @@ export default function Careers() {
 
       {/* Application Modal */}
       <Dialog open={!!applyModal} onOpenChange={(open) => !open && setApplyModal(null)}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto p-6">
           <form onSubmit={handleApply}>
             <DialogHeader>
               <DialogTitle>Apply for {applyModal?.title}</DialogTitle>
@@ -344,31 +344,31 @@ export default function Careers() {
                 Submit your details below to apply for this position in {applyModal?.location}.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input name="name" id="name" required placeholder="Jane Doe" />
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <Input name="email" id="email" type="email" required placeholder="jane@example.com" />
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label htmlFor="linkedin">LinkedIn URL</Label>
                 <Input name="linkedin" id="linkedin" type="url" placeholder="https://linkedin.com/in/..." />
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label htmlFor="portfolio">Portfolio / Website (Optional)</Label>
                 <Input name="portfolio" id="portfolio" type="url" placeholder="https://..." />
               </div>
               {settings?.accept_cv_uploads !== false && (
-                <div className="grid gap-2">
+                <div className="space-y-2">
                   <Label htmlFor="cv">Upload CV / Resume</Label>
-                  <Input name="cv" id="cv" type="file" accept=".pdf,.doc,.docx" />
+                  <Input name="cv" id="cv" type="file" accept=".pdf,.doc,.docx" className="cursor-pointer file:cursor-pointer" />
                   <p className="text-[10px] text-muted-foreground">Max size: {settings?.max_upload_size_mb || 5}MB. Allowed: PDF, DOC, DOCX.</p>
                 </div>
               )}
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label htmlFor="coverLetter">Cover Letter</Label>
                 <Textarea 
                   name="coverLetter"

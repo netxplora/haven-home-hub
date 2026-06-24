@@ -115,7 +115,7 @@ export function CareersJobsTab() {
     </Card>
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-6">
           <form onSubmit={handleCreateJob}>
             <DialogHeader>
               <DialogTitle>Create New Job Posting</DialogTitle>
@@ -123,28 +123,28 @@ export function CareersJobsTab() {
                 Fill in the details below to add a new open position to the careers page.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
                 <Label htmlFor="title">Job Title</Label>
                 <Input id="title" name="title" required placeholder="e.g. Senior Property Agent" />
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
+                <div className="space-y-2">
                   <Label htmlFor="department">Department</Label>
                   <Input id="department" name="department" required placeholder="e.g. Sales" />
                 </div>
-                <div className="grid gap-2">
+                <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
                   <Input id="location" name="location" required placeholder="e.g. New York, NY" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
+                <div className="space-y-2">
                   <Label htmlFor="employment_type">Employment Type</Label>
                   <select 
                     id="employment_type" 
                     name="employment_type" 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="Full-time">Full-time</option>
                     <option value="Part-time">Part-time</option>
@@ -152,12 +152,12 @@ export function CareersJobsTab() {
                     <option value="Remote">Remote</option>
                   </select>
                 </div>
-                <div className="grid gap-2">
+                <div className="space-y-2">
                   <Label htmlFor="status">Status</Label>
                   <select 
                     id="status" 
                     name="status" 
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="draft">Draft</option>
                     <option value="open">Open (Published)</option>
@@ -165,11 +165,11 @@ export function CareersJobsTab() {
                   </select>
                 </div>
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label htmlFor="salary_range">Salary Range (Optional)</Label>
                 <Input id="salary_range" name="salary_range" placeholder="e.g. $100k - $120k" />
               </div>
-              <div className="grid gap-2">
+              <div className="space-y-2">
                 <Label htmlFor="description">Job Description</Label>
                 <Textarea 
                   id="description" 
