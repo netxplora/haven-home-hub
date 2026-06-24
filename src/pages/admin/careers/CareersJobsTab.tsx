@@ -16,6 +16,7 @@ export function CareersJobsTab() {
   const queryClient = useQueryClient();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [editingJob, setEditingJob] = useState<any>(null);
 
   const { data: jobs, isLoading } = useQuery({
     queryKey: ["careers-jobs-admin"],
@@ -29,9 +30,9 @@ export function CareersJobsTab() {
     }
   });
 
-  const createMutation = useMutation({
+  const saveMutation = useMutation({
     mutationFn: async (formData: FormData) => {
-      const newJob = {
+      const jobData = {
         title: formData.get("title") as string,
         department: formData.get("department") as string,
         location: formData.get("location") as string,
@@ -41,24 +42,43 @@ export function CareersJobsTab() {
         status: formData.get("status") as string || "draft",
       };
       
-      const { error } = await supabase.from("careers_jobs").insert(newJob);
+      if (editingJob) {
+        const { error } = await supabase.from("careers_jobs").update(jobData).eq("id", editingJob.id);
+        if (error) throw error;
+      } else {
+        const { error } = await supabase.from("careers_jobs").insert(jobData);
+        if (error) throw error;
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["careers-jobs-admin"] });
+      toast({ title: editingJob ? "Job Updated" : "Job Created", description: `The job has been ${editingJob ? "updated" : "posted"} successfully.` });
+      setIsModalOpen(false);
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to save job", description: err.message, variant: "destructive" });
+    },
+    onSettled: () => setIsSubmitting(false)
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabase.from("careers_jobs").delete().eq("id", id);
       if (error) throw error;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["careers-jobs-admin"] });
-      toast({ title: "Job Created", description: "The new job has been posted successfully." });
-      setIsModalOpen(false);
+      toast({ title: "Job Deleted", description: "The job posting has been removed." });
     },
     onError: (err: any) => {
-      toast({ title: "Failed to create job", description: err.message, variant: "destructive" });
-    },
-    onSettled: () => setIsSubmitting(false)
+      toast({ title: "Failed to delete job", description: err.message, variant: "destructive" });
+    }
   });
 
   const handleCreateJob = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    createMutation.mutate(new FormData(e.currentTarget));
+    saveMutation.mutate(new FormData(e.currentTarget));
   };
 
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
@@ -71,7 +91,7 @@ export function CareersJobsTab() {
           <CardTitle>Job Postings</CardTitle>
           <CardDescription>Manage open positions and job descriptions.</CardDescription>
         </div>
-        <Button className="gap-2" onClick={() => setIsModalOpen(true)}>
+        <Button className="gap-2" onClick={() => { setEditingJob(null); setIsModalOpen(true); }}>
           <Plus className="h-4 w-4" /> New Job
         </Button>
       </CardHeader>
@@ -98,8 +118,12 @@ export function CareersJobsTab() {
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon"><Edit className="h-4 w-4" /></Button>
-                  <Button variant="ghost" size="icon" className="text-destructive"><Trash2 className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => { setEditingJob(job); setIsModalOpen(true); }}>
+                    <Edit className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="text-destructive" onClick={() => { if(confirm("Delete this job?")) deleteMutation.mutate(job.id); }}>
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
                 </TableCell>
               </TableRow>
             )) : (
@@ -116,26 +140,26 @@ export function CareersJobsTab() {
 
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
         <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto p-6">
-          <form onSubmit={handleCreateJob}>
+          <form onSubmit={handleCreateJob} key={editingJob ? editingJob.id : 'new'}>
             <DialogHeader>
-              <DialogTitle>Create New Job Posting</DialogTitle>
+              <DialogTitle>{editingJob ? "Edit Job Posting" : "Create New Job Posting"}</DialogTitle>
               <DialogDescription>
-                Fill in the details below to add a new open position to the careers page.
+                {editingJob ? "Update the details of this open position." : "Fill in the details below to add a new open position to the careers page."}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="title">Job Title</Label>
-                <Input id="title" name="title" required placeholder="e.g. Senior Property Agent" />
+                <Input id="title" name="title" required defaultValue={editingJob?.title} placeholder="e.g. Senior Property Agent" />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="department">Department</Label>
-                  <Input id="department" name="department" required placeholder="e.g. Sales" />
+                  <Input id="department" name="department" required defaultValue={editingJob?.department} placeholder="e.g. Sales" />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="location">Location</Label>
-                  <Input id="location" name="location" required placeholder="e.g. New York, NY" />
+                  <Input id="location" name="location" required defaultValue={editingJob?.location} placeholder="e.g. New York, NY" />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -144,6 +168,7 @@ export function CareersJobsTab() {
                   <select 
                     id="employment_type" 
                     name="employment_type" 
+                    defaultValue={editingJob?.employment_type || "Full-time"}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="Full-time">Full-time</option>
@@ -157,6 +182,7 @@ export function CareersJobsTab() {
                   <select 
                     id="status" 
                     name="status" 
+                    defaultValue={editingJob?.status || "draft"}
                     className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <option value="draft">Draft</option>
@@ -167,13 +193,14 @@ export function CareersJobsTab() {
               </div>
               <div className="space-y-2">
                 <Label htmlFor="salary_range">Salary Range (Optional)</Label>
-                <Input id="salary_range" name="salary_range" placeholder="e.g. $100k - $120k" />
+                <Input id="salary_range" name="salary_range" defaultValue={editingJob?.salary_range} placeholder="e.g. $100k - $120k" />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="description">Job Description</Label>
                 <Textarea 
                   id="description" 
                   name="description" 
+                  defaultValue={editingJob?.description}
                   placeholder="Describe the role..." 
                   className="min-h-[120px]"
                 />

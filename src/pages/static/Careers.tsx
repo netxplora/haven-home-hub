@@ -88,14 +88,38 @@ export default function Careers() {
     const formData = new FormData(e.target as HTMLFormElement);
     
     try {
-      // Simulate or implement file upload to bucket here if user attached a CV
+      let cv_url = null;
+      const cvFile = formData.get("cv") as File;
+      
+      if (cvFile && cvFile.size > 0) {
+        const fileExt = cvFile.name.split('.').pop();
+        const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+        const filePath = `${applyModal?.id || 'general'}/${fileName}`;
+        
+        const { error: uploadError } = await supabase.storage
+          .from('applications')
+          .upload(filePath, cvFile, { upsert: false });
+          
+        if (uploadError) {
+          toast({ title: "CV Upload Failed", description: uploadError.message, variant: "destructive" });
+          setIsSubmitting(false);
+          return;
+        }
+        
+        const { data: { publicUrl } } = supabase.storage.from('applications').getPublicUrl(filePath);
+        cv_url = publicUrl;
+      }
+
       const { error } = await supabase.from("careers_applicants").insert({
         job_id: applyModal?.id,
         full_name: formData.get("name"),
         email: formData.get("email"),
+        phone: formData.get("phone"),
+        location: formData.get("location"),
         linkedin_url: formData.get("linkedin"),
         portfolio_url: formData.get("portfolio"),
         cover_letter: formData.get("coverLetter"),
+        cv_url: cv_url,
         status: "Received"
       });
 
@@ -352,6 +376,16 @@ export default function Careers() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email Address</Label>
                 <Input name="email" id="email" type="email" required placeholder="jane@example.com" />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input name="phone" id="phone" type="tel" placeholder="+1 (555) 000-0000" />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="location">City / Location</Label>
+                  <Input name="location" id="location" placeholder="New York, NY" />
+                </div>
               </div>
               <div className="space-y-2">
                 <Label htmlFor="linkedin">LinkedIn URL</Label>
