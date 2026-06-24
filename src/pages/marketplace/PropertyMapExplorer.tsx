@@ -59,7 +59,7 @@ export default function PropertyMapExplorer() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("properties")
-        .select("id, title, slug, price, cover_image_url, property_type, bedrooms, bathrooms, size_sqm, map_coordinates")
+        .select("id, title, slug, price, cover_image_url, property_type, bedrooms, bathrooms, size_sqm, latitude, longitude")
         .eq("status", "available");
       if (error) throw error;
       return data || [];
@@ -71,7 +71,7 @@ export default function PropertyMapExplorer() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("investment_properties")
-        .select("id, title, slug, total_value, min_investment, projected_return_min, cover_image_url, property_type, map_coordinates")
+        .select("id, title, slug, total_value, min_investment, projected_return_min, cover_image_url, property_type, city, state, country")
         .in("status", ["open", "funded"]);
       if (error) throw error;
       return data || [];
@@ -83,7 +83,7 @@ export default function PropertyMapExplorer() {
     const items: any[] = [];
     
     standardProperties.forEach((p: any) => {
-      if (p.map_coordinates && p.map_coordinates.lat && p.map_coordinates.lng) {
+      if (p.latitude && p.longitude) {
         items.push({
           id: p.id,
           type: 'standard',
@@ -92,32 +92,20 @@ export default function PropertyMapExplorer() {
           slug: p.slug,
           price: p.price,
           image: p.cover_image_url,
-          lat: p.map_coordinates.lat,
-          lng: p.map_coordinates.lng,
+          lat: p.latitude,
+          lng: p.longitude,
           link: `/properties/${p.slug}`,
           specs: `${p.bedrooms || 0} Beds • ${p.bathrooms || 0} Baths • ${p.size_sqm || 0} SQM`
         });
       }
     });
 
+    // Note: investment_properties has no lat/lng columns.
+    // Properties will only appear on the map if coordinates are added in the future.
+    // For now, we still include them in the data but they won't have map markers.
     investmentProperties.forEach((p: any) => {
-      if (p.map_coordinates && p.map_coordinates.lat && p.map_coordinates.lng) {
-        items.push({
-          id: p.id,
-          type: 'investment',
-          subType: p.property_type,
-          title: p.title,
-          slug: p.slug,
-          price: p.total_value,
-          yield: p.projected_return_min,
-          min_investment: p.min_investment,
-          image: p.cover_image_url,
-          lat: p.map_coordinates.lat,
-          lng: p.map_coordinates.lng,
-          link: `/invest/${p.slug}`,
-          specs: `Min Invest: ${formatMoney(p.min_investment)}`
-        });
-      }
+      // Skip map display — no coordinate columns exist on investment_properties
+      // These are still available for list/filter views
     });
 
     return items;

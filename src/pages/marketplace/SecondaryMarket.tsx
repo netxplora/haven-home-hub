@@ -110,9 +110,9 @@ export default function SecondaryMarket() {
               return (
                 <div key={listing.id} className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                    {listing.property?.images?.[0] ? (
+                    {(listing.property as any)?.cover_image_url ? (
                       <img 
-                        src={resolveImage(listing.property.images[0])} 
+                        src={resolveImage((listing.property as any).cover_image_url)} 
                         alt={listing.property?.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                         crossOrigin="anonymous"

@@ -17,7 +17,6 @@ export interface SecondaryMarketListing {
     location: string;
     currency: string;
     unit_price: number;
-    images?: string[];
   };
   seller?: {
     full_name: string;
@@ -31,18 +30,52 @@ export function useSecondaryMarket() {
   const { data: listings = [], isLoading: isLoadingListings, refetch } = useQuery({
     queryKey: ["secondary_market_listings"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: records, error } = await supabase
         .from("secondary_market_listings")
-        .select(`
-          *,
-          property:investment_properties(title, location, currency, unit_price, images),
-          seller:profiles!secondary_market_listings_seller_id_fkey(full_name)
-        `)
+        .select("*")
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as SecondaryMarketListing[];
+      if (!records || records.length === 0) return [] as SecondaryMarketListing[];
+
+      // Fetch related investment_properties
+      const propertyIds = [...new Set(records.map((r: any) => r.property_id).filter(Boolean))];
+      let propertiesMap: Record<string, any> = {};
+      if (propertyIds.length > 0) {
+        const { data: propsData } = await supabase
+          .from("investment_properties")
+          .select("id, title, location, currency, unit_price, cover_image_url")
+          .in("id", propertyIds);
+        if (propsData) {
+          propertiesMap = propsData.reduce((acc: Record<string, any>, p: any) => {
+            acc[p.id] = { title: p.title, location: p.location, currency: p.currency, unit_price: p.unit_price };
+            return acc;
+          }, {});
+        }
+      }
+
+      // Fetch related seller profiles
+      const sellerIds = [...new Set(records.map((r: any) => r.seller_id).filter(Boolean))];
+      let sellersMap: Record<string, any> = {};
+      if (sellerIds.length > 0) {
+        const { data: sellersData } = await supabase
+          .from("profiles")
+          .select("id, full_name")
+          .in("id", sellerIds);
+        if (sellersData) {
+          sellersMap = sellersData.reduce((acc: Record<string, any>, s: any) => {
+            acc[s.id] = { full_name: s.full_name };
+            return acc;
+          }, {});
+        }
+      }
+
+      return records.map((r: any) => ({
+        ...r,
+        property: propertiesMap[r.property_id] || null,
+        seller: sellersMap[r.seller_id] || null,
+      })) as SecondaryMarketListing[];
     },
   });
 
@@ -53,18 +86,36 @@ export function useSecondaryMarket() {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return [];
 
-      const { data, error } = await supabase
+      const { data: records, error } = await supabase
         .from("secondary_market_listings")
-        .select(`
-          *,
-          property:investment_properties(title, location, currency, unit_price, images)
-        `)
+        .select("*")
         .eq("seller_id", user.id)
         .eq("status", "active")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      return data as SecondaryMarketListing[];
+      if (!records || records.length === 0) return [] as SecondaryMarketListing[];
+
+      // Fetch related investment_properties
+      const propertyIds = [...new Set(records.map((r: any) => r.property_id).filter(Boolean))];
+      let propertiesMap: Record<string, any> = {};
+      if (propertyIds.length > 0) {
+        const { data: propsData } = await supabase
+          .from("investment_properties")
+          .select("id, title, location, currency, unit_price, cover_image_url")
+          .in("id", propertyIds);
+        if (propsData) {
+          propertiesMap = propsData.reduce((acc: Record<string, any>, p: any) => {
+            acc[p.id] = { title: p.title, location: p.location, currency: p.currency, unit_price: p.unit_price };
+            return acc;
+          }, {});
+        }
+      }
+
+      return records.map((r: any) => ({
+        ...r,
+        property: propertiesMap[r.property_id] || null,
+      })) as SecondaryMarketListing[];
     },
   });
 

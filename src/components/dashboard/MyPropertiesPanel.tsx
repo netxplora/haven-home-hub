@@ -61,12 +61,9 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
   const { data: ownerships = [], isLoading: isOwnLoading, refetch: refetchOwnerships } = useQuery({
     queryKey: ["my-ownership-records", userId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data: records, error } = await supabase
         .from("ownership_records")
-        .select(`
-          *,
-          properties:property_id(title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm, price)
-        `)
+        .select("*")
         .eq("user_id", userId)
         .order("purchase_date", { ascending: false });
         
@@ -74,7 +71,32 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
         console.error("Error fetching ownership records:", error);
         throw error;
       }
-      return data ?? [];
+      
+      if (!records || records.length === 0) return [];
+
+      const propertyIds = records.map((r: any) => r.property_id).filter(Boolean);
+      let propertiesMap: Record<string, any> = {};
+
+      if (propertyIds.length > 0) {
+        const { data: propertiesData, error: propsError } = await supabase
+          .from("properties")
+          .select("id, title, slug, cover_image_url, property_type, locations(name), bedrooms, bathrooms, size_sqm, price")
+          .in("id", propertyIds);
+
+        if (!propsError && propertiesData) {
+          propertiesMap = propertiesData.reduce((acc: Record<string, any>, p: any) => {
+            acc[p.id] = p;
+            return acc;
+          }, {});
+        } else if (propsError) {
+          console.error("Error fetching properties for ownership records:", propsError);
+        }
+      }
+
+      return records.map((r: any) => ({
+        ...r,
+        properties: propertiesMap[r.property_id] || null
+      }));
     },
   });
 
