@@ -11,6 +11,7 @@ import { toast } from "@/hooks/use-toast";
 export function CareersApplicantsTab() {
   const queryClient = useQueryClient();
   const [selectedApp, setSelectedApp] = useState<any>(null);
+  const [internalNotes, setInternalNotes] = useState<string>("");
 
   const { data: applicants, isLoading } = useQuery({
     queryKey: ["careers-applicants"],
@@ -37,6 +38,25 @@ export function CareersApplicantsTab() {
       toast({ title: "Failed to update status", description: err.message, variant: "destructive" });
     }
   });
+
+  const notesMutation = useMutation({
+    mutationFn: async ({ id, notes }: { id: string, notes: string }) => {
+      const { error } = await supabase.from("careers_applicants").update({ internal_notes: notes }).eq("id", id);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["careers-applicants"] });
+      toast({ title: "Notes Saved", description: "Internal notes have been updated." });
+    },
+    onError: (err: any) => {
+      toast({ title: "Failed to save notes", description: err.message, variant: "destructive" });
+    }
+  });
+
+  const handleOpenModal = (app: any) => {
+    setSelectedApp(app);
+    setInternalNotes(app.internal_notes || "");
+  };
 
   if (isLoading) return <div className="flex justify-center p-8"><Loader2 className="h-8 w-8 animate-spin text-muted-foreground" /></div>;
 
@@ -83,7 +103,7 @@ export function CareersApplicantsTab() {
                 </TableCell>
                 <TableCell>{new Date(app.applied_at).toLocaleDateString()}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon" title="View Details" onClick={() => setSelectedApp(app)}><Eye className="h-4 w-4" /></Button>
+                  <Button variant="ghost" size="icon" title="View Details" onClick={() => handleOpenModal(app)}><Eye className="h-4 w-4" /></Button>
                   {app.cv_url && <Button variant="ghost" size="icon" title="Download CV" onClick={() => window.open(app.cv_url)}><Download className="h-4 w-4" /></Button>}
                 </TableCell>
               </TableRow>
@@ -134,6 +154,24 @@ export function CareersApplicantsTab() {
                 </Button>
               </div>
             )}
+            
+            <div className="space-y-2 pt-4 border-t mt-4">
+              <span className="font-semibold text-sm">Internal Notes:</span>
+              <textarea 
+                className="w-full min-h-[100px] p-3 rounded-md border bg-background text-sm"
+                placeholder="Add private notes about this applicant..."
+                value={internalNotes}
+                onChange={(e) => setInternalNotes(e.target.value)}
+              />
+              <Button 
+                onClick={() => notesMutation.mutate({ id: selectedApp.id, notes: internalNotes })}
+                disabled={notesMutation.isPending}
+                size="sm"
+              >
+                {notesMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+                Save Notes
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>

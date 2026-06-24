@@ -12,6 +12,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { BarChart3, LineChart, ShieldCheck, TrendingUp, Loader2, Upload, Activity, FileText, Trash2, RefreshCw, ArrowUpRight, CheckCircle, ChevronRight, Calendar, Download } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
+import DOMPurify from "dompurify";
 
 interface AdminManageInvestmentDialogProps {
   open: boolean;
@@ -487,7 +488,7 @@ export function AdminManageInvestmentDialog({ open, onOpenChange, investment }: 
                               View Document Content
                             </summary>
                             <div className="mt-2 border border-border/50 rounded-lg p-4 bg-white dark:bg-background prose prose-sm dark:prose-invert max-h-[300px] overflow-y-auto text-[11px] leading-relaxed">
-                              <div dangerouslySetInnerHTML={{ __html: doc.metadata.document_snapshot }} />
+                              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc.metadata.document_snapshot) }} />
                             </div>
                           </details>
                         )}

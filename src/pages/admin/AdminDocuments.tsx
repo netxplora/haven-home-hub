@@ -33,6 +33,7 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useBrand } from "@/hooks/useBrand";
+import DOMPurify from "dompurify";
 
 export function AdminDocuments() {
   const { brand } = useBrand();
@@ -1199,7 +1200,7 @@ export function AdminDocuments() {
                     {/* Editor Content Injected Here */}
                     <div 
                       className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
-                      dangerouslySetInnerHTML={{ __html: templateHtml || "<p class='text-muted-foreground italic text-center py-20'>No content provided. Start typing in the HTML source editor to see a live preview.</p>" }} 
+                      dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(templateHtml || "<p class='text-muted-foreground italic text-center py-20'>No content provided. Start typing in the HTML source editor to see a live preview.</p>") }} 
                     />
                   </div>
 
@@ -1310,7 +1311,7 @@ export function AdminDocuments() {
               </div>
               <div className="p-8 prose max-w-none font-serif text-sm leading-loose text-justify text-slate-800 bg-white">
                 <div dangerouslySetInnerHTML={{ 
-                  __html: previewTemplate.content_html
+                  __html: DOMPurify.sanitize(previewTemplate.content_html
                     .replace(/{{investor_name}}/g, "John Doe")
                     .replace(/{{investor_email}}/g, "john.doe@example.com")
                     .replace(/{{investor_phone}}/g, "+1 555-0198")

@@ -23,6 +23,7 @@ import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianG
 import { DocumentViewerModal } from "@/components/dashboard/DocumentViewerModal";
 import { SEO } from "@/components/site/SEO";
 import { useBrand } from "@/hooks/useBrand";
+import DOMPurify from "dompurify";
 
 export default function InvestPortfolioDetail() {
   const { brand } = useBrand();
@@ -947,7 +948,7 @@ export default function InvestPortfolioDetail() {
                               View Document
                             </summary>
                             <div className="mt-3 border border-border/50 rounded-xl p-5 bg-white dark:bg-background prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed max-h-[500px] overflow-y-auto">
-                              <div dangerouslySetInnerHTML={{ __html: docSnapshot }} />
+                              <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(docSnapshot) }} />
                             </div>
                           </details>
                         )}
@@ -1045,7 +1046,7 @@ export default function InvestPortfolioDetail() {
                             View Agreed Terms
                           </summary>
                           <div className="mt-3 border border-border/50 rounded-xl p-5 bg-muted/20 prose prose-sm dark:prose-invert max-w-none text-xs leading-relaxed text-muted-foreground max-h-64 overflow-y-auto">
-                            <div dangerouslySetInnerHTML={{ __html: doc.document_snapshot }} />
+                            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc.document_snapshot) }} />
                           </div>
                         </details>
                       )}

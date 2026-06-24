@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PortfolioOverviewTab } from "@/components/dashboard/PortfolioOverviewTab";
 import { AdminManageInvestmentDialog } from "@/components/admin/AdminManageInvestmentDialog";
 import { getAvatarUrl } from "@/lib/utils";
+import DOMPurify from "dompurify";
 
 // Admin Note persistence using localStorage since no DB table exists yet
 const getNotes = (id: string) => localStorage.getItem(`admin_notes_${id}`) || "";
@@ -617,7 +618,7 @@ export function AdminInvestor360({ initialUserId, onBack }: { initialUserId?: st
                                   View Document Content
                                 </summary>
                                 <div className="mt-2 border border-border/50 rounded-lg p-4 bg-white dark:bg-background prose prose-sm dark:prose-invert max-h-[300px] overflow-y-auto text-[11px] leading-relaxed">
-                                  <div dangerouslySetInnerHTML={{ __html: doc.metadata.document_snapshot }} />
+                                  <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(doc.metadata.document_snapshot) }} />
                                 </div>
                               </details>
                             )}
