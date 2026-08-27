@@ -8,13 +8,13 @@ import { HelmetProvider } from "react-helmet-async";
 import { useRealtimeSync } from "./hooks/useRealtimeSync";
 import { Suspense, lazy } from "react";
 
-// Critical path — loaded eagerly (home, auth, properties)
+// Critical path — loaded eagerly (home, auth)
 import Home from "./pages/marketplace/Home";
-import Properties from "./pages/marketplace/Properties";
-import PropertyDetail from "./pages/marketplace/PropertyDetail";
 import Auth from "./pages/auth/Auth";
 
 // Lazy-loaded routes — loaded on demand
+const Properties = lazy(() => import("./pages/marketplace/Properties"));
+const PropertyDetail = lazy(() => import("./pages/marketplace/PropertyDetail"));
 const ComparePage = lazy(() => import("./pages/marketplace/ComparePage"));
 const Agents = lazy(() => import("./pages/marketplace/Agents"));
 const SecondaryMarket = lazy(() => import("./pages/marketplace/SecondaryMarket"));

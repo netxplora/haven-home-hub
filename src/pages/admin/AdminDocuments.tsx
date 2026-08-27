@@ -1344,6 +1344,7 @@ export function AdminDocuments() {
                     .replace(/{{seal}}/g, '<div style="width: 100px; height: 100px; border-radius: 50%; border: 2px dashed #94a3b8; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #94a3b8; transform: rotate(-15deg);">Official Seal</div>')
                     .replace(/{{ownership_details}}/g, 'Verified Ownership Share: 5 Unit(s)')
                     .replace(/{{investment_details}}/g, 'Investment Value: $25,000.00')
+                  )
                 }} />
               </div>
             </div>

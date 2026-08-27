@@ -7,7 +7,6 @@ import {
   Lock, PieChart, Star, Mail, MapPin, Search, Clock,
   Shield, Zap, Check, CheckCircle2, Map, Smartphone, CalendarDays, MessageSquare
 } from "lucide-react";
-import heroImg from "@/assets/hero.jpg";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PropertyCard, PropertyCardData } from "@/components/site/PropertyCard";
@@ -504,11 +503,11 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 9. MARKETPLACE ECOSYSTEM */}
+      {/* 9. PROPERTY & TRANSACTION SERVICES */}
       <section className="container-wide py-16">
         <div className="text-center max-w-xl mx-auto mb-12">
-          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">E-Services</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">Transaction Ecosystem Services</h2>
+          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Services</span>
+          <h2 className="font-serif text-3xl font-semibold text-foreground">Property & Transaction Services</h2>
         </div>
         <div className="grid gap-6 md:grid-cols-4">
           {[
