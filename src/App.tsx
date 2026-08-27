@@ -58,16 +58,21 @@ import { SupportWidget } from "./components/site/SupportWidget";
 import { useDeploymentCache } from "./hooks/useDeploymentCache";
 import { GlobalErrorBoundary } from "./components/GlobalErrorBoundary";
 import { ScrollToTop } from "./components/ScrollToTop";
-import { BrandProvider } from "./hooks/useBrand";
+import { BrandProvider, useBrand } from "./hooks/useBrand";
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
 
 import { toast } from "sonner";
 
 const queryClient = new QueryClient({
   queryCache: new QueryCache({
-    onError: (error) => {
-      console.error("Query Error:", error);
-      toast.error("Unable to load data. Please check your connection and try again.");
+    onError: (error: unknown) => {
+      // Suppress raw error objects from browser console in production.
+      // Only toast a user-friendly message.
+      const msg =
+        error instanceof Error
+          ? error.message
+          : "Unable to load data. Please check your connection and try again.";
+      toast.error(msg);
     },
   }),
   defaultOptions: {
@@ -105,25 +110,31 @@ function RealtimeGlobal() {
   return null;
 }
 
-// Improved loading fallback with skeleton structure for smoother transitions
+// Modern brand-aligned loading fallback for route transitions
 function PageLoader() {
+  const { brand } = useBrand();
   return (
-    <div className="min-h-screen flex flex-col bg-slate-50 dark:bg-slate-950">
-      <div className="h-16 border-b border-border/50 bg-card px-6 flex items-center justify-between hidden md:flex">
-        <div className="w-32 h-6 bg-muted rounded-md animate-pulse" />
-        <div className="flex gap-4">
-           <div className="w-16 h-6 bg-muted rounded-md animate-pulse" />
-           <div className="w-16 h-6 bg-muted rounded-md animate-pulse" />
+    <div className="min-h-screen flex flex-col items-center justify-center bg-background p-6 font-sans select-none">
+      <div className="flex flex-col items-center gap-5 animate-in fade-in duration-300">
+        <div className="relative flex items-center justify-center">
+          <div className="absolute -inset-2 rounded-2xl bg-primary/10 blur-lg animate-pulse" />
+          <div className="relative h-16 w-16 p-2.5 rounded-2xl bg-card border border-border/80 shadow-md flex items-center justify-center">
+            <img
+              src={brand.logo_url || "/logo.png"}
+              alt={brand.platform_name}
+              className="h-10 w-auto max-w-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLElement).style.display = "none";
+              }}
+            />
+          </div>
         </div>
-      </div>
-      <div className="flex-1 container-wide py-12 flex flex-col gap-6 w-full max-w-7xl mx-auto px-4">
-        <div className="w-1/3 h-8 bg-muted rounded-md animate-pulse" />
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div className="h-32 bg-muted rounded-xl animate-pulse" />
-           <div className="h-32 bg-muted rounded-xl animate-pulse" />
-           <div className="h-32 bg-muted rounded-xl animate-pulse" />
+        <div className="flex flex-col items-center gap-2 text-center">
+          <p className="text-sm font-bold font-serif tracking-tight text-foreground">{brand.platform_name}</p>
+          <div className="w-32 h-1 bg-muted rounded-full overflow-hidden relative">
+            <div className="absolute inset-y-0 left-0 w-1/2 bg-primary rounded-full animate-indeterminate" />
+          </div>
         </div>
-        <div className="h-64 bg-muted rounded-xl animate-pulse mt-4" />
       </div>
     </div>
   );

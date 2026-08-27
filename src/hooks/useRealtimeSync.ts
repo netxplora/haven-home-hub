@@ -15,6 +15,7 @@ export function useRealtimeSync() {
       "investment_properties",
       "user_investments",
       "investment_schedules",
+      "investment_certificates",
       "receipts",
       "bookings",
       "inquiries",
@@ -28,6 +29,20 @@ export function useRealtimeSync() {
       "crypto_assets",
       "notifications",
       "reservations",
+      "secondary_market_listings",
+      "kyc_verifications",
+      "user_documents",
+      "document_templates",
+      "referrals",
+      "referral_rewards",
+      "support_tickets",
+      "support_messages",
+      "brand_settings",
+      "agent_reviews",
+      "testimonials",
+      "broadcast_ads",
+      "blog_posts",
+      "payment_methods",
     ];
 
     tables.forEach((table) => {
@@ -46,6 +61,8 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["my-reservations"] });
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
             qc.invalidateQueries({ queryKey: ["admin-revenue-stats"] });
+            qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
+            qc.invalidateQueries({ queryKey: ["available-balance"] });
           }
 
           // --- Withdrawals ---
@@ -53,15 +70,18 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["withdrawals"] });
             qc.invalidateQueries({ queryKey: ["admin-withdrawals"] });
             qc.invalidateQueries({ queryKey: ["available-balance"] });
+            qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
           }
 
-          // --- Investments ---
+          // --- Investments & Schedules & Certificates ---
           if (table === "investment_properties") {
             qc.invalidateQueries({ queryKey: ["admin-invest"] });
             qc.invalidateQueries({ queryKey: ["admin-invest-stats"] });
             qc.invalidateQueries({ queryKey: ["admin-invest-list"] });
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
             qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
+            qc.invalidateQueries({ queryKey: ["investment-opportunities"] });
+            qc.invalidateQueries({ queryKey: ["investment-property"] });
           }
           if (table === "user_investments") {
             qc.invalidateQueries({ queryKey: ["investments"] });
@@ -71,18 +91,48 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
             qc.invalidateQueries({ queryKey: ["portfolio"] });
+            qc.invalidateQueries({ queryKey: ["user-investment-detail"] });
           }
-
-          // --- Investment Schedules ---
           if (table === "investment_schedules") {
             qc.invalidateQueries({ queryKey: ["investment-schedules"] });
             qc.invalidateQueries({ queryKey: ["admin-schedules"] });
+            qc.invalidateQueries({ queryKey: ["admin-installments"] });
+          }
+          if (table === "investment_certificates") {
+            qc.invalidateQueries({ queryKey: ["investment-certificate"] });
+            qc.invalidateQueries({ queryKey: ["my-certificates"] });
+          }
+
+          // --- Secondary Marketplace ---
+          if (table === "secondary_market_listings") {
+            qc.invalidateQueries({ queryKey: ["secondary-market"] });
+            qc.invalidateQueries({ queryKey: ["secondary-listings"] });
+            qc.invalidateQueries({ queryKey: ["my-secondary-listings"] });
+            qc.invalidateQueries({ queryKey: ["admin-secondary-market"] });
+          }
+
+          // --- KYC & Verification ---
+          if (table === "kyc_verifications") {
+            qc.invalidateQueries({ queryKey: ["kyc"] });
+            qc.invalidateQueries({ queryKey: ["admin-kyc"] });
+            qc.invalidateQueries({ queryKey: ["admin-verification-queue"] });
+          }
+
+          // --- Legal Documents ---
+          if (table === "user_documents" || table === "document_templates") {
+            qc.invalidateQueries({ queryKey: ["user-documents"] });
+            qc.invalidateQueries({ queryKey: ["my-documents"] });
+            qc.invalidateQueries({ queryKey: ["admin-documents"] });
+            qc.invalidateQueries({ queryKey: ["admin-templates"] });
+            qc.invalidateQueries({ queryKey: ["document-templates"] });
+            qc.invalidateQueries({ queryKey: ["admin-verification-queue"] });
           }
 
           // --- Receipts ---
           if (table === "receipts") {
             qc.invalidateQueries({ queryKey: ["admin-receipts"] });
             qc.invalidateQueries({ queryKey: ["my-receipts"] });
+            qc.invalidateQueries({ queryKey: ["receipt"] });
           }
 
           // --- Returns & Payouts ---
@@ -93,17 +143,16 @@ export function useRealtimeSync() {
           }
           if (table === "payouts") {
             qc.invalidateQueries({ queryKey: ["admin-payouts"] });
+            qc.invalidateQueries({ queryKey: ["dashboard-overview-stats"] });
           }
 
-          // --- Bookings ---
+          // --- Bookings & Inquiries ---
           if (table === "bookings") {
             qc.invalidateQueries({ queryKey: ["my-bookings"] });
             qc.invalidateQueries({ queryKey: ["admin-bookings"] });
             qc.invalidateQueries({ queryKey: ["agent-bookings"] });
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
           }
-
-          // --- Inquiries ---
           if (table === "inquiries") {
             qc.invalidateQueries({ queryKey: ["my-inquiries"] });
             qc.invalidateQueries({ queryKey: ["admin-inquiries"] });
@@ -111,7 +160,7 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
           }
 
-          // --- Properties ---
+          // --- Properties & Reservations ---
           if (table === "properties") {
             qc.invalidateQueries({ queryKey: ["saved-list"] });
             qc.invalidateQueries({ queryKey: ["admin-properties"] });
@@ -122,8 +171,6 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["my-purchases"] });
             qc.invalidateQueries({ queryKey: ["my-reservations"] });
           }
-
-          // --- Reservations ---
           if (table === "reservations") {
             qc.invalidateQueries({ queryKey: ["my-reservations"] });
             qc.invalidateQueries({ queryKey: ["my-purchases"] });
@@ -137,16 +184,62 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["related"] });
           }
 
-          // --- Users, Roles, Agents ---
+          // --- Users, Roles, Profiles, Referrals ---
           if (table === "profiles" || table === "user_roles") {
             qc.invalidateQueries({ queryKey: ["admin-users"] });
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
             qc.invalidateQueries({ queryKey: ["profile"] });
+            qc.invalidateQueries({ queryKey: ["user-roles"] });
           }
+          if (table === "referrals" || table === "referral_rewards") {
+            qc.invalidateQueries({ queryKey: ["referrals"] });
+            qc.invalidateQueries({ queryKey: ["referral-rewards"] });
+            qc.invalidateQueries({ queryKey: ["admin-referrals"] });
+            qc.invalidateQueries({ queryKey: ["my-referrals"] });
+          }
+
+          // --- Support Center ---
+          if (table === "support_tickets" || table === "support_messages") {
+            qc.invalidateQueries({ queryKey: ["support-tickets"] });
+            qc.invalidateQueries({ queryKey: ["my-tickets"] });
+            qc.invalidateQueries({ queryKey: ["support-messages"] });
+            qc.invalidateQueries({ queryKey: ["admin-support-tickets"] });
+          }
+
+          // --- Brand Settings & Payment Methods ---
+          if (table === "brand_settings") {
+            qc.invalidateQueries({ queryKey: ["brand-settings"] });
+          }
+          if (table === "payment_methods") {
+            qc.invalidateQueries({ queryKey: ["all-payment-methods"] });
+            qc.invalidateQueries({ queryKey: ["admin-payment-methods"] });
+          }
+
+          // --- Reviews & Testimonials ---
+          if (table === "agent_reviews" || table === "testimonials") {
+            qc.invalidateQueries({ queryKey: ["agent-reviews"] });
+            qc.invalidateQueries({ queryKey: ["reviews"] });
+            qc.invalidateQueries({ queryKey: ["testimonials"] });
+            qc.invalidateQueries({ queryKey: ["admin-reviews"] });
+            qc.invalidateQueries({ queryKey: ["admin-testimonials"] });
+          }
+
+          // --- Broadcast Ads & Blog ---
+          if (table === "broadcast_ads") {
+            qc.invalidateQueries({ queryKey: ["broadcast-ads"] });
+            qc.invalidateQueries({ queryKey: ["admin-broadcasts"] });
+          }
+          if (table === "blog_posts") {
+            qc.invalidateQueries({ queryKey: ["blog-posts"] });
+            qc.invalidateQueries({ queryKey: ["admin-blog-posts"] });
+          }
+
+          // --- Agents & Locations ---
           if (table === "agents") {
             qc.invalidateQueries({ queryKey: ["admin-agents"] });
             qc.invalidateQueries({ queryKey: ["admin-agents-list"] });
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
+            qc.invalidateQueries({ queryKey: ["agents"] });
           }
           if (table === "locations") {
             qc.invalidateQueries({ queryKey: ["admin-locations"] });
@@ -160,6 +253,7 @@ export function useRealtimeSync() {
           // --- Wallets ---
           if (table === "crypto_assets") {
             qc.invalidateQueries({ queryKey: ["admin-wallets"] });
+            qc.invalidateQueries({ queryKey: ["crypto-assets"] });
           }
 
           // --- Notifications ---

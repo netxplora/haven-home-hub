@@ -536,7 +536,7 @@ export function SupportWidget() {
                   className="h-9 w-9 flex items-center justify-center rounded-lg hover:bg-accent/60 text-muted-foreground hover:text-foreground shrink-0 transition-colors"
                   title="Attach file"
                 >
-                  <Paperclip className="h-4.5 w-4.5" />
+                  <Paperclip className="h-4 w-4" />
                 </button>
                 <input
                   ref={fileInputRef}

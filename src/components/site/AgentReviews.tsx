@@ -23,9 +23,12 @@ export function AgentReviews({ agentId, agentName, propertyId }: AgentReviewsPro
   const { data: reviews = [], isLoading } = useQuery({
     queryKey: ["agent-reviews", agentId],
     queryFn: async () => {
+      // NOTE: user_id references auth.users — not profiles — so PostgREST
+      // cannot resolve a profiles:user_id join. We select only the review
+      // columns and display a generic reviewer label in the UI.
       const { data, error } = await (supabase
         .from("agent_reviews" as any)
-        .select("*, profiles:user_id(full_name)")
+        .select("id, agent_id, user_id, property_id, rating, title, content, verified, status, created_at")
         .eq("agent_id", agentId)
         .eq("status", "approved")
         .order("created_at", { ascending: false }) as any);
@@ -82,13 +85,11 @@ export function AgentReviews({ agentId, agentName, propertyId }: AgentReviewsPro
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-full bg-primary/10 flex items-center justify-center">
-                    <span className="text-xs font-bold text-primary">
-                      {review.profiles?.full_name?.charAt(0) || "?"}
-                    </span>
+                    <span className="text-xs font-bold text-primary">R</span>
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium">{review.profiles?.full_name || "User"}</p>
+                      <p className="text-sm font-medium">Verified Reviewer</p>
                       {review.verified && (
                         <Badge variant="outline" className="text-[10px] gap-1 text-primary border-primary/25 bg-primary/10">
                           <ShieldCheck className="h-2.5 w-2.5" /> Verified

@@ -439,25 +439,25 @@ export function FractionalPaymentDialog({
                 
                 <div className="p-5 space-y-4 max-h-[30vh] overflow-y-auto text-xs text-muted-foreground leading-relaxed custom-scrollbar divide-y divide-border/60">
                   <div className="pb-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Fractional Asset Allocation</strong>: I understand I am purchasing legal fractional titles inside the property coordinates. Units are distributed based on capital contribution records.
                     </p>
                   </div>
                   <div className="py-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Capital Hold and Illiquidity</strong>: I acknowledge that fractional assets represent long-term holdings of {property.holding_period_months} months. Early redemption options are restricted and subject to secondary market regulations.
                     </p>
                   </div>
                   <div className="py-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Pending Administrative Verification</strong>: Payments undergo strict human audit. Accounts remain in a `payment_under_review` (Pending Confirmation) state until transaction receipts are cleared.
                     </p>
                   </div>
                   <div className="pt-3 flex gap-3 items-start">
-                    <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                     <p>
                       <strong>Growth Dynamics</strong>: Property valuations are dynamic. Rental returns fluctuate with market updates and management efficiency.
                     </p>
@@ -838,15 +838,15 @@ export function FractionalPaymentDialog({
 
               <div className="rounded-2xl border border-border bg-accent/10 p-5 max-w-md text-xs text-left space-y-3.5">
                 <div className="flex gap-3">
-                  <Clock className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                  <Clock className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <p><strong>Verification Timelines</strong>: Human audit takes approximately 1-2 business days. Fractional blocks remain reserved.</p>
                 </div>
                 <div className="flex gap-3">
-                  <Building2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                  <Building2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <p><strong>Dashboard Status Update</strong>: Your Unified Dashboard updates automatically to `confirmed` status post verification.</p>
                 </div>
                 <div className="flex gap-3">
-                  <CheckCircle2 className="h-4.5 w-4.5 text-primary shrink-0 mt-0.5" />
+                  <CheckCircle2 className="h-4 w-4 text-primary shrink-0 mt-0.5" />
                   <p><strong>Confirmation Correspondence</strong>: You will receive direct email receipt confirmation and institutional ownership certificate links immediately upon clearance.</p>
                 </div>
               </div>
@@ -878,7 +878,7 @@ export function FractionalPaymentDialog({
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" disabled={loading} onClick={handleCreateInvestment}>
-                {loading ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : <>Confirm Method <ChevronRight className="ml-1 h-4 w-4" /></>}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Confirm Method <ChevronRight className="ml-1 h-4 w-4" /></>}
               </Button>
             </div>
           )}
@@ -898,7 +898,7 @@ export function FractionalPaymentDialog({
                 <ArrowLeft className="h-4 w-4" />
               </Button>
               <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" disabled={loading || !hash || !proofUrl} onClick={handleSubmitProof}>
-                {loading ? <Loader2 className="h-4.5 w-4.5 animate-spin" /> : "Submit Verification proof"}
+                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Submit Verification proof"}
               </Button>
             </div>
           )}

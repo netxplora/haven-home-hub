@@ -73,7 +73,7 @@ export function CompareWidget() {
             className="text-muted-foreground hover:text-destructive h-11 w-11 rounded-xl shrink-0"
             title="Clear all comparison queue"
           >
-            <Trash2 className="h-4.5 w-4.5" />
+            <Trash2 className="h-4 w-4" />
           </Button>
           
           <Button 

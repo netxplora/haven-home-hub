@@ -436,7 +436,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
 
                             {r.status === "awaiting_reservation_fee" && (
                               <div className="p-3.5 bg-amber-500/5 border border-amber-500/10 rounded-lg flex items-center gap-3">
-                                <AlertCircle className="h-4.5 w-4.5 text-amber-600 shrink-0" />
+                                <AlertCircle className="h-4 w-4 text-amber-600 shrink-0" />
                                 <div className="flex-1 min-w-0">
                                   <p className="text-xs font-semibold text-amber-800">Action Required: Reservation Fee Submission</p>
                                   <p className="text-[10px] text-amber-700/80 mt-0.5 font-normal">Please submit payment proof before expiry to secure your hold.</p>

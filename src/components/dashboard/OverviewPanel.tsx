@@ -311,7 +311,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
           <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
             <div className="flex items-center gap-3 mb-5">
               <div className="h-9 w-9 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center">
-                <Home className="h-4.5 w-4.5" />
+                <Home className="h-4 w-4" />
               </div>
               <div>
                 <h3 className="font-serif text-base font-semibold text-foreground">Buyer Dashboard</h3>
@@ -351,7 +351,7 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
           <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
             <div className="flex items-center gap-3 mb-5">
               <div className="h-9 w-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
-                <BarChart3 className="h-4.5 w-4.5" />
+                <BarChart3 className="h-4 w-4" />
               </div>
               <div>
                 <h3 className="font-serif text-base font-semibold text-foreground">Investor Dashboard</h3>

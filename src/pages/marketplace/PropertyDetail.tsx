@@ -1038,7 +1038,7 @@ export default function PropertyDetail() {
           <div className="flex items-center justify-between mb-8">
             <div>
               <h2 className="font-serif text-2xl font-semibold">{"Similar Properties"}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">{property.locations?.name ? `More listings in $location.` : "More listings in the area."}</p>
+              <p className="text-muted-foreground mt-1 text-sm">{property.locations?.name ? `More listings in ${property.locations.name}.` : "More listings in the area."}</p>
             </div>
             <Button asChild variant="ghost" className="rounded-lg font-medium text-primary hover:bg-primary/5 group">
               <Link to="/properties">{"View all"} <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></Link>

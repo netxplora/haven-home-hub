@@ -354,7 +354,7 @@ export default function ComparePage() {
                             className="absolute top-6 right-6 h-7 w-7 rounded-full bg-background border border-border/80 shadow-sm flex items-center justify-center text-muted-foreground hover:text-destructive hover:border-destructive/30 z-10 opacity-0 group-hover:opacity-100 transition-all duration-300"
                             title="Remove from comparison"
                           >
-                            <XCircle className="h-4.5 w-4.5" />
+                            <XCircle className="h-4 w-4" />
                           </button>
                           <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-secondary/10 shadow-sm">
                             <img src={resolveImage(p.cover_image_url)} alt={p.title} loading="lazy" className="w-full h-full object-cover" />

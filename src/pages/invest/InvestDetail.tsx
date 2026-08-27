@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { InteractivePropertyMap } from "@/components/site/InteractivePropertyMap";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { AlertTriangle, ArrowLeft, Building2, CalendarClock, ChartLine, Coins, Layers, MapPin, ShieldAlert, ShieldCheck, Wallet, Minus, Plus } from "lucide-react";
@@ -578,16 +579,13 @@ export default function InvestDetail() {
                       <p className="text-sm text-muted-foreground">{data.city}, {data.state}, {data.country}</p>
                     </div>
                   </div>
-                  <div className="relative aspect-video w-full rounded-xl overflow-hidden border border-border bg-accent/50">
-                    <iframe
-                      width="100%"
-                      height="100%"
-                      style={{ border: 0 }}
-                      loading="lazy"
-                      allowFullScreen
-                      referrerPolicy="no-referrer-when-downgrade"
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(data.location || data.city + ", " + data.state)}&output=embed`}
-                    ></iframe>
+                  <div className="relative h-[420px] w-full rounded-xl overflow-hidden border border-border">
+                    <InteractivePropertyMap
+                      latitude={null}
+                      longitude={null}
+                      address={[data.location, data.city, data.state, data.country].filter(Boolean).join(", ")}
+                      title={data.title}
+                    />
                   </div>
                 </div>
               </TabsContent>
