@@ -413,7 +413,7 @@ export default function PropertyDetail() {
                   <p className="text-[10px] text-muted-foreground mt-1">{property.floodRisk}</p>
                 </div>
                 <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
-                  <MapPin className="h-5 w-5 text-amber-400 mx-auto mb-2" />
+                  <MapPin className="h-5 w-5 text-primary mx-auto mb-2" />
                   <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Walk Score</p>
                   <p className="text-xl font-bold text-foreground mt-1">{property.walkScore}<span className="text-xs font-normal text-muted-foreground">/100</span></p>
                   <p className="text-[10px] text-muted-foreground mt-1">Very Walkable</p>
@@ -690,8 +690,8 @@ export default function PropertyDetail() {
                       iconColor = "text-primary";
                     } else if (typeLower.includes('shopping') || typeLower.includes('mall') || typeLower.includes('retail')) {
                       Icon = MapPin;
-                      iconBg = "bg-amber-50";
-                      iconColor = "text-amber-600";
+                      iconBg = "bg-secondary/20";
+                      iconColor = "text-foreground";
                     }
 
                     return (
@@ -817,7 +817,7 @@ export default function PropertyDetail() {
           {agent && (
             <div className="mt-12">
               <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground mb-6">
-                <Star className="h-5 w-5 text-amber-400" /> {"Agent Reviews"}
+                <Star className="h-5 w-5 text-primary" /> {"Agent Reviews"}
               </h2>
               <AgentReviews agentId={agent.id} agentName={agent.full_name} propertyId={property.id} />
             </div>

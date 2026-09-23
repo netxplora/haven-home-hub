@@ -70,7 +70,7 @@ export function AdminRegionTelemetry() {
                 <Badge variant={region.status === "published" ? "default" : "secondary"} className="shadow-sm">
                   {region.status}
                 </Badge>
-                {region.is_featured && <Badge variant="default" className="bg-amber-500 hover:bg-amber-600 shadow-sm"><CheckCircle2 className="h-3 w-3 mr-1" /> Featured</Badge>}
+                {region.is_featured && <Badge variant="default" className="bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm"><CheckCircle2 className="h-3 w-3 mr-1" /> Featured</Badge>}
               </div>
             </div>
             

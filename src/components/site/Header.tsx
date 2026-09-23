@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { Menu, User as UserIcon, LogOut, LayoutDashboard, Shield, ChevronDown } from "lucide-react";
+import { Menu, User as UserIcon, LogOut, LayoutDashboard, Shield, ChevronDown, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import {
@@ -118,27 +118,27 @@ export function Header() {
 
   // ── Shared Nav Link Style ──
   const navLinkClass = (isActive: boolean) =>
-    `px-3.5 py-2 rounded-lg text-sm font-medium transition-colors ${
+    `relative px-3.5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
       isActive
-        ? "text-primary bg-primary/8"
-        : "text-foreground/80 hover:text-foreground hover:bg-accent/50"
+        ? "text-primary font-semibold bg-primary/10 shadow-xs"
+        : "text-foreground/80 hover:text-foreground hover:bg-muted/70"
     }`;
 
   return (
     <header
       className={`fixed inset-x-0 z-40 transition-all duration-300 ease-in-out ${
         isScrolled
-          ? "border-b border-border/50 bg-white/90 dark:bg-background/90 backdrop-blur-lg shadow-sm"
-          : "border-b border-white/10 bg-white/70 dark:bg-background/70 backdrop-blur-md shadow-sm"
+          ? "border-b border-border/80 bg-background/95 backdrop-blur-xl shadow-md"
+          : "border-b border-border/30 bg-background/80 backdrop-blur-md shadow-xs"
       }`}
       style={{ top: topOffset }}
     >
-      <div className="container-wide flex flex-col md:flex-row md:h-[64px] justify-between gap-0 md:gap-6 py-2 md:py-0">
+      <div className="container-wide flex flex-col md:flex-row md:h-[68px] justify-between items-center gap-0 md:gap-6 py-2 md:py-0">
         
         <div className="flex w-full md:w-auto h-[48px] md:h-full items-center justify-between">
           {/* Logo */}
-          <Link to="/" className="flex items-center shrink-0" aria-label={`${brand.platform_name} home`}>
-            <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-10 md:h-12 w-auto" />
+          <Link to="/" className="flex items-center shrink-0 transition-opacity hover:opacity-90" aria-label={`${brand.platform_name} home`}>
+            <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-9 md:h-11 w-auto object-contain" />
           </Link>
           
           {/* Mobile Hamburger & Notification */}
@@ -293,40 +293,50 @@ export function Header() {
         </nav>
 
         {/* Desktop Actions */}
-        <div className="hidden items-center gap-2 md:flex">
+        <div className="hidden items-center gap-3 md:flex">
+          <Link
+            to="/properties"
+            className="flex items-center justify-center h-9 w-9 rounded-lg border border-border/60 text-muted-foreground hover:text-foreground hover:bg-muted/70 hover:border-border transition-all"
+            aria-label="Search properties"
+            title="Search properties"
+          >
+            <Search className="h-4 w-4" />
+          </Link>
+
           {user ? (
             <>
               <NotificationBell />
               <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="sm" className="gap-2 rounded-lg h-9 border-border/60 hover:bg-accent/50 p-1 pr-3">
-                  <Avatar className="h-7 w-7">
+                <Button variant="outline" size="sm" className="gap-2.5 rounded-lg h-9 border-border/70 hover:bg-muted/60 p-1.5 pr-3 shadow-xs">
+                  <Avatar className="h-6 w-6">
                     <AvatarImage src={avatarUrl || ""} />
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                    <AvatarFallback className="bg-primary/10 text-primary text-[11px] font-bold">
                       {user.email?.charAt(0).toUpperCase() || <UserIcon className="h-3 w-3" />}
                     </AvatarFallback>
                   </Avatar>
-                  <span className="text-sm font-medium">Account</span>
+                  <span className="text-xs font-semibold tracking-wide">Account</span>
+                  <ChevronDown className="h-3 w-3 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuLabel className="truncate font-normal text-muted-foreground text-xs">{user.email}</DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-56 shadow-lg border border-border/80 rounded-xl">
+                <DropdownMenuLabel className="truncate font-medium text-muted-foreground text-xs">{user.email}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={() => navigate("/dashboard")}>
-                  <LayoutDashboard className="mr-2 h-4 w-4" /> {"My dashboard"}
+                <DropdownMenuItem onSelect={() => navigate("/dashboard")} className="cursor-pointer font-medium text-xs">
+                  <LayoutDashboard className="mr-2 h-4 w-4 text-primary" /> {"My dashboard"}
                 </DropdownMenuItem>
                 {isAgent && (
-                  <DropdownMenuItem onSelect={() => navigate("/agent")}>
-                    <UserIcon className="mr-2 h-4 w-4" /> {"Agent dashboard"}
+                  <DropdownMenuItem onSelect={() => navigate("/agent")} className="cursor-pointer font-medium text-xs">
+                    <UserIcon className="mr-2 h-4 w-4 text-primary" /> {"Agent dashboard"}
                   </DropdownMenuItem>
                 )}
                 {isAdmin && (
-                  <DropdownMenuItem onSelect={() => navigate("/admin")}>
-                    <Shield className="mr-2 h-4 w-4" /> {"Admin"}
+                  <DropdownMenuItem onSelect={() => navigate("/admin")} className="cursor-pointer font-medium text-xs">
+                    <Shield className="mr-2 h-4 w-4 text-primary" /> {"Admin"}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onSelect={signOut} className="text-destructive focus:text-destructive">
+                <DropdownMenuItem onSelect={signOut} className="text-destructive focus:text-destructive cursor-pointer font-medium text-xs">
                   <LogOut className="mr-2 h-4 w-4" /> {"Sign out"}
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -337,12 +347,16 @@ export function Header() {
               <Button
                 variant="ghost"
                 size="sm"
-                className="h-9 text-foreground/70 hover:text-foreground"
+                className="h-9 px-4 text-xs font-semibold text-foreground/80 hover:text-foreground hover:bg-muted/70 rounded-lg transition-colors"
                 onClick={() => navigate("/auth")}
               >
                 {"Sign in"}
               </Button>
-              <Button size="sm" className="h-9 bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg shadow-sm" onClick={() => navigate("/auth?tab=signup")}>
+              <Button 
+                size="sm" 
+                className="h-9 px-5 bg-primary text-primary-foreground hover:bg-primary/95 font-semibold text-xs rounded-lg shadow-sm hover-lift transition-all" 
+                onClick={() => navigate("/auth?tab=signup")}
+              >
                 {"Get started"}
               </Button>
             </>

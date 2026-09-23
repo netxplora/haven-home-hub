@@ -9,6 +9,7 @@ import { Reviews } from "@/components/site/Reviews";
 import { AgentReviews, AgentRatingBadge } from "@/components/site/AgentReviews";
 import { SEO } from "@/components/site/SEO";
 import { useBrand } from "@/hooks/useBrand";
+import locationDowntown from "@/assets/location-downtown.jpg";
 
 export default function Agents() {
   const { brand } = useBrand();
@@ -40,13 +41,12 @@ export default function Agents() {
       {/* Hero Header */}
       <div className="relative overflow-hidden min-h-[350px] sm:min-h-[400px] lg:min-h-[450px] flex items-center bg-black">
         <img 
-          src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=1920&q=80" 
+          src={locationDowntown}
           alt={`${brand.platform_name} Agents`} 
           className="absolute inset-0 h-full w-full object-cover"
-          crossOrigin="anonymous"
         />
-        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-60 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[2]" />
+        <div className="absolute inset-0 bg-black/40 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
         
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-3 text-sm font-medium tracking-wider uppercase text-primary">Our Team</p>

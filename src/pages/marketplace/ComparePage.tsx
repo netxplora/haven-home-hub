@@ -291,13 +291,13 @@ export default function ComparePage() {
                   {advisors.largestSpace && (
                     <div className="bg-background border border-border/60 rounded-xl p-4 flex flex-col justify-between hover:shadow-sm transition-shadow">
                       <div>
-                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md uppercase tracking-wider mb-2">
+                        <span className="inline-flex items-center gap-1 text-[10px] font-bold text-secondary bg-secondary/10 px-2 py-0.5 rounded-md uppercase tracking-wider mb-2">
                           <Layers className="h-3 w-3" /> Largest Space
                         </span>
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider">Maximum Size</h4>
                         <p className="text-sm font-bold text-foreground mt-2 line-clamp-1">{advisors.largestSpace.title}</p>
                       </div>
-                      <p className="text-lg font-serif font-semibold text-amber-600 mt-4">
+                      <p className="text-lg font-serif font-semibold text-secondary mt-4">
                         {advisors.largestSpace.size_sqm} <span className="text-xs font-sans font-normal text-muted-foreground">sqm</span>
                       </p>
                     </div>

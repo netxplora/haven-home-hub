@@ -54,7 +54,7 @@ export default function ForgotPassword() {
           animate={{ scale: 1 }}
           transition={{ duration: 10, ease: "easeOut" }}
         />
-        {/* Gradient Overlay: dark to transparent with subtle primary/orange tint */}
+        {/* Gradient Overlay: dark to transparent with subtle emerald tint */}
         <div className="absolute inset-0 z-10 bg-gradient-to-t from-slate-950/90 via-slate-900/60 to-primary/20 backdrop-blur-[2px]" />
 
         {/* Content */}

@@ -14,10 +14,6 @@ import {
   Search, 
   X, 
   MapPin, 
-  TrendingUp,
-  Percent,
-  Calendar,
-  Filter,
   ArrowUpDown,
   CheckCircle2,
   Building2
@@ -29,6 +25,7 @@ import { EmptyState } from "@/components/ui/EmptyState";
 import type { InvestmentProperty } from "@/lib/invest";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGateModal } from "@/components/auth/AuthGateModal";
+import investHeroImg from "@/assets/invest-heroo.jpg";
 
 const INVESTMENT_CATEGORIES = [
   { value: "all", label: "All Categories" },
@@ -43,15 +40,8 @@ export default function InvestOpportunities() {
   const [params, setParams] = useSearchParams();
   const [isFilterOpen, setIsFilterOpen] = useState(false);
 
-  const { data: siteContent = [] } = useQuery({
-    queryKey: ["public-site-content"],
-    queryFn: async () => {
-      const { data } = await supabase.from("site_content").select("*");
-      return data ?? [];
-    },
-  });
-
-  const heroImageUrl = siteContent.find((c: any) => c.section_key === "invest_hero_image")?.content_value?.url || "https://images.unsplash.com/photo-1560520031-3a4dc4e9de0c?auto=format&fit=crop&w=1920&q=80";
+  // Local hero image — no remote dependency
+  const heroImageUrl = investHeroImg;
 
   // Filter States from URL
   const q = params.get("q") ?? "";
@@ -175,9 +165,8 @@ export default function InvestOpportunities() {
           alt="Investment Hero"
           className="absolute inset-0 h-full w-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/30 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-60 z-[2]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[3]" />
+        <div className="absolute inset-0 bg-black/40 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
 
         <div className="container-wide relative z-10 flex flex-col justify-center py-16 sm:py-24 text-white">
           <div className="max-w-3xl">
@@ -484,8 +473,8 @@ export default function InvestOpportunities() {
               Join our private waitlist for exclusive, high-return properties before they go public.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-              <Button size="lg" className="rounded-full px-8 h-14 font-bold shadow-card">JOIN WAITLIST</Button>
-              <Button variant="outline" size="lg" className="rounded-full px-8 h-14 font-bold border-primary/20">TALK TO AN ADVISOR</Button>
+              <Button size="lg" className="rounded-full px-8 h-14 font-bold shadow-card">Join Waitlist</Button>
+              <Button variant="outline" size="lg" className="rounded-full px-8 h-14 font-bold border-primary/20">Talk to an Advisor</Button>
             </div>
           </div>
         </div>

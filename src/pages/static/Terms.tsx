@@ -8,15 +8,9 @@ export default function Terms() {
     <SiteLayout>
       <SEO title="Terms of Service" description={`${brand.platform_name} Terms of Service. Please read these terms carefully before using our platform.`} />
       {/* Hero Header */}
-      <div className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-black">
-        <img
-          src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=1920&q=80"
-          alt="Terms and conditions"
-          className="absolute inset-0 h-full w-full object-cover"
-          crossOrigin="anonymous"
-        />
-        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-60 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[2]" />
+      <div className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-[#0d120e]">
+        <div className="absolute inset-0 bg-gradient-to-br from-[#0d120e] via-[#111] to-[#0a0f0a]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[1]" />
         
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-2 text-sm font-medium tracking-wider uppercase text-primary">Legal</p>

@@ -73,8 +73,8 @@ export default function CertificateView() {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
         <div className="rounded-2xl border border-border bg-card p-12 max-w-md text-center shadow-lg">
-          <div className="mx-auto w-16 h-16 bg-amber-100 rounded-full flex items-center justify-center mb-6">
-            <ShieldCheck className="h-8 w-8 text-amber-600" />
+          <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-6">
+            <ShieldCheck className="h-8 w-8 text-primary" />
           </div>
           <h2 className="font-serif text-2xl font-bold mb-3">Certificate Not Available</h2>
           <p className="text-sm text-muted-foreground mb-6 leading-relaxed">

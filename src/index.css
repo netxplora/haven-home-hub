@@ -46,15 +46,20 @@
     --info: 199 89% 48%;           /* #0EA5E9 (Info) */
     --info-foreground: 0 0% 100%;
 
+    --champagne: 42 58% 56%;       /* #C5A059 (Champagne Gold) */
+    --champagne-foreground: 222 47% 11%;
+    --champagne-muted: 42 45% 92%; /* #F5F0E6 */
+
     /* Borders */
     --border: 214 32% 91%;         /* #E2E8F0 */
     --input: 214 32% 91%;          
     --ring: 160 84% 39%;           /* #10B981 */
 
-    --radius: 8px;
+    --radius: 12px;
 
-    --gradient-hero: linear-gradient(180deg, rgba(15, 23, 42, 0.90) 0%, rgba(30, 41, 59, 0.40) 50%, rgba(15, 23, 42, 0.95) 100%);
-    --gradient-hero-rose: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.90) 100%);
+    --gradient-hero: linear-gradient(180deg, rgba(15, 23, 42, 0.92) 0%, rgba(15, 23, 42, 0.45) 50%, rgba(15, 23, 42, 0.95) 100%);
+    --gradient-hero-emerald: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(15, 23, 42, 0.92) 100%);
+    --gradient-hero-gold: linear-gradient(135deg, rgba(197, 160, 89, 0.18) 0%, rgba(15, 23, 42, 0.92) 100%);
 
     --sidebar-background: 210 40% 98%;
     --sidebar-foreground: 222 47% 11%;
@@ -258,7 +263,47 @@ html {
 
 .hover-lift:hover {
   transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(184, 134, 11, 0.12), 0 4px 12px rgba(15, 23, 42, 0.08);
+  box-shadow: 0 16px 32px -8px rgba(15, 23, 42, 0.12), 0 4px 12px -2px rgba(15, 23, 42, 0.06);
+}
+
+/* ── 3D Scene & Perspective Utilities ── */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+.perspective-1200 {
+  perspective: 1200px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.card-3d {
+  transform-style: preserve-3d;
+  transition: transform 0.45s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.45s ease;
+  will-change: transform;
+}
+
+/* ── Reduced Motion Accessibility ── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .card-3d,
+  .hero-3d-scene,
+  .hover-lift {
+    transform: none !important;
+  }
 }
 
 /* ── Image zoom on hover ── */

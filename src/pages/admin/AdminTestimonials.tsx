@@ -139,7 +139,7 @@ export function AdminTestimonials() {
         <form onSubmit={handleSubmit} className="sticky top-6 space-y-4 rounded-xl border border-border/50 bg-card p-6 shadow-xl shadow-primary/5">
           <div className="flex items-center justify-between mb-2">
             <div className="flex items-center gap-3">
-              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${editingId ? 'bg-amber-500/10 text-amber-600' : 'bg-primary/10 text-primary'}`}>
+              <div className={`h-10 w-10 rounded-xl flex items-center justify-center ${editingId ? 'bg-secondary/10 text-secondary' : 'bg-primary/10 text-primary'}`}>
                 {editingId ? <Pencil className="h-5 w-5" /> : <Plus className="h-5 w-5" />}
               </div>
               <div>

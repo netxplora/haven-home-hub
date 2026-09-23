@@ -86,8 +86,8 @@ export function RegionTelemetry() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-full bg-orange-500/10 flex items-center justify-center shrink-0">
-                        <Home className="h-3.5 w-3.5 text-orange-500" />
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Home className="h-3.5 w-3.5 text-primary" />
                       </div>
                       <div className="text-xs font-semibold leading-tight">
                         <span className="block text-muted-foreground text-[10px] uppercase">Housing Demand</span>

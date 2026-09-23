@@ -19,6 +19,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import investHero4 from "@/assets/invest-hero4.jpg";
 
 export default function SecondaryMarket() {
   const { brand } = useBrand();
@@ -53,29 +54,39 @@ export default function SecondaryMarket() {
         description={`Trade fractional property shares securely with other investors on the ${brand.platform_name} Secondary Market.`} 
       />
       
-      <div className="bg-muted/30 py-12 md:py-16 border-b border-border/50 pt-24">
-        <div className="container-wide">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+      <div className="relative overflow-hidden bg-black text-white py-20 sm:py-24 border-b border-white/10 pt-28">
+        <div className="absolute inset-0">
+          <img
+            src={investHero4}
+            alt="Secondary Share Exchange"
+            className="h-full w-full object-cover opacity-35"
+          />
+          <div className="absolute inset-0 bg-black/40 z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
+        </div>
+
+        <div className="container-wide relative z-10">
+          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
             <div>
-              <Badge variant="outline" className="mb-4 bg-primary/10 text-primary border-primary/20">
-                <Activity className="h-3 w-3 mr-1" /> Live Trading
+              <Badge variant="outline" className="mb-4 bg-primary/20 text-primary border-primary/30 backdrop-blur-md px-3 py-1 font-semibold text-xs tracking-wider uppercase">
+                <Activity className="h-3 w-3 mr-1" /> Live Secondary Trading
               </Badge>
-              <h1 className="font-serif text-4xl sm:text-5xl font-bold tracking-tight text-foreground">
-                <span className="text-secondary">Secondary</span> Market
+              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">
+                Secondary Share Exchange
               </h1>
-              <p className="mt-4 text-lg text-muted-foreground max-w-2xl leading-relaxed">
-                Purchase fractional shares directly from other investors. Access fully funded properties instantly without waiting for new offerings.
+              <p className="mt-4 text-base sm:text-lg text-white/80 max-w-2xl leading-relaxed">
+                Purchase fractional shares directly from other verified investors. Access established properties with immediate income distributions.
               </p>
             </div>
             
-            <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3 bg-card p-4 rounded-xl border border-border shadow-sm">
-              <div className="relative flex-1 sm:min-w-[300px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3 bg-white/10 backdrop-blur-md p-2 rounded-xl border border-white/15 shadow-xl">
+              <div className="relative flex-1 sm:min-w-[320px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
                 <Input 
                   placeholder="Search properties or locations..." 
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-11"
+                  className="pl-9 h-11 bg-black/40 border-white/20 text-white placeholder:text-white/50 focus-visible:ring-primary"
                 />
               </div>
             </div>

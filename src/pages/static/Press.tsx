@@ -3,6 +3,7 @@ import { Badge } from "@/components/ui/badge";
 import { Mail, ArrowRight } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { useBrand } from "@/hooks/useBrand";
+import property2 from "@/assets/property-2.jpg";
 
 export default function Press() {
   const { brand } = useBrand();
@@ -55,13 +56,13 @@ export default function Press() {
       {/* Header */}
       <section className="relative overflow-hidden min-h-[350px] sm:min-h-[450px] lg:min-h-[500px] flex items-center bg-black">
         <img 
-          src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80" 
+          src="/images/hero/hero-invest.webp"
+          onError={(e) => { (e.currentTarget as HTMLImageElement).src = property2; }}
           alt="Press & Media Office" 
           className="absolute inset-0 h-full w-full object-cover"
-          crossOrigin="anonymous"
         />
-        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-60 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[2]" />
+        <div className="absolute inset-0 bg-black/40 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
         
         <div className="container-wide relative z-10 text-primary-foreground">
           <p className="mb-4 text-sm font-medium tracking-wider text-primary uppercase">Press & Media</p>

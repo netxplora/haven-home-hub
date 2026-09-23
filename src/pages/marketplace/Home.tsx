@@ -19,6 +19,8 @@ import { OrganizationJsonLd } from "@/components/site/JsonLd";
 import { toast } from "@/hooks/use-toast";
 import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 import { PromoBanner } from "@/components/site/PromoBanner";
+import { Hero3DShowcase } from "@/components/site/Hero3DShowcase";
+import investProp1 from "@/assets/invest-prop-1.jpg";
 import { lazy, Suspense } from "react";
 import { useBrand } from "@/hooks/useBrand";
 
@@ -147,103 +149,99 @@ export default function Home() {
 
   return (
     <SiteLayout>
-      <SEO image="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp">
-        <link rel="preload" as="image" href="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp" />
+      <SEO image="/images/hero/haven-home-hero-desktop.webp">
+        <link rel="preload" as="image" href="/images/hero/haven-home-hero-desktop.webp" fetchPriority="high" />
       </SEO>
       <OrganizationJsonLd />
 
-      {/* 1. HERO SEARCH EXPERIENCE (SAFETY DOMINANT) */}
-      <section className="relative overflow-hidden min-h-[580px] sm:min-h-[660px] lg:min-h-[720px] flex items-center">
-        <div className="absolute inset-0 bg-[url('https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp')] bg-cover bg-center bg-no-repeat">
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="metadata"
-            poster="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp"
-            className="absolute inset-0 h-full w-full object-cover z-0"
-          >
-            <source src="/hero_video_desktop.webm" type="video/webm" media="(min-width: 1024px)" />
-            <source src="/hero_video_desktop.mp4" type="video/mp4" media="(min-width: 1024px)" />
-            <source src="/hero_video_mobile.webm" type="video/webm" media="(max-width: 1023px)" />
-            <source src="/hero_video_mobile.mp4" type="video/mp4" media="(max-width: 1023px)" />
-            <source src="https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero-video.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-black/40 z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[1]" />
-        </div>
+      {/* 1. 3D REAL ESTATE HERO UPGRADE (LIGHTWEIGHT CSS 3D & STATIC ASSET ARCHITECTURE) */}
+      <Hero3DShowcase />
 
-        <div className="container-wide relative z-10 py-20">
-          <div className="max-w-4xl animate-fade-in-up">
-            <p className="mb-6 inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-1.5 text-xs font-semibold text-white uppercase tracking-widest backdrop-blur-md border border-white/20 shadow-sm">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Premium Real Estate Platform
-            </p>
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] text-white tracking-tight drop-shadow-md">
-              Invest in <span className="text-secondary">verified properties</span> with complete confidence.
-            </h1>
-            <p className="mt-6 max-w-2xl text-base sm:text-lg text-white/90 font-medium leading-relaxed drop-shadow-sm">
-              Access a curated portfolio of thoroughly inspected residential and commercial real estate. Buy, rent, or co-invest alongside industry professionals.
-            </p>
+      {/* 1B. MODERNIZED REFINED PROPERTY SEARCH BAR */}
+      <section className="relative z-30 -mt-10 sm:-mt-12 container-wide">
+        <div className="rounded-2xl sm:rounded-3xl border border-border/80 bg-card shadow-card p-4 sm:p-6 backdrop-blur-md">
+          {/* Segmented Category Buttons */}
+          <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1 sm:pb-0">
+            {[
+              { id: "buy", label: "Buy Property" },
+              { id: "rent", label: "Rent" },
+              { id: "invest", label: "Co-Invest" },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSearchType(tab.id as any)}
+                className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold tracking-wide transition-all cursor-pointer ${
+                  searchType === tab.id
+                    ? "bg-primary text-primary-foreground shadow-xs"
+                    : "bg-muted/60 text-muted-foreground hover:bg-muted hover:text-foreground"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
 
-            {/* Premium Glassmorphism Search Bar */}
-            <div className="mt-10 bg-white/10 backdrop-blur-xl border border-white/20 p-2 sm:p-3 rounded-2xl sm:rounded-full shadow-[0_8px_32px_0_rgba(0,0,0,0.3)] w-full max-w-4xl focus-guidance">
-              <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-center gap-2 w-full">
-                
-                {/* Location select */}
-                <div className="flex-1 w-full relative">
-                  <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                    <MapPin className="h-4 w-4 text-white/80" />
-                  </div>
-                  <select
-                    value={searchLocation}
-                    onChange={(e) => setSearchLocation(e.target.value)}
-                    className="w-full h-14 pl-11 pr-4 border-0 rounded-xl sm:rounded-full bg-white/5 hover:bg-white/10 text-white focus:ring-2 focus:ring-primary/50 focus:outline-none appearance-none transition-colors text-sm font-medium [&>option]:text-slate-900 cursor-pointer"
-                  >
-                    <option value="">Any Region</option>
-                    {exploreLocations.map((loc: any) => (
-                      <option key={loc.id} value={loc.id}>{loc.name}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="hidden sm:block w-px h-8 bg-white/20"></div>
-
-                {/* Budget selector */}
-                <div className="flex-1 w-full relative">
-                  <select
-                    value={searchBudget}
-                    onChange={(e) => setSearchBudget(e.target.value)}
-                    className="w-full h-14 px-5 border-0 rounded-xl sm:rounded-full bg-white/5 hover:bg-white/10 text-white focus:ring-2 focus:ring-primary/50 focus:outline-none appearance-none transition-colors text-sm font-medium [&>option]:text-slate-900 cursor-pointer"
-                  >
-                    <option value="">No Budget Limit</option>
-                    <option value="under500k">Under $500,000</option>
-                    <option value="500k-1m">$500,000 - $1,000,000</option>
-                    <option value="1m-2.5m">$1,000,000 - $2,500,000</option>
-                    <option value="above2.5m">Above $2,500,000</option>
-                  </select>
-                </div>
-
-                {/* Search Button */}
-                <Button type="submit" size="lg" className="w-full sm:w-auto h-14 px-8 rounded-xl sm:rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm tracking-wide shadow-lg">
-                  <Search className="mr-2 h-4 w-4" /> Search
-                </Button>
-              </form>
+          <form onSubmit={handleSearchSubmit} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 items-center">
+            {/* Location Select */}
+            <div className="lg:col-span-4 relative">
+              <div className="absolute inset-y-0 left-3.5 flex items-center pointer-events-none text-muted-foreground">
+                <MapPin className="h-4 w-4 text-primary" />
+              </div>
+              <select
+                value={searchLocation}
+                onChange={(e) => setSearchLocation(e.target.value)}
+                className="w-full h-12 pl-10 pr-4 rounded-xl border border-border/80 bg-background text-foreground text-xs sm:text-sm font-medium focus:ring-2 focus:ring-primary/40 focus:outline-none appearance-none transition-colors cursor-pointer"
+                aria-label="Filter by region"
+              >
+                <option value="">All Regions & Cities</option>
+                {exploreLocations.map((loc: any) => (
+                  <option key={loc.id} value={loc.id}>{loc.name}</option>
+                ))}
+              </select>
             </div>
 
-            {/* Verified Only Toggle */}
-            <div className="mt-4 flex items-center justify-start gap-2 pl-2 sm:pl-6">
+            {/* Budget Selector */}
+            <div className="lg:col-span-4 relative">
+              <select
+                value={searchBudget}
+                onChange={(e) => setSearchBudget(e.target.value)}
+                className="w-full h-12 px-4 rounded-xl border border-border/80 bg-background text-foreground text-xs sm:text-sm font-medium focus:ring-2 focus:ring-primary/40 focus:outline-none appearance-none transition-colors cursor-pointer"
+                aria-label="Filter by budget"
+              >
+                <option value="">Any Price Range</option>
+                <option value="under500k">Under $500,000</option>
+                <option value="500k-1m">$500,000 - $1,000,000</option>
+                <option value="1m-2.5m">$1,000,000 - $2,500,000</option>
+                <option value="above2.5m">Above $2,500,000</option>
+              </select>
+            </div>
+
+            {/* Search CTA */}
+            <div className="lg:col-span-4 flex items-center gap-3">
+              <Button 
+                type="submit" 
+                size="lg" 
+                className="w-full h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/95 font-semibold text-xs sm:text-sm shadow-emerald hover-lift transition-all flex items-center justify-center gap-2"
+              >
+                <Search className="h-4 w-4" />
+                <span>Search Listings</span>
+              </Button>
+            </div>
+          </form>
+
+          {/* Verified Filter Checkbox */}
+          <div className="mt-3.5 pt-3 border-t border-border/50 flex items-center justify-between flex-wrap gap-2 text-xs">
+            <label className="flex items-center gap-2 cursor-pointer select-none text-muted-foreground hover:text-foreground">
               <input
                 type="checkbox"
-                id="verifiedCheck"
                 checked={verifiedOnly}
                 onChange={(e) => setVerifiedOnly(e.target.checked)}
-                className="h-4 w-4 rounded border-white/40 bg-white/10 text-primary focus:ring-primary focus:ring-offset-0 cursor-pointer"
+                className="h-4 w-4 rounded border-border text-primary focus:ring-primary"
               />
-              <label htmlFor="verifiedCheck" className="text-sm font-medium text-white/90 drop-shadow-sm cursor-pointer select-none">
-                Show verified listings only
-              </label>
-            </div>
+              <span className="font-medium text-foreground">Verified titles & legal clearance only</span>
+            </label>
+            <span className="text-[11px] text-muted-foreground">Updated in real-time with state property records</span>
           </div>
         </div>
       </section>
@@ -345,49 +343,48 @@ export default function Home() {
 
       {/* 5. INVESTMENT OPPORTUNITIES (FRACTIONAL PREVIEW) */}
       <section className="container-wide section-gap">
-        <div className="relative overflow-hidden rounded-2xl shadow-xl min-h-[480px] flex items-center group">
+        <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl min-h-[460px] flex items-center group bg-[#0d120e]">
           <img
-            src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1600&q=80"
-            alt="Real Estate Investment"
-            className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            src={investProp1}
+            alt="Real Estate Fractional Investments"
+            className="absolute inset-0 h-full w-full object-cover opacity-45 transition-transform duration-1000 group-hover:scale-105"
             loading="lazy"
-            crossOrigin="anonymous"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/95 via-gray-900/80 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0d120e] via-[#0d120e]/85 to-transparent" />
 
           <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-2xl text-left">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-primary mb-6 border border-primary/30 backdrop-blur-sm">
-              <PieChart className="h-4 w-4" /> Fractional Ownership
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary mb-5 border border-primary/30 backdrop-blur-sm">
+              <PieChart className="h-3.5 w-3.5" /> Fractional Ownership
             </span>
             <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
               Build Wealth Through Premium Real Estate
             </h2>
-            <p className="mt-5 text-base sm:text-lg text-gray-300 leading-relaxed max-w-xl font-light">
-              Co-invest in vetted, high-yield commercial and residential properties across the Sunbelt. Receive monthly yields and monitor appreciation from a transaction-ready interface.
+            <p className="mt-4 text-base sm:text-lg text-white/70 leading-relaxed max-w-xl font-normal">
+              Co-invest in vetted, income-generating residential and commercial properties. Receive scheduled yields and track valuation directly from your dashboard.
             </p>
             
-            <div className="mt-10 flex flex-wrap items-center gap-8 sm:gap-12 max-w-lg mb-10">
+            <div className="mt-8 flex flex-wrap items-center gap-8 sm:gap-12 max-w-lg mb-8">
               <div className="flex flex-col">
-                 <div className="text-3xl font-semibold text-white">42+</div>
-                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">Active Units</div>
+                 <div className="text-3xl font-serif font-bold text-white">42+</div>
+                 <div className="text-[10px] text-white/60 mt-1 uppercase tracking-widest font-semibold">Active Units</div>
               </div>
-              <div className="h-10 w-[1px] bg-white/20 hidden sm:block"></div>
+              <div className="h-10 w-px bg-white/15 hidden sm:block"></div>
               <div className="flex flex-col">
-                 <div className="text-3xl font-semibold text-white">12%</div>
-                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">Avg Target ROI</div>
+                 <div className="text-3xl font-serif font-bold text-emerald-400">12.4%</div>
+                 <div className="text-[10px] text-white/60 mt-1 uppercase tracking-widest font-semibold">Avg Target Yield</div>
               </div>
-              <div className="h-10 w-[1px] bg-white/20 hidden sm:block"></div>
+              <div className="h-10 w-px bg-white/15 hidden sm:block"></div>
               <div className="flex flex-col">
-                 <div className="text-3xl font-semibold text-white">$4.2M</div>
-                 <div className="text-[11px] text-white/60 mt-1.5 uppercase tracking-widest font-medium">Funded Value</div>
+                 <div className="text-3xl font-serif font-bold text-white">$4.2M</div>
+                 <div className="text-[10px] text-white/60 mt-1 uppercase tracking-widest font-semibold">Funded Value</div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row items-center gap-4">
-              <Button asChild size="lg" className="w-full sm:w-auto bg-primary text-white hover:bg-primary/90 shadow-lg font-medium text-base h-12 px-8">
-                <Link to="/invest">Start Investing <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            <div className="flex flex-col sm:flex-row items-center gap-3.5">
+              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-emerald transition-all">
+                <Link to="/invest" className="flex items-center gap-2">Start Investing <ArrowRight className="h-4 w-4" /></Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto bg-white/5 text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md font-medium text-base h-12 px-8">
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-transparent text-white border-white/20 hover:bg-white/10 hover:border-white/40 font-medium text-sm transition-all">
                 <Link to="/invest/opportunities">View Opportunities</Link>
               </Button>
             </div>
@@ -395,20 +392,25 @@ export default function Home() {
         </div>
       </section>
 
-      {/* NEW: DYNAMIC ABOUT US SECTION */}
+      {/* DYNAMIC ABOUT US SECTION */}
       {about && (
         <section className="container-wide py-20 border-t border-border/40">
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative">
               <div className="absolute inset-0 bg-secondary/10 translate-x-4 translate-y-4 rounded-3xl" />
-              <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80" alt="About Us" className="relative rounded-3xl z-10 border border-border shadow-xl object-cover aspect-[4/3]" />
+              <img 
+                src="/about_office.png" 
+                alt="About Haven Home Hub" 
+                className="relative rounded-3xl z-10 border border-border/80 shadow-card object-cover aspect-[4/3] w-full" 
+                loading="lazy"
+              />
             </div>
             <div className="space-y-6">
               <span className="text-xs font-semibold tracking-widest text-primary uppercase block">{about.badge || "Platform Overview"}</span>
               <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight leading-[1.1]">{about.title}</h2>
-              <p className="text-muted-foreground text-lg leading-relaxed">{about.description}</p>
-              <div className="pt-4 flex gap-4">
-                 <Button asChild size="lg" className="rounded-full px-8 h-12 bg-primary text-primary-foreground font-bold text-xs uppercase tracking-wider">
+              <p className="text-muted-foreground text-base sm:text-lg leading-relaxed">{about.description}</p>
+              <div className="pt-2 flex gap-4">
+                 <Button asChild size="lg" className="rounded-xl px-7 h-12 bg-primary text-primary-foreground font-semibold text-sm shadow-emerald transition-all">
                    <Link to="/about">Learn more about us</Link>
                  </Button>
               </div>
@@ -791,7 +793,7 @@ function HomeLocations() {
           const floodZone = loc.name.length % 2 === 0 ? "Zone X (Low Risk)" : "Zone AE (Required)";
           const safetyIndex = (8 + (loc.name.length % 20) / 10).toFixed(1);
           const lowerName = loc.name.toLowerCase();
-          let imageUrl = "https://images.unsplash.com/photo-1554629947-334ff61d85dc?auto=format&fit=crop&w=800&q=80";
+          let imageUrl = "/regions/region_major_city_skyline_1781281501942.png";
           
           if (lowerName.includes("new york") || lowerName.includes("ny")) {
             imageUrl = "/regions/region_major_city_skyline_1781281501942.png";
@@ -800,7 +802,7 @@ function HomeLocations() {
           } else if (lowerName.includes("seattle") || lowerName.includes("wa") || lowerName.includes("washington")) {
             imageUrl = "/regions/region_development_1781281576904.png";
           } else if (lowerName.includes("miami") || lowerName.includes("fl") || lowerName.includes("florida")) {
-            imageUrl = "/regions/region_major_city_skyline_1781281501942.png"; // Fallback for Miami if we don't have a specific one
+            imageUrl = "/regions/region_major_city_skyline_1781281501942.png";
           } else {
             imageUrl = loc.image_url || "/regions/region_major_city_skyline_1781281501942.png";
           }
@@ -816,7 +818,7 @@ function HomeLocations() {
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">Walk Score:</span>
-                    <span className="font-semibold text-foreground flex items-center gap-1"><MapPin className="h-3 w-3 text-amber-500" /> {walkScore} - Walkable</span>
+                    <span className="font-semibold text-foreground flex items-center gap-1"><MapPin className="h-3 w-3 text-primary" /> {walkScore} - Walkable</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">FEMA Zone:</span>

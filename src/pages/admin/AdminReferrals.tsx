@@ -189,7 +189,7 @@ export function AdminReferrals() {
       case "qualified":
         return "bg-amber-500/10 text-amber-600 border-amber-500/20";
       case "pending_reward":
-        return "bg-orange-500/10 text-orange-600 border-orange-500/20";
+        return "bg-amber-500/10 text-amber-700 border-amber-500/20";
       case "approved":
         return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
       case "paid":
@@ -245,7 +245,7 @@ export function AdminReferrals() {
             label: "Pending",
             value: stats.pendingCount,
             icon: Clock,
-            color: "text-orange-600 bg-orange-500/10",
+            color: "text-amber-600 bg-amber-500/10",
           },
           {
             label: "Flagged",

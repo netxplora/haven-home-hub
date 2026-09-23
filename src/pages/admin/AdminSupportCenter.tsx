@@ -86,7 +86,7 @@ function priorityColor(priority: string) {
     case "critical":
       return "bg-red-500/10 text-red-600 border-red-200";
     case "high":
-      return "bg-orange-500/10 text-orange-600 border-orange-200";
+      return "bg-rose-500/10 text-rose-600 border-rose-200";
     case "medium":
       return "bg-amber-500/10 text-amber-600 border-amber-200";
     case "low":

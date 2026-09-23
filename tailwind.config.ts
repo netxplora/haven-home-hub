@@ -76,10 +76,14 @@ export default {
         'gradient-hero-rose': 'var(--gradient-hero-rose)',
       },
       boxShadow: {
-        'sm': '0 1px 3px rgba(146, 64, 14, 0.06)',
-        'md': '0 4px 16px rgba(146, 64, 14, 0.10)',
-        'lg': '0 8px 32px rgba(146, 64, 14, 0.14)',
-        'DEFAULT': '0 2px 8px rgba(146, 64, 14, 0.08)',
+        'sm': '0 1px 3px rgba(15, 23, 42, 0.05)',
+        'md': '0 4px 16px rgba(15, 23, 42, 0.08)',
+        'lg': '0 12px 32px rgba(15, 23, 42, 0.12)',
+        'DEFAULT': '0 2px 8px rgba(15, 23, 42, 0.06)',
+        'card': '0 10px 30px -5px rgba(15, 23, 42, 0.06), 0 4px 12px -2px rgba(15, 23, 42, 0.03)',
+        'float': '0 20px 40px -10px rgba(15, 23, 42, 0.16)',
+        'emerald': '0 10px 25px -5px rgba(16, 185, 129, 0.25)',
+        'gold': '0 10px 25px -5px rgba(197, 160, 89, 0.25)',
       },
       keyframes: {
         "accordion-down": {

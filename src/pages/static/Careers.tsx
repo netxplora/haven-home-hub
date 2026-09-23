@@ -13,6 +13,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useBrand } from "@/hooks/useBrand";
+import heroImg from "@/assets/hero.webp";
+import locationDowntown from "@/assets/location-downtown.jpg";
 
 const fallbackOpenings = [
   {
@@ -148,7 +150,7 @@ export default function Careers() {
 
   const heroTitle = settings?.hero_title || `Join Our Team`;
   const heroDesc = settings?.hero_description || `We are building the future of transparent real estate and fractional investing. Work alongside industry experts in an environment that rewards innovation, autonomy, and direct impact.`;
-  const bgImg = settings?.hero_background_url || "https://images.unsplash.com/photo-1556761175-5973dc0f32e7?auto=format&fit=crop&w=1920&q=80";
+  const bgImg = settings?.hero_background_url || heroImg;
 
   return (
     <SiteLayout>
@@ -164,10 +166,9 @@ export default function Careers() {
             src={bgImg}
             alt={`${brand.platform_name} team collaboration`}
             className="h-full w-full object-cover scale-105"
-            crossOrigin="anonymous"
           />
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px] z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/20 z-[1]" />
+          <div className="absolute inset-0 bg-black/40 z-[1]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
         </div>
         
         <div className="container-wide relative z-10 py-20 flex flex-col items-start justify-center">
@@ -228,10 +229,9 @@ export default function Careers() {
           </div>
           <div className="relative aspect-[4/3] overflow-hidden rounded-2xl shadow-xl border border-border">
             <img
-              src="https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=1200&q=80"
-              alt="Team collaboration"
+              src={locationDowntown}
+              alt="Team and office environment"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 hover:scale-105"
-              crossOrigin="anonymous"
             />
           </div>
         </div>

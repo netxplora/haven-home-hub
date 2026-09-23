@@ -6,6 +6,10 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { InvestmentCard } from "@/components/invest/InvestmentCard";
 import investHero from "@/assets/invest-hero.jpg";
+import investProp1 from "@/assets/invest-prop-1.jpg";
+import investProp2 from "@/assets/invest-prop-2.jpg";
+import investProp3 from "@/assets/invest-prop-3.jpg";
+import property4 from "@/assets/property-4.jpg";
 import type { InvestmentProperty } from "@/lib/invest";
 import { SEO } from "@/components/site/SEO";
 import { PromoBanner } from "@/components/site/PromoBanner";
@@ -124,25 +128,22 @@ export default function InvestHome() {
               Co-invest in professionally managed commercial and residential properties. Earn scheduled rental income and benefit from long-term property appreciation.
             </p>
             
-            {/* High CTA Area - Glassmorphism Container */}
-            <div className="mt-12 bg-white/10 backdrop-blur-2xl border border-white/20 p-6 sm:p-8 rounded-3xl shadow-[0_8px_32px_0_rgba(0,0,0,0.36)] w-full max-w-3xl focus-guidance">
-               <div className="flex flex-col sm:flex-row gap-6 justify-between items-center">
-                 <div className="text-center sm:text-left">
-                    <h3 className="font-serif text-2xl font-bold text-white">Start your investment portfolio</h3>
-                    <p className="text-sm text-white/80 mt-2 font-medium">Review verified properties currently open for funding.</p>
-                 </div>
-                 <Button asChild size="lg" className="w-full sm:w-auto h-14 px-10 rounded-full bg-primary text-primary-foreground hover:bg-primary/90 font-bold text-sm tracking-wide shadow-xl shrink-0">
-                   <Link to="/invest/opportunities">
-                     View Opportunities <ArrowRight className="ml-2 h-4 w-4" />
-                   </Link>
-                 </Button>
-               </div>
+            {/* High CTA Area - Minimal & Elegant */}
+            <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">
+              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-emerald transition-all">
+                <Link to="/invest/opportunities" className="flex items-center gap-2">
+                  View Opportunities <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-white/10 text-white border-white/25 hover:bg-white/20 hover:border-white/40 font-medium text-sm transition-all">
+                <a href="#how-it-works">How It Works</a>
+              </Button>
             </div>
             
-            <div className="mt-8 flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 text-sm font-semibold text-white/90">
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> Bank-grade security</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> Transparent legal structures</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-primary" /> Professional management</span>
+            <div className="mt-10 pt-8 border-t border-white/15 flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 text-xs font-semibold text-white/80">
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Bank-grade security</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Transparent legal structures</span>
+              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Professional management</span>
             </div>
           </div>
         </div>
@@ -170,42 +171,42 @@ export default function InvestHome() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Portfolio Value</p>
-              <p className="font-serif text-2xl font-bold text-foreground">
+            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Portfolio Value</p>
+              <p className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
                 {user ? formatMoney(nav) : "$124,500.00"}
               </p>
-              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
-                <ArrowUpRight className="h-3 w-3 text-green-600" /> Valuation
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" /> Current Valuation
               </p>
             </div>
 
-            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Amount Invested</p>
-              <p className="font-serif text-2xl font-bold text-foreground">
+            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Amount Invested</p>
+              <p className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
                 {user ? formatMoney(totalInvested) : "$100,000.00"}
               </p>
-              <p className="text-xs text-muted-foreground mt-1.5 flex items-center gap-1">
-                <Activity className="h-3 w-3 text-primary" /> Capital deployed
+              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
+                <Activity className="h-3.5 w-3.5 text-primary" /> Capital deployed
               </p>
             </div>
 
-            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Expected ROI / Yield</p>
-              <p className="font-serif text-2xl font-bold text-green-600">
+            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Expected ROI / Yield</p>
+              <p className="font-serif text-2xl sm:text-3xl font-bold text-emerald-600">
                 {user ? formatMoney(expectedRoi) : "$18,500.00"}
               </p>
-              <p className="text-xs text-muted-foreground mt-1.5">
+              <p className="text-xs text-muted-foreground mt-2">
                 Target: {user ? `${averageYield}%` : "18.5%"} average p.a.
               </p>
             </div>
 
-            <div className="bg-secondary/20 rounded-xl p-4 border border-border/40 relative overflow-hidden">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1">Current ROI Earned</p>
-              <p className="font-serif text-2xl font-bold text-primary">
+            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
+              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Current ROI Earned</p>
+              <p className="font-serif text-2xl sm:text-3xl font-bold text-primary">
                 {user ? formatMoney(currentRoiEarned) : "$6,000.00"}
               </p>
-              <p className="text-xs text-muted-foreground mt-1.5">
+              <p className="text-xs text-muted-foreground mt-2">
                 Remaining to accrue: {user ? formatMoney(remainingRoi) : "$12,500.00"}
               </p>
             </div>
@@ -220,7 +221,7 @@ export default function InvestHome() {
             </div>
             <div className="text-center border-x border-border/40">
               <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Funding Completed</p>
-              <p className="font-serif text-lg font-bold text-amber-600">
+              <p className="font-serif text-lg font-bold text-secondary">
                 {user ? fundingCompletedCount : "1"}
               </p>
             </div>
@@ -243,7 +244,7 @@ export default function InvestHome() {
       <PromoBanner placement="invest_page" className="my-10" />
 
       {/* How it works */}
-      <section className="bg-secondary/10 border-y border-border/50 py-24">
+      <section id="how-it-works" className="bg-secondary/10 border-y border-border/50 py-24 scroll-mt-20">
         <div className="container-wide">
           <div className="mb-16 text-center max-w-2xl mx-auto">
             <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Process Overview</span>
@@ -294,8 +295,8 @@ export default function InvestHome() {
           <p className="mt-6 text-muted-foreground text-lg leading-relaxed">Diversify your portfolio across multiple high-performing real estate sectors, each carefully vetted by our acquisition team.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm">
-            <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=800&q=80" alt="Commercial" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
+            <img src={investProp1} alt="Commercial Real Estate" className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 text-left w-full">
                <h3 className="font-serif text-2xl font-bold text-white mb-2">Commercial Real Estate</h3>
@@ -303,8 +304,8 @@ export default function InvestHome() {
                <span className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">8-12% Target Yield</span>
             </div>
           </div>
-          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm">
-            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=800&q=80" alt="Residential" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
+            <img src={investProp2} alt="Premium Residential" className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 text-left w-full">
                <h3 className="font-serif text-2xl font-bold text-white mb-2">Premium Residential</h3>
@@ -312,8 +313,8 @@ export default function InvestHome() {
                <span className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">6-9% Target Yield</span>
             </div>
           </div>
-          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm">
-            <img src="https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?auto=format&fit=crop&w=800&q=80" alt="Industrial" className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
+            <img src={investProp3} alt="Industrial & Logistics" className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 text-left w-full">
                <h3 className="font-serif text-2xl font-bold text-white mb-2">Industrial & Logistics</h3>
@@ -383,7 +384,7 @@ export default function InvestHome() {
           </div>
           <div className="relative">
              <div className="absolute inset-0 bg-primary/10 translate-x-4 translate-y-4 rounded-[2rem] border border-primary/20" />
-             <img src="https://images.unsplash.com/photo-1556155092-490a1ba16284?auto=format&fit=crop&w=800&q=80" alt="Legal Compliance" className="relative rounded-[2rem] z-10 border border-border shadow-2xl object-cover aspect-[4/3]" />
+             <img src={investProp1} alt="Legal Compliance" className="relative rounded-[2rem] z-10 border border-border shadow-2xl object-cover aspect-[4/3]" />
           </div>
         </div>
       </section>
@@ -458,11 +459,10 @@ export default function InvestHome() {
       <section className="container-tight pb-32">
         <div className="relative overflow-hidden rounded-3xl border border-border/40 p-10 md:p-16 text-primary-foreground shadow-2xl">
           <img 
-            src="https://images.unsplash.com/photo-1574362848149-11496d93a7c7?auto=format&fit=crop&w=1600&q=80" 
-            alt="Architecture Blueprint" 
+            src={property4} 
+            alt="Architecture and Property" 
             loading="lazy"
             className="absolute inset-0 h-full w-full object-cover mix-blend-luminosity opacity-40"
-            crossOrigin="anonymous"
           />
           <div className="absolute inset-0 bg-secondary/95 backdrop-blur-[2px]" />
           <div className="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 bg-primary/20 rounded-full blur-3xl" />

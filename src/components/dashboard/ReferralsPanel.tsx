@@ -35,7 +35,7 @@ export function ReferralsPanel({ userId }: { userId: string }) {
       case "qualified":
         return "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400";
       case "pending_reward":
-        return "bg-orange-100 text-orange-700 dark:bg-orange-950/30 dark:text-orange-400";
+        return "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
       case "approved":
         return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400";
       case "paid":

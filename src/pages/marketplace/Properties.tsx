@@ -34,6 +34,10 @@ import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/EmptyState";
+import heroBuy from "@/assets/hero.webp";
+import heroRent from "@/assets/location-downtown.jpg";
+import heroLand from "@/assets/location-hills.jpg";
+import heroAll from "@/assets/property-1.jpg";
 
 /* ── Hero content per property type ────────────────────────── */
 const HERO_CONTENT: Record<string, { badge: string; title: string; subtitle: string; desc: string; img: string }> = {
@@ -42,28 +46,28 @@ const HERO_CONTENT: Record<string, { badge: string; title: string; subtitle: str
     title: "Buy Properties",
     subtitle: "Find your next home",
     desc: "Browse verified homes for sale — from family houses to modern apartments. Every listing is inspected and confirmed by our agency before going live.",
-    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_buy_properties.png",
+    img: heroBuy,
   },
   rent: {
     badge: "For Rent",
     title: "Rent Homes",
     subtitle: "Quality rental living",
     desc: "Explore professionally managed apartments, furnished units, and urban rental spaces. Flexible terms, verified landlords, and move-in ready options.",
-    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_rent_properties.png",
+    img: heroRent,
   },
   land: {
     badge: "Land Listings",
     title: "Land Listings",
     subtitle: "Secure your plot",
     desc: "View surveyed land parcels with clear titles — residential plots, commercial sites, and development-ready acreage across all locations.",
-    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_land_listings.png",
+    img: heroLand,
   },
   all: {
     badge: "All Listings",
     title: "All Properties",
     subtitle: "View all available properties",
     desc: "Search across homes for sale, rental properties, and land parcels. Every listing is verified and managed by our in-house agency team.",
-    img: "https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_all_properties.png",
+    img: heroAll,
   },
 };
 
@@ -287,9 +291,8 @@ export default function Properties() {
           alt={content.title}
           className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
         />
-        <div className="absolute inset-0 bg-black/30 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-60 z-[2]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[3]" />
+        <div className="absolute inset-0 bg-black/40 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
 
         <div className="container-wide relative z-10 flex flex-col justify-center py-16 sm:py-24 text-white">
           <div className="max-w-3xl">
@@ -563,7 +566,7 @@ export default function Properties() {
                     {/* Neighborhood Intelligence Filters */}
                     <div className="space-y-4 pt-4 border-t">
                       <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <Zap className="h-3.5 w-3.5 text-amber-500" /> Infrastructure & Safety
+                        <Zap className="h-3.5 w-3.5 text-primary" /> Infrastructure & Safety
                       </Label>
                       
                       {/* Verified Only */}

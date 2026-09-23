@@ -1,11 +1,11 @@
 {
-  "name": "Property Platform",
-  "short_name": "Property",
-  "description": "Find verified property listings across the United States.",
+  "name": "Haven Home Hub",
+  "short_name": "Haven",
+  "description": "Find verified property listings across the United States — buy, rent, or invest with trusted agents.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#ffffff",
-  "theme_color": "#B8860B",
+  "background_color": "#F8FAFC",
+  "theme_color": "#10B981",
   "orientation": "portrait-primary",
   "lang": "en",
   "icons": [

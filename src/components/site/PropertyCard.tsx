@@ -48,8 +48,8 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
   const isNew = property.created_at ? new Date(property.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) : false;
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border/40 bg-card shadow-soft transition-all duration-550 ease-out hover:shadow-card hover:border-primary/30 hover:-translate-y-1.5 flex flex-col h-full">
-      <Link to={`/properties/${property.slug}`} className="absolute inset-0 z-0" />
+    <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card transition-all duration-300 ease-out hover:shadow-lg hover:border-primary/40 hover:-translate-y-1 flex flex-col h-full">
+      <Link to={`/properties/${property.slug}`} className="absolute inset-0 z-0" aria-label={`View details for ${property.title}`} />
       
       {/* Image Block */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted pointer-events-none">
@@ -57,9 +57,9 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
           src={img}
           alt={property.title}
           loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-50 group-hover:opacity-30 transition-opacity duration-550" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
         
         {/* Glassmorphic Badges */}
         <div className="absolute left-4 top-4 flex flex-col gap-1.5 z-10">

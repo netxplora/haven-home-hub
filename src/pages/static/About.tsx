@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Building2, Handshake, MapPin, ShieldCheck, Users } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { useBrand } from "@/hooks/useBrand";
+import investHero from "@/assets/invest-hero.jpg";
 
 const stats = [
   { label: "Properties listed", value: "500+" },
@@ -45,33 +46,32 @@ export default function About() {
         canonicalUrl={`${window.location.origin}/about`}
       />
       {/* Hero Header */}
-      <div className="relative overflow-hidden min-h-[400px] sm:min-h-[500px] lg:min-h-[550px] flex items-center bg-black">
+      <div className="relative overflow-hidden min-h-[420px] sm:min-h-[500px] lg:min-h-[540px] flex items-center bg-[#0a0d0b]">
         <img 
-          src="https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80" 
-          alt={`${brand.platform_name} Corporate Office`} 
-          className="absolute inset-0 h-full w-full object-cover"
-          crossOrigin="anonymous"
+          src={investHero} 
+          alt={`${brand.platform_name} Headquarters`} 
+          className="absolute inset-0 h-full w-full object-cover opacity-50"
         />
-        <div className="absolute inset-0 bg-gradient-hero-rose mix-blend-multiply opacity-70 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-[2]" />
+        <div className="absolute inset-0 bg-black/40 z-[1]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0d0b] via-[#0a0d0b]/60 to-transparent z-[2]" />
         
-        <div className="container-wide relative z-10 text-primary-foreground">
-          <p className="mb-3 text-sm font-medium tracking-wider uppercase text-primary">About Us</p>
-          <h1 className="max-w-3xl font-serif text-4xl font-semibold sm:text-5xl md:text-6xl text-white leading-tight">
-            A real estate agency built on <span className="text-secondary">honesty and local expertise.</span>
+        <div className="container-wide relative z-10 text-primary-foreground py-20">
+          <p className="mb-3 text-xs font-semibold tracking-widest uppercase text-emerald-400">About Our Agency</p>
+          <h1 className="max-w-3xl font-serif text-3xl sm:text-5xl md:text-6xl text-white leading-tight font-semibold">
+            A real estate agency built on <span className="text-white/80 font-normal">honesty and local expertise.</span>
           </h1>
-          <p className="mt-6 max-w-2xl text-lg text-white/80 leading-relaxed">
-            We are an agency-led platform that curates homes for sale, rentals, and land — supported by a team of full-time agents who know the market firsthand.
+          <p className="mt-5 max-w-2xl text-base sm:text-lg text-white/70 leading-relaxed font-normal">
+            We are an agency-led platform that curates homes for sale, rentals, and land — supported by full-time agents who know the market firsthand.
           </p>
         </div>
       </div>
 
       {/* Stats */}
-      <section className="container-wide -mt-10 relative z-20 grid gap-6 sm:grid-cols-2 lg:grid-cols-4 pb-16">
+      <section className="container-wide -mt-8 relative z-20 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 pb-16">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-border bg-card p-8 text-center shadow-soft transition-all duration-300 hover:shadow-card hover:border-primary/40">
-            <p className="font-serif text-4xl font-semibold text-primary">{s.value}</p>
-            <p className="mt-2 text-sm uppercase tracking-wider text-muted-foreground">{s.label}</p>
+          <div key={s.label} className="rounded-2xl border border-border/70 bg-card p-7 text-center shadow-card transition-all duration-300 hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5">
+            <p className="font-serif text-3xl sm:text-4xl font-bold text-primary">{s.value}</p>
+            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</p>
           </div>
         ))}
       </section>

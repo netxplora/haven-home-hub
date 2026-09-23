@@ -355,7 +355,7 @@ export default function InvestDetail() {
         id="risk-ack-container" 
         className={cn(
           "mt-4 flex items-start gap-3 text-xs text-foreground/85 rounded-xl p-3 border border-transparent transition-all duration-300", 
-          showRiskPulse && "border-amber-500/50 bg-amber-500/10 animate-pulse scale-[1.02]"
+          showRiskPulse && "border-primary/50 bg-primary/8 animate-pulse scale-[1.02]"
         )}
       >
         <Checkbox
@@ -371,11 +371,11 @@ export default function InvestDetail() {
       </div>
 
       {user && !kycApproved && (
-        <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-amber-200/50 bg-amber-500/5 p-4">
-          <ShieldCheck className="h-4 w-4 text-amber-600 shrink-0 mt-0.5 animate-pulse" />
+        <div className="mt-4 flex items-start gap-2.5 rounded-xl border border-primary/20 bg-primary/5 p-4">
+          <ShieldCheck className="h-4 w-4 text-primary shrink-0 mt-0.5 animate-pulse" />
           <div>
-            <p className="text-xs font-semibold text-amber-800">Identity verification is required</p>
-            <p className="text-[10px] text-amber-800/80 mt-0.5">Please complete your verification in your profile before initiating payments.</p>
+            <p className="text-xs font-semibold text-foreground">Identity verification is required</p>
+            <p className="text-[10px] text-muted-foreground mt-0.5">Please complete your verification in your profile before initiating payments.</p>
           </div>
         </div>
       )}
@@ -705,8 +705,8 @@ export default function InvestDetail() {
       <Dialog open={kycWarningOpen} onOpenChange={setKycWarningOpen}>
         <DialogContent className="max-w-md p-0 overflow-hidden border-none rounded-2xl bg-background shadow-lux">
           <DialogHeader className="p-8 pb-4 text-center sm:text-center shrink-0">
-            <div className="h-14 w-14 rounded-full bg-amber-500/10 flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <ShieldCheck className="h-6 w-6 text-amber-600" />
+            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-4">
+              <ShieldCheck className="h-6 w-6 text-primary" />
             </div>
             <DialogTitle className="text-2xl font-bold font-serif">Identity Verification Required</DialogTitle>
             <DialogDescription className="text-muted-foreground mt-2 text-sm">
@@ -719,7 +719,7 @@ export default function InvestDetail() {
             </p>
           </DialogBody>
           <DialogFooter className="p-8 pt-4 bg-accent/20 border-t border-border/40 shrink-0 flex flex-col sm:flex-col gap-3">
-            <Button className="w-full h-12 text-sm font-semibold rounded-xl bg-amber-600 hover:bg-amber-700 text-white" asChild>
+            <Button className="w-full h-12 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground" asChild>
               <Link to="/dashboard?tab=profile" onClick={() => setKycWarningOpen(false)}>
                 Verify Identity Now
               </Link>
