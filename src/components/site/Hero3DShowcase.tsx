@@ -56,7 +56,6 @@ export function Hero3DShowcase() {
           muted
           loop
           playsInline
-          poster="/images/hero/haven-home-hero-desktop.webp"
           className="absolute inset-0 h-full w-full object-cover object-center"
         >
           <source src="/images/hero/herovid.mp4" type="video/mp4" />
