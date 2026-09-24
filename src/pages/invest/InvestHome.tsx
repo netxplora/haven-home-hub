@@ -17,6 +17,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { formatMoney } from "@/lib/invest";
 import { Badge } from "@/components/ui/badge";
 import { lazy, Suspense } from "react";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 const HomeTestimonials = lazy(() => import("@/components/site/HomeTestimonials").then(m => ({ default: m.HomeTestimonials })));
 
@@ -296,7 +297,12 @@ export default function InvestHome() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
-            <img src={investProp1} alt="Commercial Real Estate" className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+            <LazyImage 
+              src={investProp1} 
+              alt="Commercial Real Estate" 
+              wrapperClassName="absolute inset-0 h-full w-full"
+              className="opacity-60 transition-transform duration-700 group-hover:scale-105" 
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 text-left w-full">
                <h3 className="font-serif text-2xl font-bold text-white mb-2">Commercial Real Estate</h3>
@@ -305,7 +311,12 @@ export default function InvestHome() {
             </div>
           </div>
           <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
-            <img src={investProp2} alt="Premium Residential" className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+            <LazyImage 
+              src={investProp2} 
+              alt="Premium Residential" 
+              wrapperClassName="absolute inset-0 h-full w-full"
+              className="opacity-60 transition-transform duration-700 group-hover:scale-105" 
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 text-left w-full">
                <h3 className="font-serif text-2xl font-bold text-white mb-2">Premium Residential</h3>
@@ -314,7 +325,12 @@ export default function InvestHome() {
             </div>
           </div>
           <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
-            <img src={investProp3} alt="Industrial & Logistics" className="absolute inset-0 h-full w-full object-cover opacity-60 transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+            <LazyImage 
+              src={investProp3} 
+              alt="Industrial & Logistics" 
+              wrapperClassName="absolute inset-0 h-full w-full"
+              className="opacity-60 transition-transform duration-700 group-hover:scale-105" 
+            />
             <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
             <div className="absolute bottom-0 left-0 p-8 text-left w-full">
                <h3 className="font-serif text-2xl font-bold text-white mb-2">Industrial & Logistics</h3>
@@ -384,7 +400,7 @@ export default function InvestHome() {
           </div>
           <div className="relative">
              <div className="absolute inset-0 bg-primary/10 translate-x-4 translate-y-4 rounded-[2rem] border border-primary/20" />
-             <img src={investProp1} alt="Legal Compliance" className="relative rounded-[2rem] z-10 border border-border shadow-2xl object-cover aspect-[4/3]" />
+             <LazyImage src={investProp1} alt="Legal Compliance" aspectClass="aspect-[4/3]" wrapperClassName="relative z-10 w-full rounded-[2rem] overflow-hidden border border-border shadow-2xl" className="w-full h-full object-cover" />
           </div>
         </div>
       </section>
@@ -458,11 +474,11 @@ export default function InvestHome() {
       {/* CTA */}
       <section className="container-tight pb-32">
         <div className="relative overflow-hidden rounded-3xl border border-border/40 p-10 md:p-16 text-primary-foreground shadow-2xl">
-          <img 
+          <LazyImage 
             src={property4} 
             alt="Architecture and Property" 
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover mix-blend-luminosity opacity-40"
+            wrapperClassName="absolute inset-0 h-full w-full mix-blend-luminosity opacity-40"
+            aspectClass=""
           />
           <div className="absolute inset-0 bg-secondary/95 backdrop-blur-[2px]" />
           <div className="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 bg-primary/20 rounded-full blur-3xl" />

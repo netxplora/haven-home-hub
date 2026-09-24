@@ -12,6 +12,7 @@ import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "@/hooks/use-toast";
 import { Plus, Pencil, Trash2, Globe, MapPin, Image as ImageIcon, TrendingUp, CheckCircle2 } from "lucide-react";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 function slugify(s: string) {
   return s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -60,7 +61,7 @@ export function AdminRegionTelemetry() {
           <div key={region.id} className="group overflow-hidden rounded-2xl border border-border/50 bg-card shadow-sm hover:shadow-md transition-all">
             <div className="relative h-40 bg-secondary/20 border-b border-border/50 overflow-hidden">
               {region.cover_image_url ? (
-                <img src={region.cover_image_url} alt={region.name} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <LazyImage src={region.cover_image_url} alt={region.name} aspectClass="" wrapperClassName="w-full h-full" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
                   <MapPin className="h-10 w-10 text-muted-foreground/30" />
@@ -291,7 +292,7 @@ function RegionForm({ initial, onClose }: { initial: any; onClose: () => void })
                 </div>
                 {f.cover_image_url && (
                   <div className="mt-4 rounded-xl overflow-hidden border border-border shadow-sm h-48 bg-background relative">
-                     <img src={f.cover_image_url} alt="Cover Preview" className="w-full h-full object-cover" onError={(e) => { e.currentTarget.src = "/placeholder.svg" }} />
+                     <LazyImage src={f.cover_image_url} alt="Cover Preview" aspectClass="" wrapperClassName="w-full h-full" className="w-full h-full object-cover" />
                   </div>
                 )}
               </div>

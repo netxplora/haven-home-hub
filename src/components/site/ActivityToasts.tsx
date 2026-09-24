@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TrendingUp, Key, Building2, MapPin, BadgePercent, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 // Types
 interface ActivityToast {
@@ -152,9 +153,11 @@ export function ActivityToasts() {
       <div className="surface-glass rounded-xl p-3 border border-border/50 shadow-lux flex items-center gap-4 cursor-pointer hover:bg-card/40 transition-colors">
         {currentToast.investment_properties?.cover_image_url ? (
           <div className="h-12 w-12 rounded-lg bg-muted overflow-hidden shrink-0 border border-border/50 relative">
-            <img 
+            <LazyImage 
               src={currentToast.investment_properties.cover_image_url} 
               alt={currentToast.investment_properties.title || "Property"} 
+              aspectClass=""
+              wrapperClassName="h-full w-full"
               className="h-full w-full object-cover"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />

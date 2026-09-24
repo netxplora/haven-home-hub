@@ -22,6 +22,7 @@ import { useState, useEffect, useMemo } from "react";
 import { Area, AreaChart, ResponsiveContainer, Tooltip, XAxis, YAxis, CartesianGrid } from "recharts";
 import { DocumentViewerModal } from "@/components/dashboard/DocumentViewerModal";
 import { SEO } from "@/components/site/SEO";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { useBrand } from "@/hooks/useBrand";
 import DOMPurify from "dompurify";
 
@@ -247,7 +248,7 @@ export default function InvestPortfolioDetail() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-background shadow-soft shrink-0">
-                <img src={prop.cover_image_url} alt={prop.title} loading="lazy" className="w-full h-full object-cover" />
+                <LazyImage src={prop.cover_image_url} alt={prop.title} wrapperClassName="w-full h-full" className="w-full h-full object-cover" aspectClass="" />
               </div>
               <div>
                 <div className="flex flex-wrap items-center gap-2 mb-2">

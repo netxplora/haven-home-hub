@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { Separator } from "@/components/ui/separator";
 
 export function AdminAgents() {
@@ -55,7 +56,7 @@ export function AdminAgents() {
             <div className="flex items-start justify-between mb-4">
               <div className="h-14 w-14 rounded-xl overflow-hidden bg-accent border border-border/30">
                 {a.photo_url ? (
-                  <img src={a.photo_url} alt={a.full_name} loading="lazy" className="h-full w-full object-cover" />
+                  <LazyImage src={a.photo_url} alt={a.full_name} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
                 ) : (
                   <div className="h-full w-full flex items-center justify-center text-muted-foreground">
                     <UserCheck className="h-6 w-6" />

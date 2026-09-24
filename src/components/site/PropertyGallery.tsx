@@ -4,6 +4,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogBody } from "@/components/ui/dialog";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 interface PropertyGalleryProps {
   images: string[];
@@ -145,7 +146,7 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
                             setGridOpen(false);
                           }}
                         >
-                          <img src={img} alt="" loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
+                          <LazyImage src={img} alt="" aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-110" />
                           <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                             <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30">
                               <Maximize2 className="h-8 w-8 text-white" />
@@ -179,7 +180,7 @@ export function PropertyGallery({ images, title, propertyType, status, typeLabel
                 : "border-transparent opacity-50 hover:opacity-100 grayscale hover:grayscale-0"
             }`}
           >
-            <img src={img} alt="" loading="lazy" className="h-full w-full object-cover" onError={(e) => { e.currentTarget.src = "/placeholder.svg"; }} />
+            <LazyImage src={img} alt="" aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
             {currentIndex === i && (
               <div className="absolute inset-0 bg-primary/10" />
             )}

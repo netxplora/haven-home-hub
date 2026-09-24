@@ -9,6 +9,7 @@ import { Reviews } from "@/components/site/Reviews";
 import { AgentReviews, AgentRatingBadge } from "@/components/site/AgentReviews";
 import { SEO } from "@/components/site/SEO";
 import { useBrand } from "@/hooks/useBrand";
+import { LazyImage } from "@/components/ui/LazyImage";
 import locationDowntown from "@/assets/location-downtown.jpg";
 
 export default function Agents() {
@@ -63,7 +64,7 @@ export default function Agents() {
           const r = (ratings as any)[a.id];
           return (
             <div key={a.id} className="flex flex-col rounded-xl border border-border bg-card p-6 shadow-soft">
-              <img src={resolveImage(a.photo_url)} alt={a.full_name} loading="lazy" className="h-24 w-24 rounded-full object-cover" />
+              <LazyImage src={resolveImage(a.photo_url)} alt={a.full_name} aspectClass="" wrapperClassName="h-24 w-24 rounded-full overflow-hidden" className="h-full w-full object-cover" />
               <h3 className="mt-4 font-serif text-xl font-semibold">{a.full_name}</h3>
               <p className="text-sm text-muted-foreground">{a.role_title}</p>
               {r ? (

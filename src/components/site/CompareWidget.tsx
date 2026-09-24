@@ -3,6 +3,7 @@ import { useCompare } from "@/hooks/useCompare";
 import { X, Scale, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { resolveImage, formatPrice } from "@/lib/format";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export function CompareWidget() {
   const { compareList, removeFromCompare, clearCompare, isOpen, setIsOpen } = useCompare();
@@ -32,10 +33,12 @@ export function CompareWidget() {
               key={p.id} 
               className="flex items-center gap-3 shrink-0 bg-secondary/15 pr-1.5 rounded-xl border border-secondary/20 shadow-sm"
             >
-              <img 
+              <LazyImage 
                 src={resolveImage(p.cover_image_url)} 
                 alt={p.title} 
-                className="h-14 w-14 object-cover rounded-l-xl"
+                aspectClass=""
+                wrapperClassName="h-14 w-14 overflow-hidden rounded-l-xl"
+                className="h-full w-full object-cover"
               />
               <div className="w-28 sm:w-32">
                 <p className="text-xs font-bold truncate text-foreground">{p.title}</p>

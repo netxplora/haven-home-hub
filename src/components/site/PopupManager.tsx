@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { X, Megaphone, ArrowRight, ImageIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export function PopupManager() {
   const [open, setOpen] = useState(false);
@@ -120,14 +121,13 @@ export function PopupManager() {
           </button>
 
           {activeItem.image_url ? (
-            <div className="h-48 sm:h-64 md:h-72 w-full overflow-hidden bg-muted relative">
-              <img 
+            <LazyImage 
                 src={activeItem.image_url} 
                 alt={activeItem.title} 
+                aspectClass=""
+                wrapperClassName="h-48 sm:h-64 md:h-72 w-full overflow-hidden bg-muted relative"
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-            </div>
           ) : (
             <div className="h-32 sm:h-40 w-full bg-primary/10 flex items-center justify-center relative">
               <Megaphone className="h-12 w-12 text-primary/40" />

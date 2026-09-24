@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import useEmblaCarousel from "embla-carousel-react";
 import { Star } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export function HomeTestimonials() {
   const [emblaRef] = useEmblaCarousel({ loop: true, align: "start" });
@@ -54,7 +55,7 @@ export function HomeTestimonials() {
               </div>
               <div className="flex items-center gap-3">
                 {item.image_url ? (
-                  <img src={item.image_url} alt={item.name} className="h-10 w-10 rounded-full object-cover border border-border/50" draggable={false} />
+                  <LazyImage src={item.image_url} alt={item.name} aspectClass="" wrapperClassName="h-10 w-10 rounded-full overflow-hidden border border-border/50" className="h-full w-full object-cover" />
                 ) : (
                   <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
                     {item.name.charAt(0)}

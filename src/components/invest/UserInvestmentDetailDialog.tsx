@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 interface UserInvestmentDetailDialogProps {
   open: boolean;
@@ -54,7 +55,7 @@ export function UserInvestmentDetailDialog({ open, onClose, investment }: UserIn
         <DialogHeader className="p-6 md:p-8 bg-gradient-to-br from-primary/5 via-primary/5 to-background border-b border-border/40 shrink-0">
           <div className="flex gap-4 items-center">
             <div className="h-16 w-24 overflow-hidden rounded-lg bg-muted shrink-0 border border-border/50">
-              {property?.cover_image_url && <img src={property.cover_image_url} alt="" className="h-full w-full object-cover" />}
+              {property?.cover_image_url && <LazyImage src={property.cover_image_url} alt="" aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />}
             </div>
             <div>
               <DialogTitle className="font-serif text-2xl font-bold text-foreground">

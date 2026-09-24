@@ -345,11 +345,12 @@ export default function Home() {
       {/* 5. INVESTMENT OPPORTUNITIES (FRACTIONAL PREVIEW) */}
       <section className="container-wide section-gap">
         <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl min-h-[460px] flex items-center group bg-[#0d120e]">
-          <img
+          <LazyImage
             src={investProp1}
             alt="Real Estate Fractional Investments"
-            className="absolute inset-0 h-full w-full object-cover opacity-45 transition-transform duration-1000 group-hover:scale-105"
-            loading="lazy"
+            aspectClass=""
+            wrapperClassName="absolute inset-0 h-full w-full"
+            className="h-full w-full object-cover opacity-45 transition-transform duration-1000 group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0d120e] via-[#0d120e]/85 to-transparent" />
 
@@ -812,7 +813,7 @@ function HomeLocations() {
           return (
             <div key={loc.id} className="flex-[0_0_85%] sm:flex-none min-w-0 group relative overflow-hidden rounded-xl border border-border/50 bg-card hover-lift flex flex-col h-full shadow-sm">
               <div className="aspect-[4/3] overflow-hidden relative">
-                <img src={imageUrl} alt={loc.name} loading="lazy" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                <LazyImage src={imageUrl} alt={loc.name} aspectClass="aspect-[4/3]" wrapperClassName="w-full" className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500" />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
                 <h3 className="absolute bottom-4 left-4 font-serif text-lg font-bold text-white">{loc.name}</h3>
               </div>

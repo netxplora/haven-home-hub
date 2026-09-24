@@ -18,6 +18,7 @@ import { cn } from "@/lib/utils";
 import { Lock, Loader2 } from "lucide-react";
 
 import { SEO } from "@/components/site/SEO";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FileText, Map as MapIcon, Star, Info, CheckCircle2 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -417,9 +418,8 @@ export default function InvestDetail() {
                 <button 
                   key={i} 
                   onClick={() => setActiveImg(i)}
-                  className={`relative aspect-square w-full overflow-hidden rounded-lg transition-all duration-300 ${activeImg === i ? "ring-2 ring-primary ring-offset-2 ring-offset-background" : "opacity-70 hover:opacity-100"}`}
                 >
-                  <img src={resolveImage(g.url)} alt="" loading="lazy" className="h-full w-full object-cover" />
+                  <LazyImage src={resolveImage(g.url)} alt="" aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
                 </button>
               ))}
             </div>

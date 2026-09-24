@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export function AdminTestimonials() {
   const qc = useQueryClient();
@@ -93,7 +94,7 @@ export function AdminTestimonials() {
                 <div className="flex justify-between items-start">
                   <div className="flex items-center gap-3">
                     {t.image_url ? (
-                      <img src={t.image_url} alt={t.name} className="h-10 w-10 rounded-full object-cover border border-border" />
+                      <LazyImage src={t.image_url} alt={t.name} aspectClass="" wrapperClassName="h-10 w-10 rounded-full overflow-hidden border border-border" className="h-full w-full object-cover" />
                     ) : (
                       <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                         {t.name.charAt(0)}

@@ -20,6 +20,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import investHero4 from "@/assets/invest-hero4.jpg";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export default function SecondaryMarket() {
   const { brand } = useBrand();
@@ -122,11 +123,12 @@ export default function SecondaryMarket() {
                 <div key={listing.id} className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
                     {(listing.property as any)?.cover_image_url ? (
-                      <img 
+                      <LazyImage 
                         src={resolveImage((listing.property as any).cover_image_url)} 
                         alt={listing.property?.title}
+                        aspectClass="aspect-[4/3]"
+                        wrapperClassName="w-full"
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
-                        crossOrigin="anonymous"
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">

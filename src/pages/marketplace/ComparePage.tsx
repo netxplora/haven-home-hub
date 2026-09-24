@@ -13,6 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SEO } from "@/components/site/SEO";
 import { Badge } from "@/components/ui/badge";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function ComparePage() {
@@ -357,7 +358,7 @@ export default function ComparePage() {
                             <XCircle className="h-4 w-4" />
                           </button>
                           <div className="relative aspect-[4/3] rounded-xl overflow-hidden mb-4 bg-secondary/10 shadow-sm">
-                            <img src={resolveImage(p.cover_image_url)} alt={p.title} loading="lazy" className="w-full h-full object-cover" />
+                            <LazyImage src={resolveImage(p.cover_image_url)} alt={p.title} aspectClass="" wrapperClassName="w-full h-full" className="w-full h-full object-cover" />
                             <Badge className="absolute top-3 left-3 bg-white/95 text-foreground hover:bg-white border-none shadow-sm font-bold text-[10px] uppercase">
                               {p.property_type.toUpperCase()}
                             </Badge>
@@ -604,9 +605,7 @@ export default function ComparePage() {
                         >
                           <XCircle className="h-3.5 w-3.5" />
                         </button>
-                        <div className="aspect-[4/3] rounded-lg overflow-hidden mb-3 bg-secondary/15">
-                          <img src={resolveImage(b.cover_image_url)} alt={b.title} className="w-full h-full object-cover" />
-                        </div>
+                        <LazyImage src={resolveImage(b.cover_image_url)} alt={b.title} aspectClass="aspect-[4/3]" wrapperClassName="w-full rounded-lg overflow-hidden mb-3 bg-secondary/15" className="w-full h-full object-cover" />
                         <h4 className="text-xs font-bold line-clamp-2 h-8 text-foreground">{b.title}</h4>
                         <p className="text-sm font-serif font-bold text-primary mt-2">
                           {formatPrice(b.price, b.currency, b.property_type)}
@@ -621,9 +620,7 @@ export default function ComparePage() {
                         >
                           <XCircle className="h-3.5 w-3.5" />
                         </button>
-                        <div className="aspect-[4/3] rounded-lg overflow-hidden mb-3 bg-secondary/15">
-                          <img src={resolveImage(c.cover_image_url)} alt={c.title} className="w-full h-full object-cover" />
-                        </div>
+                        <LazyImage src={resolveImage(c.cover_image_url)} alt={c.title} aspectClass="aspect-[4/3]" wrapperClassName="w-full rounded-lg overflow-hidden mb-3 bg-secondary/15" className="w-full h-full object-cover" />
                         <h4 className="text-xs font-bold line-clamp-2 h-8 text-primary">{c.title}</h4>
                         <p className="text-sm font-serif font-bold text-primary mt-2">
                           {formatPrice(c.price, c.currency, c.property_type)}

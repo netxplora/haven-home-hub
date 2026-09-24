@@ -5,6 +5,7 @@ import { Building2, Handshake, MapPin, ShieldCheck, Users } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { useBrand } from "@/hooks/useBrand";
 import investHero from "@/assets/invest-hero.jpg";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 const stats = [
   { label: "Properties listed", value: "500+" },
@@ -100,9 +101,11 @@ export default function About() {
             </div>
           </div>
           <div className="relative aspect-square md:aspect-[4/5] overflow-hidden rounded-xl shadow-card border border-border">
-            <img 
+            <LazyImage 
               src="/about_office.png" 
               alt="Our professional real estate office" 
+              aspectClass="aspect-square md:aspect-[4/5]"
+              wrapperClassName="w-full"
               className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 hover:scale-105"
             />
             <div className="absolute inset-0 ring-1 ring-inset ring-primary/20 rounded-xl pointer-events-none" />

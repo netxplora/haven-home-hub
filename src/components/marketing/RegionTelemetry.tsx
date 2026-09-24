@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Link } from "react-router-dom";
 import { TrendingUp, Building2, Home, Briefcase, MapPin, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export function RegionTelemetry() {
   const { data: regions = [], isLoading } = useQuery({
@@ -41,12 +42,12 @@ export function RegionTelemetry() {
             >
               <div className="relative h-56 bg-secondary/20 overflow-hidden shrink-0">
                 {region.cover_image_url ? (
-                  <img 
+                  <LazyImage 
                     src={region.cover_image_url} 
                     alt={region.name} 
-                    loading="lazy"
+                    aspectClass=""
+                    wrapperClassName="w-full h-full"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700" 
-                    onError={(e) => { e.currentTarget.src = "/placeholder.svg" }}
                   />
                 ) : (
                   <div className="w-full h-full flex items-center justify-center bg-secondary/10">

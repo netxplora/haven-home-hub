@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Link } from "react-router-dom";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export function BookingsPanel({ userId }: { userId: string }) {
   const { data: items = [], isLoading } = useQuery({
@@ -67,7 +68,7 @@ export function BookingsPanel({ userId }: { userId: string }) {
               <div key={b.id} className="rounded-xl border border-border/40 bg-card overflow-hidden shadow-soft transition-all duration-300 hover:shadow-md group">
                  <div className="flex flex-col md:flex-row">
                     <div className="h-40 md:h-auto md:w-64 shrink-0 overflow-hidden bg-muted">
-                       <img src={b.properties?.cover_image_url || "/placeholder.svg"} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt="" />
+                       <LazyImage src={b.properties?.cover_image_url || "/placeholder.svg"} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt="" />
                     </div>
                     <div className="flex-1 p-6 space-y-6">
                        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">

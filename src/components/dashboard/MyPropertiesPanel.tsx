@@ -10,6 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -411,7 +412,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
                       <div key={r.id} className="rounded-xl border border-border/40 bg-card p-6 shadow-soft transition-all duration-300 hover:shadow-md group">
                         <div className="flex flex-col md:flex-row gap-6">
                           <div className="h-32 w-full md:w-48 rounded-xl overflow-hidden shrink-0 bg-muted">
-                            <img src={item?.cover_image_url || "/placeholder.svg"} loading="lazy" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt="" />
+                            <LazyImage src={item?.cover_image_url || "/placeholder.svg"} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" alt="" />
                           </div>
                           <div className="flex-1 space-y-4">
                             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
@@ -518,7 +519,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
                     return (
                       <div key={r.id} className="overflow-hidden rounded-2xl border border-border/40 bg-card shadow-soft transition-all duration-300 hover:shadow-md group flex flex-col md:flex-row">
                         <div className="relative w-full md:w-64 h-48 md:h-auto shrink-0 bg-accent overflow-hidden">
-                          <img src={item?.cover_image_url || "/placeholder.svg"} alt={item?.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <LazyImage src={item?.cover_image_url || "/placeholder.svg"} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt={item?.title} />
                           <div className="absolute top-4 left-4">
                             <Badge variant="outline" className={`rounded-md shadow-sm font-bold backdrop-blur-md bg-white/90 border-white/20 capitalize ${getStatusStyle(r.status)}`}>
                               <span className="flex items-center gap-1.5">
@@ -638,7 +639,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
                     return (
                       <div key={r.id} className="overflow-hidden rounded-2xl border border-border/40 bg-card shadow-soft transition-all duration-300 hover:shadow-md group flex flex-col md:flex-row">
                         <div className="relative w-full md:w-64 h-48 md:h-auto shrink-0 bg-accent overflow-hidden">
-                          <img src={item?.cover_image_url || "/placeholder.svg"} alt={item?.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <LazyImage src={item?.cover_image_url || "/placeholder.svg"} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt={item?.title} />
                           <div className="absolute top-4 left-4">
                             <Badge variant="outline" className="rounded-md shadow-sm font-bold backdrop-blur-md bg-white/90 border-white/20 capitalize bg-primary/10 text-primary border-primary/20">
                               <span className="flex items-center gap-1.5">
@@ -723,7 +724,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
                     return (
                       <div key={o.id} className="overflow-hidden rounded-2xl border border-border/40 bg-card shadow-soft transition-all duration-300 hover:shadow-md group flex flex-col md:flex-row">
                         <div className="relative w-full md:w-64 h-48 md:h-auto shrink-0 bg-accent overflow-hidden">
-                          <img src={prop.cover_image_url || "/placeholder.svg"} alt={prop.title} loading="lazy" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <LazyImage src={prop.cover_image_url || "/placeholder.svg"} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt={prop.title} />
                           <div className="absolute top-4 left-4">
                             <Badge variant="outline" className="rounded-md shadow-sm font-bold backdrop-blur-md bg-white/90 border-white/20 text-emerald-700 bg-emerald-500/10 border-emerald-500/20 uppercase text-[9px] tracking-wider">
                               <span className="flex items-center gap-1.5">

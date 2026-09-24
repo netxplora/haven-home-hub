@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { resolveImage, propertyTypeLabel } from "@/lib/format";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
 import { cn } from "@/lib/utils";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 /* ─────────────────────────────────────────────
    Types
@@ -434,13 +435,13 @@ function SliderCard({ property, isDragging, onGallerySwipe }: SliderCardProps) {
           style={{ transform: `translate3d(${-currentImage * 100}%, 0, 0)` }}
         >
           {images.map((src, i) => (
-            <img
+            <LazyImage
               key={i}
               src={src}
               alt={`${property.title} — image ${i + 1}`}
-              loading="lazy"
-              draggable={false}
-              className="h-full w-full flex-shrink-0 object-cover transition-transform duration-700 group-hover/card:scale-[1.03]"
+              aspectClass=""
+              wrapperClassName="h-full w-full flex-shrink-0"
+              className="h-full w-full object-cover transition-transform duration-700 group-hover/card:scale-[1.03]"
             />
           ))}
         </div>

@@ -57,6 +57,7 @@ import { ManualPaymentModal } from "@/components/dashboard/ManualPaymentModal";
 import { VirtualTourButton, VirtualTourEmbed } from "@/components/site/VirtualTour";
 import { MessageAgentButton } from "@/components/site/Messaging";
 import { PromoBanner } from "@/components/site/PromoBanner";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 const InteractivePropertyMap = lazy(() => import("@/components/site/InteractivePropertyMap").then(mod => ({ default: mod.InteractivePropertyMap })));
 
@@ -830,8 +831,8 @@ export default function PropertyDetail() {
             <div className="rounded-xl border border-border bg-card p-6 shadow-card overflow-hidden">
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <img src={resolveImage(agent.photo_url)} alt={agent.full_name} loading="lazy"
-                    className="h-20 w-20 rounded-xl object-cover border border-border shadow-sm" />
+                  <LazyImage src={resolveImage(agent.photo_url)} alt={agent.full_name} aspectClass="" wrapperClassName="h-20 w-20 rounded-xl overflow-hidden shadow-sm"
+                    className="h-full w-full object-cover border border-border" />
                   <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-primary/100 rounded-full border-4 border-card flex items-center justify-center">
                     <ShieldCheck className="h-3 w-3 text-white" />
                   </div>

@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ArrowRight, ImageIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 /* ─────────────────────────────────────────────
    Types
@@ -111,16 +112,14 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
         <div className="rounded-2xl border border-border/40 bg-card shadow-soft overflow-hidden hover:shadow-card transition-shadow duration-300">
           <div className={cn("grid items-center", isVerticalCompact ? "grid-cols-1" : "md:grid-cols-2")}>
             {/* Image */}
-            {ad.image_url && !imgError ? (
-              <div className={cn("overflow-hidden bg-muted", isVerticalCompact ? "h-40" : "h-48 md:h-64")}>
-                <img
-                  src={ad.image_url}
-                  alt={ad.title}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  onError={() => setImgError(true)}
-                />
-              </div>
+            {ad.image_url ? (
+              <LazyImage
+                src={ad.image_url}
+                alt={ad.title}
+                wrapperClassName={cn("overflow-hidden bg-muted", isVerticalCompact ? "h-40" : "h-48 md:h-64")}
+                className="h-full w-full object-cover"
+                aspectClass=""
+              />
             ) : (
               <div className={cn("bg-accent/30 flex items-center justify-center", isVerticalCompact ? "h-40" : "h-48 md:h-64")}>
                 <ImageIcon className="h-12 w-12 text-muted-foreground/20" />
@@ -155,13 +154,13 @@ export function PromoBanner({ placement, className }: PromoBannerProps) {
     <div className={wrapperClass}>
       <div className="relative rounded-2xl overflow-hidden shadow-soft border border-border/30 group">
         {/* Image */}
-        {ad.image_url && !imgError ? (
-          <img
+        {ad.image_url ? (
+          <LazyImage
             src={ad.image_url}
             alt={ad.title}
+            wrapperClassName={cn("w-full", isVerticalCompact ? "h-64" : "h-60 xs:h-52 sm:h-56 md:h-64")}
             className={cn("w-full object-cover transition-transform duration-700 group-hover:scale-[1.02]", isVerticalCompact ? "h-64" : "h-60 xs:h-52 sm:h-56 md:h-64")}
-            loading="lazy"
-            onError={() => setImgError(true)}
+            aspectClass=""
           />
         ) : (
           <div className={cn("w-full bg-accent/30 flex items-center justify-center", isVerticalCompact ? "h-64" : "h-60 xs:h-52 sm:h-56 md:h-64")}>

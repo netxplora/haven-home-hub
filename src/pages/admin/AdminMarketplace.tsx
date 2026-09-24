@@ -8,6 +8,7 @@ import { format } from "date-fns";
 import { Tag, ArrowLeftRight, TrendingUp, Users, Layers, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 type ViewTab = "listings" | "transactions";
 
@@ -147,7 +148,7 @@ export function AdminMarketplace() {
                     <div key={l.id} className="rounded-xl border border-border/50 bg-background p-4 space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="h-10 w-10 rounded-lg overflow-hidden bg-muted shrink-0">
-                          <img src={l.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                          <LazyImage src={l.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" aspectClass="" wrapperClassName="h-full w-full" />
                         </div>
                         <div className="min-w-0">
                           <p className="font-semibold text-sm truncate">{l.investment_properties?.title ?? "Unknown"}</p>
@@ -207,7 +208,7 @@ export function AdminMarketplace() {
                             <td className="px-5 py-4">
                               <div className="flex items-center gap-3">
                                 <div className="h-9 w-9 rounded-lg overflow-hidden bg-muted shrink-0">
-                                  <img src={l.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" />
+                                  <LazyImage src={l.investment_properties?.cover_image_url || "/placeholder.svg"} className="h-full w-full object-cover" alt="" aspectClass="" wrapperClassName="h-full w-full" />
                                 </div>
                                 <span className="font-semibold text-foreground line-clamp-1">{l.investment_properties?.title ?? "Unknown"}</span>
                               </div>

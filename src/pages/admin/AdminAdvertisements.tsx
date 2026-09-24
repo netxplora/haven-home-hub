@@ -260,15 +260,7 @@ export function AdminAdvertisements() {
         {paginated.map((ad) => (
           <div key={ad.id} className="rounded-xl border border-border bg-card shadow-sm overflow-hidden">
             {ad.image_url && (
-              <div className="h-32 overflow-hidden bg-muted">
-                <img
-                  src={ad.image_url}
-                  alt={ad.title}
-                  className="h-full w-full object-cover"
-                  loading="lazy"
-                  onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
-                />
-              </div>
+              <LazyImage src={ad.image_url} alt={ad.title} wrapperClassName="h-32 overflow-hidden bg-muted" aspectClass="" className="h-full w-full object-cover" />
             )}
             <div className="p-5 space-y-4">
               <div className="flex items-start justify-between gap-3">
@@ -335,15 +327,7 @@ export function AdminAdvertisements() {
               <tr key={ad.id} className="border-t border-border transition-colors hover:bg-secondary/40">
                 <td className="p-3">
                   {ad.image_url ? (
-                    <div className="h-8 w-12 rounded overflow-hidden bg-muted">
-                      <img
-                        src={ad.image_url}
-                        alt=""
-                        className="h-full w-full object-cover"
-                        loading="lazy"
-                        onError={(e) => { (e.target as HTMLImageElement).src = "/placeholder.svg"; }}
-                      />
-                    </div>
+                    <LazyImage src={ad.image_url} alt="" wrapperClassName="h-8 w-12 rounded overflow-hidden bg-muted" aspectClass="" className="h-full w-full object-cover" />
                   ) : (
                     <div className="h-8 w-12 rounded bg-muted flex items-center justify-center">
                       <ImageIcon className="h-3.5 w-3.5 text-muted-foreground/40" />

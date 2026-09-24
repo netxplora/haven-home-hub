@@ -5,6 +5,7 @@ import { resolveImage } from "@/lib/format";
 import { formatMoney, fundingPercent, type InvestmentProperty } from "@/lib/invest";
 import { useAuth } from "@/hooks/useAuth";
 import { AuthGateModal } from "@/components/auth/AuthGateModal";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export const InvestmentCard = memo(function InvestmentCard({ p }: { p: InvestmentProperty }) {
   const { user } = useAuth();
@@ -34,13 +35,11 @@ export const InvestmentCard = memo(function InvestmentCard({ p }: { p: Investmen
       >
         {/* Image with Gradient & Overlay */}
         <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-          <img
+          <LazyImage
             src={resolveImage(p.cover_image_url)}
             alt={p.title}
-            loading="lazy"
-            width={1280}
-            height={960}
-            className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-108"
+            wrapperClassName="absolute inset-0"
+            className="transition-transform duration-700 ease-out group-hover:scale-105"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-550" />
         

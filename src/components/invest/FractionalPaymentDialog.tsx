@@ -16,6 +16,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { QRCodeSVG } from "qrcode.react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 interface FractionalPaymentDialogProps {
   open: boolean;
@@ -359,7 +360,7 @@ export function FractionalPaymentDialog({
               <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-sm">
                 <div className="p-5 flex gap-4 border-b border-border bg-accent/10">
                   <div className="h-20 w-20 rounded-xl overflow-hidden shrink-0 bg-accent border border-border">
-                    <img src={property.cover_image_url} alt={property.title} className="h-full w-full object-cover" />
+                    <LazyImage src={property.cover_image_url} alt={property.title} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover" />
                   </div>
                   <div>
                     <span className="text-[9px] uppercase tracking-wider bg-primary/10 text-primary px-2 py-0.5 rounded-md font-bold">{property.property_category || "Fractional Real Estate"}</span>
