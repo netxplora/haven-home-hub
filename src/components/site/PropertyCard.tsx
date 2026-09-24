@@ -1,7 +1,8 @@
 import { memo } from "react";
 import { Link } from "react-router-dom";
-import { Bed, Bath, Maximize2, MapPin, Star, ArrowUpRight, Scale, ShieldCheck, Zap } from "lucide-react";
+import { Bed, Bath, Maximize2, MapPin, Star, ArrowUpRight, Scale, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { LazyImage } from "@/components/ui/LazyImage";
 import { propertyTypeLabel, resolveImage, enrichProperty } from "@/lib/format";
 import { useCompare } from "@/hooks/useCompare";
 import { useFormatPrice } from "@/hooks/useFormatPrice";
@@ -53,11 +54,12 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
       
       {/* Image Block */}
       <div className="relative aspect-[4/3] overflow-hidden bg-muted pointer-events-none">
-        <img
+        <LazyImage
           src={img}
           alt={property.title}
-          loading="lazy"
-          className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          aspectClass="aspect-[4/3]"
+          wrapperClassName="absolute inset-0"
+          className="transition-transform duration-500 ease-out group-hover:scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
         

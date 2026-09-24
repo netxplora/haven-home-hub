@@ -34,8 +34,56 @@ export function Hero3DShowcase() {
   }, [handleScroll]);
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 120);
-    return () => clearTimeout(t);
+    let timeoutId: ReturnType<typeof setTimeout>;
+    let fallbackId: ReturnType<typeof setTimeout>;
+    let isRemoved = false;
+    const startTime = performance.now();
+
+    const removeSplash = () => {
+      if (isRemoved) return;
+      isRemoved = true;
+      const splash = document.getElementById("app-splash");
+      if (splash) {
+        splash.style.pointerEvents = "none";
+        splash.style.animation = "splashFadeOut 0.5s ease-out forwards";
+        setTimeout(() => splash.remove(), 500);
+      }
+      // slight delay before starting inner animations
+      setTimeout(() => setVisible(true), 100);
+    };
+
+    const handleReady = () => {
+      const elapsed = performance.now() - startTime;
+      const minWait = Math.max(0, 800 - elapsed);
+      timeoutId = setTimeout(removeSplash, minWait);
+    };
+
+    const video = document.getElementById("hero-video") as HTMLVideoElement | null;
+    
+    if (video) {
+      if (video.readyState >= 3) {
+        handleReady();
+      } else {
+        video.addEventListener("canplay", handleReady, { once: true });
+        // Also listen to error to not hang
+        video.addEventListener("error", handleReady, { once: true });
+      }
+    } else {
+      handleReady();
+    }
+
+    fallbackId = setTimeout(() => {
+      removeSplash();
+    }, 4500);
+
+    return () => {
+      clearTimeout(timeoutId);
+      clearTimeout(fallbackId);
+      if (video) {
+        video.removeEventListener("canplay", handleReady);
+        video.removeEventListener("error", handleReady);
+      }
+    };
   }, []);
 
   const bgY = prefersReducedMotion ? 0 : scrollY * 0.28;
@@ -52,6 +100,7 @@ export function Hero3DShowcase() {
         style={{ transform: `translate3d(0, ${bgY}px, 0) scale(1.08)` }}
       >
         <video
+          id="hero-video"
           autoPlay
           muted
           loop

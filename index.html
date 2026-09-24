@@ -1,9 +1,6 @@
 <!doctype html>
 <html lang="en">
   <head>
-    <link rel="preload" as="image" href="/images/hero/haven-home-hero-desktop.webp" media="(min-width: 1024px)" fetchpriority="high" />
-    <link rel="preload" as="image" href="/images/hero/haven-home-hero-tablet.webp" media="(min-width: 768px) and (max-width: 1023px)" />
-    <link rel="preload" as="image" href="/images/hero/haven-home-hero-mobile.webp" media="(max-width: 767px)" />
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta id="meta-theme-color" name="theme-color" content="#10B981" />
@@ -88,6 +85,10 @@
         from { opacity: 0; transform: scale(0.96); }
         to { opacity: 1; transform: scale(1); }
       }
+      @keyframes splashFadeOut {
+        from { opacity: 1; transform: scale(1); filter: blur(0); }
+        to { opacity: 0; transform: scale(0.98); filter: blur(2px); }
+      }
       @keyframes splashGlow {
         0%, 100% { transform: scale(1); opacity: 0.2; }
         50% { transform: scale(1.15); opacity: 0.4; }
@@ -98,8 +99,9 @@
         100% { transform: translateX(250%); }
       }
       .splash-container {
-        min-height: 100vh;
-        width: 100%;
+        position: fixed;
+        inset: 0;
+        z-index: 9999;
         display: flex;
         flex-direction: column;
         align-items: center;
@@ -187,31 +189,30 @@
   </head>
 
   <body>
-    <div id="root">
-      <div id="app-splash" class="splash-container">
-        <div class="splash-card-wrapper">
-          <div class="splash-glow"></div>
-          <div class="splash-logo-card">
-            <img
-              id="splash-logo"
-              src="/logo.png"
-              alt="Haven Home Hub"
-              class="splash-logo-img"
-              onerror="this.style.display='none'; document.getElementById('splash-fallback-icon').style.display='block';"
-            />
-            <svg id="splash-fallback-icon" class="splash-fallback-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
-              <polyline points="9 22 9 12 15 12 15 22"></polyline>
-            </svg>
-          </div>
-        </div>
-        <h1 id="splash-title" class="splash-title">Haven Home Hub</h1>
-        <p id="splash-subtitle" class="splash-subtitle">Smart Property Investment</p>
-        <div class="splash-progress-track">
-          <div class="splash-progress-fill"></div>
+    <div id="app-splash" class="splash-container">
+      <div class="splash-card-wrapper">
+        <div class="splash-glow"></div>
+        <div class="splash-logo-card">
+          <img
+            id="splash-logo"
+            src="/logo.png"
+            alt="Haven Home Hub"
+            class="splash-logo-img"
+            onerror="this.style.display='none'; document.getElementById('splash-fallback-icon').style.display='block';"
+          />
+          <svg id="splash-fallback-icon" class="splash-fallback-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
         </div>
       </div>
+      <h1 id="splash-title" class="splash-title">Haven Home Hub</h1>
+      <p id="splash-subtitle" class="splash-subtitle">Smart Property Investment</p>
+      <div class="splash-progress-track">
+        <div class="splash-progress-fill"></div>
+      </div>
     </div>
+    <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

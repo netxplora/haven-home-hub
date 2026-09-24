@@ -1,12 +1,12 @@
 import { QueryClient, QueryClientProvider, QueryCache } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
+import { BrowserRouter, Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AuthProvider } from "@/hooks/useAuth";
 import { HelmetProvider } from "react-helmet-async";
 import { useRealtimeSync } from "./hooks/useRealtimeSync";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 
 // Critical path — loaded eagerly (home, auth)
 import Home from "./pages/marketplace/Home";
@@ -140,6 +140,29 @@ function PageLoader() {
   );
 }
 
+
+function GlobalSplashManager() {
+  const location = useLocation();
+
+  useEffect(() => {
+    // If not on the homepage, we remove the splash screen quickly 
+    // because there is no hero video to wait for.
+    if (location.pathname !== "/") {
+      const splash = document.getElementById("app-splash");
+      if (splash) {
+        // Minimal delay for non-home pages
+        setTimeout(() => {
+          splash.style.pointerEvents = "none";
+          splash.style.animation = "splashFadeOut 0.5s ease-out forwards";
+          setTimeout(() => splash.remove(), 500);
+        }, 300);
+      }
+    }
+  }, [location]);
+
+  return null;
+}
+
 const App = () => (
   <HelmetProvider>
   <QueryClientProvider client={queryClient}>
@@ -149,6 +172,7 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <GlobalSplashManager />
           <ScrollToTop />
           <CompareWidget />
           <RealtimeGlobal />

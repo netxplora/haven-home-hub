@@ -23,6 +23,7 @@ import { Hero3DShowcase } from "@/components/site/Hero3DShowcase";
 import investProp1 from "@/assets/invest-prop-1.jpg";
 import { lazy, Suspense } from "react";
 import { useBrand } from "@/hooks/useBrand";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 const RegionTelemetry = lazy(() => import("@/components/marketing/RegionTelemetry").then(m => ({ default: m.RegionTelemetry })));
 const MarketIntelligence = lazy(() => import("@/components/site/MarketIntelligence").then(m => ({ default: m.MarketIntelligence })));
@@ -398,11 +399,11 @@ export default function Home() {
           <div className="grid md:grid-cols-2 gap-12 lg:gap-20 items-center">
             <div className="relative">
               <div className="absolute inset-0 bg-secondary/10 translate-x-4 translate-y-4 rounded-3xl" />
-              <img 
-                src="/about_office.png" 
-                alt="About Haven Home Hub" 
-                className="relative rounded-3xl z-10 border border-border/80 shadow-card object-cover aspect-[4/3] w-full" 
-                loading="lazy"
+              <LazyImage
+                src="/about_office.png"
+                alt="About Haven Home Hub"
+                aspectClass="aspect-[4/3]"
+                wrapperClassName="relative rounded-3xl z-10 border border-border/80 shadow-card w-full"
               />
             </div>
             <div className="space-y-6">
@@ -653,11 +654,12 @@ function BlogTeaser() {
         >
           {post.cover_image_url ? (
             <div className="aspect-[16/10] overflow-hidden bg-muted relative">
-              <img
+              <LazyImage
                 src={post.cover_image_url}
                 alt={post.title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
-                loading="lazy"
+                aspectClass="aspect-[16/10]"
+                wrapperClassName="absolute inset-0"
+                className="transition-transform duration-700 group-hover:scale-105"
               />
             </div>
           ) : (
