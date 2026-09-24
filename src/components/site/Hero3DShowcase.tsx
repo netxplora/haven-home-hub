@@ -51,18 +51,16 @@ export function Hero3DShowcase() {
         className="absolute inset-0 z-0 pointer-events-none will-change-transform"
         style={{ transform: `translate3d(0, ${bgY}px, 0) scale(1.08)` }}
       >
-        <picture className="absolute inset-0">
-          <source srcSet="/images/hero/haven-home-hero-desktop.webp" media="(min-width: 1024px)" />
-          <source srcSet="/images/hero/haven-home-hero-tablet.webp"  media="(min-width: 768px)" />
-          <img
-            src="/images/hero/haven-home-hero-mobile.webp"
-            alt="Haven Home Hub — Luxury Real Estate"
-            className="h-full w-full object-cover object-center"
-            fetchPriority="high"
-            loading="eager"
-            decoding="async"
-          />
-        </picture>
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="/images/hero/haven-home-hero-desktop.webp"
+          className="absolute inset-0 h-full w-full object-cover object-center"
+        >
+          <source src="/images/hero/herovid.mp4" type="video/mp4" />
+        </video>
       </div>
 
       {/* Layered overlays */}
