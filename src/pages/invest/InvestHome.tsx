@@ -104,48 +104,82 @@ export default function InvestHome() {
         description="Co-invest in professionally managed, income-generating properties. Start with fractional ownership and earn scheduled distributions from rental income." 
         canonicalUrl={`${window.location.origin}/invest`}
       />
-      {/* Premium Hero Section */}
-      <section className="relative isolate min-h-[540px] sm:min-h-[640px] lg:min-h-[740px] flex items-center">
-        <div className="absolute inset-0 -z-10 bg-black">
-          <img
-            src={investHero}
-            alt=""
-            width={1600}
-            height={1024}
-            className="h-full w-full object-cover opacity-60"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/50 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/30" />
-        </div>
-        <div className="container-wide relative flex flex-col justify-center py-24 z-10 text-white">
-          <div className="max-w-4xl animate-fade-in-up">
-            <p className="mb-6 inline-flex w-fit items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-widest backdrop-blur-md shadow-sm">
-              <ShieldCheck className="h-4 w-4 text-primary" /> Premium Real Estate Investment
-            </p>
-            <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-bold leading-[1.15] text-white tracking-tight drop-shadow-md">
-              Build wealth through <span className="text-secondary">premium real estate</span>.
-            </h1>
-            <p className="mt-6 max-w-2xl text-lg text-white/90 font-medium leading-relaxed drop-shadow-sm">
-              Co-invest in professionally managed commercial and residential properties. Earn scheduled rental income and benefit from long-term property appreciation.
-            </p>
+      {/* ── 1. Split Visual Investment Hero (Type C) ────────────── */}
+      <section className="relative overflow-hidden bg-card border-b border-border/50 pt-16 md:pt-24 pb-12 sm:pb-16">
+        <div className="container-wide">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            {/* High CTA Area - Minimal & Elegant */}
-            <div className="mt-10 flex flex-col sm:flex-row items-center gap-4">
-              <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-emerald transition-all">
-                <Link to="/invest/opportunities" className="flex items-center gap-2">
-                  View Opportunities <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-white/10 text-white border-white/25 hover:bg-white/20 hover:border-white/40 font-medium text-sm transition-all">
-                <a href="#how-it-works">How It Works</a>
-              </Button>
+            {/* Left Column: Investment Value Proposition */}
+            <div className="lg:col-span-6 space-y-6">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Institutional Real Estate
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Fractional Co-Ownership
+                </span>
+              </div>
+
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight leading-[1.12]">
+                Co-invest in vetted, income-generating <span className="text-primary font-normal">property assets</span>.
+              </h1>
+
+              <p className="text-base text-muted-foreground leading-relaxed max-w-xl">
+                Access fractional equity in audited residential and commercial properties. Receive regular yield distributions and track your portfolio value with transparent legal ownership.
+              </p>
+
+              {/* CTAs */}
+              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
+                <Button asChild size="lg" className="w-full sm:w-auto h-12 px-7 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs uppercase tracking-wider shadow-sm transition-all">
+                  <Link to="/invest/opportunities" className="flex items-center gap-2">
+                    Explore Opportunities <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-7 rounded-xl border-border/70 text-foreground hover:bg-muted font-medium text-xs uppercase tracking-wider transition-all">
+                  <a href="#how-it-works">How It Works</a>
+                </Button>
+              </div>
+
+              {/* Trust Indicators */}
+              <div className="pt-6 border-t border-border/50 flex flex-wrap items-center gap-6 text-xs text-muted-foreground">
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary" /> Title Deed Escrow
+                </span>
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary" /> Quarterly Distributions
+                </span>
+                <span className="flex items-center gap-1.5 font-medium text-foreground">
+                  <CheckCircle2 className="h-4 w-4 text-primary" /> Secondary Market Liquidity
+                </span>
+              </div>
             </div>
-            
-            <div className="mt-10 pt-8 border-t border-white/15 flex flex-col sm:flex-row flex-wrap gap-4 sm:gap-8 text-xs font-semibold text-white/80">
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Bank-grade security</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Transparent legal structures</span>
-              <span className="flex items-center gap-2"><CheckCircle2 className="h-4 w-4 text-emerald-400" /> Professional management</span>
+
+            {/* Right Column: Architectural Asset Showcase */}
+            <div className="lg:col-span-6 relative">
+              <div className="relative aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 shadow-md group">
+                <img
+                  src={investHero}
+                  alt="Real Estate Portfolio Asset"
+                  className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
+
+                {/* Floating Metrics Badge */}
+                <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 text-white flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Historical Yield Range</p>
+                    <p className="font-serif text-xl sm:text-2xl font-bold text-emerald-400">9.2% – 14.5% APR</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Asset Status</p>
+                    <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-primary/80 px-2.5 py-0.5 rounded-md">
+                      Audited &amp; Active
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
+
           </div>
         </div>
       </section>

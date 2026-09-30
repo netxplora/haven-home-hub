@@ -53,25 +53,33 @@ export default function Press() {
   return (
     <SiteLayout>
       <SEO title="Press & Media" description={`Latest news, announcements, and media resources from ${brand.platform_name}.`} />
-      {/* Header */}
-      <section className="relative overflow-hidden min-h-[350px] sm:min-h-[450px] lg:min-h-[500px] flex items-center bg-black">
-        <img 
-          src="/images/hero/hero-invest.webp"
-          onError={(e) => { (e.currentTarget as HTMLImageElement).src = property2; }}
-          alt="Press & Media Office" 
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
-        
-        <div className="container-wide relative z-10 text-primary-foreground">
-          <p className="mb-4 text-sm font-medium tracking-wider text-primary uppercase">Press & Media</p>
-          <h1 className="font-serif text-4xl font-semibold sm:text-5xl md:text-6xl text-white leading-tight">
-            Press & <span className="text-secondary">Media</span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-white/80 leading-relaxed">
-            Company announcements, milestones, and external media coverage. Stay informed on the latest developments from the platform.
-          </p>
+      
+      {/* Hero Type D: Typography-Led Press Header */}
+      <section className="relative bg-white dark:bg-background border-b border-border overflow-hidden pt-24 pb-14">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-border" />
+          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/20" />
+        </div>
+        <div className="container-wide relative z-10">
+          <div className="max-w-3xl">
+            <p className="text-xs font-bold tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400 mb-5">
+              Press & Media
+            </p>
+            <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
+              Company News &<br className="hidden sm:block" /> Media Coverage
+            </h1>
+            <p className="mt-5 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl font-sans">
+              Announcements, milestones, and external coverage. For press inquiries, contact our communications team directly.
+            </p>
+            <div className="mt-8 flex items-center gap-3">
+              <a
+                href={`mailto:${brand.support_email}`}
+                className="inline-flex items-center gap-2 text-sm font-semibold text-emerald-700 dark:text-emerald-400 border border-emerald-600/30 bg-emerald-50 dark:bg-emerald-950/30 rounded-lg px-4 py-2 hover:bg-emerald-100 dark:hover:bg-emerald-900/40 transition-colors"
+              >
+                <Mail className="h-4 w-4" /> Press Enquiries
+              </a>
+            </div>
+          </div>
         </div>
       </section>
 

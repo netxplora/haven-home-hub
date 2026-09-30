@@ -151,55 +151,77 @@ export default function InvestOpportunities() {
   const activeFilterCount = activeFilters.length;
 
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav="mobile">
       <SEO 
         title="Investment Opportunities" 
         description="Browse premium income-generating property investments with high returns and flexible entry." 
         canonicalUrl={`${window.location.origin}/invest/opportunities`}
       />
 
-      {/* ── Hero Section ──────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-black min-h-[480px] sm:min-h-[520px] flex items-center">
-        <img
-          src={heroImageUrl}
-          alt="Investment Hero"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
-
-        <div className="container-wide relative z-10 flex flex-col justify-center py-16 sm:py-24 text-white">
-          <div className="max-w-3xl">
-            <span className="inline-block px-3 py-1 mb-5 text-xs font-semibold tracking-wider uppercase bg-primary text-primary-foreground rounded-full shadow-lg">
-              Property Investment
-            </span>
-            <h1 className="font-serif text-4xl font-bold sm:text-6xl text-white tracking-tight leading-[1.1] mb-4">
-              Invest in Global <br className="hidden sm:block" /> <span className="text-secondary">Real Estate.</span>
-            </h1>
-            <p className="text-lg sm:text-xl text-white/90 font-medium mb-8 max-w-2xl leading-relaxed">
-              Build your legacy with rental properties. Access premium homes starting from low minimums.
-            </p>
+      {/* ── 1. Investment Catalog Hero (Type H) ─────────────────── */}
+      <section className="relative overflow-hidden bg-card border-b border-border/50 pt-16 md:pt-24 pb-8 md:pb-12">
+        <div className="container-wide">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            <div className="relative max-w-xl group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-primary/50 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
+            {/* Left Column */}
+            <div className="lg:col-span-6 xl:col-span-6 space-y-5">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
+                  <Building2 className="h-3.5 w-3.5" /> Asset Inventory
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Audited Co-Investment Units
+                </span>
+              </div>
+
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight leading-[1.1]">
+                Investment Opportunities
+              </h1>
+
+              <p className="text-base text-muted-foreground leading-relaxed max-w-xl">
+                Explore income-generating residential, commercial, and student housing projects. Review audited financial projections, escrow contracts, and quarterly yield forecasts.
+              </p>
+
+              {/* Inline Search Bar */}
               <form
                 onSubmit={(e) => { e.preventDefault(); update("q", qLocal); }}
-                className="relative flex items-center bg-white rounded-xl shadow-xl overflow-hidden"
+                className="pt-2 flex items-center gap-2 max-w-lg"
               >
-                <div className="flex-1 flex items-center px-4">
-                  <Search className="h-5 w-5 text-muted-foreground mr-3" />
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     value={qLocal}
                     onChange={(e) => setQLocal(e.target.value)}
                     placeholder="Search by city, property type, or keyword..."
-                    className="h-14 border-none shadow-none focus-visible:ring-0 text-foreground text-lg placeholder:text-muted-foreground/60"
+                    className="h-11 pl-10 pr-4 rounded-xl border border-border/80 bg-background text-foreground text-xs sm:text-sm font-medium focus:ring-2 focus:ring-primary/30"
                   />
                 </div>
-                <Button type="submit" size="lg" className="h-14 px-8 rounded-none bg-primary hover:bg-primary/90 text-white font-bold">
-                  EXPLORE
+                <Button type="submit" className="h-11 px-6 rounded-xl bg-primary text-primary-foreground font-semibold text-xs shrink-0">
+                  Search
                 </Button>
               </form>
             </div>
+
+            {/* Right Column */}
+            <div className="lg:col-span-6 xl:col-span-6 relative">
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 shadow-md group">
+                <img
+                  src={heroImageUrl}
+                  alt="Fractional Real Estate Catalog"
+                  className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
+                  <span className="text-xs font-semibold drop-shadow-sm px-2.5 py-1 rounded-md bg-black/40 backdrop-blur-md border border-white/15">
+                    Secured by Escrow Deeds
+                  </span>
+                  <span className="text-[11px] font-medium drop-shadow-sm text-white/80">
+                    Live Legal Clearance
+                  </span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

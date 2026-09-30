@@ -153,48 +153,81 @@ export default function Careers() {
   const bgImg = settings?.hero_background_url || heroImg;
 
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav="mobile">
       <SEO 
         title={settings?.seo_title || "Careers"} 
         description={settings?.seo_description || `Join the ${brand.platform_name} team.`} 
       />
       
-      {/* Hero Header */}
-      <div className="relative overflow-hidden min-h-[500px] sm:min-h-[600px] flex items-center bg-black pt-20">
-        <div className="absolute inset-0">
-          <img
-            src={bgImg}
-            alt={`${brand.platform_name} team collaboration`}
-            className="h-full w-full object-cover scale-105"
-          />
-          <div className="absolute inset-0 bg-black/40 z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
+      {/* Hero Type E: People & Culture Split Hero */}
+      <section className="relative bg-white dark:bg-background overflow-hidden border-b border-border pt-20">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-emerald-50/60 dark:bg-emerald-950/20" />
         </div>
-        
-        <div className="container-wide relative z-10 py-20 flex flex-col items-start justify-center">
-          <Badge className="mb-6 bg-primary/20 text-primary border border-primary/30 backdrop-blur-md px-4 py-1.5 font-bold uppercase tracking-widest text-xs">
-            Career Opportunities
-          </Badge>
-          <h1 className="max-w-4xl font-serif text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold text-white leading-[1.1] tracking-tight">
-            {heroTitle}
-          </h1>
-          <p className="mt-6 max-w-2xl text-lg sm:text-xl text-white/80 leading-relaxed font-light">
-            {heroDesc}
-          </p>
-          <div className="mt-10 flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            {settings?.cta_enabled !== false && (
-              <Button size="lg" className="w-full sm:w-auto bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 h-12 px-8 font-semibold text-base" asChild>
-                <a href={settings?.cta_link || "#openings"}>{settings?.cta_text || "View Open Positions"}</a>
-              </Button>
-            )}
-            {settings?.accept_applications !== false && (
-              <Button size="lg" variant="outline" className="w-full sm:w-auto bg-white/5 text-white border-white/20 hover:bg-white/10 hover:text-white backdrop-blur-md h-12 px-8 font-semibold text-base" asChild>
-                <a href="#general-application">Submit General Application</a>
-              </Button>
-            )}
+
+        <div className="container-wide relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-10 min-h-[500px] lg:min-h-[560px]">
+
+            {/* Left: Role & Culture Pitch */}
+            <div className="lg:col-span-6 flex flex-col justify-center py-16 lg:py-24 pr-0 lg:pr-8">
+              <Badge className="mb-5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 text-xs font-semibold uppercase tracking-widest w-fit">
+                Career Opportunities
+              </Badge>
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
+                {heroTitle}
+              </h1>
+              <p className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-lg font-sans">
+                {heroDesc}
+              </p>
+              <div className="mt-8 flex flex-col sm:flex-row gap-4">
+                {settings?.cta_enabled !== false && (
+                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-8 font-semibold" asChild>
+                    <a href={settings?.cta_link || "#openings"}>{settings?.cta_text || "View Open Positions"}</a>
+                  </Button>
+                )}
+                {settings?.accept_applications !== false && (
+                  <Button size="lg" variant="outline" className="border-border hover:bg-accent h-12 px-8 font-semibold" asChild>
+                    <a href="#general-application">Submit General Application</a>
+                  </Button>
+                )}
+              </div>
+
+              {/* Trust indicators */}
+              <div className="mt-10 pt-8 border-t border-border flex flex-wrap gap-6 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2">
+                  <Briefcase className="h-4 w-4 text-emerald-600" />
+                  Full-time & Remote roles
+                </span>
+                <span className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  Competitive packages
+                </span>
+                <span className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 text-emerald-600" />
+                  Multiple locations
+                </span>
+              </div>
+            </div>
+
+            {/* Right: Editorial team image */}
+            <div className="lg:col-span-6 relative flex items-end">
+              <div className="w-full h-[280px] lg:h-full relative overflow-hidden lg:rounded-tl-3xl">
+                <img
+                  src={bgImg}
+                  alt={`${brand.platform_name} team and workplace`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/50 via-transparent to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-6">
+                  <p className="text-xs uppercase tracking-wider text-emerald-300 font-semibold">Our Team</p>
+                  <p className="text-sm text-white/90 mt-1 font-sans">People with expertise and a commitment to client outcomes.</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       {/* Perks */}
       <section className="container-wide -mt-12 relative z-20 pb-16">

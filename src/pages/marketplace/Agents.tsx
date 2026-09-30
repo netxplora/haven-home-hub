@@ -37,28 +37,63 @@ export default function Agents() {
     },
   });
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav="mobile">
       <SEO title="Our Agents" description={`Connect with verified ${brand.platform_name} agents. Real people, ready to help you find the right home.`} />
-      {/* Hero Header */}
-      <div className="relative overflow-hidden min-h-[350px] sm:min-h-[400px] lg:min-h-[450px] flex items-center bg-black">
-        <img 
-          src={locationDowntown}
-          alt={`${brand.platform_name} Agents`} 
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
-        
-        <div className="container-wide relative z-10 text-primary-foreground">
-          <p className="mb-3 text-sm font-medium tracking-wider uppercase text-primary">Our Team</p>
-          <h1 className="max-w-3xl font-serif text-4xl font-semibold sm:text-5xl md:text-6xl text-white leading-tight">
-            Meet our <span className="text-secondary">verified agents.</span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-lg text-white/80 leading-relaxed">
-            Real people, ready to help you find the right home. Connect with experts who know the market firsthand.
-          </p>
+      
+      {/* ── 1. People & Advisory Hero (Type E) ──────────────────── */}
+      <section className="relative overflow-hidden bg-card border-b border-border/50 pt-16 md:pt-24 pb-8 md:pb-12">
+        <div className="container-wide">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Left Column: Advisory Intro */}
+            <div className="lg:col-span-7 space-y-5">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
+                  Licensed Advisors
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  State Real Estate Board Certified
+                </span>
+              </div>
+
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight leading-[1.15]">
+                Meet our dedicated <span className="text-primary font-normal">property specialists</span>.
+              </h1>
+
+              <p className="text-base text-muted-foreground leading-relaxed max-w-xl">
+                Our full-time agents are embedded in regional markets. From physical property inspections to title verification and price negotiation, connect with professionals focused on your interests.
+              </p>
+
+              <div className="pt-2 flex flex-wrap items-center gap-6 text-xs font-medium text-muted-foreground">
+                <span className="flex items-center gap-1.5 text-foreground font-semibold">
+                  {agents.length} Verified Agents
+                </span>
+                <span>•</span>
+                <span>100% Identity Checked</span>
+                <span>•</span>
+                <span>Direct Chat &amp; Booking Available</span>
+              </div>
+            </div>
+
+            {/* Right Column: Editorial Visual */}
+            <div className="lg:col-span-5 relative">
+              <div className="relative aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 shadow-md group">
+                <img
+                  src={locationDowntown}
+                  alt={`${brand.platform_name} Regional Advisory`}
+                  className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 right-4 text-white">
+                  <p className="text-xs font-semibold">Ground-Level Market Coverage</p>
+                  <p className="text-[11px] text-white/80 mt-0.5">Physical viewings scheduled directly with assigned listing agents</p>
+                </div>
+              </div>
+            </div>
+
+          </div>
         </div>
-      </div>
+      </section>
       <div className="container-wide grid gap-6 py-10 sm:grid-cols-2 lg:grid-cols-3">
         {agents.map((a: any) => {
           const r = (ratings as any)[a.id];

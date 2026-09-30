@@ -234,53 +234,103 @@ export default function Properties() {
   const activeFilterCount = activeFilters.length;
 
   return (
-    <SiteLayout transparentNav>
+    <SiteLayout transparentNav="mobile">
       <SEO
         title={`${content.title}${city && city !== "all" ? ` in ${city}` : state && state !== "all" ? ` in ${state}` : country && country !== "all" ? ` in ${country}` : ""} | ${brand.platform_name}`}
         description={content.desc}
         canonicalUrl={`${window.location.origin}/properties${window.location.search}`}
       />
 
-      {/* ── Hero ─────────────────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-black min-h-[52vh] sm:min-h-[62vh] flex items-end pb-0">
-        <img
-          key={content.img}
-          src={content.img}
-          alt={content.title}
-          className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700"
-        />
-        {/* layered overlays: bottom heavy for text legibility */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
-
-        <div className="container-wide relative z-10 pb-16 pt-32 sm:pb-20 sm:pt-36">
-          <div className="max-w-2xl">
-            <span className="inline-block mb-5 px-3 py-1 text-[11px] font-bold tracking-[0.15em] uppercase text-white/80 border border-white/20 rounded-full backdrop-blur-sm bg-white/5">
-              {content.badge}
-            </span>
-            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05] mb-4">
-              {content.subtitle}
-            </h1>
-            <p className="text-base text-white/65 font-normal leading-relaxed max-w-lg">
-              {content.desc}
-            </p>
-            {/* Inline search in hero */}
-            <form
-              onSubmit={(e) => { e.preventDefault(); update("q", qLocal); }}
-              className="mt-8 flex items-center gap-0 bg-white rounded-xl shadow-xl overflow-hidden max-w-xl"
-            >
-              <div className="flex-1 flex items-center px-4">
-                <Search className="h-4 w-4 text-muted-foreground shrink-0 mr-3" />
-                <Input
-                  value={qLocal}
-                  onChange={(e) => setQLocal(e.target.value)}
-                  placeholder="Search city, area, or property type..."
-                  className="h-13 border-none shadow-none focus-visible:ring-0 text-foreground placeholder:text-muted-foreground/60 text-sm"
-                />
+      {/* ── 1. Editorial Property Hero (Type A) ──────────────────── */}
+      <section className="relative overflow-hidden bg-card border-b border-border/50 pt-16 md:pt-24 pb-8 md:pb-12">
+        <div className="container-wide">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Left Column: Editorial Information & Search */}
+            <div className="lg:col-span-6 xl:col-span-6 space-y-5">
+              <div className="flex items-center gap-2">
+                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
+                  {content.badge}
+                </span>
+                <span className="text-xs font-medium text-muted-foreground">
+                  Verified Real Estate Catalog
+                </span>
               </div>
-              <Button type="submit" size="lg" className="h-13 px-7 rounded-none bg-primary hover:bg-primary/90 text-white font-semibold shrink-0">
-                Search
-              </Button>
-            </form>
+
+              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight leading-[1.1]">
+                {content.title}
+              </h1>
+
+              <p className="text-base text-muted-foreground leading-relaxed max-w-xl">
+                {content.desc}
+              </p>
+
+              {/* Category Segment Selector */}
+              <div className="flex flex-wrap items-center gap-2 pt-1">
+                {[
+                  { id: "all", label: "All Listings" },
+                  { id: "buy", label: "Buy Homes" },
+                  { id: "rent", label: "Rentals" },
+                  { id: "land", label: "Land & Plots" },
+                ].map((tab) => {
+                  const isActive = (tab.id === "all" && (!type || type === "all")) || type === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => update("type", tab.id === "all" ? "" : tab.id)}
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-primary text-primary-foreground shadow-xs"
+                          : "bg-muted text-muted-foreground hover:bg-muted/80 hover:text-foreground"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Search Bar */}
+              <form
+                onSubmit={(e) => { e.preventDefault(); update("q", qLocal); }}
+                className="pt-2 flex items-center gap-2 max-w-lg"
+              >
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    value={qLocal}
+                    onChange={(e) => setQLocal(e.target.value)}
+                    placeholder="Search by city, address, or keyword..."
+                    className="h-11 pl-10 pr-4 rounded-xl border border-border/80 bg-background text-foreground text-xs sm:text-sm font-medium focus:ring-2 focus:ring-primary/30"
+                  />
+                </div>
+                <Button type="submit" className="h-11 px-5 rounded-xl bg-primary text-primary-foreground font-semibold text-xs shrink-0">
+                  Search
+                </Button>
+              </form>
+            </div>
+
+            {/* Right Column: Architectural Photography Showcase */}
+            <div className="lg:col-span-6 xl:col-span-6 relative">
+              <div className="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 shadow-md group">
+                <img
+                  key={content.img}
+                  src={content.img}
+                  alt={content.title}
+                  className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
+                  <span className="text-xs font-semibold drop-shadow-sm px-2.5 py-1 rounded-md bg-black/40 backdrop-blur-md border border-white/15">
+                    {content.subtitle}
+                  </span>
+                  <span className="text-[11px] font-medium drop-shadow-sm text-white/80">
+                    Physical Inspections Confirmed
+                  </span>
+                </div>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>

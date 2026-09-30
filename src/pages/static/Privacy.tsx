@@ -7,17 +7,25 @@ export default function Privacy() {
   return (
     <SiteLayout>
       <SEO title="Privacy Policy" description={`${brand.platform_name} Privacy Policy. Learn how we collect, use, and protect your information.`} />
-      {/* Header */}
-      <section className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-[#0d120e]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0d120e] via-[#111] to-[#0a0f0a]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[1]" />
-        
-        <div className="container-wide relative z-10 text-primary-foreground text-center">
-          <p className="mb-2 text-sm font-medium tracking-wider text-primary uppercase">Legal</p>
-          <h1 className="font-serif text-4xl font-semibold sm:text-5xl text-white">
-            Privacy <span className="text-secondary">Policy</span>
+      
+      {/* Hero Type D: Legal Page Typography Header */}
+      <section className="relative bg-white dark:bg-background border-b border-border pt-28 pb-12">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/20" />
+        </div>
+        <div className="container-tight relative z-10">
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400 mb-4">
+            Legal
+          </p>
+          <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
+            Privacy Policy
           </h1>
-          <p className="mt-4 text-sm text-white/60">Last updated: May 1, 2026</p>
+          <p className="mt-3 text-sm text-muted-foreground font-sans">
+            Last updated: May 1, 2026
+          </p>
+          <p className="mt-4 text-base text-muted-foreground leading-relaxed max-w-2xl font-sans">
+            This policy explains how {brand.platform_name} collects, uses, and protects your personal information when you use our platform.
+          </p>
         </div>
       </section>
 

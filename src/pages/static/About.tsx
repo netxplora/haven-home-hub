@@ -40,42 +40,78 @@ const values = [
 export default function About() {
   const { brand } = useBrand();
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav="mobile">
       <SEO 
         title="About Us" 
         description={`Learn about ${brand.platform_name} — a trusted, agency-led real estate platform offering verified properties, dedicated agents, and structured investment opportunities across the United States.`} 
         canonicalUrl={`${window.location.origin}/about`}
       />
-      {/* Hero Header */}
-      <div className="relative overflow-hidden min-h-[420px] sm:min-h-[500px] lg:min-h-[540px] flex items-center bg-[#0a0d0b]">
-        <img 
-          src={investHero} 
-          alt={`${brand.platform_name} Headquarters`} 
-          className="absolute inset-0 h-full w-full object-cover opacity-50"
-        />
-        <div className="absolute inset-0 bg-black/40 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0d0b] via-[#0a0d0b]/60 to-transparent z-[2]" />
-        
-        <div className="container-wide relative z-10 text-primary-foreground py-20">
-          <p className="mb-3 text-xs font-semibold tracking-widest uppercase text-emerald-400">About Our Agency</p>
-          <h1 className="max-w-3xl font-serif text-3xl sm:text-5xl md:text-6xl text-white leading-tight font-semibold">
-            A real estate agency built on <span className="text-white/80 font-normal">honesty and local expertise.</span>
-          </h1>
-          <p className="mt-5 max-w-2xl text-base sm:text-lg text-white/70 leading-relaxed font-normal">
-            We are an agency-led platform that curates homes for sale, rentals, and land — supported by full-time agents who know the market firsthand.
-          </p>
-        </div>
-      </div>
 
-      {/* Stats */}
-      <section className="container-wide -mt-8 relative z-20 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 pb-16">
-        {stats.map((s) => (
-          <div key={s.label} className="rounded-2xl border border-border/70 bg-card p-7 text-center shadow-card transition-all duration-300 hover:shadow-lg hover:border-primary/40 hover:-translate-y-0.5">
-            <p className="font-serif text-3xl sm:text-4xl font-bold text-primary">{s.value}</p>
-            <p className="mt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">{s.label}</p>
+      {/* Hero Type F: Brand Editorial Hero */}
+      <section className="relative bg-white dark:bg-background overflow-hidden border-b border-border pt-20 pb-0">
+        {/* Subtle background architectural lines */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-emerald-50/60 dark:bg-emerald-950/20" />
+          <div className="absolute top-1/4 right-1/4 w-px h-2/3 bg-emerald-200/50 dark:bg-emerald-800/30" />
+        </div>
+
+        <div className="container-wide relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-12 min-h-[520px] lg:min-h-[580px]">
+
+            {/* Left: Brand statement */}
+            <div className="lg:col-span-6 flex flex-col justify-center py-16 lg:py-24 pr-0 lg:pr-8">
+              <p className="text-xs font-bold tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400 mb-5">
+                About {brand.platform_name}
+              </p>
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
+                A Real Estate Agency Built on{' '}
+                <span className="text-emerald-600 dark:text-emerald-400">Honesty</span>{' '}
+                and Local Expertise
+              </h1>
+              <p className="mt-6 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-lg font-sans">
+                We curate verified properties across every category — homes for sale, rentals, and land — supported by full-time agents with first-hand market knowledge.
+              </p>
+
+              <div className="mt-8 flex flex-wrap gap-4">
+                <Button asChild size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white px-8">
+                  <Link to="/properties">View Properties</Link>
+                </Button>
+                <Button asChild variant="outline" size="lg" className="border-border hover:bg-accent px-8">
+                  <Link to="/agents">Meet Our Agents</Link>
+                </Button>
+              </div>
+
+              {/* Trust anchors */}
+              <div className="mt-10 pt-8 border-t border-border flex flex-wrap gap-6">
+                {stats.map((s) => (
+                  <div key={s.label}>
+                    <p className="font-heading text-2xl font-bold text-emerald-600 dark:text-emerald-400">{s.value}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 font-sans">{s.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Right: Editorial image */}
+            <div className="lg:col-span-6 relative flex items-end">
+              <div className="w-full h-[320px] lg:h-full relative overflow-hidden lg:rounded-tl-3xl">
+                <img
+                  src={investHero}
+                  alt={`${brand.platform_name} — verified real estate agency`}
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/60 via-transparent to-transparent" />
+                <div className="absolute bottom-0 inset-x-0 p-6">
+                  <p className="text-xs uppercase tracking-wider text-emerald-300 font-semibold">Agency-Led Platform</p>
+                  <p className="text-sm text-white/90 mt-1 font-sans">Every listing physically verified by our team before it goes live.</p>
+                </div>
+              </div>
+            </div>
           </div>
-        ))}
+        </div>
       </section>
+
 
       {/* Story */}
       <section className="container-tight py-20">

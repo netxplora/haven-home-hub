@@ -28,26 +28,48 @@ export default function BlogList() {
     <SiteLayout>
       <SEO title="Blog — Insights & News" description={`Market analysis, investment guides, property buying tips, and platform updates from the ${brand.platform_name} team.`} />
       
-      {/* Hero Header */}
-      <div className="relative overflow-hidden min-h-[340px] sm:min-h-[400px] flex items-center justify-center bg-black">
-        <img
-          src={property3}
-          alt="Insights and News"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/40 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
-
-        <div className="container-wide relative z-10 text-center py-16 sm:py-20">
-          <p className="mb-3 text-sm font-medium tracking-wider uppercase text-primary">Blog</p>
-          <h1 className="font-serif text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl text-white">
-            Insights & News
-          </h1>
-          <p className="mt-5 text-lg text-white/80 max-w-2xl mx-auto leading-relaxed font-light">
-            Market analysis, investment guides, property buying tips, and platform updates from the {brand.platform_name} team.
-          </p>
+      {/* Editorial Publication Masthead */}
+      <section className="relative bg-white dark:bg-background border-b border-border overflow-hidden pt-24 pb-0">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-0 w-2/5 h-full bg-slate-50/80 dark:bg-slate-900/40" />
         </div>
-      </div>
+        <div className="container-wide relative z-10">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 min-h-[400px] lg:min-h-[440px]">
+            {/* Masthead */}
+            <div className="lg:col-span-7 flex flex-col justify-center py-14 lg:py-20 pr-0 lg:pr-12">
+              <p className="text-xs font-bold tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400 mb-4">
+                {brand.platform_name} — Editorial
+              </p>
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
+                Insights & News
+              </h1>
+              <p className="mt-4 text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl font-sans">
+                Market analysis, investment guides, property buying tips, and platform updates from our team.
+              </p>
+              <div className="mt-6 flex items-center gap-3 text-xs text-muted-foreground">
+                <BookOpen className="h-3.5 w-3.5 text-emerald-600" />
+                <span>{isLoading ? "Loading..." : `${posts?.length || 0} articles published`}</span>
+                <span className="w-px h-3 bg-border" />
+                <Calendar className="h-3.5 w-3.5 text-emerald-600" />
+                <span>Updated regularly</span>
+              </div>
+            </div>
+
+            {/* Editorial image panel */}
+            <div className="lg:col-span-5 relative flex items-end">
+              <div className="w-full h-[220px] lg:h-full overflow-hidden lg:rounded-tl-2xl relative">
+                <img
+                  src={property3}
+                  alt="Real estate insights and editorial"
+                  className="absolute inset-0 h-full w-full object-cover"
+                  loading="eager"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Articles Grid */}
       <div className="container-wide py-14 md:py-20">

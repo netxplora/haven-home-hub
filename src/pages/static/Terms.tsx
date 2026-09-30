@@ -7,19 +7,27 @@ export default function Terms() {
   return (
     <SiteLayout>
       <SEO title="Terms of Service" description={`${brand.platform_name} Terms of Service. Please read these terms carefully before using our platform.`} />
-      {/* Hero Header */}
-      <div className="relative overflow-hidden min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] flex items-center bg-[#0d120e]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0d120e] via-[#111] to-[#0a0f0a]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent z-[1]" />
-        
-        <div className="container-wide relative z-10 text-primary-foreground">
-          <p className="mb-2 text-sm font-medium tracking-wider uppercase text-primary">Legal</p>
-          <h1 className="max-w-3xl font-serif text-4xl font-semibold sm:text-5xl text-white leading-tight">
-            Terms of <span className="text-secondary">Service</span>
-          </h1>
-          <p className="mt-3 text-sm text-white/60">Last updated: May 1, 2026</p>
+      
+      {/* Hero Type D: Legal Page Typography Header */}
+      <section className="relative bg-white dark:bg-background border-b border-border pt-28 pb-12">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/20" />
         </div>
-      </div>
+        <div className="container-tight relative z-10">
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400 mb-4">
+            Legal
+          </p>
+          <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">
+            Terms of Service
+          </h1>
+          <p className="mt-3 text-sm text-muted-foreground font-sans">
+            Last updated: May 1, 2026
+          </p>
+          <p className="mt-4 text-base text-muted-foreground leading-relaxed max-w-2xl font-sans">
+            By accessing or using the {brand.platform_name} platform, you agree to be bound by these Terms. Please read them carefully before proceeding.
+          </p>
+        </div>
+      </section>
 
       {/* Content */}
       <section className="container-tight py-16 sm:py-24">

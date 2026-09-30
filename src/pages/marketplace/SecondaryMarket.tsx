@@ -49,51 +49,87 @@ export default function SecondaryMarket() {
   };
 
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav="mobile">
       <SEO 
-        title={`Secondary Market | ${brand.platform_name}`} 
-        description={`Trade fractional property shares securely with other investors on the ${brand.platform_name} Secondary Market.`} 
+        title={`Secondary Share Exchange | ${brand.platform_name}`} 
+        description={`Trade verified property shares with other investors on the ${brand.platform_name} Secondary Market.`} 
       />
       
-      <div className="relative overflow-hidden bg-black text-white py-20 sm:py-24 border-b border-white/10 pt-28">
-        <div className="absolute inset-0">
-          <img
-            src={investHero4}
-            alt="Secondary Share Exchange"
-            className="h-full w-full object-cover opacity-35"
-          />
-          <div className="absolute inset-0 bg-black/40 z-[1]" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
+      {/* Hero Type C: Split Visual Asset Exchange */}
+      <section className="relative bg-slate-950 text-white overflow-hidden border-b border-white/10 pt-28 pb-16 lg:py-24">
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.06),transparent_60%)]" />
         </div>
 
         <div className="container-wide relative z-10">
-          <div className="flex flex-col md:flex-row items-start md:items-end justify-between gap-6">
-            <div>
-              <Badge variant="outline" className="mb-4 bg-primary/20 text-primary border-primary/30 backdrop-blur-md px-3 py-1 font-semibold text-xs tracking-wider uppercase">
-                <Activity className="h-3 w-3 mr-1" /> Live Secondary Trading
-              </Badge>
-              <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-                Secondary Share Exchange
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+            {/* Left Column: Context, Pitch, and Real-time Search */}
+            <div className="lg:col-span-7 flex flex-col items-start">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-5">
+                <Activity className="h-3.5 w-3.5 animate-pulse" /> Peer-to-Peer Share Exchange
+              </div>
+
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.15]">
+                Secondary Market Liquidity for Real Estate Shares
               </h1>
-              <p className="mt-4 text-base sm:text-lg text-white/80 max-w-2xl leading-relaxed">
-                Purchase fractional shares directly from other verified investors. Access established properties with immediate income distributions.
+
+              <p className="mt-4 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed font-sans">
+                Buy and sell fractional real estate shares directly with verified investors. Gain immediate exposure to seasoned properties with ongoing dividend distributions.
               </p>
+
+              <div className="mt-8 w-full max-w-lg">
+                <div className="relative flex items-center bg-white/5 border border-white/15 rounded-xl p-1.5 backdrop-blur-md shadow-2xl focus-within:border-primary/50 transition-colors">
+                  <Search className="absolute left-4 h-4 w-4 text-white/50" />
+                  <Input 
+                    placeholder="Search properties, cities, or asset classes..." 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 h-11 bg-transparent border-0 text-white placeholder:text-white/40 focus-visible:ring-0 text-sm font-sans"
+                  />
+                </div>
+              </div>
+
+              <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-slate-400">
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Automated Escrow Settlement
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Title Registry Verification
+                </span>
+                <span className="flex items-center gap-1.5">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Immediate Yield Entitlement
+                </span>
+              </div>
             </div>
-            
-            <div className="w-full md:w-auto flex flex-col sm:flex-row gap-3 bg-white/10 backdrop-blur-md p-2 rounded-xl border border-white/15 shadow-xl">
-              <div className="relative flex-1 sm:min-w-[320px]">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/60" />
-                <Input 
-                  placeholder="Search properties or locations..." 
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 h-11 bg-black/40 border-white/20 text-white placeholder:text-white/50 focus-visible:ring-primary"
-                />
+
+            {/* Right Column: Architectural Asset Card */}
+            <div className="lg:col-span-5">
+              <div className="relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-slate-900 group">
+                <div className="aspect-[4/3] w-full overflow-hidden">
+                  <img
+                    src={investHero4}
+                    alt="Secondary Real Estate Assets"
+                    className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                    loading="eager"
+                  />
+                </div>
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent pointer-events-none" />
+                <div className="absolute bottom-0 inset-x-0 p-5 flex items-center justify-between text-white">
+                  <div>
+                    <p className="text-xs uppercase tracking-wider text-emerald-400 font-semibold">Active Exchange</p>
+                    <p className="text-sm font-medium text-slate-200 mt-0.5">Verified Institutional Grade Units</p>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-xs text-slate-400">Trading Window</p>
+                    <p className="text-sm font-semibold text-white">24/7 Liquidity</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <div className="container-wide py-12 pb-24">
         {isLoadingListings ? (
