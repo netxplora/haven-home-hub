@@ -156,7 +156,7 @@ export default function PropertyDetail() {
       removeFromCompare(property.id);
       toast({
         title: "Removed from comparison",
-        description: `"$title" has been removed from your comparison list.`,
+        description: `"${property.title}" has been removed from your comparison list.`,
       });
     } else {
       if (compareList.length >= 4) {
@@ -177,7 +177,7 @@ export default function PropertyDetail() {
       });
       toast({
         title: "Added to comparison",
-        description: `"$title" has been added to your comparison list.`,
+        description: `"${property.title}" has been added to your comparison list.`,
       });
     }
   };
