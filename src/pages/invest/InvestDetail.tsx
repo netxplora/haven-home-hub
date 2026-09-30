@@ -94,8 +94,8 @@ export default function InvestDetail() {
 
   if (authLoading || isLoading) {
     return (
-      <SiteLayout transparentNav={true}>
-        <div className="container-wide py-10 space-y-6 animate-pulse">
+      <SiteLayout transparentNav="mobile">
+        <div className="container-wide pt-20 md:pt-24 pb-10 space-y-6 animate-pulse">
           <Skeleton className="h-4 w-48 rounded-md" />
           <Skeleton className="h-[460px] w-full rounded-2xl" />
           <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
@@ -358,7 +358,7 @@ export default function InvestDetail() {
   );
 
   return (
-    <SiteLayout transparentNav={true}>
+    <SiteLayout transparentNav="mobile">
       <SEO 
         title={`${data.title} — Fractional Real Estate Asset`} 
         description={data.description.slice(0, 160)} 
@@ -367,7 +367,7 @@ export default function InvestDetail() {
       />
 
       {/* ── 1. Top Breadcrumb Nav ── */}
-      <div className="container-wide pt-6 pb-3">
+      <div className="container-wide pt-14 md:pt-24 pb-3">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>

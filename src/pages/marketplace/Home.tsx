@@ -149,7 +149,7 @@ export default function Home() {
   };
 
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav="mobile">
       <SEO image="/images/hero/haven-home-hero-desktop.webp">
         <link rel="preload" as="image" href="/images/hero/haven-home-hero-desktop.webp" fetchPriority="high" />
       </SEO>

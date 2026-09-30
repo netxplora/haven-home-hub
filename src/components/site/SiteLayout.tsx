@@ -6,7 +6,15 @@ const Footer = lazy(() => import("./Footer").then(m => ({ default: m.Footer })))
 const PopupManager = lazy(() => import("./PopupManager").then(m => ({ default: m.PopupManager })));
 const ActivityToasts = lazy(() => import("./ActivityToasts").then(m => ({ default: m.ActivityToasts })));
 
-export function SiteLayout({ children, transparentNav }: { children: React.ReactNode; transparentNav?: boolean }) {
+export type TransparentNavMode = boolean | "mobile" | "all";
+
+export function SiteLayout({ 
+  children, 
+  transparentNav 
+}: { 
+  children: React.ReactNode; 
+  transparentNav?: TransparentNavMode; 
+}) {
   return (
     <div className="flex min-h-screen flex-col">
       <AnnouncementBar />

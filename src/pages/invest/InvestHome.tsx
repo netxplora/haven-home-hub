@@ -98,7 +98,7 @@ export default function InvestHome() {
   const maturedCount = userInvestments.filter((i: any) => i.status === 'matured' || i.status === 'completed').length;
 
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav="mobile">
       <SEO 
         title="Invest in Real Estate" 
         description="Co-invest in professionally managed, income-generating properties. Start with fractional ownership and earn scheduled distributions from rental income." 

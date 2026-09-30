@@ -16,7 +16,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBrand } from "@/hooks/useBrand";
 
-export function Header({ transparentAtTop = false }: { transparentAtTop?: boolean }) {
+export type TransparentNavMode = boolean | "mobile" | "all";
+
+export function Header({ transparentAtTop = false }: { transparentAtTop?: TransparentNavMode }) {
   const { user, profile, isAdmin, isAgent, signOut } = useAuth();
   const { brand } = useBrand();
   
@@ -35,7 +37,7 @@ export function Header({ transparentAtTop = false }: { transparentAtTop?: boolea
     return name.substring(0, 2).toUpperCase();
   };
   const navigate = useNavigate();
-    const [mobileOpen, setMobileOpen] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [announcementHeight, setAnnouncementHeight] = useState(0);
   const [propertiesOpen, setPropertiesOpen] = useState(false);
@@ -100,6 +102,22 @@ export function Header({ transparentAtTop = false }: { transparentAtTop?: boolea
   // Compute the dynamic top value
   const topOffset = isScrolled ? 0 : announcementHeight;
 
+  const isMobileTransparent = transparentAtTop === "mobile";
+  const isAllTransparent = transparentAtTop === true || transparentAtTop === "all";
+
+  let headerClasses = "fixed inset-x-0 z-40 transition-all duration-300 ease-in-out ";
+  if (isScrolled) {
+    headerClasses += "border-b border-border/80 bg-background/90 md:bg-background/95 backdrop-blur-md md:backdrop-blur-xl shadow-sm md:shadow-md";
+  } else if (isMobileTransparent) {
+    // Mobile (< md): transparent at top
+    // Desktop (>= md): restored established solid/translucent desktop navbar
+    headerClasses += "border-b border-transparent bg-transparent backdrop-blur-none shadow-none md:border-border/40 md:bg-background/95 md:backdrop-blur-md md:shadow-xs";
+  } else if (isAllTransparent) {
+    headerClasses += "border-b border-transparent bg-transparent backdrop-blur-none shadow-none";
+  } else {
+    headerClasses += "border-b border-border/30 bg-background/95 backdrop-blur-md shadow-xs";
+  }
+
   const nav = [
     { to: "/explore", label: "Map" },
     { to: "/invest", label: "Invest" },
@@ -126,29 +144,32 @@ export function Header({ transparentAtTop = false }: { transparentAtTop?: boolea
 
   return (
     <header
-      className={`fixed inset-x-0 z-40 transition-all duration-300 ease-in-out ${
-        isScrolled
-          ? "border-b border-border/80 bg-background/95 backdrop-blur-xl shadow-md"
-          : transparentAtTop
-          ? "border-b border-transparent bg-transparent shadow-none"
-          : "border-b border-border/30 bg-background/80 backdrop-blur-md shadow-xs"
-      }`}
+      className={headerClasses}
       style={{ top: topOffset }}
     >
       <div className="container-wide flex flex-col md:flex-row md:h-[68px] justify-between items-center gap-0 md:gap-6 py-2 md:py-0">
         
-        <div className="flex w-full md:w-auto h-[48px] md:h-full items-center justify-between">
+        <div className="flex w-full md:w-auto h-[50px] sm:h-[54px] md:h-full items-center justify-between">
           {/* Logo */}
           <Link to="/" className="flex items-center shrink-0 transition-opacity hover:opacity-90" aria-label={`${brand.platform_name} home`}>
             <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-9 md:h-11 w-auto object-contain" />
           </Link>
           
           {/* Mobile Hamburger & Notification */}
-          <div className="flex items-center gap-1.5 md:hidden">
+          <div className="flex items-center gap-2 md:hidden">
             {user && <NotificationBell />}
             <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="h-10 w-10 rounded-lg" aria-label={"Menu"}>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-11 w-11 rounded-xl transition-all ${
+                    isMobileTransparent && !isScrolled
+                      ? "bg-background/70 text-foreground backdrop-blur-md border border-border/40 hover:bg-background/90 shadow-xs"
+                      : "text-foreground hover:bg-muted/70"
+                  }`} 
+                  aria-label="Menu"
+                >
                   <Menu className="h-5 w-5" />
                 </Button>
               </SheetTrigger>

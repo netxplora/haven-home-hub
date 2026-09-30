@@ -206,8 +206,8 @@ export default function PropertyDetail() {
 
   if (isLoading) {
     return (
-      <SiteLayout transparentNav={true}>
-        <div className="container-wide py-10 space-y-8 animate-pulse">
+      <SiteLayout transparentNav="mobile">
+        <div className="container-wide pt-20 md:pt-24 pb-10 space-y-8 animate-pulse">
           <Skeleton className="h-4 w-48 rounded-md" />
           <Skeleton className="h-[460px] w-full rounded-2xl" />
           <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
@@ -226,8 +226,8 @@ export default function PropertyDetail() {
 
   if (!property) {
     return (
-      <SiteLayout>
-        <div className="container-wide py-28 text-center">
+      <SiteLayout transparentNav="mobile">
+        <div className="container-wide pt-20 md:pt-24 pb-28 text-center">
           <h1 className="font-serif text-3xl font-bold text-foreground">Property Not Found</h1>
           <p className="text-muted-foreground mt-2 text-base">The listing you are looking for may have been sold or removed.</p>
           <Button asChild className="mt-6 rounded-xl">
@@ -276,7 +276,7 @@ export default function PropertyDetail() {
       : "Unavailable";
 
   return (
-    <SiteLayout transparentNav={true}>
+    <SiteLayout transparentNav="mobile">
       <SEO 
         title={`${property.title} — ${propertyTypeLabel(property.property_type)} in ${property.locations?.name || property.city || 'United States'}`} 
         description={`Explore this verified ${property.property_type} for ${formatPrice(Number(property.price), property.currency, property.property_type)}. ${property.description?.slice(0, 140)}...`} 
@@ -286,7 +286,7 @@ export default function PropertyDetail() {
       <PropertyJsonLd property={property} />
 
       {/* ── 1. Top Navigation & Breadcrumbs ── */}
-      <div className="container-wide pt-6 pb-3">
+      <div className="container-wide pt-14 md:pt-24 pb-3">
         <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
           <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>

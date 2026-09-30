@@ -127,16 +127,6 @@ export default function UserDashboard() {
         <PromoBanner placement="dashboard_promo" className="mb-6" />
         {renderContent()}
       </div>
-      
-      <div className="mt-20 pt-8 border-t border-border/20 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{brand.platform_name} • Version 2.4.0</p>
-        <button 
-          onClick={() => signOut()} 
-          className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-destructive hover:opacity-80 transition-opacity"
-        >
-          <LogOut className="h-3.5 w-3.5" /> Sign Out
-        </button>
-      </div>
     </DashboardShell>
   );
 }
