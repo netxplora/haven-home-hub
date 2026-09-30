@@ -16,7 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useBrand } from "@/hooks/useBrand";
 
-export function Header() {
+export function Header({ transparentAtTop = false }: { transparentAtTop?: boolean }) {
   const { user, profile, isAdmin, isAgent, signOut } = useAuth();
   const { brand } = useBrand();
   
@@ -129,6 +129,8 @@ export function Header() {
       className={`fixed inset-x-0 z-40 transition-all duration-300 ease-in-out ${
         isScrolled
           ? "border-b border-border/80 bg-background/95 backdrop-blur-xl shadow-md"
+          : transparentAtTop
+          ? "border-b border-transparent bg-transparent shadow-none"
           : "border-b border-border/30 bg-background/80 backdrop-blur-md shadow-xs"
       }`}
       style={{ top: topOffset }}

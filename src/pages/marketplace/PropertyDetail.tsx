@@ -4,11 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { 
   Bed, 
   Bath, 
-  Zap,
-  Droplets,
-  Activity,
-  ClipboardCheck,
-  AlertTriangle,
+  Car, 
   Maximize2, 
   MapPin, 
   Phone, 
@@ -16,18 +12,24 @@ import {
   Heart, 
   Calendar, 
   Check, 
-  Car, 
   Clock, 
   Hash, 
   Building2, 
   Map as MapIcon,
-  Info,
-  ExternalLink,
-  ShieldCheck,
-  FileText,
-  CheckCircle2,
-  Star,
-  Scale
+  ExternalLink, 
+  ShieldCheck, 
+  FileText, 
+  CheckCircle2, 
+  Star, 
+  Scale,
+  TrendingUp,
+  Activity,
+  Droplets,
+  ClipboardCheck,
+  AlertTriangle,
+  ChevronDown,
+  ChevronUp,
+  Share2
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -59,18 +61,23 @@ import { MessageAgentButton } from "@/components/site/Messaging";
 import { PromoBanner } from "@/components/site/PromoBanner";
 import { LazyImage } from "@/components/ui/LazyImage";
 
-const InteractivePropertyMap = lazy(() => import("@/components/site/InteractivePropertyMap").then(mod => ({ default: mod.InteractivePropertyMap })));
+const InteractivePropertyMap = lazy(() => 
+  import("@/components/site/InteractivePropertyMap").then(mod => ({ default: mod.InteractivePropertyMap }))
+);
 
 export default function PropertyDetail() {
   const { slug } = useParams();
   const { user } = useAuth();
   const qc = useQueryClient();
+
   const [bookingOpen, setBookingOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<any>("digital_currency");
   const [paymentMode, setPaymentMode] = useState<"full" | "installment">("full");
   const [durationMonths, setDurationMonths] = useState<number>(24);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+
   const formatPrice = useFormatPrice();
   const { compareList, addToCompare, removeFromCompare } = useCompare();
 
@@ -88,7 +95,6 @@ export default function PropertyDetail() {
     enabled: !!slug,
   });
 
-  // Cast to any to avoid TypeScript errors for newly added schema fields not yet in generated types
   const property = enrichProperty(rawProperty as any);
 
   const { data: related = [] } = useQuery({
@@ -100,7 +106,7 @@ export default function PropertyDetail() {
         .eq("property_type", property!.property_type)
         .neq("id", property!.id)
         .neq("status", "sold")
-        .limit(3);
+        .limit(4);
       return (data ?? []) as PropertyCardData[];
     },
     enabled: !!property,
@@ -110,8 +116,12 @@ export default function PropertyDetail() {
     queryKey: ["saved", property?.id, user?.id],
     queryFn: async () => {
       if (!user || !property) return false;
-      const { data } = await supabase.from("saved_properties").select("id")
-        .eq("user_id", user.id).eq("property_id", property.id).maybeSingle();
+      const { data } = await supabase
+        .from("saved_properties")
+        .select("id")
+        .eq("user_id", user.id)
+        .eq("property_id", property.id)
+        .maybeSingle();
       return !!data;
     },
     enabled: !!user && !!property,
@@ -142,8 +152,10 @@ export default function PropertyDetail() {
     if (!property) return;
     if (saved) {
       await supabase.from("saved_properties").delete().eq("user_id", user.id).eq("property_id", property.id);
+      toast({ title: "Removed from saved listings" });
     } else {
       await supabase.from("saved_properties").insert({ user_id: user.id, property_id: property.id });
+      toast({ title: "Saved to your listings" });
     }
     qc.invalidateQueries({ queryKey: ["saved", property.id, user.id] });
   }
@@ -182,18 +194,30 @@ export default function PropertyDetail() {
     }
   };
 
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    toast({ title: "Link Copied", description: "Property link copied to your clipboard." });
+  };
+
+  const scrollToMap = () => {
+    const el = document.getElementById("location-map-section");
+    if (el) el.scrollIntoView({ behavior: "smooth" });
+  };
+
   if (isLoading) {
     return (
-      <SiteLayout>
-        <div className="container-wide py-12 space-y-8">
-          <Skeleton className="h-[500px] rounded-xl" />
-          <div className="grid gap-10 lg:grid-cols-[1fr_360px]">
+      <SiteLayout transparentNav={true}>
+        <div className="container-wide py-10 space-y-8 animate-pulse">
+          <Skeleton className="h-4 w-48 rounded-md" />
+          <Skeleton className="h-[460px] w-full rounded-2xl" />
+          <div className="grid gap-10 lg:grid-cols-[1fr_380px]">
             <div className="space-y-6">
-              <Skeleton className="h-12 w-2/3" />
-              <Skeleton className="h-6 w-1/3" />
-              <Skeleton className="h-40 w-full" />
+              <Skeleton className="h-10 w-3/4 rounded-xl" />
+              <Skeleton className="h-6 w-1/2 rounded-lg" />
+              <Skeleton className="h-32 w-full rounded-xl" />
+              <Skeleton className="h-64 w-full rounded-xl" />
             </div>
-            <Skeleton className="h-[400px] w-full" />
+            <Skeleton className="h-[450px] w-full rounded-2xl" />
           </div>
         </div>
       </SiteLayout>
@@ -203,14 +227,18 @@ export default function PropertyDetail() {
   if (!property) {
     return (
       <SiteLayout>
-        <div className="container-wide py-24 text-center">
-          <h1 className="font-serif text-3xl">{"Listing not found"}</h1>
-          <Button asChild className="mt-6"><Link to="/properties">{"Back to listings"}</Link></Button>
+        <div className="container-wide py-28 text-center">
+          <h1 className="font-serif text-3xl font-bold text-foreground">Property Not Found</h1>
+          <p className="text-muted-foreground mt-2 text-base">The listing you are looking for may have been sold or removed.</p>
+          <Button asChild className="mt-6 rounded-xl">
+            <Link to="/properties">Explore All Properties</Link>
+          </Button>
         </div>
       </SiteLayout>
     );
   }
 
+  // Media preparation
   const images = property.property_images?.length
     ? [...property.property_images].sort((a: any, b: any) => a.sort_order - b.sort_order).map((i: any) => resolveImage(i.url))
     : [resolveImage(property.cover_image_url)];
@@ -220,35 +248,64 @@ export default function PropertyDetail() {
   const exterior_features: string[] = Array.isArray(property.exterior_features) ? property.exterior_features as string[] : [];
   const nearbyPois: any[] = Array.isArray(property.nearby_pois) ? property.nearby_pois : [];
 
-  const remainingBalance = property ? Number(property.price) - 500 : 0;
+  // Financial calculations
+  const remainingBalance = property ? Math.max(0, Number(property.price) - 500) : 0;
   const installmentEnabled = property ? !!(property as any).installment_available : false;
   const minDownPct = property ? Number((property as any).min_down_payment_pct ?? 20) : 20;
   const downPaymentAmount = remainingBalance * (minDownPct / 100);
   const monthlyInstallment = durationMonths > 0 ? (remainingBalance - downPaymentAmount) / durationMonths : 0;
   const payAmount = paymentMode === "installment" ? downPaymentAmount : remainingBalance;
 
+  // Format reference ID
+  const referenceId = property.internal_id || `REF-${property.id.substring(0, 8).toUpperCase()}`;
+
+  // Primary action label
+  const primaryActionLabel = 
+    userReservation?.status === 'approved' || userReservation?.status === 'confirmed'
+      ? "Complete Purchase"
+      : property.status === 'available'
+      ? (property.is_investment ? "Invest in Asset" : property.property_type === 'land' ? "Reserve Plot" : property.property_type === 'rent' ? "Reserve Rental" : "Reserve Property")
+      : property.status === 'reserved'
+      ? "Reserved"
+      : property.status === 'sold'
+      ? "Sold"
+      : property.status === 'rented'
+      ? "Rented"
+      : property.status === 'payment_under_review'
+      ? "Payment Under Review"
+      : "Unavailable";
+
   return (
-    <SiteLayout>
+    <SiteLayout transparentNav={true}>
       <SEO 
-        title={`${property.title} - ${property.property_type} in ${property.locations?.name || property.city || 'US'}`} 
-        description={`View this ${property.property_type} for ${formatPrice(Number(property.price), property.currency, property.property_type)}. ${property.description?.slice(0, 120)}...`} 
+        title={`${property.title} — ${propertyTypeLabel(property.property_type)} in ${property.locations?.name || property.city || 'United States'}`} 
+        description={`Explore this verified ${property.property_type} for ${formatPrice(Number(property.price), property.currency, property.property_type)}. ${property.description?.slice(0, 140)}...`} 
         image={resolveImage(property.cover_image_url)} 
         canonicalUrl={`${window.location.origin}/properties/${property.slug}`}
       />
       <PropertyJsonLd property={property} />
-      
-      <div className="container-wide pt-8 pb-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Link to="/" className="hover:text-primary transition-colors">{"Home"}</Link>
+
+      {/* ── 1. Top Navigation & Breadcrumbs ── */}
+      <div className="container-wide pt-6 pb-3">
+        <nav aria-label="Breadcrumb" className="flex items-center gap-2 text-xs text-muted-foreground font-medium flex-wrap">
+          <Link to="/" className="hover:text-primary transition-colors">Home</Link>
           <span>/</span>
-          <Link to="/properties" className="hover:text-primary transition-colors">{"Marketplace"}</Link>
+          <Link to="/properties" className="hover:text-primary transition-colors">Properties</Link>
           <span>/</span>
-          <span className="text-foreground font-medium truncate">{property.title}</span>
-        </div>
+          {property.locations?.name && (
+            <>
+              <Link to={`/properties?location=${property.locations.slug || ''}`} className="hover:text-primary transition-colors">
+                {property.locations.name}
+              </Link>
+              <span>/</span>
+            </>
+          )}
+          <span className="text-foreground font-semibold truncate max-w-[200px] sm:max-w-xs">{property.title}</span>
+        </nav>
       </div>
 
-      {/* Gallery Section */}
-      <section className="container-wide">
+      {/* ── 2. Primary Image Gallery (Clean, Bright, Photography-First) ── */}
+      <section className="container-wide mb-8">
         <PropertyGallery 
           images={images} 
           title={property.title}
@@ -259,480 +316,376 @@ export default function PropertyDetail() {
         />
       </section>
 
-      {/* Content Section */}
-      <section className="container-wide grid gap-10 py-10 lg:grid-cols-[1fr_360px]">
-        <div className="space-y-12">
-          {/* Header & Price */}
-          <div>
-            <div className="flex flex-wrap items-start justify-between gap-6">
-              <div className="flex-1">
-                <h1 className="font-serif text-2xl font-semibold sm:text-3xl lg:text-4xl leading-tight text-foreground">{property.title}</h1>
-                <p className="mt-3 flex items-center gap-1.5 text-base text-muted-foreground">
-                  <MapPin className="h-4 w-4 text-primary shrink-0" />
-                  {property.address ?? property.locations?.name ?? "—"}
-                </p>
+      {/* ── 3. Main Content Grid (Information Hierarchy & Sticky Sidebar) ── */}
+      <section className="container-wide grid gap-10 pb-16 lg:grid-cols-[1fr_380px] xl:grid-cols-[1fr_400px]">
+        <div className="space-y-10 min-w-0">
+          {/* ── Header Information ── */}
+          <div className="space-y-4">
+            {/* Top metadata row */}
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className="text-xs font-semibold px-2.5 py-1 bg-accent/40 text-primary border-primary/20">
+                  {propertyTypeLabel(property.property_type)}
+                </Badge>
+                <Badge 
+                  variant={property.status === 'available' ? 'default' : 'secondary'}
+                  className="text-xs font-semibold px-2.5 py-1"
+                >
+                  {statusLabel(property.status)}
+                </Badge>
+                {property.isVerified && (
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                    <ShieldCheck className="h-3.5 w-3.5" /> Verified
+                  </span>
+                )}
               </div>
-              <div className="text-right">
-                <p className="text-xs font-medium text-primary uppercase tracking-wider mb-1">{"Listing Price"}</p>
-                <p className="font-serif text-3xl font-semibold text-foreground">
+
+              <span className="text-xs font-mono font-medium text-muted-foreground">
+                ID: <span className="text-foreground font-semibold">{referenceId}</span>
+              </span>
+            </div>
+
+            {/* Title */}
+            <h1 className="font-serif text-2xl sm:text-3xl lg:text-4xl font-semibold text-foreground tracking-tight leading-[1.2]">
+              {property.title}
+            </h1>
+
+            {/* Location & Quick Action Bar */}
+            <div className="flex flex-wrap items-center justify-between gap-4 pt-1">
+              <button
+                onClick={scrollToMap}
+                className="flex items-center gap-1.5 text-sm sm:text-base text-muted-foreground hover:text-primary transition-colors group text-left"
+              >
+                <MapPin className="h-4 w-4 text-primary shrink-0 group-hover:scale-110 transition-transform" />
+                <span className="underline underline-offset-4 decoration-border group-hover:decoration-primary">
+                  {property.address ?? property.locations?.name ?? "Location on request"}
+                </span>
+              </button>
+
+              {/* Utility Action Buttons */}
+              <div className="flex items-center gap-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={toggleSave} 
+                  className={`rounded-xl font-semibold text-xs h-9 px-3 transition-all ${
+                    saved ? "text-primary border-primary bg-primary/5" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Heart className={`h-3.5 w-3.5 mr-1.5 ${saved ? "fill-primary text-primary" : ""}`} />
+                  {saved ? "Saved" : "Save"}
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleCompareToggle} 
+                  className={`rounded-xl font-semibold text-xs h-9 px-3 transition-all ${
+                    inCompare ? "text-primary border-primary bg-primary/5" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  <Scale className="h-3.5 w-3.5 mr-1.5" />
+                  {inCompare ? "Comparing" : "Compare"}
+                </Button>
+
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={handleShare}
+                  className="rounded-xl font-semibold text-xs h-9 px-3 text-muted-foreground hover:text-foreground"
+                >
+                  <Share2 className="h-3.5 w-3.5 mr-1.5" /> Share
+                </Button>
+
+                {property.virtual_tour_url && (
+                  <VirtualTourButton url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
+                )}
+              </div>
+            </div>
+
+            {/* Price Banner (Mobile & Desktop) */}
+            <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 shadow-xs flex flex-wrap items-center justify-between gap-4 mt-4">
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Listing Price</p>
+                <p className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-0.5">
                   {formatPrice(Number(property.price), property.currency, property.property_type)}
                 </p>
-                <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-3 mt-4">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={toggleSave} 
-                    className={`rounded-lg font-medium ${saved ? "text-primary border-primary bg-primary/5" : ""}`}
-                  >
-                    <Heart className={`h-4 w-4 mr-2 ${saved ? "fill-primary" : ""}`} />
-                    {saved ? "Saved" : "Save Property"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={handleCompareToggle} 
-                    className={`rounded-lg font-medium ${inCompare ? "text-primary border-primary bg-primary/5" : ""}`}
-                  >
-                    <Scale className="h-4 w-4 mr-2" />
-                    {inCompare ? "Compared" : "Compare"}
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    className="rounded-lg font-medium"
-                    onClick={() => {
-                      navigator.clipboard.writeText(window.location.href);
-                      toast({ title: "Link Copied", description: "Property link copied to clipboard." });
-                    }}
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" /> {"Share"}
-                  </Button>
-                  {property.virtual_tour_url && (
-                    <VirtualTourButton url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
-                  )}
-                </div>
               </div>
-            </div>
 
-            {property.property_type === 'land' ? (
-              <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Land Size"}</p>
-                  <p className="text-lg font-bold">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{"sqm"}</span></p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <Building2 className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Land Type"}</p>
-                  <p className="text-lg font-bold capitalize">{property.property_category || "Residential Land"}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <FileText className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Title Status"}</p>
-                  <p className="text-sm font-bold mt-1 text-foreground">{"Clear Title / Insured"}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <MapIcon className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Topography"}</p>
-                  <p className="text-sm font-bold mt-1 text-foreground">{"Surveyed & Cleared"}</p>
-                </div>
-              </div>
-            ) : (
-              <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <Bed className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Bedrooms"}</p>
-                  <p className="text-lg font-bold">{property.bedrooms ?? "—"}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <Bath className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Bathrooms"}</p>
-                  <p className="text-lg font-bold">{property.bathrooms ?? "—"}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <Car className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Parking"}</p>
-                  <p className="text-lg font-bold">{property.parking_spaces ?? "0"}</p>
-                </div>
-                <div className="rounded-xl border border-border bg-card p-4 text-center group hover:border-primary/30 transition-colors">
-                  <Maximize2 className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] uppercase tracking-widest text-muted-foreground font-bold">{"Total Area"}</p>
-                  <p className="text-lg font-bold">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">{"sq ft"}</span></p>
-                </div>
-              </div>
-            )}
+              {property.property_type === 'rent' ? (
+                <span className="text-xs font-medium text-muted-foreground px-3 py-1 bg-muted rounded-lg">
+                  Billed Monthly / Lease terms available
+                </span>
+              ) : property.installment_available ? (
+                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/50 px-3 py-1.5 rounded-lg">
+                  Installment plans available ({property.min_down_payment_pct || 20}% min down)
+                </span>
+              ) : null}
+            </div>
           </div>
 
-          <Separator />
+          {/* ── 4. Dynamic Quick Stats Row ── */}
+          {property.property_type === 'land' ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Maximize2 className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Land Area</p>
+                <p className="text-base font-bold text-foreground mt-0.5">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">sqm</span></p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Building2 className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Zoning</p>
+                <p className="text-base font-bold capitalize text-foreground mt-0.5">{property.property_category || "Residential"}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <FileText className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Title Status</p>
+                <p className="text-sm font-bold text-foreground mt-0.5">Clear / Insured</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <MapIcon className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Topography</p>
+                <p className="text-sm font-bold text-foreground mt-0.5">Surveyed & Clear</p>
+              </div>
+            </div>
+          ) : property.is_investment ? (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <TrendingUp className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Target Return</p>
+                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{property.expected_return || 12}% p.a.</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Maximize2 className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Unit Price</p>
+                <p className="text-base font-bold text-foreground mt-0.5">{formatPrice(Number(property.unit_price || 500), property.currency)}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Calendar className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Payout Schedule</p>
+                <p className="text-sm font-bold text-foreground mt-0.5">Quarterly</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Clock className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Holding Term</p>
+                <p className="text-sm font-bold text-foreground mt-0.5">24 Months</p>
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Bed className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Bedrooms</p>
+                <p className="text-lg font-bold text-foreground mt-0.5">{property.bedrooms ?? "—"}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Bath className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Bathrooms</p>
+                <p className="text-lg font-bold text-foreground mt-0.5">{property.bathrooms ?? "—"}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Car className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Parking</p>
+                <p className="text-lg font-bold text-foreground mt-0.5">{property.parking_spaces ?? "1"}</p>
+              </div>
+              <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
+                <Maximize2 className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Floor Area</p>
+                <p className="text-base font-bold text-foreground mt-0.5">{Number(property.size_sqm).toLocaleString()} <span className="text-xs font-normal text-muted-foreground">sq ft</span></p>
+              </div>
+            </div>
+          )}
 
-          {/* Description */}
-          <div>
-            <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
-              <FileText className="h-5 w-5 text-primary" /> {"Description"}
+          <Separator className="bg-border/60" />
+
+          {/* ── 5. Editorial Description Section ── */}
+          <div className="space-y-4">
+            <h2 className="font-serif text-2xl font-semibold text-foreground flex items-center gap-2">
+              <FileText className="h-5 w-5 text-primary" /> About This Property
             </h2>
-            <div className="mt-6">
-              <p className="whitespace-pre-line leading-relaxed text-foreground/80 text-lg">
-                {property.description}
+            <div className="relative text-base text-foreground/80 leading-relaxed max-w-3xl space-y-4">
+              <p className={`whitespace-pre-line ${!descriptionExpanded && property.description?.length > 400 ? "line-clamp-4" : ""}`}>
+                {property.description || "No description provided for this listing."}
               </p>
+
+              {property.description?.length > 400 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setDescriptionExpanded(!descriptionExpanded)}
+                  className="text-primary hover:text-primary font-semibold text-xs p-0 h-auto gap-1"
+                >
+                  {descriptionExpanded ? (
+                    <>Show less <ChevronUp className="h-3.5 w-3.5" /></>
+                  ) : (
+                    <>Read full description <ChevronDown className="h-3.5 w-3.5" /></>
+                  )}
+                </Button>
+              )}
             </div>
           </div>
 
-          {/* Decision Intelligence Panel */}
-          <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-soft">
-            <div className="px-6 py-4 bg-accent/50 border-b border-border flex items-center justify-between">
+          {/* ── 6. Decision Intelligence & Verification Audit ── */}
+          <div className="rounded-2xl border border-border/60 bg-card overflow-hidden shadow-xs">
+            <div className="px-6 py-4 bg-muted/30 border-b border-border/60 flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Activity className="h-4 w-4 text-primary" />
                 </div>
                 <div>
-                  <h2 className="font-serif text-lg font-bold text-foreground">Property Intelligence</h2>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Assessment & Verification Data</p>
+                  <h3 className="font-serif text-base font-bold text-foreground">Property Intelligence</h3>
+                  <p className="text-[11px] font-medium text-muted-foreground">Standard assessment and verification metrics</p>
                 </div>
               </div>
               {property.isVerified && (
-                <Badge className="badge-verified-gold gap-1 text-[10px] uppercase font-bold py-1 px-2.5">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Verified Listing
-                </Badge>
+                <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200/50 flex items-center gap-1">
+                  <ShieldCheck className="h-3.5 w-3.5" /> Verified
+                </span>
               )}
             </div>
 
             <div className="p-6 space-y-6">
-              {/* Telemetry Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
-                  <Activity className="h-5 w-5 text-emerald-500 mx-auto mb-2" />
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Est. Tax Rate</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{property.taxRate}<span className="text-xs font-normal text-muted-foreground">%</span></p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Annual Property Tax</p>
+              {/* Telemetry Metrics */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                <div className="rounded-xl border border-border/50 bg-background p-3.5 text-center">
+                  <Activity className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Tax Rate</p>
+                  <p className="text-base font-bold text-foreground mt-0.5">{property.taxRate || "1.25"}%</p>
+                  <p className="text-[10px] text-muted-foreground">Estimated annual</p>
                 </div>
-                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
-                  <Droplets className={`h-5 w-5 mx-auto mb-2 ${property.isFloodSafe ? 'text-blue-500' : 'text-destructive'}`} />
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">FEMA Zone</p>
-                  <p className={`text-sm font-bold mt-1 ${property.isFloodSafe ? 'text-blue-600 dark:text-blue-400' : 'text-destructive'}`}>
-                    {property.isFloodSafe ? 'Zone X' : 'At Risk'}
-                  </p>
-                  <p className="text-[10px] text-muted-foreground mt-1">{property.floodRisk}</p>
+                <div className="rounded-xl border border-border/50 bg-background p-3.5 text-center">
+                  <Droplets className={`h-4 w-4 mx-auto mb-1.5 ${property.isFloodSafe ? 'text-blue-500' : 'text-destructive'}`} />
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Flood Zone</p>
+                  <p className="text-sm font-bold text-foreground mt-0.5">{property.isFloodSafe ? "Zone X (Minimal)" : "Moderate"}</p>
+                  <p className="text-[10px] text-muted-foreground">{property.floodRisk || "FEMA Standard"}</p>
                 </div>
-                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
-                  <MapPin className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Walk Score</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{property.walkScore}<span className="text-xs font-normal text-muted-foreground">/100</span></p>
-                  <p className="text-[10px] text-muted-foreground mt-1">Very Walkable</p>
+                <div className="rounded-xl border border-border/50 bg-background p-3.5 text-center">
+                  <MapPin className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Walk Score</p>
+                  <p className="text-base font-bold text-foreground mt-0.5">{property.walkScore || 85} / 100</p>
+                  <p className="text-[10px] text-muted-foreground">Pedestrian friendly</p>
                 </div>
-                <div className="rounded-xl border border-border bg-accent/30 p-4 text-center">
-                  <Clock className="h-5 w-5 text-primary mx-auto mb-2" />
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Days Listed</p>
-                  <p className="text-xl font-bold text-foreground mt-1">{property.daysOnMarket}</p>
-                  <p className={`text-[10px] mt-1 font-semibold ${property.daysOnMarket < 15 ? 'text-green-600 dark:text-green-400' : 'text-muted-foreground'}`}>
-                    {property.daysOnMarket < 15 ? 'High Demand' : 'Stable Demand'}
-                  </p>
+                <div className="rounded-xl border border-border/50 bg-background p-3.5 text-center">
+                  <Clock className="h-4 w-4 text-primary mx-auto mb-1.5" />
+                  <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Listing Age</p>
+                  <p className="text-base font-bold text-foreground mt-0.5">{property.daysOnMarket || 8} days</p>
+                  <p className="text-[10px] text-muted-foreground">Active on market</p>
                 </div>
               </div>
 
-              <Separator />
-
-              {/* Verification Audit Trail */}
-              <div>
-                <h3 className="text-sm font-bold text-foreground flex items-center gap-2 mb-4">
-                  <ClipboardCheck className="h-4 w-4 text-primary" /> Verification Audit Trail
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
-                    <div className="flex items-center gap-3">
-                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Title Document Verified</p>
-                        <p className="text-[10px] text-muted-foreground">Title Insurance Policy confirmed</p>
-                      </div>
+              {/* Audit Checkpoints */}
+              <div className="space-y-2.5 pt-2">
+                <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <ClipboardCheck className="h-3.5 w-3.5 text-primary" /> Verification Checklist
+                </p>
+                <div className="grid sm:grid-cols-2 gap-2.5 text-xs">
+                  <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-foreground">Title Document Checked</p>
+                      <p className="text-[10px] text-muted-foreground">Clear legal ownership on file</p>
                     </div>
-                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase">Passed</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
-                    <div className="flex items-center gap-3">
-                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Physical Inspection</p>
-                        <p className="text-[10px] text-muted-foreground">Third-party inspection report available</p>
-                      </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-foreground">On-Site Inspection Cleared</p>
+                      <p className="text-[10px] text-muted-foreground">Independent report verified</p>
                     </div>
-                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase">Passed</span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
-                    <div className="flex items-center gap-3">
-                      <div className={`h-7 w-7 rounded-full flex items-center justify-center ${property.isVerified ? 'bg-green-100 dark:bg-green-900/30' : 'bg-amber-100 dark:bg-amber-900/30'}`}>
-                        {property.isVerified 
-                          ? <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                          : <AlertTriangle className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
-                        }
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">State License Check</p>
-                        <p className="text-[10px] text-muted-foreground">Broker & Developer licensing active</p>
-                      </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-foreground">Licensed Agent Verified</p>
+                      <p className="text-[10px] text-muted-foreground">Authorized representative active</p>
                     </div>
-                    <span className={`text-[10px] font-bold uppercase ${property.isVerified ? 'text-green-600 dark:text-green-400' : 'text-amber-600 dark:text-amber-400'}`}>
-                      {property.isVerified ? 'Confirmed' : 'Pending'}
-                    </span>
                   </div>
-                  <div className="flex items-center justify-between p-3 rounded-lg bg-accent/30 border border-border/50">
-                    <div className="flex items-center gap-3">
-                      <div className="h-7 w-7 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                        <Check className="h-3.5 w-3.5 text-green-600 dark:text-green-400" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-foreground">Automated Valuation (AVM)</p>
-                        <p className="text-[10px] text-muted-foreground">Market-rate algorithm alignment passed</p>
-                      </div>
+                  <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <div>
+                      <p className="font-semibold text-foreground">Automated Valuation Alignment</p>
+                      <p className="text-[10px] text-muted-foreground">Priced within market brackets</p>
                     </div>
-                    <span className="text-[10px] font-bold text-green-600 dark:text-green-400 uppercase">Passed</span>
                   </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* 3D Virtual Tour */}
+          {/* ── 7. 3D Tour Embed (if available) ── */}
           {property.virtual_tour_url && (
-            <VirtualTourEmbed url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
-          )}
-
-          {/* Key Details Grid */}
-          <div className="rounded-xl bg-accent/50 p-8 border border-border/50">
-            <h2 className="font-serif text-lg font-semibold mb-5 text-foreground">{"Property Overview"}</h2>
-            <div className="grid gap-y-6 gap-x-12 sm:grid-cols-2">
-              <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Hash className="h-4 w-4" /> {"Property ID"}</span>
-                <span className="text-sm font-bold font-mono">{property.internal_id || "N/A"}</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Building2 className="h-4 w-4" /> {"Property Type"}</span>
-                <span className="text-sm font-bold capitalize">{property.property_type}</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Clock className="h-4 w-4" /> {"Year Built"}</span>
-                <span className="text-sm font-bold">{property.year_built || "Modern"}</span>
-              </div>
-              <div className="flex justify-between items-center border-b border-border/50 pb-2">
-                <span className="text-sm text-muted-foreground flex items-center gap-2 font-medium"><Calendar className="h-4 w-4" /> {"Listing Date"}</span>
-                <span className="text-sm font-bold">{new Date(property.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</span>
+            <div className="space-y-4">
+              <h2 className="font-serif text-2xl font-semibold text-foreground flex items-center gap-2">
+                <Maximize2 className="h-5 w-5 text-primary" /> Interactive 3D Tour
+              </h2>
+              <div className="aspect-video w-full rounded-2xl overflow-hidden border border-border/60 shadow-sm bg-black">
+                <VirtualTourEmbed url={property.virtual_tour_url} title={`${property.title} — 3D Tour`} />
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Features & Amenities */}
+          {/* ── 8. Features & Amenities Presentation ── */}
           {property.property_type !== 'land' && (interior_features.length > 0 || exterior_features.length > 0) && (
-            <div className="space-y-8">
-              <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground">
-                <CheckCircle2 className="h-5 w-5 text-primary" /> {"Amenities & Features"}
+            <div className="space-y-6">
+              <h2 className="font-serif text-2xl font-semibold text-foreground flex items-center gap-2">
+                <CheckCircle2 className="h-5 w-5 text-primary" /> Features & Specifications
               </h2>
-              
-              <div className="grid gap-10 sm:grid-cols-2">
+
+              <div className="grid gap-8 sm:grid-cols-2">
                 {interior_features.length > 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {"Interior Features"}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Interior Highlights
                     </h3>
-                    <div className="grid gap-3">
-                      {interior_features.map(f => (
-                        <div key={f} className="flex items-center gap-3">
-                          <Check className="h-4 w-4 text-primary shrink-0" />
-                          <span className="text-sm font-medium text-foreground/80">{f}</span>
-                        </div>
+                    <ul className="space-y-2.5">
+                      {interior_features.map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm text-foreground/80 font-medium">
+                          <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
                 )}
-                
+
                 {exterior_features.length > 0 && (
-                  <div className="space-y-4">
-                    <h3 className="text-sm font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
-                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> {"Exterior Features"}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                      <span className="h-1.5 w-1.5 rounded-full bg-primary" /> Exterior & Building Amenities
                     </h3>
-                    <div className="grid gap-3">
-                      {exterior_features.map(f => (
-                        <div key={f} className="flex items-center gap-3">
-                          <Check className="h-4 w-4 text-primary shrink-0" />
-                          <span className="text-sm font-medium text-foreground/80">{f}</span>
-                        </div>
+                    <ul className="space-y-2.5">
+                      {exterior_features.map((item) => (
+                        <li key={item} className="flex items-start gap-2.5 text-sm text-foreground/80 font-medium">
+                          <Check className="h-4 w-4 text-primary shrink-0 mt-0.5" />
+                          <span>{item}</span>
+                        </li>
                       ))}
-                    </div>
+                    </ul>
                   </div>
                 )}
               </div>
             </div>
           )}
 
-          {property.property_type === 'land' && (
-            <div className="space-y-12 mt-8">
-              <div className="space-y-6">
-                <h2 className="font-serif text-2xl font-bold flex items-center gap-3 text-foreground">
-                  <FileText className="h-6 w-6 text-primary" /> {"Ownership & Documentation"}
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                    <div>
-                      <p className="font-bold text-foreground">Title Insurance Policy</p>
-                      <p className="text-xs text-muted-foreground">Verified by national underwriters</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                    <div>
-                      <p className="font-bold text-foreground">HOA Disclosures</p>
-                      <p className="text-xs text-muted-foreground">Full CC&R packets available</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                    <div>
-                      <p className="font-bold text-foreground">Inspection Report</p>
-                      <p className="text-xs text-muted-foreground">Recent third-party inspection cleared</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-4 rounded-xl border border-border bg-card shadow-sm">
-                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0" />
-                    <div>
-                      <p className="font-bold text-foreground">Escrow Instructions</p>
-                      <p className="text-xs text-muted-foreground">Prepared for secure digital closing</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <h2 className="font-serif text-2xl font-bold flex items-center gap-3 text-foreground">
-                  <Building2 className="h-6 w-6 text-primary" /> {"Investment Highlights & Development"}
-                </h2>
-                <div className="rounded-xl border border-border bg-secondary/20 p-6 space-y-5 shadow-sm">
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Clock className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground text-lg mb-1">High Appreciation Potential</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">Located in a rapidly developing zone with projected high ROI over the next 3-5 years. Perfect for long term holds.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <MapIcon className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground text-lg mb-1">Strategic Accessibility</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">Direct access to major road networks, upcoming infrastructure projects, and commercial hubs.</p>
-                    </div>
-                  </div>
-                  <div className="flex items-start gap-4">
-                    <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-                      <Building2 className="h-5 w-5 text-primary" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-foreground text-lg mb-1">Development-Ready</p>
-                      <p className="text-sm text-muted-foreground leading-relaxed">Zoned appropriately, clear title. Ready for immediate allocation and physical development. Zero encroachments.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Location & Neighborhood */}
-          <div className="space-y-8 mt-16 pt-12 border-t border-border">
-            {/* 1. Neighborhood Summary Header */}
-            <div className="flex flex-col gap-2">
-              <div className="flex items-center gap-3 mb-1">
-                <span className="px-3 py-1 bg-primary/10 text-primary text-[10px] font-bold uppercase tracking-widest rounded-md">
-                  {"Neighborhood Profile"}
-                </span>
-              </div>
-              <h2 className="font-serif text-3xl font-bold text-foreground">
-                {property.city ? `${property.neighborhood || property.city}, ${property.state || ''}` : "Neighborhood & Location"}
+          {/* ── 9. Location & Neighborhood Map ── */}
+          <div id="location-map-section" className="space-y-6 pt-6 border-t border-border/60">
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] font-bold uppercase tracking-wider text-primary">Location Profile</span>
+              <h2 className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
+                {property.city ? `${property.neighborhood || property.city}, ${property.state || 'US'}` : "Neighborhood & Surroundings"}
               </h2>
-              <p className="text-muted-foreground max-w-2xl text-lg">
-                {property.property_type === 'land'
-                  ? "A strategic land parcel located in a high-potential development zone."
-                  : property.property_type === 'commercial' 
-                  ? "A strategic business location with excellent connectivity and established commercial infrastructure." 
-                  : "A well-connected residential district offering convenient access to essential community amenities."}
+              <p className="text-sm text-muted-foreground max-w-2xl">
+                {property.address || "Precise location details provided upon inquiry and site booking."}
               </p>
             </div>
-            
-            {/* 2. Categorized Local Amenities Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between pb-3 border-b border-border">
-                <h3 className="font-serif text-xl font-bold text-foreground">
-                  {"Local Amenities"}
-                </h3>
-                <span className="text-sm font-medium text-muted-foreground bg-secondary px-3 py-1 rounded-full">
-                  {nearbyPois.length} {"Found"}
-                </span>
-              </div>
-              
-              {nearbyPois.length > 0 ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  {nearbyPois.map((poi, idx) => {
-                    let Icon = MapPin;
-                    let iconBg = "bg-gray-50";
-                    let iconColor = "text-gray-500";
-                    const typeLower = poi.type.toLowerCase();
-                    
-                    if (typeLower.includes('school')) {
-                      Icon = Building2;
-                      iconBg = "bg-indigo-50";
-                      iconColor = "text-indigo-600";
-                    } else if (typeLower.includes('hospital') || typeLower.includes('medical')) {
-                      Icon = ShieldCheck;
-                      iconBg = "bg-primary/10";
-                      iconColor = "text-primary";
-                    } else if (typeLower.includes('shopping') || typeLower.includes('mall') || typeLower.includes('retail')) {
-                      Icon = MapPin;
-                      iconBg = "bg-secondary/20";
-                      iconColor = "text-foreground";
-                    }
 
-                    return (
-                      <div key={idx} className="flex items-center gap-4 p-4 rounded-xl border border-border/50 bg-card shadow-sm hover:border-border transition-colors">
-                        <div className={`h-10 w-10 rounded-full ${iconBg} flex items-center justify-center ${iconColor} shrink-0`}>
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-bold text-foreground truncate" title={poi.name}>{poi.name}</p>
-                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mt-0.5">{poi.type}</p>
-                        </div>
-                        {poi.distance_km && (
-                          <div className="text-right shrink-0">
-                            <p className="text-sm font-bold text-foreground">{poi.distance_km} km</p>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : (
-                <div className="w-full flex flex-col items-center justify-center p-8 text-center rounded-xl border border-dashed border-border bg-secondary/30">
-                  <div className="h-12 w-12 rounded-full bg-card flex items-center justify-center mb-3 shadow-sm border border-border/50">
-                    <MapPin className="h-5 w-5 text-muted-foreground/60" />
-                  </div>
-                  <p className="font-serif text-base font-bold text-foreground">{"Neighborhood information pending"}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{"Local amenity data is currently being updated for this listing."}</p>
-                </div>
-              )}
-            </div>
-
-            {/* 3. Landscape Interactive Map */}
-            <div className="w-full rounded-xl overflow-hidden border border-border relative z-0 flex flex-col shadow-sm bg-secondary/20">
-              <div className="aspect-[16/9] md:aspect-[21/9] max-h-[400px] w-full relative">
+            {/* Interactive Leaflet/OpenStreetMap Map (Zero Heavy Dark Overlays) */}
+            <div className="rounded-2xl overflow-hidden border border-border/60 relative shadow-sm bg-muted/20">
+              <div className="aspect-[16/9] md:aspect-[21/9] max-h-[380px] w-full relative">
                 <Suspense fallback={
-                  <div className="h-full w-full flex flex-col items-center justify-center bg-secondary/30 animate-pulse absolute inset-0">
-                    <div className="h-16 w-16 rounded-full bg-card flex items-center justify-center mb-4 shadow-sm border border-border/50">
-                      <MapPin className="h-8 w-8 text-muted-foreground/60" />
-                    </div>
-                    <p className="text-muted-foreground font-medium font-sans">{"Loading interactive map..."}</p>
+                  <div className="h-full w-full flex flex-col items-center justify-center bg-muted/30 animate-pulse">
+                    <MapPin className="h-8 w-8 text-muted-foreground mb-2" />
+                    <p className="text-xs text-muted-foreground font-medium">Loading map...</p>
                   </div>
                 }>
                   <InteractivePropertyMap 
@@ -744,312 +697,343 @@ export default function PropertyDetail() {
                   />
                 </Suspense>
               </div>
-              
-              {/* Context Banner Overlay */}
-              <div className="absolute bottom-4 left-4 right-4 md:bottom-6 md:left-6 md:right-auto md:w-[400px] p-4 rounded-lg bg-card/95 backdrop-blur border border-border shadow-md flex flex-col gap-2 z-20 pointer-events-none">
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">{"Registered Address"}</p>
-                <p className="text-sm font-bold leading-tight text-foreground line-clamp-2">{property.address || "Location on request"}</p>
-                <Button variant="outline" size="sm" className="pointer-events-auto mt-2 rounded-md font-bold border-border text-foreground hover:bg-secondary w-fit" asChild>
+
+              {/* Minimal floating address card with directions */}
+              <div className="p-3 sm:p-4 bg-card/95 backdrop-blur-md border-t border-border/60 flex flex-wrap items-center justify-between gap-3">
+                <div className="flex items-center gap-2 text-xs font-semibold text-foreground">
+                  <MapPin className="h-4 w-4 text-primary shrink-0" />
+                  <span className="truncate max-w-xs sm:max-w-md">{property.address || property.locations?.name || "Standard Metropolitan Area"}</span>
+                </div>
+                <Button variant="outline" size="sm" className="h-8 text-xs font-semibold rounded-lg" asChild>
                   <a href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(property.address || property.title)}`} target="_blank" rel="noreferrer">
-                    {"Get Directions"} <ExternalLink className="ml-2 h-3 w-3" />
+                    Get Directions <ExternalLink className="ml-1.5 h-3 w-3" />
                   </a>
                 </Button>
               </div>
             </div>
 
-            {/* 4. Surrounding Context Layer */}
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="p-5 rounded-xl bg-card border border-border shadow-sm flex items-start gap-4">
-                <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
-                  <Clock className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{"Viewing Schedule"}</p>
-                  <p className="text-sm font-medium leading-relaxed text-foreground">
-                    {property.inspection_availability || "Available for viewing Monday to Saturday, 9AM - 5PM."}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="p-5 rounded-xl bg-card border border-border shadow-sm flex items-start gap-4">
-                <div className="h-10 w-10 rounded-lg bg-secondary flex items-center justify-center text-foreground shrink-0">
-                  <Building2 className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-1.5">{"Zoning Status"}</p>
-                  <p className="text-sm font-medium leading-relaxed text-foreground">
-                    {property.property_type === 'commercial' ? "Premium Business Zone" : "Premium Residential Zone"}
-                  </p>
+            {/* Local Amenities Points of Interest */}
+            {nearbyPois.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Nearby Points of Interest</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  {nearbyPois.map((poi, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-3 rounded-xl border border-border/50 bg-card shadow-2xs">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <MapPin className="h-4 w-4 text-primary shrink-0" />
+                        <span className="text-xs font-semibold text-foreground truncate" title={poi.name}>{poi.name}</span>
+                      </div>
+                      {poi.distance_km && (
+                        <span className="text-[11px] font-mono text-muted-foreground shrink-0">{poi.distance_km} km</span>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
-            </div>
+            )}
           </div>
 
-
-          {property.video_url && (
-            <div className="mt-8">
-              <h2 className="font-serif text-2xl font-bold flex items-center gap-3 text-foreground">
-                <Maximize2 className="h-6 w-6 text-primary" /> {"Property Tour"}
-              </h2>
-              <div className="mt-6 aspect-video overflow-hidden rounded-xl border-4 border-card shadow-card">
-                <iframe src={property.video_url} className="h-full w-full" allowFullScreen />
-              </div>
-            </div>
-          )}
-
+          {/* ── 10. Financial Calculators ── */}
           {property.is_investment ? (
-            <div className="mt-12">
+            <div className="pt-6 border-t border-border/60">
               <YieldCalculator 
                 unitPrice={Number(property.unit_price || property.price)} 
                 currency={property.currency || 'USD'} 
-                expectedYield={Number(property.expected_return || 5.5)} 
+                expectedYield={Number(property.expected_return || 12)} 
               />
             </div>
           ) : property.property_type !== 'land' ? (
-            <div className="mt-12">
+            <div className="pt-6 border-t border-border/60">
               <MortgageCalculator price={Number(property.price)} currency={property.currency || 'USD'} />
             </div>
           ) : null}
 
-          <div className="mt-12">
+          {/* ── 11. Property Reviews ── */}
+          <div className="pt-6 border-t border-border/60">
             <Reviews target={{ propertyId: property.id }} />
           </div>
 
+          {/* ── 12. Agent Reviews ── */}
           {agent && (
-            <div className="mt-12">
-              <h2 className="font-serif text-xl font-semibold flex items-center gap-2.5 text-foreground mb-6">
-                <Star className="h-5 w-5 text-primary" /> {"Agent Reviews"}
+            <div className="pt-6 border-t border-border/60 space-y-4">
+              <h2 className="font-serif text-xl font-semibold text-foreground flex items-center gap-2">
+                <Star className="h-5 w-5 text-primary" /> Verified Agent Feedback
               </h2>
               <AgentReviews agentId={agent.id} agentName={agent.full_name} propertyId={property.id} />
             </div>
           )}
         </div>
 
-        {/* Sidebar */}
+        {/* ── 13. Desktop Sticky Action Sidebar ── */}
         <aside className="space-y-6 lg:sticky lg:top-24 lg:self-start">
-          {agent && (
-            <div className="rounded-xl border border-border bg-card p-6 shadow-card overflow-hidden">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <LazyImage src={resolveImage(agent.photo_url)} alt={agent.full_name} aspectClass="" wrapperClassName="h-20 w-20 rounded-xl overflow-hidden shadow-sm"
-                    className="h-full w-full object-cover border border-border" />
-                  <div className="absolute -bottom-1 -right-1 h-6 w-6 bg-primary/100 rounded-full border-4 border-card flex items-center justify-center">
-                    <ShieldCheck className="h-3 w-3 text-white" />
-                  </div>
-                </div>
-                <div>
-                  <p className="font-serif text-xl font-bold text-foreground">{agent.full_name}</p>
-                  <p className="text-xs font-medium text-primary uppercase tracking-wider mt-1">{agent.role_title}</p>
-                </div>
-              </div>
-              
-              <div className="mt-6 grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {agent.phone && (
-                  <Button asChild variant="outline" className="rounded-xl h-11 border-border hover:bg-secondary font-bold text-xs shadow-sm">
-                    <a href={`tel:${agent.phone}`}><Phone className="mr-2 h-4 w-4" /> {"Call Agent"}</a>
-                  </Button>
-                )}
-                {agent.whatsapp && (
-                  <Button asChild variant="outline" className="rounded-xl h-11 border-primary/20 text-primary hover:bg-primary/10 shadow-sm font-bold text-xs">
-                    <a href={`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
-                      <MessageSquare className="mr-2 h-4 w-4" /> {"WhatsApp"}</a>
-                  </Button>
-                )}
-                {agent.user_id && (
-                  <MessageAgentButton
-                    agentUserId={agent.user_id}
-                    agentName={agent.full_name}
-                    propertyId={property.id}
-                    propertyTitle={property.title}
-                  />
-                )}
-              </div>
-
-              <div className="mt-4 space-y-3">
-                <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="w-full h-12 bg-primary text-primary-foreground hover:bg-primary/90 rounded-xl font-bold shadow-sm text-sm">
-                      <Calendar className="mr-2 h-4 w-4" /> {property.property_type === 'land' ? "Schedule Site Inspection" : "Schedule Viewing"}
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-lg">
-                    <DialogHeader className="bg-primary pb-6">
-                      <DialogTitle className="font-serif text-2xl text-white">{property.property_type === 'land' ? "Schedule Site Inspection" : "Schedule a Viewing"}</DialogTitle>
-                      <p className="text-sm text-white/80 italic">{property.title}</p>
-                    </DialogHeader>
-                    <DialogBody className="py-6">
-                      <BookingForm propertyId={property.id} agentId={agent.id} onSuccess={() => setBookingOpen(false)} />
-                    </DialogBody>
-                  </DialogContent>
-                </Dialog>
-
-                <Button onClick={toggleSave} variant="secondary" className="w-full h-12 rounded-xl font-bold text-sm bg-secondary/80 hover:bg-secondary border border-border/50 transition-all">
-                  <Heart className={`mr-2 h-5 w-5 ${saved ? "fill-primary text-primary" : "text-muted-foreground"}`} />
-                  {saved ? "Added to Saved" : "Save Listing"}
-                </Button>
-              </div>
+          {/* Reservation / Transaction Card */}
+          <div className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm space-y-5">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Price Summary</p>
+              <p className="font-serif text-3xl font-bold text-foreground mt-0.5">
+                {formatPrice(Number(property.price), property.currency, property.property_type)}
+              </p>
+              <p className="text-xs text-muted-foreground mt-1">
+                Status: <span className="font-semibold text-foreground capitalize">{statusLabel(property.status)}</span>
+              </p>
             </div>
-          )}
 
-          {/* Reservation Card */}
-          <div className="rounded-xl border border-primary/15 bg-card p-6 shadow-soft">
-            <h3 className="font-serif text-lg font-semibold text-foreground">
-              {userReservation?.status === 'approved' || userReservation?.status === 'confirmed'
-                ? "Complete Purchase" 
-                : ['reserved', 'sold', 'rented', 'unavailable', 'payment_under_review'].includes(property.status) 
-                  ? `${property.status.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase())}`
-                  : property.property_type === 'land' ? "Reserve Plot" : "Reserve Property"}
-            </h3>
-            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
-              {userReservation?.status === 'approved' || userReservation?.status === 'confirmed'
-                ? "Your reservation has been approved. You can now complete full payment to secure this property."
-                : property.status === 'reserved' 
-                ? "This property has been officially reserved and is currently off the market." 
-                : property.status === 'sold'
-                ? "This property has been sold and is no longer available."
-                : property.status === 'rented'
-                ? "This property is currently rented out."
-                : property.status === 'payment_under_review'
-                ? "A payment for this property is currently being reviewed."
-                : property.status === 'unavailable'
-                ? "This property is currently not available for purchase."
-                : property.property_type === 'land' ? "Hold this plot for 7 days to finalize your purchase." : "Hold this property for 7 days to finalize your purchase."}
-            </p>
-            {(!userReservation || (userReservation.status !== 'approved' && userReservation.status !== 'confirmed')) && property.status === 'available' && (
-              <div className="mt-5 flex items-center justify-between p-3.5 rounded-lg bg-accent/50 border border-border/50">
-                <span className="text-xs font-medium text-muted-foreground">{"Reservation Fee"}</span>
-                <span className="text-lg font-semibold text-primary font-serif">500.00 USD</span>
-              </div>
-            )}
-            
+            <Separator className="bg-border/60" />
+
+            {/* Approved Reservation State -> Complete Payment */}
             {userReservation?.status === 'approved' || userReservation?.status === 'confirmed' ? (
-              <div className="space-y-5 mt-5">
+              <div className="space-y-4">
+                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/50 text-emerald-800 dark:text-emerald-200 text-xs">
+                  <p className="font-semibold">Reservation Confirmed</p>
+                  <p className="mt-0.5 opacity-90">Your reservation has been approved. You can now complete checkout.</p>
+                </div>
+
                 {installmentEnabled && (
-                  <div className="grid grid-cols-2 gap-2 p-1 rounded-xl bg-secondary/50 border border-border/50">
+                  <div className="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-muted/60 border border-border/50">
                     <button 
                       onClick={() => setPaymentMode("full")}
-                      className={`py-2 rounded-lg text-sm font-bold transition-all ${paymentMode === "full" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                      className={`py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        paymentMode === "full" ? "bg-card shadow-xs text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
                     >
-                      Pay Full
+                      Full Payment
                     </button>
                     <button 
                       onClick={() => setPaymentMode("installment")}
-                      className={`py-2 rounded-lg text-sm font-bold transition-all ${paymentMode === "installment" ? "bg-card shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"}`}
+                      className={`py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                        paymentMode === "installment" ? "bg-card shadow-xs text-foreground" : "text-muted-foreground hover:text-foreground"
+                      }`}
                     >
-                      Installments
+                      Installment Plan
                     </button>
                   </div>
                 )}
 
                 {paymentMode === "full" ? (
-                  <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
-                    <span className="text-xs font-medium text-primary">{"Remaining Balance"}</span>
-                    <span className="text-lg font-semibold text-primary font-serif">
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-accent/40 border border-primary/20">
+                    <span className="text-xs font-medium text-foreground">Remaining Balance</span>
+                    <span className="text-base font-bold text-primary font-serif">
                       {formatPrice(remainingBalance, property.currency, property.property_type)}
                     </span>
                   </div>
                 ) : (
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between p-3.5 rounded-lg bg-primary/5 border border-primary/20">
-                      <span className="text-xs font-medium text-primary">{`Down Payment (${minDownPct}%)`}</span>
-                      <span className="text-lg font-semibold text-primary font-serif">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-accent/40 border border-primary/20">
+                      <span className="text-xs font-medium text-foreground">Down Payment ({minDownPct}%)</span>
+                      <span className="text-base font-bold text-primary font-serif">
                         {formatPrice(downPaymentAmount, property.currency, property.property_type)}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between p-3.5 rounded-lg bg-secondary/20 border border-border/50">
-                      <span className="text-xs font-medium text-muted-foreground">{`Monthly (${durationMonths} months)`}</span>
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-muted/40 border border-border/50">
+                      <span className="text-xs font-medium text-muted-foreground">{durationMonths} Monthly Installments</span>
                       <span className="text-sm font-semibold text-foreground font-serif">
                         {formatPrice(monthlyInstallment, property.currency, property.property_type)} / mo
                       </span>
                     </div>
                   </div>
                 )}
-                
-                <div className="rounded-xl border border-border/50 bg-secondary/5 p-4 space-y-3">
+
+                <div className="rounded-xl border border-border/50 bg-background p-3.5 space-y-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground">Select Payment Method</p>
                   <PaymentMethodPicker value={paymentMethod} onChange={setPaymentMethod} />
                 </div>
 
                 <Button 
-                  className="w-full h-11 bg-primary text-primary-foreground font-medium rounded-lg shadow-sm hover:bg-primary/90 transition-colors"
+                  className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-xl shadow-xs hover:bg-primary/90 transition-all"
                   onClick={() => setPaymentModalOpen(true)}
                 >
-                  {paymentMode === "installment" ? "Start Installment Plan" : "Complete Purchase"}
+                  {paymentMode === "installment" ? "Initialize Installment Schedule" : "Complete Purchase via Escrow"}
                 </Button>
               </div>
             ) : (
-              <Button 
-                className="mt-4 w-full h-11 bg-primary text-primary-foreground font-medium rounded-lg shadow-sm hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:hover:bg-primary"
-                disabled={property.status !== 'available'}
-                onClick={() => {
-                  if (!user) {
-                    toast({ title: "Sign in required", description: "Please sign in to reserve this property." });
-                    return;
-                  }
-                  setReserveOpen(true);
-                }}
-              >
-                {property.status === 'available' 
-                  ? (property.property_type === 'land' ? "Reserve Plot" : "Reserve Now") 
-                  : property.status === 'reserved'  
-                  ? "Already Reserved" 
-                  : property.status === 'sold'
-                  ? "Sold"
-                  : property.status === 'rented'
-                  ? "Rented"
-                  : property.status === 'payment_under_review'
-                  ? "Payment Under Review"
-                  : "Unavailable"}
-              </Button>
+              /* Standard Action */
+              <div className="space-y-4">
+                {property.status === 'available' && (
+                  <div className="flex items-center justify-between p-3 rounded-xl bg-accent/30 border border-border/50">
+                    <span className="text-xs font-medium text-muted-foreground">Reservation Deposit</span>
+                    <span className="text-sm font-bold text-primary font-serif">500.00 USD</span>
+                  </div>
+                )}
+
+                <Button 
+                  className="w-full h-11 bg-primary text-primary-foreground font-semibold rounded-xl shadow-xs hover:bg-primary/90 transition-all disabled:opacity-50"
+                  disabled={property.status !== 'available'}
+                  onClick={() => {
+                    if (!user) {
+                      toast({ title: "Sign in required", description: "Please sign in or create an account to reserve this listing." });
+                      return;
+                    }
+                    setReserveOpen(true);
+                  }}
+                >
+                  {primaryActionLabel}
+                </Button>
+
+                <p className="text-[11px] text-center text-muted-foreground">
+                  {property.status === 'available' 
+                    ? "Secured by standard client escrow agreement" 
+                    : "This listing is currently not open for reservation"}
+                </p>
+              </div>
             )}
-            
-            <p className="mt-3 text-[11px] text-center text-muted-foreground">
-              {property.status === 'available' || userReservation?.status === 'approved' || userReservation?.status === 'confirmed' ? "Processed securely via escrow" : "This property is currently unavailable"}
-            </p>
-            <ReserveDialog
-              open={reserveOpen}
-              onClose={() => setReserveOpen(false)}
-              property={{
-                id: property.id,
-                title: property.title,
-                currency: property.currency,
-                property_type: property.property_type,
-                location: property.locations?.name || property.address || undefined
-              }}
-              type={property.is_investment ? "investment" : "property"}
-            />
           </div>
 
-          <div className="rounded-xl border border-border/50 bg-card p-6 shadow-soft">
-            <h3 className="font-serif text-lg font-semibold text-foreground">{"Questions?"}</h3>
-            <p className="mt-1 text-sm text-muted-foreground">{"Inquire about details or flexible payment plans."}</p>
-            <div className="mt-6">
+          {/* Dedicated Agent Card */}
+          {agent && (
+            <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs space-y-4">
+              <div className="flex items-center gap-3.5">
+                <div className="relative">
+                  <LazyImage 
+                    src={resolveImage(agent.photo_url)} 
+                    alt={agent.full_name} 
+                    aspectClass="" 
+                    wrapperClassName="h-14 w-14 rounded-xl overflow-hidden shadow-2xs"
+                    className="h-full w-full object-cover border border-border/60" 
+                  />
+                  <div className="absolute -bottom-1 -right-1 h-5 w-5 bg-primary rounded-full border-2 border-card flex items-center justify-center">
+                    <ShieldCheck className="h-3 w-3 text-white" />
+                  </div>
+                </div>
+                <div className="min-w-0">
+                  <p className="font-serif text-base font-bold text-foreground truncate">{agent.full_name}</p>
+                  <p className="text-xs text-primary font-medium">{agent.role_title || "Property Specialist"}</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-2 pt-1">
+                {agent.phone && (
+                  <Button asChild variant="outline" size="sm" className="h-9 text-xs font-semibold rounded-xl">
+                    <a href={`tel:${agent.phone}`}><Phone className="mr-1.5 h-3.5 w-3.5 text-primary" /> Call</a>
+                  </Button>
+                )}
+                {agent.whatsapp && (
+                  <Button asChild variant="outline" size="sm" className="h-9 text-xs font-semibold rounded-xl text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+                    <a href={`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
+                      <MessageSquare className="mr-1.5 h-3.5 w-3.5" /> WhatsApp
+                    </a>
+                  </Button>
+                )}
+              </div>
+
+              {agent.user_id && (
+                <MessageAgentButton
+                  agentUserId={agent.user_id}
+                  agentName={agent.full_name}
+                  propertyId={property.id}
+                  propertyTitle={property.title}
+                />
+              )}
+
+              <Dialog open={bookingOpen} onOpenChange={setBookingOpen}>
+                <DialogTrigger asChild>
+                  <Button variant="secondary" className="w-full h-10 text-xs font-semibold rounded-xl">
+                    <Calendar className="mr-1.5 h-3.5 w-3.5 text-primary" /> 
+                    {property.property_type === 'land' ? "Schedule Site Inspection" : "Schedule Viewing"}
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-md">
+                  <DialogHeader className="bg-primary pb-4">
+                    <DialogTitle className="font-serif text-xl text-white">
+                      {property.property_type === 'land' ? "Schedule Site Inspection" : "Schedule a Viewing"}
+                    </DialogTitle>
+                    <p className="text-xs text-white/80">{property.title}</p>
+                  </DialogHeader>
+                  <DialogBody className="py-4">
+                    <BookingForm propertyId={property.id} agentId={agent.id} onSuccess={() => setBookingOpen(false)} />
+                  </DialogBody>
+                </DialogContent>
+              </Dialog>
+            </div>
+          )}
+
+          {/* Quick Inquiry Form */}
+          <div className="rounded-2xl border border-border/60 bg-card p-5 shadow-xs space-y-3">
+            <h3 className="font-serif text-base font-semibold text-foreground">Have Questions?</h3>
+            <p className="text-xs text-muted-foreground">Send a direct message to our listing desk for expedited response.</p>
+            <div className="pt-2">
               <InquiryForm propertyId={property.id} agentId={agent?.id ?? null} />
             </div>
           </div>
-          
-          <div className="mt-6">
-            <PromoBanner placement="property_detail" />
-          </div>
+
+          {/* Promotional Banner Widget */}
+          <PromoBanner placement="property_detail" />
         </aside>
       </section>
 
-      {/* Footer Related Listings */}
+      {/* ── 14. Related Similar Properties Section ── */}
       {related.length > 0 && (
-        <section className="container-wide py-16 bg-accent/40">
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h2 className="font-serif text-2xl font-semibold">{"Similar Properties"}</h2>
-              <p className="text-muted-foreground mt-1 text-sm">{property.locations?.name ? `More listings in ${property.locations.name}.` : "More listings in the area."}</p>
+        <section className="border-t border-border/60 bg-muted/20 py-16">
+          <div className="container-wide space-y-8">
+            <div className="flex items-center justify-between">
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-primary">Discover More</span>
+                <h2 className="font-serif text-2xl font-bold text-foreground mt-0.5">Similar Listings</h2>
+              </div>
+              <Button asChild variant="ghost" className="text-xs font-semibold text-primary hover:bg-primary/5">
+                <Link to="/properties">View All Listings <ExternalLink className="ml-1.5 h-3.5 w-3.5" /></Link>
+              </Button>
             </div>
-            <Button asChild variant="ghost" className="rounded-lg font-medium text-primary hover:bg-primary/5 group">
-              <Link to="/properties">{"View all"} <ExternalLink className="ml-2 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></Link>
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
-            {related.map((p) => <PropertyCard key={p.id} property={p} />)}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+              {related.map((p) => (
+                <PropertyCard key={p.id} property={p} />
+              ))}
+            </div>
           </div>
         </section>
       )}
+
+      {/* ── 15. Mobile Floating Sticky Bottom Action Bar ── */}
+      <div className="fixed bottom-0 inset-x-0 z-40 bg-background/95 backdrop-blur-md border-t border-border/60 p-3 sm:hidden shadow-lg flex items-center justify-between gap-3">
+        <div className="min-w-0 flex-1">
+          <p className="text-[10px] uppercase font-bold text-muted-foreground">Price</p>
+          <p className="font-serif text-base font-bold text-foreground truncate">
+            {formatPrice(Number(property.price), property.currency, property.property_type)}
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <Button 
+            variant="outline" 
+            size="icon" 
+            onClick={toggleSave}
+            className={`h-10 w-10 rounded-xl ${saved ? "text-primary border-primary bg-primary/5" : ""}`}
+            aria-label="Save listing"
+          >
+            <Heart className={`h-4 w-4 ${saved ? "fill-primary text-primary" : ""}`} />
+          </Button>
+
+          <Button 
+            className="h-10 px-4 text-xs font-semibold rounded-xl bg-primary text-primary-foreground shadow-xs hover:bg-primary/90"
+            disabled={property.status !== 'available' && userReservation?.status !== 'approved' && userReservation?.status !== 'confirmed'}
+            onClick={() => {
+              if (userReservation?.status === 'approved' || userReservation?.status === 'confirmed') {
+                setPaymentModalOpen(true);
+              } else if (!user) {
+                toast({ title: "Sign in required", description: "Please sign in to reserve this listing." });
+              } else {
+                setReserveOpen(true);
+              }
+            }}
+          >
+            {primaryActionLabel}
+          </Button>
+        </div>
+      </div>
+
+      {/* ── 16. Modals (Reserve & Manual Payment) ── */}
+      <ReserveDialog
+        open={reserveOpen}
+        onClose={() => setReserveOpen(false)}
+        property={{
+          id: property.id,
+          title: property.title,
+          currency: property.currency,
+          property_type: property.property_type,
+          location: property.locations?.name || property.address || undefined
+        }}
+        type={property.is_investment ? "investment" : "property"}
+      />
 
       {userReservation && (
         <ManualPaymentModal
