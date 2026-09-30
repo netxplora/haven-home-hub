@@ -61,7 +61,7 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
           wrapperClassName="absolute inset-0"
           className="transition-transform duration-500 ease-out group-hover:scale-105"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-60 group-hover:opacity-40 transition-opacity duration-300" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent opacity-50 group-hover:opacity-30 transition-opacity duration-300" />
         
         {/* Glassmorphic Badges */}
         <div className="absolute left-4 top-4 flex flex-col gap-1.5 z-10">
@@ -87,18 +87,14 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
           )}
         </div>
 
-        {/* Telemetry Overlay (Bottom Left on Image) */}
-        <div className="absolute left-4 bottom-4 flex flex-wrap gap-1.5 z-10 pointer-events-none">
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-black/60 text-white border border-white/10 backdrop-blur-sm flex items-center gap-1">
-            <MapPin className="h-3 w-3 text-emerald-400" /> Walk Score: {property.walkScore}
-          </span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-primary/90 text-primary-foreground border border-primary/20 backdrop-blur-sm">
-            Cap Rate: {property.capRate}%
-          </span>
-          <span className="text-[10px] font-bold px-2 py-0.5 rounded-md bg-secondary/80 text-secondary-foreground border border-border/20 backdrop-blur-sm">
-            HOA: ${property.hoaFees}/mo
-          </span>
-        </div>
+        {/* New listing badge (bottom-left) */}
+        {isNew && (
+          <div className="absolute left-4 bottom-4 z-10 pointer-events-none">
+            <span className="text-[10px] font-bold px-2.5 py-1 rounded-md bg-green-500/90 text-white backdrop-blur-sm border border-green-400/30 shadow-sm">
+              New Listing
+            </span>
+          </div>
+        )}
         
         {/* Interactive Compare button */}
         <button

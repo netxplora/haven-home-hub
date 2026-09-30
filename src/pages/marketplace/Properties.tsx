@@ -14,21 +14,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { 
-  SlidersHorizontal, 
-  Search, 
-  X, 
-  ChevronDown, 
-  MapPin, 
-  Home as HomeIcon, 
-  Tag,
+import {
+  SlidersHorizontal,
+  Search,
+  X,
+  MapPin,
+  Home as HomeIcon,
   ArrowUpDown,
-  Filter,
   Map as MapIcon,
   LayoutGrid,
   ShieldCheck,
-  Zap,
-  Droplets
+  Droplets,
+  ChevronDown
 } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
@@ -44,28 +41,28 @@ const HERO_CONTENT: Record<string, { badge: string; title: string; subtitle: str
   buy: {
     badge: "For Sale",
     title: "Buy Properties",
-    subtitle: "Find your next home",
+    subtitle: "Find your next home.",
     desc: "Browse verified homes for sale — from family houses to modern apartments. Every listing is inspected and confirmed by our agency before going live.",
     img: heroBuy,
   },
   rent: {
     badge: "For Rent",
     title: "Rent Homes",
-    subtitle: "Quality rental living",
+    subtitle: "Quality rental living.",
     desc: "Explore professionally managed apartments, furnished units, and urban rental spaces. Flexible terms, verified landlords, and move-in ready options.",
     img: heroRent,
   },
   land: {
     badge: "Land Listings",
     title: "Land Listings",
-    subtitle: "Secure your plot",
+    subtitle: "Secure your plot.",
     desc: "View surveyed land parcels with clear titles — residential plots, commercial sites, and development-ready acreage across all locations.",
     img: heroLand,
   },
   all: {
     badge: "All Listings",
     title: "All Properties",
-    subtitle: "View all available properties",
+    subtitle: "Every verified listing.",
     desc: "Search across homes for sale, rental properties, and land parcels. Every listing is verified and managed by our in-house agency team.",
     img: heroAll,
   },
@@ -117,25 +114,12 @@ export default function Properties() {
     queryKey: ["filter-metadata", country, state],
     queryFn: async () => {
       let countryQuery = supabase.from("properties" as any).select("country").not("country", "is", null);
-      
       let stateQuery = supabase.from("properties" as any).select("state").not("state", "is", null);
-      if (country && country !== "all") {
-        stateQuery = stateQuery.eq("country", country);
-      }
-
+      if (country && country !== "all") stateQuery = stateQuery.eq("country", country);
       let cityQuery = supabase.from("properties" as any).select("city").not("city", "is", null);
-      if (state && state !== "all") {
-        cityQuery = cityQuery.eq("state", state);
-      } else if (country && country !== "all") {
-        cityQuery = cityQuery.eq("country", country);
-      }
-
-      const [countries, states, cities] = await Promise.all([
-        countryQuery,
-        stateQuery,
-        cityQuery,
-      ]);
-
+      if (state && state !== "all") cityQuery = cityQuery.eq("state", state);
+      else if (country && country !== "all") cityQuery = cityQuery.eq("country", country);
+      const [countries, states, cities] = await Promise.all([countryQuery, stateQuery, cityQuery]);
       return {
         countries: Array.from(new Set(countries.data?.map((d: any) => d.country).filter(Boolean))) as string[],
         states: Array.from(new Set(states.data?.map((d: any) => d.state).filter(Boolean))) as string[],
@@ -151,45 +135,30 @@ export default function Properties() {
       let query = supabase
         .from("properties" as any)
         .select(`
-          id, slug, title, price, currency, property_type, status, 
-          bedrooms, bathrooms, size_sqm, cover_image_url, address, 
+          id, slug, title, price, currency, property_type, status,
+          bedrooms, bathrooms, size_sqm, cover_image_url, address,
           featured, created_at, property_category, city, state, country,
           latitude, longitude,
           locations(name, slug)
         `);
-
-      // Type & Category
       if (type !== "all") query = query.eq("property_type", type);
       if (category !== "all") query = query.eq("property_category", category);
-      
-      if (status === "all") {
-        query = query.in("status", ["available", "reserved"]);
-      } else {
-        query = query.eq("status", status);
-      }
-
-      // Search
+      if (status === "all") query = query.in("status", ["available", "reserved"]);
+      else query = query.eq("status", status);
       if (q) query = query.or(`title.ilike.%${q}%,description.ilike.%${q}%,address.ilike.%${q}%,city.ilike.%${q}%,state.ilike.%${q}%`);
-
-      // Location
       if (location_id !== "all") query = query.eq("location_id", location_id);
       if (country !== "all") query = query.eq("country", country);
       if (state !== "all") query = query.eq("state", state);
       if (city !== "all") query = query.eq("city", city);
-
-      // Specs
       if (minPrice) query = query.gte("price", Number(minPrice));
       if (maxPrice) query = query.lte("price", Number(maxPrice));
       if (bedrooms !== "any") query = query.gte("bedrooms", Number(bedrooms));
       if (bathrooms !== "any") query = query.gte("bathrooms", Number(bathrooms));
       if (parking !== "any") query = query.gte("parking_spaces", Number(parking));
-      
       const minSize = params.get("minSize");
       const maxSize = params.get("maxSize");
       if (minSize) query = query.gte("size_sqm", Number(minSize));
       if (maxSize) query = query.lte("size_sqm", Number(maxSize));
-
-      // Sorting
       switch (sort) {
         case "price_asc": query = query.order("price", { ascending: true }); break;
         case "price_desc": query = query.order("price", { ascending: false }); break;
@@ -199,14 +168,12 @@ export default function Properties() {
         case "location_asc": query = query.order("city", { ascending: true }); break;
         default: query = query.order("created_at", { ascending: false });
       }
-
       const { data, error } = await query;
       if (error) throw error;
       return (data ?? []) as unknown as PropertyCardData[];
     },
   });
 
-  // Client-side telemetry filtering (enrichProperty-derived fields aren't in DB)
   const filteredProperties = useMemo(() => {
     let list = properties.map(p => enrichProperty(p));
     if (verifiedOnly) list = list.filter((p: any) => p.isVerified);
@@ -226,18 +193,10 @@ export default function Properties() {
 
   function updateLocation(level: "country" | "state" | "city", value: string) {
     const next = new URLSearchParams(params);
-    if (!value || String(value) === "any" || String(value) === "all") {
-      next.delete(level);
-    } else {
-      next.set(level, value);
-    }
-    
-    if (level === "country") {
-      next.delete("state");
-      next.delete("city");
-    } else if (level === "state") {
-      next.delete("city");
-    }
+    if (!value || String(value) === "any" || String(value) === "all") next.delete(level);
+    else next.set(level, value);
+    if (level === "country") { next.delete("state"); next.delete("city"); }
+    else if (level === "state") next.delete("city");
     setParams(next);
   }
 
@@ -256,480 +215,431 @@ export default function Properties() {
     if (country && country !== "all") list.push({ key: "country", label: `Country: ${country}`, value: country });
     if (state && state !== "all") list.push({ key: "state", label: `State: ${state}`, value: state });
     if (city && city !== "all") list.push({ key: "city", label: `City: ${city}`, value: city });
-    if (minPrice) list.push({ key: "minPrice", label: `Min Price: $${Number(minPrice).toLocaleString()}`, value: minPrice });
-    if (maxPrice) list.push({ key: "maxPrice", label: `Max Price: $${Number(maxPrice).toLocaleString()}`, value: maxPrice });
-    if (bedrooms && bedrooms !== "any") list.push({ key: "bedrooms", label: `Bedrooms: ${bedrooms}+`, value: bedrooms });
-    if (bathrooms && bathrooms !== "any") list.push({ key: "bathrooms", label: `Bathrooms: ${bathrooms}+`, value: bathrooms });
-    if (parking && parking !== "any") list.push({ key: "parking", label: `Parking: ${parking}+`, value: parking });
-    if (status && status !== "available") list.push({ key: "status", label: `Status: ${status}`, value: status });
+    if (minPrice) list.push({ key: "minPrice", label: `Min: $${Number(minPrice).toLocaleString()}`, value: minPrice });
+    if (maxPrice) list.push({ key: "maxPrice", label: `Max: $${Number(maxPrice).toLocaleString()}`, value: maxPrice });
+    if (bedrooms && bedrooms !== "any") list.push({ key: "bedrooms", label: `${bedrooms}+ Beds`, value: bedrooms });
+    if (bathrooms && bathrooms !== "any") list.push({ key: "bathrooms", label: `${bathrooms}+ Baths`, value: bathrooms });
+    if (parking && parking !== "any") list.push({ key: "parking", label: `${parking}+ Parking`, value: parking });
+    if (status && status !== "available") list.push({ key: "status", label: `Status: ${status.replace("_", " ")}`, value: status });
     if (verifiedOnly) list.push({ key: "verified", label: "Verified Only", value: "true" });
-    if (minWalkScore) list.push({ key: "minWalkScore", label: `Walk Score: ${minWalkScore}+`, value: minWalkScore });
-    if (floodSafe) list.push({ key: "floodSafe", label: "Zone X (Flood-Safe)", value: "true" });
-    
+    if (minWalkScore) list.push({ key: "minWalkScore", label: `Walk ${minWalkScore}+`, value: minWalkScore });
+    if (floodSafe) list.push({ key: "floodSafe", label: "Flood-Safe", value: "true" });
     const minSize = params.get("minSize");
     const maxSize = params.get("maxSize");
-    if (minSize) list.push({ key: "minSize", label: `Min Size: ${minSize} sqm`, value: minSize });
-    if (maxSize) list.push({ key: "maxSize", label: `Max Size: ${maxSize} sqm`, value: maxSize });
+    if (minSize) list.push({ key: "minSize", label: `Min ${minSize}sqm`, value: minSize });
+    if (maxSize) list.push({ key: "maxSize", label: `Max ${maxSize}sqm`, value: maxSize });
     return list;
   }, [type, category, country, state, city, minPrice, maxPrice, bedrooms, bathrooms, parking, status, verifiedOnly, minWalkScore, floodSafe, params]);
 
   const activeFilterCount = activeFilters.length;
 
   return (
-    <SiteLayout>
-      <SEO 
+    <SiteLayout transparentNav>
+      <SEO
         title={`${content.title}${city && city !== "all" ? ` in ${city}` : state && state !== "all" ? ` in ${state}` : country && country !== "all" ? ` in ${country}` : ""} | ${brand.platform_name}`}
-        description={content.desc} 
+        description={content.desc}
         canonicalUrl={`${window.location.origin}/properties${window.location.search}`}
       />
 
-      {/* ── Hero Section ──────────────────────────────────────── */}
-      <section className="relative overflow-hidden bg-black min-h-[480px] sm:min-h-[560px] flex items-center">
+      {/* ── Hero ─────────────────────────────────────────────────── */}
+      <section className="relative overflow-hidden bg-black min-h-[52vh] sm:min-h-[62vh] flex items-end pb-0">
         <img
           key={content.img}
           src={content.img}
           alt={content.title}
-          className="absolute inset-0 h-full w-full object-cover transition-opacity duration-1000"
+          className="absolute inset-0 h-full w-full object-cover object-center transition-opacity duration-700"
         />
-        <div className="absolute inset-0 bg-black/40 z-[1]" />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent z-[2]" />
+        {/* layered overlays: bottom heavy for text legibility */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-black/10" />
 
-        <div className="container-wide relative z-10 flex flex-col justify-center py-16 sm:py-24 text-white">
-          <div className="max-w-3xl">
-            <span className="inline-block px-3 py-1 mb-5 text-xs font-semibold tracking-wider uppercase bg-primary text-primary-foreground rounded-full shadow-lg">
+        <div className="container-wide relative z-10 pb-16 pt-32 sm:pb-20 sm:pt-36">
+          <div className="max-w-2xl">
+            <span className="inline-block mb-5 px-3 py-1 text-[11px] font-bold tracking-[0.15em] uppercase text-white/80 border border-white/20 rounded-full backdrop-blur-sm bg-white/5">
               {content.badge}
             </span>
-            <h1 className="font-serif text-4xl font-bold sm:text-6xl text-secondary tracking-tight leading-[1.1] mb-4">
-              {content.title}
-            </h1>
-            <p className="text-lg sm:text-xl text-white/90 font-medium mb-6">
+            <h1 className="font-serif text-4xl sm:text-5xl lg:text-6xl font-bold text-white tracking-tight leading-[1.05] mb-4">
               {content.subtitle}
+            </h1>
+            <p className="text-base text-white/65 font-normal leading-relaxed max-w-lg">
+              {content.desc}
             </p>
-            <div className="relative max-w-xl group">
-              <div className="absolute -inset-1 bg-gradient-to-r from-primary/50 to-primary/50 rounded-xl blur opacity-25 group-hover:opacity-50 transition duration-1000"></div>
-              <form
-                onSubmit={(e) => { e.preventDefault(); update("q", qLocal); }}
-                className="relative flex items-center bg-white rounded-xl shadow-xl overflow-hidden"
-              >
-                <div className="flex-1 flex items-center px-4">
-                  <Search className="h-5 w-5 text-muted-foreground mr-3" />
-                  <Input
-                    value={qLocal}
-                    onChange={(e) => setQLocal(e.target.value)}
-                    placeholder="Search city, neighborhood, or ZIP..."
-                    className="h-14 border-none shadow-none focus-visible:ring-0 text-foreground text-lg placeholder:text-muted-foreground/60"
-                  />
-                </div>
-                <Button type="submit" size="lg" className="h-14 px-8 rounded-none bg-primary hover:bg-primary/90 text-white font-bold">
-                  Search
-                </Button>
-              </form>
-            </div>
+            {/* Inline search in hero */}
+            <form
+              onSubmit={(e) => { e.preventDefault(); update("q", qLocal); }}
+              className="mt-8 flex items-center gap-0 bg-white rounded-xl shadow-xl overflow-hidden max-w-xl"
+            >
+              <div className="flex-1 flex items-center px-4">
+                <Search className="h-4 w-4 text-muted-foreground shrink-0 mr-3" />
+                <Input
+                  value={qLocal}
+                  onChange={(e) => setQLocal(e.target.value)}
+                  placeholder="Search city, area, or property type..."
+                  className="h-13 border-none shadow-none focus-visible:ring-0 text-foreground placeholder:text-muted-foreground/60 text-sm"
+                />
+              </div>
+              <Button type="submit" size="lg" className="h-13 px-7 rounded-none bg-primary hover:bg-primary/90 text-white font-semibold shrink-0">
+                Search
+              </Button>
+            </form>
           </div>
         </div>
       </section>
 
-      {/* ── Filter Bar ────────────────────────────────────────── */}
-      <div className="sticky top-[64px] z-30 bg-background/95 backdrop-blur-md border-b border-border py-4 transition-all">
-        <div className="container-wide">
-          <div className="flex flex-col lg:flex-row items-center justify-between gap-4">
-            
-            {/* Desktop Filter Row */}
-            <div className="flex flex-wrap items-center gap-2 w-full lg:w-auto">
-              {/* Type Switcher */}
-              <div className="flex p-1 bg-accent rounded-lg border border-border mr-2">
-                {["all", "buy", "rent", "land"].map((t) => (
-                  <button
-                    key={t}
-                    onClick={() => update("type", t)}
-                    className={`px-3 py-1.5 text-xs font-bold uppercase tracking-tighter rounded-md transition-all ${
-                      type === t ? "bg-primary text-white shadow-sm" : "text-muted-foreground hover:text-foreground"
-                    }`}
-                  >
-                    {t === "all" ? "All" : t === "buy" ? "Buy" : t === "rent" ? "Rent" : "Land"}
-                  </button>
-                ))}
-              </div>
+      {/* ── Sticky Filter Bar ────────────────────────────────────── */}
+      <div className="sticky top-[64px] z-30 bg-background/95 backdrop-blur-md border-b border-border/60">
+        <div className="container-wide py-3">
+          <div className="flex flex-wrap items-center gap-2">
 
-              {/* Category */}
-              <Select value={category} onValueChange={(v) => update("category", v)}>
-                <SelectTrigger className="w-[140px] h-10 border-border bg-card">
-                  <div className="flex items-center gap-2">
-                    <HomeIcon className="h-3.5 w-3.5 text-primary/60" />
-                    <SelectValue placeholder="Category" />
-                  </div>
-                </SelectTrigger>
-                <SelectContent>
-                  {PROPERTY_CATEGORIES.map(c => (
-                    <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              {/* Location Selects */}
-              <div className="hidden xl:flex items-center gap-2">
-                <Select value={country} onValueChange={(v) => updateLocation("country", v)}>
-                  <SelectTrigger className="w-[130px] h-10 border-border bg-card">
-                    <SelectValue placeholder="Country" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any Country</SelectItem>
-                    {filterMetadata?.countries.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={state} onValueChange={(v) => updateLocation("state", v)}>
-                  <SelectTrigger className="w-[130px] h-10 border-border bg-card">
-                    <SelectValue placeholder="State" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any State</SelectItem>
-                    {filterMetadata?.states.map(s => (
-                      <SelectItem key={s} value={s}>{s}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-
-                <Select value={city} onValueChange={(v) => updateLocation("city", v)}>
-                  <SelectTrigger className="w-[130px] h-10 border-border bg-card">
-                    <SelectValue placeholder="City" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Any City</SelectItem>
-                    {filterMetadata?.cities.map(c => (
-                      <SelectItem key={c} value={c}>{c}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {/* More Filters Toggle (Mobile & Desktop) */}
-              <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-                <SheetTrigger asChild>
-                  <Button variant="outline" className="h-10 gap-2 border-primary/20 hover:border-primary/40 bg-primary/5">
-                    <SlidersHorizontal className="h-4 w-4 text-primary" />
-                    <span className="hidden sm:inline">Search Filters</span>
-                    {activeFilterCount > 0 && (
-                      <Badge variant="default" className="ml-1 h-5 min-w-5 flex items-center justify-center p-0 text-[10px] bg-primary text-white">
-                        {activeFilterCount}
-                      </Badge>
-                    )}
-                  </Button>
-                </SheetTrigger>
-
-                {/* Verified Only Quick Toggle */}
+            {/* Type pill group */}
+            <div className="flex p-0.5 bg-accent rounded-lg border border-border/60 shrink-0">
+              {["all", "buy", "rent", "land"].map((t) => (
                 <button
-                  onClick={() => update("verified", verifiedOnly ? "" : "true")}
-                  className={`hidden lg:flex h-10 items-center gap-2 px-3 rounded-lg border text-xs font-bold uppercase tracking-tighter transition-all ${
-                    verifiedOnly 
-                      ? 'bg-primary/10 text-primary border-primary/30' 
-                      : 'bg-card text-muted-foreground border-border hover:border-primary/20 hover:text-primary'
+                  key={t}
+                  onClick={() => update("type", t)}
+                  className={`px-3 py-1.5 text-[11px] font-bold uppercase tracking-wide rounded-md transition-all whitespace-nowrap ${
+                    type === t
+                      ? "bg-primary text-white shadow-sm"
+                      : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
-                  <ShieldCheck className="h-3.5 w-3.5" />
-                  Verified
+                  {t === "all" ? "All" : t === "buy" ? "Buy" : t === "rent" ? "Rent" : "Land"}
                 </button>
-                <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
-                  <SheetHeader className="pb-6 border-b">
-                    <SheetTitle className="font-serif text-2xl">Property Filters</SheetTitle>
-                  </SheetHeader>
-                  
-                  <div className="py-8 space-y-8">
-                    {/* Status Section */}
-                    <div className="space-y-4">
-                      <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Property Status</Label>
-                      <div className="grid grid-cols-2 gap-2">
-                        {["available", "reserved", "sold", "all"].map(s => (
-                          <Button 
-                            key={s}
-                            variant={status === s ? "default" : "outline"}
-                            size="sm"
-                            onClick={() => update("status", s)}
-                            className="capitalize font-semibold"
-                          >
-                            {s.replace("_", " ")}
-                          </Button>
-                        ))}
-                      </div>
-                    </div>
+              ))}
+            </div>
 
-                    {/* Price Range */}
-                    <div className="space-y-4">
-                      <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Price Range ({currency})</Label>
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1 space-y-1.5">
-                          <span className="text-[10px] text-muted-foreground uppercase font-bold">Min</span>
-                          <Input 
-                            type="number" 
-                            placeholder="0" 
-                            value={minPrice}
-                            onChange={(e) => update("minPrice", e.target.value)}
-                            className="h-11"
-                          />
-                        </div>
-                        <div className="flex-1 space-y-1.5">
-                          <span className="text-[10px] text-muted-foreground uppercase font-bold">Max</span>
-                          <Input 
-                            type="number" 
-                            placeholder="No max" 
-                            value={maxPrice}
-                            onChange={(e) => update("maxPrice", e.target.value)}
-                            className="h-11"
-                          />
-                        </div>
-                      </div>
-                    </div>
+            {/* Category quick-select */}
+            <Select value={category} onValueChange={(v) => update("category", v)}>
+              <SelectTrigger className="h-9 w-auto gap-1.5 border-border/60 bg-card text-xs font-medium pr-2 pl-3">
+                <HomeIcon className="h-3.5 w-3.5 text-primary/60" />
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                {PROPERTY_CATEGORIES.map(c => (
+                  <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
 
-                    {/* Rooms & Features */}
-                    {type !== "land" && (
-                      <div className="grid grid-cols-2 gap-6">
-                        <div className="space-y-3">
-                          <Label className="text-sm font-bold">Bedrooms</Label>
-                          <Select value={bedrooms} onValueChange={(v) => update("bedrooms", v)}>
-                            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="any">Any</SelectItem>
-                              {[1,2,3,4,5].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Beds</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-3">
-                          <Label className="text-sm font-bold">Bathrooms</Label>
-                          <Select value={bathrooms} onValueChange={(v) => update("bathrooms", v)}>
-                            <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="any">Any</SelectItem>
-                              {[1,2,3,4].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Baths</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    )}
+            {/* Location selects — desktop only */}
+            <div className="hidden xl:flex items-center gap-2">
+              <Select value={country} onValueChange={(v) => updateLocation("country", v)}>
+                <SelectTrigger className="h-9 w-[130px] border-border/60 bg-card text-xs">
+                  <SelectValue placeholder="Country" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any Country</SelectItem>
+                  {filterMetadata?.countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={state} onValueChange={(v) => updateLocation("state", v)}>
+                <SelectTrigger className="h-9 w-[130px] border-border/60 bg-card text-xs">
+                  <SelectValue placeholder="State" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any State</SelectItem>
+                  {filterMetadata?.states.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={city} onValueChange={(v) => updateLocation("city", v)}>
+                <SelectTrigger className="h-9 w-[130px] border-border/60 bg-card text-xs">
+                  <SelectValue placeholder="City" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Any City</SelectItem>
+                  {filterMetadata?.cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
 
-                    {/* Property Size */}
-                    <div className="space-y-4 pt-4 border-t">
-                      <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Property Size (sqm)</Label>
-                      <div className="flex items-center gap-4">
-                        <div className="flex-1 space-y-1.5">
-                          <span className="text-[10px] text-muted-foreground uppercase font-bold">Min Size</span>
-                          <Input 
-                            type="number" 
-                            placeholder="0" 
-                            value={params.get("minSize") ?? ""}
-                            onChange={(e) => update("minSize", e.target.value)}
-                            className="h-11"
-                          />
-                        </div>
-                        <div className="flex-1 space-y-1.5">
-                          <span className="text-[10px] text-muted-foreground uppercase font-bold">Max Size</span>
-                          <Input 
-                            type="number" 
-                            placeholder="Any" 
-                            value={params.get("maxSize") ?? ""}
-                            onChange={(e) => update("maxSize", e.target.value)}
-                            className="h-11"
-                          />
-                        </div>
-                      </div>
-                    </div>
+            {/* Verified toggle */}
+            <button
+              onClick={() => update("verified", verifiedOnly ? "" : "true")}
+              className={`hidden lg:flex h-9 items-center gap-1.5 px-3 rounded-lg border text-[11px] font-bold uppercase tracking-wide transition-all whitespace-nowrap ${
+                verifiedOnly
+                  ? "bg-primary/10 text-primary border-primary/30"
+                  : "bg-card text-muted-foreground border-border/60 hover:border-primary/20 hover:text-primary"
+              }`}
+            >
+              <ShieldCheck className="h-3.5 w-3.5" /> Verified
+            </button>
 
-                    {/* Location (Mobile Visible) */}
-                    <div className="space-y-4 pt-4 border-t lg:hidden">
-                      <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Location</Label>
-                      <div className="space-y-4">
-                        <Select value={country} onValueChange={(v) => updateLocation("country", v)}>
-                          <SelectTrigger className="h-11"><SelectValue placeholder="Select Country" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Any Country</SelectItem>
-                            {filterMetadata?.countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <Select value={state} onValueChange={(v) => updateLocation("state", v)}>
-                          <SelectTrigger className="h-11"><SelectValue placeholder="Select State" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Any State</SelectItem>
-                            {filterMetadata?.states.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                        <Select value={city} onValueChange={(v) => updateLocation("city", v)}>
-                          <SelectTrigger className="h-11"><SelectValue placeholder="Select City" /></SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">Any City</SelectItem>
-                            {filterMetadata?.cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
+            {/* More filters */}
+            <Sheet open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+              <SheetTrigger asChild>
+                <Button variant="outline" className="h-9 gap-2 border-border/60 bg-card text-xs font-medium">
+                  <SlidersHorizontal className="h-3.5 w-3.5" />
+                  Filters
+                  {activeFilterCount > 0 && (
+                    <span className="flex h-4.5 min-w-[18px] items-center justify-center rounded-full bg-primary text-white text-[10px] font-bold px-1">
+                      {activeFilterCount}
+                    </span>
+                  )}
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-full sm:max-w-md overflow-y-auto">
+                <SheetHeader className="pb-6 border-b">
+                  <SheetTitle className="font-serif text-2xl">Search Filters</SheetTitle>
+                </SheetHeader>
 
-                    {/* Neighborhood Intelligence Filters */}
-                    <div className="space-y-4 pt-4 border-t">
-                      <Label className="text-sm font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-2">
-                        <Zap className="h-3.5 w-3.5 text-primary" /> Infrastructure & Safety
-                      </Label>
-                      
-                      {/* Verified Only */}
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
-                        <div className="flex items-center gap-2">
-                          <ShieldCheck className="h-4 w-4 text-primary" />
-                          <span className="text-sm font-semibold">Verified Only</span>
-                        </div>
-                        <button 
-                          onClick={() => update("verified", verifiedOnly ? "" : "true")}
-                          className={`relative h-6 w-11 rounded-full transition-colors ${verifiedOnly ? 'bg-primary' : 'bg-muted'}`}
+                <div className="py-8 space-y-8">
+                  {/* Property Status */}
+                  <div className="space-y-4">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Status</Label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {["available", "reserved", "sold", "all"].map(s => (
+                        <Button
+                          key={s}
+                          variant={status === s ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => update("status", s)}
+                          className="capitalize font-semibold h-11"
                         >
-                          <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${verifiedOnly ? 'translate-x-5' : ''}`} />
-                        </button>
-                      </div>
+                          {s.replace("_", " ")}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
 
-                      {/* Flood Safe */}
-                      <div className="flex items-center justify-between p-3 rounded-lg bg-accent/50 border border-border/50">
-                        <div className="flex items-center gap-2">
-                          <Droplets className="h-4 w-4 text-blue-500" />
-                          <span className="text-sm font-semibold">Flood-Safe Only</span>
-                        </div>
-                        <button 
-                          onClick={() => update("floodSafe", floodSafe ? "" : "true")}
-                          className={`relative h-6 w-11 rounded-full transition-colors ${floodSafe ? 'bg-blue-500' : 'bg-muted'}`}
-                        >
-                          <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${floodSafe ? 'translate-x-5' : ''}`} />
-                        </button>
+                  {/* Price Range */}
+                  <div className="space-y-4">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Price Range ({currency})</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 space-y-1.5">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Min</span>
+                        <Input type="number" placeholder="0" value={minPrice} onChange={(e) => update("minPrice", e.target.value)} className="h-11" />
                       </div>
+                      <div className="flex-1 space-y-1.5">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Max</span>
+                        <Input type="number" placeholder="No max" value={maxPrice} onChange={(e) => update("maxPrice", e.target.value)} className="h-11" />
+                      </div>
+                    </div>
+                  </div>
 
-                      {/* Min Walk Score */}
-                      <div className="space-y-2">
-                        <span className="text-xs font-bold text-muted-foreground">Minimum Walk Score</span>
-                        <Select value={minWalkScore || "any"} onValueChange={(v) => update("minWalkScore", v === "any" ? "" : v)}>
-                          <SelectTrigger className="h-11">
-                            <div className="flex items-center gap-2">
-                              <MapPin className="h-3.5 w-3.5 text-emerald-500" />
-                              <SelectValue placeholder="Any" />
-                            </div>
-                          </SelectTrigger>
+                  {/* Rooms — hidden for land */}
+                  {type !== "land" && (
+                    <div className="grid grid-cols-2 gap-6">
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold">Bedrooms</Label>
+                        <Select value={bedrooms} onValueChange={(v) => update("bedrooms", v)}>
+                          <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
                           <SelectContent>
                             <SelectItem value="any">Any</SelectItem>
-                            <SelectItem value="50">50+ (Somewhat Walkable)</SelectItem>
-                            <SelectItem value="70">70+ (Very Walkable)</SelectItem>
-                            <SelectItem value="90">90+ (Walker's Paradise)</SelectItem>
+                            {[1,2,3,4,5].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Beds</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-3">
+                        <Label className="text-sm font-bold">Bathrooms</Label>
+                        <Select value={bathrooms} onValueChange={(v) => update("bathrooms", v)}>
+                          <SelectTrigger className="h-11"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="any">Any</SelectItem>
+                            {[1,2,3,4].map(n => <SelectItem key={n} value={n.toString()}>{n}+ Baths</SelectItem>)}
                           </SelectContent>
                         </Select>
                       </div>
                     </div>
+                  )}
+
+                  {/* Size */}
+                  <div className="space-y-4 pt-4 border-t">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Property Size (sqm)</Label>
+                    <div className="flex items-center gap-4">
+                      <div className="flex-1 space-y-1.5">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Min</span>
+                        <Input type="number" placeholder="0" value={params.get("minSize") ?? ""} onChange={(e) => update("minSize", e.target.value)} className="h-11" />
+                      </div>
+                      <div className="flex-1 space-y-1.5">
+                        <span className="text-[10px] text-muted-foreground uppercase font-bold">Max</span>
+                        <Input type="number" placeholder="Any" value={params.get("maxSize") ?? ""} onChange={(e) => update("maxSize", e.target.value)} className="h-11" />
+                      </div>
+                    </div>
                   </div>
 
-                  <SheetFooter className="mt-8 pt-6 border-t gap-2 sm:flex-col">
-                    <Button onClick={() => setIsFilterOpen(false)} className="w-full h-12 font-bold uppercase tracking-wider">Show Results</Button>
-                    <Button variant="ghost" onClick={clearAll} className="w-full text-muted-foreground">Reset All</Button>
-                  </SheetFooter>
-
-                  <div className="mt-8">
-                    <PromoBanner placement="sidebar" />
+                  {/* Location — mobile visible */}
+                  <div className="space-y-4 pt-4 border-t xl:hidden">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Location</Label>
+                    <div className="space-y-3">
+                      <Select value={country} onValueChange={(v) => updateLocation("country", v)}>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Select Country" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any Country</SelectItem>
+                          {filterMetadata?.countries.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <Select value={state} onValueChange={(v) => updateLocation("state", v)}>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Select State" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any State</SelectItem>
+                          {filterMetadata?.states.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                      <Select value={city} onValueChange={(v) => updateLocation("city", v)}>
+                        <SelectTrigger className="h-11"><SelectValue placeholder="Select City" /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">Any City</SelectItem>
+                          {filterMetadata?.cities.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </SheetContent>
-              </Sheet>
 
-              {activeFilterCount > 0 && (
-                <Button variant="ghost" size="sm" onClick={clearAll} className="h-10 text-muted-foreground hover:text-destructive gap-2">
-                  <X className="h-4 w-4" /> Clear
-                </Button>
-              )}
+                  {/* Infrastructure filters */}
+                  <div className="space-y-4 pt-4 border-t">
+                    <Label className="text-xs font-bold uppercase tracking-widest text-muted-foreground">Infrastructure & Safety</Label>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50 border border-border/50">
+                      <div className="flex items-center gap-2">
+                        <ShieldCheck className="h-4 w-4 text-primary" />
+                        <span className="text-sm font-semibold">Verified Listings Only</span>
+                      </div>
+                      <button
+                        onClick={() => update("verified", verifiedOnly ? "" : "true")}
+                        className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${verifiedOnly ? "bg-primary" : "bg-muted"}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${verifiedOnly ? "translate-x-5" : ""}`} />
+                      </button>
+                    </div>
+
+                    <div className="flex items-center justify-between p-3 rounded-xl bg-accent/50 border border-border/50">
+                      <div className="flex items-center gap-2">
+                        <Droplets className="h-4 w-4 text-blue-500" />
+                        <span className="text-sm font-semibold">Flood-Safe Zone Only</span>
+                      </div>
+                      <button
+                        onClick={() => update("floodSafe", floodSafe ? "" : "true")}
+                        className={`relative h-6 w-11 rounded-full transition-colors duration-200 ${floodSafe ? "bg-blue-500" : "bg-muted"}`}
+                      >
+                        <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform duration-200 ${floodSafe ? "translate-x-5" : ""}`} />
+                      </button>
+                    </div>
+
+                    <div className="space-y-2">
+                      <span className="text-xs font-bold text-muted-foreground">Minimum Walk Score</span>
+                      <Select value={minWalkScore || "any"} onValueChange={(v) => update("minWalkScore", v === "any" ? "" : v)}>
+                        <SelectTrigger className="h-11">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+                            <SelectValue placeholder="Any" />
+                          </div>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="any">Any</SelectItem>
+                          <SelectItem value="50">50+ (Somewhat Walkable)</SelectItem>
+                          <SelectItem value="70">70+ (Very Walkable)</SelectItem>
+                          <SelectItem value="90">90+ (Walker's Paradise)</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                <SheetFooter className="mt-4 pt-6 border-t gap-2 sm:flex-col">
+                  <SheetClose asChild>
+                    <Button className="w-full h-12 font-bold uppercase tracking-wider">Show Results ({filteredProperties.length})</Button>
+                  </SheetClose>
+                  <Button variant="ghost" onClick={clearAll} className="w-full text-muted-foreground">Reset All Filters</Button>
+                </SheetFooter>
+
+                <div className="mt-8">
+                  <PromoBanner placement="sidebar" />
+                </div>
+              </SheetContent>
+            </Sheet>
+
+            {/* Clear if active */}
+            {activeFilterCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={clearAll} className="h-9 text-muted-foreground hover:text-destructive gap-1.5 text-xs">
+                <X className="h-3.5 w-3.5" /> Clear
+              </Button>
+            )}
+
+            {/* Spacer */}
+            <div className="flex-1" />
+
+            {/* Result count */}
+            <span className="text-sm font-semibold text-foreground tabular-nums hidden sm:block">
+              {filteredProperties.length} <span className="font-normal text-muted-foreground">results</span>
+            </span>
+
+            {/* View toggle */}
+            <div className="flex items-center gap-0.5 bg-accent/70 p-0.5 rounded-lg border border-border/60">
+              <button
+                onClick={() => setViewMode("list")}
+                className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                title="Grid view"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                onClick={() => setViewMode("map")}
+                className={`p-1.5 rounded-md transition-all ${viewMode === "map" ? "bg-card shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
+                title="Map view"
+              >
+                <MapIcon className="h-4 w-4" />
+              </button>
             </div>
-            
-            {/* Sorting & Results */}
-            <div className="flex items-center justify-between lg:justify-end gap-4 w-full lg:w-auto pt-4 lg:pt-0 border-t lg:border-t-0 border-border">
-              <div className="flex items-center gap-2 text-sm">
-                <span className="font-bold text-primary">{filteredProperties.length}</span>
-                <span className="text-muted-foreground font-medium">Properties</span>
-              </div>
 
-              <div className="flex items-center gap-1 bg-accent/50 p-1 rounded-lg border border-border">
-                <button 
-                  onClick={() => setViewMode("list")}
-                  className={`p-1.5 rounded-md transition-all ${viewMode === "list" ? "bg-white shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <LayoutGrid className="h-4 w-4" />
-                </button>
-                <button 
-                  onClick={() => setViewMode("map")}
-                  className={`p-1.5 rounded-md transition-all ${viewMode === "map" ? "bg-white shadow-sm text-primary" : "text-muted-foreground hover:text-foreground"}`}
-                >
-                  <MapIcon className="h-4 w-4" />
-                </button>
-              </div>
+            <SaveSearchButton currentFilters={Object.fromEntries(params.entries())} />
 
-              <SaveSearchButton currentFilters={Object.fromEntries(params.entries())} />
-
-              <div className="flex items-center gap-3">
-                <ArrowUpDown className="h-4 w-4 text-muted-foreground hidden sm:block" />
-                <Select value={sort} onValueChange={(v) => update("sort", v)}>
-                  <SelectTrigger className="w-[160px] h-10 border-none bg-transparent hover:bg-secondary transition-colors font-medium">
-                    <SelectValue placeholder="Sort by" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="newest">Newest First</SelectItem>
-                    <SelectItem value="oldest">Oldest First</SelectItem>
-                    <SelectItem value="price_asc">Price: Low to High</SelectItem>
-                    <SelectItem value="price_desc">Price: High to Low</SelectItem>
-                    <SelectItem value="size_desc">Size</SelectItem>
-                    <SelectItem value="location_asc">Location: A-Z</SelectItem>
-                    <SelectItem value="featured">Featured First</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
+            {/* Sort */}
+            <Select value={sort} onValueChange={(v) => update("sort", v)}>
+              <SelectTrigger className="h-9 w-[150px] border-border/60 bg-card text-xs font-medium">
+                <ArrowUpDown className="h-3.5 w-3.5 mr-1.5 text-muted-foreground" />
+                <SelectValue placeholder="Sort by" />
+              </SelectTrigger>
+              <SelectContent align="end">
+                <SelectItem value="newest">Newest First</SelectItem>
+                <SelectItem value="oldest">Oldest First</SelectItem>
+                <SelectItem value="price_asc">Price: Low → High</SelectItem>
+                <SelectItem value="price_desc">Price: High → Low</SelectItem>
+                <SelectItem value="size_desc">Largest First</SelectItem>
+                <SelectItem value="location_asc">Location: A–Z</SelectItem>
+                <SelectItem value="featured">Featured First</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
+
+          {/* Active filter chips */}
+          {activeFilters.length > 0 && (
+            <div className="flex flex-wrap items-center gap-2 pt-2.5 pb-1 animate-in fade-in slide-in-from-top-1 duration-300">
+              {activeFilters.map(filter => (
+                <button
+                  key={filter.key}
+                  onClick={() => update(filter.key, "")}
+                  className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/8 hover:bg-primary/15 border border-primary/20 text-primary text-[11px] font-semibold transition-all group"
+                >
+                  {filter.label}
+                  <X className="h-3 w-3 opacity-60 group-hover:opacity-100" />
+                </button>
+              ))}
+              <button onClick={clearAll} className="text-[11px] font-semibold text-muted-foreground hover:text-destructive transition-colors underline underline-offset-2">
+                Reset all
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* ── Active Filters Row ── */}
-      {activeFilters.length > 0 && (
-        <div className="bg-secondary/15 py-3 border-b border-border/40 animate-in fade-in slide-in-from-top-1 duration-300">
-          <div className="container-wide flex flex-wrap items-center gap-2">
-            <span className="text-[10px] text-muted-foreground uppercase tracking-widest font-bold mr-2">Active Filters:</span>
-            {activeFilters.map(filter => (
-              <Badge 
-                key={filter.key} 
-                variant="secondary" 
-                className="rounded-lg bg-background hover:bg-accent border border-border/40 pl-3.5 pr-2.5 py-1.5 text-xs font-semibold text-foreground flex items-center gap-2 cursor-pointer shadow-sm group hover:border-primary/20 transition-all"
-                onClick={() => update(filter.key, "")}
-              >
-                <span>{filter.label}</span>
-                <X className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary transition-colors" />
-              </Badge>
-            ))}
-            <Button variant="ghost" size="sm" onClick={clearAll} className="h-8 text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/5 rounded-lg px-3">
-              Reset All
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* ── Main Grid ─────────────────────────────────────────── */}
-      <div className="container-wide py-12 min-h-[60vh]">
+      {/* ── Main Grid / Map ────────────────────────────────────── */}
+      <div className="container-wide py-10 min-h-[60vh]">
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="space-y-4">
-                <Skeleton className="aspect-[4/3] w-full rounded-xl" />
-                <div className="space-y-2">
-                  <Skeleton className="h-6 w-1/3" />
-                  <Skeleton className="h-8 w-3/4" />
-                  <Skeleton className="h-4 w-1/2" />
-                </div>
+              <div key={i} className="space-y-3">
+                <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
+                <Skeleton className="h-5 w-1/3" />
+                <Skeleton className="h-7 w-3/4" />
+                <Skeleton className="h-4 w-1/2" />
               </div>
             ))}
           </div>
         ) : properties.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <EmptyState 
-              title="No matching properties" 
-              description="We couldn't find any properties matching your current criteria. Try adjusting your filters or search terms."
-              action={{
-                label: "Reset all filters",
-                onClick: clearAll
-              }}
+          <div className="flex flex-col items-center justify-center py-20 text-center">
+            <EmptyState
+              title="No matching properties"
+              description="We couldn't find any properties matching your criteria. Try adjusting your filters or search terms."
+              action={{ label: "Reset all filters", onClick: clearAll }}
             />
           </div>
         ) : viewMode === "map" ? (
@@ -738,16 +648,20 @@ export default function Properties() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-y-2 gap-x-4 sm:gap-6 lg:gap-8 animate-in fade-in duration-500 -mx-4 sm:mx-0 [&>div]:rounded-none [&>div]:border-x-0 sm:[&>div]:rounded-2xl sm:[&>div]:border-x sm:[&>div]:border-border/40">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 animate-in fade-in duration-500">
               {filteredProperties.map((p: any) => <PropertyCard key={p.id} property={p} />)}
             </div>
-            <div className="mt-16 flex justify-center">
-              <p className="text-sm text-muted-foreground bg-accent px-4 py-2 rounded-full border border-border">
-                Showing all {filteredProperties.length} results
+            <div className="mt-14 flex justify-center">
+              <p className="text-xs font-medium text-muted-foreground bg-accent px-5 py-2.5 rounded-full border border-border/50">
+                Showing all {filteredProperties.length} {filteredProperties.length === 1 ? "result" : "results"}
               </p>
             </div>
           </>
         )}
+      </div>
+
+      <div className="pb-8">
+        <PromoBanner placement="homepage_hero" className="container-wide" />
       </div>
     </SiteLayout>
   );
