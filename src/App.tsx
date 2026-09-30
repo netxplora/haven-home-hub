@@ -40,7 +40,6 @@ const CertificateView = lazy(() => import("./pages/invest/CertificateView"));
 // Static / CMS (light but rarely accessed)
 const About = lazy(() => import("./pages/static/About"));
 const Careers = lazy(() => import("./pages/static/Careers"));
-const Press = lazy(() => import("./pages/static/Press"));
 const Privacy = lazy(() => import("./pages/static/Privacy"));
 const Terms = lazy(() => import("./pages/static/Terms"));
 const BlogList = lazy(() => import("./pages/cms/BlogList"));
@@ -216,7 +215,6 @@ const App = () => (
               {/* Static Pages */}
               <Route path="/about" element={<About />} />
               <Route path="/careers" element={<Careers />} />
-              <Route path="/press" element={<Press />} />
               <Route path="/privacy" element={<Privacy />} />
               <Route path="/terms" element={<Terms />} />
               
