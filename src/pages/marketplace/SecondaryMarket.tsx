@@ -56,10 +56,10 @@ export default function SecondaryMarket() {
       />
       
       {/* Hero Type C: Split Visual Asset Exchange */}
-      <section className="relative bg-slate-950 text-white overflow-hidden border-b border-white/10 pt-28 pb-16 lg:py-24">
+      <section className="relative bg-secondary/10 overflow-hidden border-b border-border/40 pt-28 pb-16 lg:py-24">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.06),transparent_60%)]" />
+          <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(16,185,129,0.03),transparent_60%)]" />
         </div>
 
         <div className="container-wide relative z-10">
@@ -70,27 +70,27 @@ export default function SecondaryMarket() {
                 <Activity className="h-3.5 w-3.5 animate-pulse" /> Peer-to-Peer Share Exchange
               </div>
 
-              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-white leading-[1.15]">
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
                 Secondary Market Liquidity for Real Estate Shares
               </h1>
 
-              <p className="mt-4 text-base sm:text-lg text-slate-300 max-w-xl leading-relaxed font-sans">
+              <p className="mt-4 text-base sm:text-lg text-muted-foreground max-w-xl leading-relaxed font-sans">
                 Buy and sell fractional real estate shares directly with verified investors. Gain immediate exposure to seasoned properties with ongoing dividend distributions.
               </p>
 
               <div className="mt-8 w-full max-w-lg">
-                <div className="relative flex items-center bg-white/5 border border-white/15 rounded-xl p-1.5 backdrop-blur-md shadow-2xl focus-within:border-primary/50 transition-colors">
-                  <Search className="absolute left-4 h-4 w-4 text-white/50" />
+                <div className="relative flex items-center bg-background border border-border/80 rounded-xl p-1.5 backdrop-blur-md shadow-sm focus-within:border-primary/50 transition-colors">
+                  <Search className="absolute left-4 h-4 w-4 text-muted-foreground" />
                   <Input 
                     placeholder="Search properties, cities, or asset classes..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-10 h-11 bg-transparent border-0 text-white placeholder:text-white/40 focus-visible:ring-0 text-sm font-sans"
+                    className="pl-10 h-11 bg-transparent border-0 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 text-sm font-sans"
                   />
                 </div>
               </div>
 
-              <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-slate-400">
+              <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
                   <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Automated Escrow Settlement
                 </span>
@@ -105,7 +105,7 @@ export default function SecondaryMarket() {
 
             {/* Right Column: Architectural Asset Card */}
             <div className="lg:col-span-5">
-              <div className="relative rounded-2xl overflow-hidden border border-white/15 shadow-2xl bg-slate-900 group">
+              <div className="relative rounded-2xl overflow-hidden border border-border/80 shadow-lg bg-card group">
                 <div className="aspect-[4/3] w-full overflow-hidden">
                   <img
                     src={investHero4}
@@ -114,14 +114,14 @@ export default function SecondaryMarket() {
                     loading="eager"
                   />
                 </div>
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/30 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
                 <div className="absolute bottom-0 inset-x-0 p-5 flex items-center justify-between text-white">
                   <div>
                     <p className="text-xs uppercase tracking-wider text-emerald-400 font-semibold">Active Exchange</p>
-                    <p className="text-sm font-medium text-slate-200 mt-0.5">Verified Institutional Grade Units</p>
+                    <p className="text-sm font-medium text-white/90 mt-0.5">Verified Institutional Grade Units</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-slate-400">Trading Window</p>
+                    <p className="text-xs text-white/70">Trading Window</p>
                     <p className="text-sm font-semibold text-white">24/7 Liquidity</p>
                   </div>
                 </div>
