@@ -412,7 +412,7 @@ export default function InvestDetail() {
               <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
                 <TrendingUp className="h-4 w-4 text-primary mx-auto mb-1.5" />
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Projected Return</p>
-                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{data.projected_return_min}–{data.projected_return_max}%</p>
+                <p className="text-base font-bold text-primary dark:text-primary mt-0.5">{data.projected_return_min}–{data.projected_return_max}%</p>
               </div>
               <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
                 <Maximize2 className="h-4 w-4 text-primary mx-auto mb-1.5" />
@@ -533,7 +533,7 @@ export default function InvestDetail() {
                     {data.property_journey?.sort((a,b) => a.sort_order - b.sort_order).map((stage, idx) => (
                       <div key={stage.id} className="flex gap-4 items-start relative z-10">
                         <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs shrink-0 border-2 border-background ${
-                          stage.status === 'completed' ? 'bg-emerald-600 text-white' :
+                          stage.status === 'completed' ? 'bg-primary text-white' :
                           stage.status === 'in_progress' ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
                         }`}>
                           {idx + 1}

@@ -464,7 +464,7 @@ export function AdminProperties() {
                       p.status === 'reserved' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                       p.status === 'sold' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
                       p.status === 'pending' ? 'bg-primary/10 text-primary border-primary/20' :
-                      p.status === 'roi_active' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                      p.status === 'roi_active' ? 'bg-primary/10 text-primary border-primary/20' :
                       'bg-gray-500/10 text-gray-500 border-gray-500/20'
                     }`}>
                       {p.status}
@@ -534,7 +534,7 @@ export function AdminProperties() {
                         p.status === 'reserved' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                         p.status === 'sold' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
                         p.status === 'pending' ? 'bg-primary/10 text-primary border-primary/20' :
-                        p.status === 'roi_active' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                        p.status === 'roi_active' ? 'bg-primary/10 text-primary border-primary/20' :
                         p.status === 'roi_paused' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                         'bg-gray-500/10 text-gray-500 border-gray-500/20'
                       }`}>
@@ -560,7 +560,7 @@ export function AdminProperties() {
                               </Button>
                             )}
                             {(p.status === 'funded' || p.status === 'fully_funded') && (
-                              <Button size="icon" variant="ghost" onClick={() => toggleRoi(p, "activate")} className="h-8 w-8 rounded-lg text-emerald-600" title="Activate ROI">
+                              <Button size="icon" variant="ghost" onClick={() => toggleRoi(p, "activate")} className="h-8 w-8 rounded-lg text-primary" title="Activate ROI">
                                 <Zap className="h-4 w-4" />
                               </Button>
                             )}

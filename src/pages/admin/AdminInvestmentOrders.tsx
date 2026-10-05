@@ -504,7 +504,7 @@ export function AdminInvestmentOrders() {
                 
                 <div className="flex flex-col gap-2 pt-2">
                   {selectedOrder.status !== 'confirmed' && selectedOrder.status !== 'active' && (
-                    <Button onClick={handleApprove} className="w-full bg-emerald-600 hover:bg-emerald-700 font-bold">
+                    <Button onClick={handleApprove} className="w-full bg-primary hover:bg-primary/90 font-bold">
                       <Check className="mr-2 h-4 w-4" /> Approve & Allocate
                     </Button>
                   )}

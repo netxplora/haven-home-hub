@@ -37,7 +37,7 @@ export function ReferralsPanel({ userId }: { userId: string }) {
       case "pending_reward":
         return "bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300";
       case "approved":
-        return "bg-emerald-100 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-400";
+        return "bg-accent text-primary dark:bg-secondary/30 dark:text-primary";
       case "paid":
         return "bg-green-100 text-green-700 dark:bg-green-950/30 dark:text-green-400";
       case "rejected":
@@ -163,7 +163,7 @@ export function ReferralsPanel({ userId }: { userId: string }) {
             label: "Wallet Balance",
             value: formatMoney(stats.walletBalance),
             icon: Wallet,
-            color: "text-emerald-600 bg-emerald-500/10",
+            color: "text-primary bg-primary/10",
           },
         ].map((stat) => (
           <div
@@ -528,10 +528,10 @@ export function ReferralsPanel({ userId }: { userId: string }) {
           </div>
 
           {stats.walletBalance > 0 && (
-            <div className="rounded-xl bg-emerald-500/5 border border-emerald-500/15 p-4">
+            <div className="rounded-xl bg-primary/5 border border-primary/15 p-4">
               <div className="flex items-center gap-2 mb-1">
-                <Gift className="h-4 w-4 text-emerald-600" />
-                <p className="text-xs font-medium uppercase tracking-wider text-emerald-600">
+                <Gift className="h-4 w-4 text-primary" />
+                <p className="text-xs font-medium uppercase tracking-wider text-primary">
                   Your Wallet
                 </p>
               </div>

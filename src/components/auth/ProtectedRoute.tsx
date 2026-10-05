@@ -23,7 +23,7 @@ export function ProtectedRoute({ children, requireAuth = true, type = "standard"
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
+      <div className="min-h-screen flex items-center justify-center bg-background dark:bg-secondary">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
       </div>
     );
@@ -35,7 +35,7 @@ export function ProtectedRoute({ children, requireAuth = true, type = "standard"
       // Wait, we still need to wrap the children so the layout is preserved or blocked.
       // We will render nothing underneath to prevent data leaks.
       return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 flex flex-col relative overflow-hidden">
+        <div className="min-h-screen bg-background dark:bg-secondary flex flex-col relative overflow-hidden">
           {/* Subtle background representation of protected content */}
           <div className="absolute inset-0 opacity-20 pointer-events-none bg-[url('https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp')] bg-cover bg-center" />
           <AuthGateModal />

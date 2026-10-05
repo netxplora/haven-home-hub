@@ -334,7 +334,7 @@ export default function PropertyDetail() {
                   {statusLabel(property.status)}
                 </Badge>
                 {property.isVerified && (
-                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-md border border-emerald-200/50">
+                  <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-primary bg-accent dark:bg-secondary/40 px-2 py-0.5 rounded-md border border-primary/20/50">
                     <ShieldCheck className="h-3.5 w-3.5" /> Verified
                   </span>
                 )}
@@ -404,23 +404,39 @@ export default function PropertyDetail() {
             </div>
 
             {/* Price Banner (Mobile & Desktop) */}
-            <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 shadow-xs flex flex-wrap items-center justify-between gap-4 mt-4">
-              <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Listing Price</p>
-                <p className="font-serif text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground mt-0.5">
-                  {formatPrice(Number(property.price), property.currency, property.property_type)}
-                </p>
-              </div>
+            <div className="p-4 sm:p-5 rounded-2xl bg-card border border-border/60 shadow-xs mt-4">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">Listing Price</p>
+                  <p className="font-serif text-xl sm:text-2xl font-bold text-foreground mt-0.5">
+                    {formatPrice(Number(property.price), property.currency, property.property_type)}
+                  </p>
+                  {property.property_type !== 'rent' && property.installment_available && (
+                    <p className="text-[10px] text-primary mt-0.5 font-medium">
+                      {property.min_down_payment_pct || 20}% min down · Installment available
+                    </p>
+                  )}
+                  {property.property_type === 'rent' && (
+                    <p className="text-[10px] text-muted-foreground mt-0.5">Billed monthly</p>
+                  )}
+                </div>
 
-              {property.property_type === 'rent' ? (
-                <span className="text-xs font-medium text-muted-foreground px-3 py-1 bg-muted rounded-lg">
-                  Billed Monthly / Lease terms available
-                </span>
-              ) : property.installment_available ? (
-                <span className="text-xs font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/50 px-3 py-1.5 rounded-lg">
-                  Installment plans available ({property.min_down_payment_pct || 20}% min down)
-                </span>
-              ) : null}
+                {/* Compact Reserve CTA */}
+                <Button
+                  size="sm"
+                  className="shrink-0 h-9 px-4 bg-primary text-primary-foreground font-semibold rounded-lg text-xs shadow-xs hover:bg-primary/90 transition-all disabled:opacity-50"
+                  disabled={property.status !== 'available'}
+                  onClick={() => {
+                    if (!user) {
+                      toast({ title: "Sign in required", description: "Please sign in to reserve this listing." });
+                      return;
+                    }
+                    setReserveOpen(true);
+                  }}
+                >
+                  {primaryActionLabel}
+                </Button>
+              </div>
             </div>
           </div>
 
@@ -453,7 +469,7 @@ export default function PropertyDetail() {
               <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
                 <TrendingUp className="h-4 w-4 text-primary mx-auto mb-1.5" />
                 <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Target Return</p>
-                <p className="text-base font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{property.expected_return || 12}% p.a.</p>
+                <p className="text-base font-bold text-primary dark:text-primary mt-0.5">{property.expected_return || 12}% p.a.</p>
               </div>
               <div className="p-4 rounded-xl border border-border/60 bg-card text-center shadow-xs">
                 <Maximize2 className="h-4 w-4 text-primary mx-auto mb-1.5" />
@@ -538,7 +554,7 @@ export default function PropertyDetail() {
                 </div>
               </div>
               {property.isVerified && (
-                <span className="text-[11px] font-semibold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2.5 py-1 rounded-md border border-emerald-200/50 flex items-center gap-1">
+                <span className="text-[11px] font-semibold text-primary bg-accent dark:bg-secondary/40 px-2.5 py-1 rounded-md border border-primary/20/50 flex items-center gap-1">
                   <ShieldCheck className="h-3.5 w-3.5" /> Verified
                 </span>
               )}
@@ -580,28 +596,28 @@ export default function PropertyDetail() {
                 </p>
                 <div className="grid sm:grid-cols-2 gap-2.5 text-xs">
                   <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                     <div>
                       <p className="font-semibold text-foreground">Title Document Checked</p>
                       <p className="text-[10px] text-muted-foreground">Clear legal ownership on file</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                     <div>
                       <p className="font-semibold text-foreground">On-Site Inspection Cleared</p>
                       <p className="text-[10px] text-muted-foreground">Independent report verified</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                     <div>
                       <p className="font-semibold text-foreground">Licensed Agent Verified</p>
                       <p className="text-[10px] text-muted-foreground">Authorized representative active</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 p-2.5 rounded-lg bg-background border border-border/50">
-                    <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                    <CheckCircle2 className="h-4 w-4 text-primary shrink-0" />
                     <div>
                       <p className="font-semibold text-foreground">Automated Valuation Alignment</p>
                       <p className="text-[10px] text-muted-foreground">Priced within market brackets</p>
@@ -783,7 +799,7 @@ export default function PropertyDetail() {
             {/* Approved Reservation State -> Complete Payment */}
             {userReservation?.status === 'approved' || userReservation?.status === 'confirmed' ? (
               <div className="space-y-4">
-                <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200/50 text-emerald-800 dark:text-emerald-200 text-xs">
+                <div className="p-3 rounded-xl bg-accent dark:bg-secondary/40 border border-primary/20/50 text-primary dark:text-emerald-200 text-xs">
                   <p className="font-semibold">Reservation Confirmed</p>
                   <p className="mt-0.5 opacity-90">Your reservation has been approved. You can now complete checkout.</p>
                 </div>
@@ -907,7 +923,7 @@ export default function PropertyDetail() {
                   </Button>
                 )}
                 {agent.whatsapp && (
-                  <Button asChild variant="outline" size="sm" className="h-9 text-xs font-semibold rounded-xl text-emerald-600 border-emerald-200 hover:bg-emerald-50">
+                  <Button asChild variant="outline" size="sm" className="h-9 text-xs font-semibold rounded-xl text-primary border-primary/20 hover:bg-accent">
                     <a href={`https://wa.me/${agent.whatsapp.replace(/\D/g, "")}`} target="_blank" rel="noreferrer">
                       <MessageSquare className="mr-1.5 h-3.5 w-3.5" /> WhatsApp
                     </a>

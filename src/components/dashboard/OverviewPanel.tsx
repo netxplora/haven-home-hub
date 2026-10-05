@@ -169,13 +169,13 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
           <div>
             <div className="flex items-center justify-between mb-3">
               <span className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">Total Returns</span>
-              <span className="grid h-8 w-8 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400">
+              <span className="grid h-8 w-8 place-items-center rounded-xl bg-primary/10 text-primary dark:text-primary">
                 <TrendingUp className="h-4 w-4" />
               </span>
             </div>
             <p className="font-serif text-2xl sm:text-3xl font-bold text-foreground tracking-tight">{formatMoney(stats?.totalReturns ?? 0)}</p>
           </div>
-          <div className="mt-4 flex items-center gap-1.5 text-[11px] font-medium text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 w-fit px-2.5 py-0.5 rounded-full">
+          <div className="mt-4 flex items-center gap-1.5 text-[11px] font-medium text-primary dark:text-primary bg-primary/10 w-fit px-2.5 py-0.5 rounded-full">
             <ShieldCheck className="h-3.5 w-3.5" /> Verified distributions
           </div>
         </div>
@@ -324,13 +324,13 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3.5 rounded-xl bg-muted/30 border border-border/50">
                 <div className="flex items-center gap-3">
-                  <CalendarCheck className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <CalendarCheck className="h-4 w-4 text-primary dark:text-primary" />
                   <div>
                     <p className="text-xs font-semibold text-foreground">Completed Acquisitions</p>
                     <p className="text-[11px] text-muted-foreground">Properties owned and registered</p>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{stats?.propertiesOwnedCount ?? 0}</span>
+                <span className="text-sm font-bold text-primary dark:text-primary">{stats?.propertiesOwnedCount ?? 0}</span>
               </div>
               <div className="flex items-center justify-between p-3.5 rounded-xl bg-muted/30 border border-border/50">
                 <div className="flex items-center gap-3">
@@ -374,13 +374,13 @@ export function OverviewPanel({ userId, onNavigate }: { userId: string, onNaviga
               </div>
               <div className="flex items-center justify-between p-3.5 rounded-xl bg-muted/30 border border-border/50">
                 <div className="flex items-center gap-3">
-                  <CircleDollarSign className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                  <CircleDollarSign className="h-4 w-4 text-primary dark:text-primary" />
                   <div>
                     <p className="text-xs font-semibold text-foreground">Cumulative Earnings</p>
                     <p className="text-[11px] text-muted-foreground">Total returns received</p>
                   </div>
                 </div>
-                <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{formatMoney(stats?.totalReturns ?? 0)}</span>
+                <span className="text-sm font-bold text-primary dark:text-primary">{formatMoney(stats?.totalReturns ?? 0)}</span>
               </div>
               <div className="flex items-center justify-between p-3.5 rounded-xl bg-primary/5 border border-primary/20">
                 <div className="flex items-center gap-3">

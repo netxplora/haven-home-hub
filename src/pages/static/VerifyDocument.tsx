@@ -35,7 +35,7 @@ export default function VerifyDocument() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-slate-50">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
         <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
         <p className="text-sm font-medium text-muted-foreground">Contacting registry verification ledger...</p>
       </div>
@@ -45,8 +45,8 @@ export default function VerifyDocument() {
   const isVerified = doc && doc.status !== "revoked" && doc.status !== "pending";
 
   return (
-    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full bg-white dark:bg-slate-800 rounded-3xl border border-slate-200/60 dark:border-slate-700 shadow-xl overflow-hidden p-8 space-y-6">
+    <div className="min-h-screen bg-background dark:bg-secondary flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-md w-full bg-white dark:bg-secondary rounded-3xl border border-border/60 dark:border-border shadow-xl overflow-hidden p-8 space-y-6">
         
         {/* Verification Status Banner */}
         <div className="text-center space-y-2">
@@ -55,18 +55,18 @@ export default function VerifyDocument() {
               <div className="mx-auto h-16 w-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center text-red-600 dark:text-red-400">
                 <XCircle className="h-10 w-10" />
               </div>
-              <h2 className="font-serif text-xl font-bold text-slate-950 dark:text-white">Document Invalid</h2>
+              <h2 className="font-serif text-xl font-bold text-foreground dark:text-white">Document Invalid</h2>
               <p className="text-sm text-muted-foreground">
                 This document record could not be found in the registry system.
               </p>
             </>
           ) : isVerified ? (
             <>
-              <div className="mx-auto h-16 w-16 bg-emerald-100 dark:bg-emerald-950 rounded-full flex items-center justify-center text-emerald-600 dark:text-emerald-400">
+              <div className="mx-auto h-16 w-16 bg-accent dark:bg-secondary rounded-full flex items-center justify-center text-primary dark:text-primary">
                 <ShieldCheck className="h-10 w-10" />
               </div>
-              <h2 className="font-serif text-xl font-bold text-slate-950 dark:text-white">Authenticity Verified</h2>
-              <p className="text-xs text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 px-3 py-1 rounded-full border border-emerald-100 dark:border-emerald-900/50 inline-block font-semibold">
+              <h2 className="font-serif text-xl font-bold text-foreground dark:text-white">Authenticity Verified</h2>
+              <p className="text-xs text-primary dark:text-primary bg-accent dark:bg-secondary/40 px-3 py-1 rounded-full border border-primary/15 dark:border-primary/30/50 inline-block font-semibold">
                 Official Registered Document
               </p>
             </>
@@ -75,7 +75,7 @@ export default function VerifyDocument() {
               <div className="mx-auto h-16 w-16 bg-red-100 dark:bg-red-950 rounded-full flex items-center justify-center text-red-600 dark:text-red-400">
                 <XCircle className="h-10 w-10" />
               </div>
-              <h2 className="font-serif text-xl font-bold text-slate-950 dark:text-white">Document Revoked</h2>
+              <h2 className="font-serif text-xl font-bold text-foreground dark:text-white">Document Revoked</h2>
               <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 px-3 py-1 rounded-full border border-red-100 dark:border-red-900/50 inline-block font-semibold">
                 Invalidated by Administration
               </p>
@@ -86,48 +86,48 @@ export default function VerifyDocument() {
         {doc && (
           <>
             {/* Document Details Table */}
-            <div className="border border-slate-100 dark:border-slate-700 rounded-2xl overflow-hidden bg-slate-50/50 dark:bg-slate-900/20 text-sm">
-              <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
-                <FileText className="h-4 w-4 text-slate-500" />
+            <div className="border border-border dark:border-border rounded-2xl overflow-hidden bg-background/50 dark:bg-secondary/20 text-sm">
+              <div className="p-4 border-b border-border dark:border-border flex items-center gap-3">
+                <FileText className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground uppercase font-bold">Document Name</p>
-                  <p className="font-semibold truncate text-slate-800 dark:text-slate-200">{doc.name}</p>
+                  <p className="font-semibold truncate text-foreground dark:text-muted-foreground">{doc.name}</p>
                 </div>
               </div>
 
-              <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
-                <User className="h-4 w-4 text-slate-500" />
+              <div className="p-4 border-b border-border dark:border-border flex items-center gap-3">
+                <User className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground uppercase font-bold">Document Holder</p>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">{doc.profiles?.full_name || "N/A"}</p>
+                  <p className="font-semibold text-foreground dark:text-muted-foreground">{doc.profiles?.full_name || "N/A"}</p>
                 </div>
               </div>
 
-              <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
-                <Building className="h-4 w-4 text-slate-500" />
+              <div className="p-4 border-b border-border dark:border-border flex items-center gap-3">
+                <Building className="h-4 w-4 text-muted-foreground" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-muted-foreground uppercase font-bold">Linked Asset</p>
-                  <p className="font-semibold truncate text-slate-800 dark:text-slate-200">
+                  <p className="font-semibold truncate text-foreground dark:text-muted-foreground">
                     {doc.investment_properties?.title || doc.properties?.title || "N/A"}
                   </p>
                 </div>
               </div>
 
-              <div className="p-4 border-b border-slate-100 dark:border-slate-700 flex items-center gap-3">
-                <Calendar className="h-4 w-4 text-slate-500" />
+              <div className="p-4 border-b border-border dark:border-border flex items-center gap-3">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground uppercase font-bold">Registration Date</p>
-                  <p className="font-semibold text-slate-800 dark:text-slate-200">
+                  <p className="font-semibold text-foreground dark:text-muted-foreground">
                     {new Date(doc.created_at).toLocaleString()}
                   </p>
                 </div>
               </div>
 
               <div className="p-4 flex items-center gap-3">
-                <Hash className="h-4 w-4 text-slate-500" />
+                <Hash className="h-4 w-4 text-muted-foreground" />
                 <div>
                   <p className="text-xs text-muted-foreground uppercase font-bold">Verification Hash Code</p>
-                  <p className="font-mono font-bold text-xs text-slate-800 dark:text-slate-200">{doc.verification_code || "N/A"}</p>
+                  <p className="font-mono font-bold text-xs text-foreground dark:text-muted-foreground">{doc.verification_code || "N/A"}</p>
                 </div>
               </div>
             </div>
@@ -141,7 +141,7 @@ export default function VerifyDocument() {
 
         {/* Back navigation */}
         <div className="pt-2">
-          <Button onClick={() => navigate("/")} className="w-full rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold" variant="outline">
+          <Button onClick={() => navigate("/")} className="w-full rounded-xl bg-secondary hover:bg-slate-800 text-white font-bold" variant="outline">
             Return to Homepage
           </Button>
         </div>

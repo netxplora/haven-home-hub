@@ -168,7 +168,7 @@ export default function InvestHome() {
                 <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 text-white flex items-center justify-between">
                   <div>
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Historical Yield Range</p>
-                    <p className="font-serif text-xl sm:text-2xl font-bold text-emerald-400">9.2% – 14.5% APR</p>
+                    <p className="font-serif text-xl sm:text-2xl font-bold text-primary">9.2% – 14.5% APR</p>
                   </div>
                   <div className="text-right">
                     <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Asset Status</p>
@@ -212,7 +212,7 @@ export default function InvestHome() {
                 {user ? formatMoney(nav) : "$124,500.00"}
               </p>
               <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <ArrowUpRight className="h-3.5 w-3.5 text-emerald-600" /> Current Valuation
+                <ArrowUpRight className="h-3.5 w-3.5 text-primary" /> Current Valuation
               </p>
             </div>
 
@@ -228,7 +228,7 @@ export default function InvestHome() {
 
             <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
               <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Expected ROI / Yield</p>
-              <p className="font-serif text-2xl sm:text-3xl font-bold text-emerald-600">
+              <p className="font-serif text-2xl sm:text-3xl font-bold text-primary">
                 {user ? formatMoney(expectedRoi) : "$18,500.00"}
               </p>
               <p className="text-xs text-muted-foreground mt-2">

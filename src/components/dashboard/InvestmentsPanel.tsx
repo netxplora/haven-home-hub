@@ -487,7 +487,7 @@ export function InvestmentsPanel() {
                           <h4 className="font-serif font-bold text-foreground text-base">{inv.investment_properties?.title}</h4>
                           <p className="text-xs text-muted-foreground font-mono mt-0.5">ID: {inv.id.split('-')[0].toUpperCase()}</p>
                         </div>
-                        <Badge variant={isAssetMatured ? "default" : "outline"} className={isAssetMatured ? "bg-emerald-500 text-white" : "border-primary/20 text-primary"}>
+                        <Badge variant={isAssetMatured ? "default" : "outline"} className={isAssetMatured ? "bg-primary text-white" : "border-primary/20 text-primary"}>
                           {isAssetMatured ? "Matured" : `${progress}% Complete`}
                         </Badge>
                       </div>

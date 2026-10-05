@@ -271,7 +271,7 @@ export default function InvestPortfolioDetail() {
                     </Badge>
                   )}
                   {isMatured && (
-                    <Badge variant="outline" className="border-emerald-500/30 text-emerald-600 bg-emerald-50 uppercase tracking-wider text-[10px] flex items-center gap-1.5">
+                    <Badge variant="outline" className="border-primary/30 text-primary bg-accent uppercase tracking-wider text-[10px] flex items-center gap-1.5">
                       <Award className="w-3 h-3" />
                       Matured
                     </Badge>
@@ -728,7 +728,7 @@ export default function InvestPortfolioDetail() {
               </div>
               <div className="bg-card border border-border/50 rounded-xl p-4 shadow-sm">
                 <div className="flex items-center gap-2 mb-2">
-                  <div className="p-1.5 bg-emerald-500/10 rounded-lg"><Building2 className="w-3.5 h-3.5 text-emerald-600" /></div>
+                  <div className="p-1.5 bg-primary/10 rounded-lg"><Building2 className="w-3.5 h-3.5 text-primary" /></div>
                   <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground">Property Docs</p>
                 </div>
                 <p className="text-2xl font-bold font-serif text-foreground">{propertyDocuments.length}</p>
@@ -1061,8 +1061,8 @@ export default function InvestPortfolioDetail() {
             {propertyDocuments.filter((d: any) => !['contract_of_sale', 'grant_deed', 'purchase_receipt', 'allocation_letter'].includes(d.document_type) && !['contract of sale', 'grant deed', 'purchase receipt', 'allocation letter'].includes(d.title?.toLowerCase())).length > 0 && (
               <div className="bg-card border border-border/50 rounded-2xl shadow-sm overflow-hidden">
                 <div className="border-b border-border/50 px-8 py-5 flex items-center gap-3">
-                  <div className="p-2.5 bg-emerald-500/10 rounded-xl border border-emerald-500/20">
-                    <Building2 className="w-5 h-5 text-emerald-600" />
+                  <div className="p-2.5 bg-primary/10 rounded-xl border border-primary/20">
+                    <Building2 className="w-5 h-5 text-primary" />
                   </div>
                   <div>
                     <h4 className="font-serif text-lg font-bold text-foreground">Additional Property Documents</h4>
@@ -1073,7 +1073,7 @@ export default function InvestPortfolioDetail() {
                   {propertyDocuments.filter((d: any) => !['contract_of_sale', 'grant_deed', 'purchase_receipt', 'allocation_letter'].includes(d.document_type) && !['contract of sale', 'grant deed', 'purchase receipt', 'allocation letter'].includes(d.title?.toLowerCase())).map((doc: any) => (
                     <div key={doc.id} className="flex items-center justify-between p-5 md:px-8 hover:bg-muted/20 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="p-3 bg-emerald-500/10 rounded-xl text-emerald-600 shrink-0">
+                        <div className="p-3 bg-primary/10 rounded-xl text-primary shrink-0">
                           <FileText className="w-5 h-5" />
                         </div>
                         <div>

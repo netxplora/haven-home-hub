@@ -191,7 +191,7 @@ export function AdminReferrals() {
       case "pending_reward":
         return "bg-amber-500/10 text-amber-700 border-amber-500/20";
       case "approved":
-        return "bg-emerald-500/10 text-emerald-600 border-emerald-500/20";
+        return "bg-primary/10 text-primary border-primary/20";
       case "paid":
         return "bg-green-500/10 text-green-600 border-green-500/20";
       case "rejected":

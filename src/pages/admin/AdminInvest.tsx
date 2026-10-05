@@ -160,7 +160,7 @@ export function AdminInvest() {
         </div>
         <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Active Campaigns</p>
-          <p className="text-2xl font-bold mt-1 text-emerald-600">{activeCampaigns}</p>
+          <p className="text-2xl font-bold mt-1 text-primary">{activeCampaigns}</p>
         </div>
         <div className="bg-card rounded-xl border border-border/50 p-4 shadow-sm">
           <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Funding Raised</p>
@@ -262,7 +262,7 @@ export function AdminInvest() {
                       <Badge variant={p.status === "open" ? "default" : "secondary"} className={`rounded-md uppercase text-[9px] tracking-widest px-2 py-0.5 font-bold shrink-0 ${
                           p.status === 'open' ? 'bg-green-500/10 text-green-600 border-green-500/20' :
                           p.status === 'funded' || p.status === 'fully_funded' ? 'bg-blue-500/10 text-blue-600 border-blue-500/20' :
-                          p.status === 'roi_active' ? 'bg-emerald-500/10 text-emerald-600 border-emerald-500/20' :
+                          p.status === 'roi_active' ? 'bg-primary/10 text-primary border-primary/20' :
                           p.status === 'roi_paused' ? 'bg-amber-500/10 text-amber-600 border-amber-500/20' :
                           p.status === 'matured' ? 'bg-purple-500/10 text-purple-600 border-purple-500/20' :
                           p.status === 'closed' ? 'bg-gray-500/10 text-gray-500 border-gray-500/20' :
@@ -293,7 +293,7 @@ export function AdminInvest() {
 
                     <div className="pt-3 border-t border-border/50 flex gap-2 justify-end flex-wrap">
                       {(p.status === 'funded' || p.status === 'fully_funded') && (
-                        <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-emerald-600 border-emerald-200 hover:bg-emerald-50" onClick={() => activatePropertyRoi(p.id)}>
+                        <Button variant="outline" size="sm" className="h-10 text-sm font-medium flex items-center justify-center gap-1 px-4 text-primary border-primary/20 hover:bg-accent" onClick={() => activatePropertyRoi(p.id)}>
                           <Zap className="h-4 w-4" /> Activate ROI
                         </Button>
                       )}

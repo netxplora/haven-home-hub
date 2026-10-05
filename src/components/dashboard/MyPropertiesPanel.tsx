@@ -726,7 +726,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
                         <div className="relative w-full md:w-64 h-48 md:h-auto shrink-0 bg-accent overflow-hidden">
                           <LazyImage src={prop.cover_image_url || "/placeholder.svg"} aspectClass="" wrapperClassName="h-full w-full" className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105" alt={prop.title} />
                           <div className="absolute top-4 left-4">
-                            <Badge variant="outline" className="rounded-md shadow-sm font-bold backdrop-blur-md bg-white/90 border-white/20 text-emerald-700 bg-emerald-500/10 border-emerald-500/20 uppercase text-[9px] tracking-wider">
+                            <Badge variant="outline" className="rounded-md shadow-sm font-bold backdrop-blur-md bg-white/90 border-white/20 text-primary bg-primary/10 border-primary/20 uppercase text-[9px] tracking-wider">
                               <span className="flex items-center gap-1.5">
                                 <ShieldCheck className="h-3 w-3" />
                                 Certified Owner
@@ -779,7 +779,7 @@ export function MyPropertiesPanel({ userId }: { userId: string }) {
                             </div>
                             
                             <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto mt-4 sm:mt-0 justify-end">
-                              <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold text-emerald-700 hover:text-emerald-800 hover:bg-emerald-50 border-emerald-200" onClick={() => setSelectedPropertyForDocs({ id: prop.id, title: prop.title })}>
+                              <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold text-primary hover:text-primary hover:bg-accent border-primary/20" onClick={() => setSelectedPropertyForDocs({ id: prop.id, title: prop.title })}>
                                 <FileText className="mr-2 h-4 w-4" /> Title Deeds
                               </Button>
                               <Button variant="outline" size="sm" className="rounded-lg flex-1 sm:flex-none font-bold shadow-sm" asChild>

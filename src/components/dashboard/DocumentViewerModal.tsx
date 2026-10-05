@@ -103,10 +103,10 @@ export function DocumentViewerModal({ open, onOpenChange, document }: DocumentVi
           </div>
         </DialogHeader>
 
-        <DialogBody className="flex-1 overflow-y-auto p-0 relative bg-slate-50/50">
+        <DialogBody className="flex-1 overflow-y-auto p-0 relative bg-background/50">
           {isHtml ? (
             <div className="p-6 sm:p-10">
-              <div className="bg-white p-10 sm:p-14 rounded-none border-2 border-slate-200 shadow-md min-h-[600px] relative overflow-hidden mx-auto max-w-[800px]">
+              <div className="bg-white p-10 sm:p-14 rounded-none border-2 border-border shadow-md min-h-[600px] relative overflow-hidden mx-auto max-w-[800px]">
                 {/* Background Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0">
                   <ShieldCheck className="w-[400px] h-[400px]" />
@@ -118,16 +118,16 @@ export function DocumentViewerModal({ open, onOpenChange, document }: DocumentVi
                     <div className="flex items-center gap-3">
                       <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-8 w-auto" />
                       <div>
-                        <p className="text-[8px] uppercase tracking-widest text-slate-500 font-bold mt-0.5">Certified Legal Documentation</p>
+                        <p className="text-[8px] uppercase tracking-widest text-muted-foreground font-bold mt-0.5">Certified Legal Documentation</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-[9px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded">REF: {docRef}</p>
+                      <p className="text-[9px] font-mono font-bold text-muted-foreground bg-muted px-2 py-1 rounded">REF: {docRef}</p>
                     </div>
                   </div>
 
                   <div
-                    className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
+                    className="prose max-w-none text-foreground font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-border prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-foreground"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(document.metadata?.document_snapshot || document.metadata?.content_html || "") }}
                   />
                 </div>
@@ -143,7 +143,7 @@ export function DocumentViewerModal({ open, onOpenChange, document }: DocumentVi
               ) : error ? (
                 <div className="flex flex-col items-center justify-center text-center max-w-sm">
                   <AlertCircle className="h-10 w-10 text-destructive mb-3" />
-                  <p className="font-bold text-slate-800 mb-2">Preview Unavailable</p>
+                  <p className="font-bold text-foreground mb-2">Preview Unavailable</p>
                   <p className="text-sm text-muted-foreground">{error}</p>
                 </div>
               ) : signedUrl ? (
@@ -158,7 +158,7 @@ export function DocumentViewerModal({ open, onOpenChange, document }: DocumentVi
                     <div className="h-16 w-16 rounded-2xl bg-secondary flex items-center justify-center mb-4">
                       <Download className="h-8 w-8 text-muted-foreground" />
                     </div>
-                    <p className="font-bold text-slate-800 mb-2">No Inline Preview Available</p>
+                    <p className="font-bold text-foreground mb-2">No Inline Preview Available</p>
                     <p className="text-sm text-muted-foreground mb-6">
                       This file type ({fileExt.toUpperCase()}) cannot be previewed in the browser.
                     </p>

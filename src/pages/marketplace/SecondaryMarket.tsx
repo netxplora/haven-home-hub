@@ -66,7 +66,7 @@ export default function SecondaryMarket() {
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
             {/* Left Column: Context, Pitch, and Real-time Search */}
             <div className="lg:col-span-7 flex flex-col items-start">
-              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-5">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold uppercase tracking-wider mb-5">
                 <Activity className="h-3.5 w-3.5 animate-pulse" /> Peer-to-Peer Share Exchange
               </div>
 
@@ -117,7 +117,7 @@ export default function SecondaryMarket() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none" />
                 <div className="absolute bottom-0 inset-x-0 p-5 flex items-center justify-between text-white">
                   <div>
-                    <p className="text-xs uppercase tracking-wider text-emerald-400 font-semibold">Active Exchange</p>
+                    <p className="text-xs uppercase tracking-wider text-primary font-semibold">Active Exchange</p>
                     <p className="text-sm font-medium text-white/90 mt-0.5">Verified Institutional Grade Units</p>
                   </div>
                   <div className="text-right">

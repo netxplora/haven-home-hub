@@ -303,7 +303,7 @@ export default function Home() {
 
       {/* 5. INVESTMENT OPPORTUNITIES (FRACTIONAL PREVIEW) */}
       <section className="container-wide section-gap">
-        <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl min-h-[460px] flex items-center group bg-[#0d120e]">
+        <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl min-h-[460px] flex items-center group bg-secondary">
           <LazyImage
             src={investProp1}
             alt="Real Estate Fractional Investments"
@@ -330,7 +330,7 @@ export default function Home() {
               </div>
               <div className="h-10 w-px bg-white/15 hidden sm:block"></div>
               <div className="flex flex-col">
-                 <div className="text-3xl font-serif font-bold text-emerald-400">12.4%</div>
+                 <div className="text-3xl font-serif font-bold text-primary">12.4%</div>
                  <div className="text-[10px] text-white/60 mt-1 uppercase tracking-widest font-semibold">Avg Target Yield</div>
               </div>
               <div className="h-10 w-px bg-white/15 hidden sm:block"></div>

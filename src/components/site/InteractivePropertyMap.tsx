@@ -58,7 +58,7 @@ function getPoiStyle(type: string) {
   if (t.includes("mall") || t.includes("shopping") || t.includes("store") || t.includes("supermarket"))
     return { bg: "bg-amber-500", fill: "#f59e0b" };
   if (t.includes("park") || t.includes("garden") || t.includes("recreation"))
-    return { bg: "bg-emerald-600", fill: "#059669" };
+    return { bg: "bg-primary", fill: "#059669" };
   return { bg: "bg-slate-600", fill: "#475569" };
 }
 

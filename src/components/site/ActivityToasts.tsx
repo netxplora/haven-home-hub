@@ -121,7 +121,7 @@ export function ActivityToasts() {
 
   const getIcon = (type: string) => {
     switch (type) {
-      case 'purchase': return <Key className="h-4 w-4 text-emerald-500" />;
+      case 'purchase': return <Key className="h-4 w-4 text-primary" />;
       case 'rent': return <MapPin className="h-4 w-4 text-blue-500" />;
       case 'fractional': return <TrendingUp className="h-4 w-4 text-primary" />;
       case 'reservation': return <Star className="h-4 w-4 text-yellow-500" />;
@@ -173,7 +173,7 @@ export function ActivityToasts() {
         
         <div className="flex-1 min-w-0">
           <p className="text-xs text-muted-foreground font-semibold flex items-center gap-1.5 uppercase tracking-wider mb-0.5">
-            Real-Time Activity <span className="h-1 w-1 rounded-full bg-emerald-500 animate-pulse" />
+            Real-Time Activity <span className="h-1 w-1 rounded-full bg-primary animate-pulse" />
           </p>
           <p className="text-sm font-medium text-foreground leading-snug line-clamp-2">
             {currentToast.message}

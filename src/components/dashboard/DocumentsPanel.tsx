@@ -333,7 +333,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                   {requiredDocs.length === 0 ? (
                     <div className="rounded-2xl border border-border bg-card p-8 flex flex-col items-center justify-center text-center shadow-soft">
                       <CheckCircle2 className="h-10 w-10 text-primary mb-3" />
-                      <p className="font-bold text-slate-800">All caught up!</p>
+                      <p className="font-bold text-foreground">All caught up!</p>
                       <p className="text-sm text-muted-foreground mt-1">You have no pending documents to sign.</p>
                     </div>
                   ) : (
@@ -345,7 +345,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <AlertCircle className="h-5 w-5 text-destructive" />
                             </div>
                             <div>
-                              <p className="font-bold text-slate-800">{doc.name}</p>
+                              <p className="font-bold text-foreground">{doc.name}</p>
                               <p className="text-xs text-muted-foreground mt-0.5">Please review and sign this agreement to fully authorize your investments.</p>
                             </div>
                           </div>
@@ -377,7 +377,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <FileText className="h-5 w-5 text-primary" />
                             </div>
                             <div>
-                              <p className="font-bold text-slate-800">{doc.document_templates?.name || "Document"}</p>
+                              <p className="font-bold text-foreground">{doc.document_templates?.name || "Document"}</p>
                               <p className="text-xs text-muted-foreground mt-0.5">Signed on {new Date(doc.signed_at).toLocaleString()}</p>
                             </div>
                           </div>
@@ -423,7 +423,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             ) : propertyDocs.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-12 text-center flex flex-col items-center bg-card shadow-soft">
                 <Folder className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                <p className="font-bold text-slate-800">No Deeds Generated Yet</p>
+                <p className="font-bold text-foreground">No Deeds Generated Yet</p>
                 <p className="text-sm text-muted-foreground max-w-sm mt-1 leading-relaxed">
                   Your dynamic legal documents are auto-generated when your payment checks clear.
                 </p>
@@ -449,11 +449,11 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                               <FileText className="h-6 w-6" />
                             </div>
                             <div>
-                              <h4 className="font-bold text-slate-800 leading-snug">{doc.name}</h4>
+                              <h4 className="font-bold text-foreground leading-snug">{doc.name}</h4>
                               <p className="text-xs text-muted-foreground font-medium mt-1">
                                 Asset: {doc.investment_properties?.title || doc.properties?.title || "Property Unit"}
                               </p>
-                              <p className="text-[10px] text-slate-400 font-mono mt-1">Reference: {docRef}</p>
+                              <p className="text-[10px] text-muted-foreground font-mono mt-1">Reference: {docRef}</p>
                             </div>
                           </div>
 
@@ -466,50 +466,50 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                         </div>
 
                         {/* Timeline System */}
-                        <div className="bg-slate-50 rounded-xl p-4 border border-slate-100/80">
-                          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-3">Document Timeline Tracking</p>
+                        <div className="bg-background rounded-xl p-4 border border-border/80">
+                          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">Document Timeline Tracking</p>
                           <div className="flex items-center justify-between relative max-w-lg">
                             {/* Stepper line */}
-                            <div className="absolute top-[9px] left-3 right-3 h-[2px] bg-slate-200 -z-0" />
+                            <div className="absolute top-[9px] left-3 right-3 h-[2px] bg-muted -z-0" />
 
                             <div className="flex flex-col items-center relative z-10">
                               <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold text-white", isRevoked ? "bg-destructive" : "bg-primary")}>
                                 {isRevoked ? "✕" : "✓"}
                               </div>
-                              <span className="text-[10px] font-bold text-slate-700 mt-1">Generated</span>
+                              <span className="text-[10px] font-bold text-foreground mt-1">Generated</span>
                             </div>
 
                             <div className="flex flex-col items-center relative z-10">
                               <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
                                 doc.status === 'pending' || doc.status === 'processing'
-                                  ? "bg-slate-200 text-slate-400"
+                                  ? "bg-muted text-muted-foreground"
                                   : isRevoked ? "bg-destructive text-white" : "bg-primary text-white"
                               )}>
                                 {doc.status === 'pending' || doc.status === 'processing' ? "2" : "✓"}
                               </div>
-                              <span className="text-[10px] font-bold text-slate-700 mt-1">Approved</span>
+                              <span className="text-[10px] font-bold text-foreground mt-1">Approved</span>
                             </div>
 
                             <div className="flex flex-col items-center relative z-10">
                               <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
                                 ['verified', 'delivered'].includes(doc.status) && !isRevoked
                                   ? "bg-primary text-white"
-                                  : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
+                                  : isRevoked ? "bg-destructive text-white" : "bg-muted text-muted-foreground"
                               )}>
                                 {['verified', 'delivered'].includes(doc.status) && !isRevoked ? "✓" : "3"}
                               </div>
-                              <span className="text-[10px] font-bold text-slate-700 mt-1">Delivered</span>
+                              <span className="text-[10px] font-bold text-foreground mt-1">Delivered</span>
                             </div>
 
                             <div className="flex flex-col items-center relative z-10">
                               <div className={cn("h-5 w-5 rounded-full flex items-center justify-center text-[10px] font-bold",
                                 doc.status === 'verified' && !isRevoked
                                   ? "bg-primary text-white"
-                                  : isRevoked ? "bg-destructive text-white" : "bg-slate-200 text-slate-400"
+                                  : isRevoked ? "bg-destructive text-white" : "bg-muted text-muted-foreground"
                               )}>
                                 {doc.status === 'verified' && !isRevoked ? "✓" : "4"}
                               </div>
-                              <span className="text-[10px] font-bold text-slate-700 mt-1">Verified</span>
+                              <span className="text-[10px] font-bold text-foreground mt-1">Verified</span>
                             </div>
                           </div>
                         </div>
@@ -614,7 +614,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             ) : certificates.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center flex flex-col items-center bg-card shadow-soft">
                 <ShieldCheck className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                <p className="font-bold text-slate-800">No Certificates Issued</p>
+                <p className="font-bold text-foreground">No Certificates Issued</p>
                 <p className="text-sm text-muted-foreground max-w-sm mt-1 leading-relaxed">
                   Certificates are cryptographically verified upon the validation of investment transactions.
                 </p>
@@ -671,7 +671,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
             ) : receipts.length === 0 ? (
               <div className="rounded-2xl border border-dashed border-border p-10 text-center flex flex-col items-center bg-card shadow-soft">
                 <FileText className="h-10 w-10 text-muted-foreground/40 mb-3" />
-                <p className="font-bold text-slate-800">No Receipts Found</p>
+                <p className="font-bold text-foreground">No Receipts Found</p>
                 <p className="text-sm text-muted-foreground mt-1">Transaction receipts appear here immediately after payment processing.</p>
               </div>
             ) : (
@@ -687,7 +687,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <p className="font-bold truncate text-slate-800">{receipt.metadata?.property_title || receipt.type}</p>
+                          <p className="font-bold truncate text-foreground">{receipt.metadata?.property_title || receipt.type}</p>
                           <Badge variant="secondary" className="text-[10px] uppercase font-bold">{receipt.type}</Badge>
                         </div>
                         <p className="text-xs text-muted-foreground font-mono mt-1">REC: {receipt.receipt_id}</p>
@@ -696,7 +696,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
                     <div className="flex items-center justify-between sm:justify-end gap-6 w-full sm:w-auto border-t sm:border-0 border-border/50 pt-3 sm:pt-0">
                       <div className="text-left sm:text-right">
                         <p className="font-serif font-bold text-primary">{formatMoney(receipt.amount_paid, receipt.currency)}</p>
-                        <p className="text-[10px] text-slate-400 font-medium">{new Date(receipt.created_at).toLocaleDateString()}</p>
+                        <p className="text-[10px] text-muted-foreground font-medium">{new Date(receipt.created_at).toLocaleDateString()}</p>
                       </div>
                       <Button variant="ghost" size="icon" className="shrink-0 text-muted-foreground hover:text-primary">
                         <Download className="h-4 w-4" />
@@ -776,7 +776,7 @@ export function DocumentsPanel({ userId }: { userId: string }) {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-bold text-slate-700">Select Property / Asset</label>
+              <label className="text-sm font-bold text-foreground">Select Property / Asset</label>
               <select
                 className="w-full flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                 value={selectedPropertyId}

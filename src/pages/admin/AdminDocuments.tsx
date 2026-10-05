@@ -516,7 +516,7 @@ export function AdminDocuments() {
             </Button>
           )}
           {activeSubTab === "signatures" && (
-            <Button onClick={() => setSigModalOpen(true)} className="rounded-xl bg-slate-900 hover:bg-slate-800 text-white">
+            <Button onClick={() => setSigModalOpen(true)} className="rounded-xl bg-secondary hover:bg-slate-800 text-white">
               <Plus className="h-4 w-4 mr-2" /> Upload Seal / Signature
             </Button>
           )}
@@ -663,12 +663,12 @@ export function AdminDocuments() {
                             : doc.status === 'revoked' 
                               ? "bg-destructive/10 text-destructive border-destructive/20 capitalize font-bold"
                               : doc.status === 'deleted'
-                                ? "bg-slate-100 text-slate-400 border-slate-200 capitalize font-bold line-through"
+                                ? "bg-muted text-muted-foreground border-border capitalize font-bold line-through"
                                 : "bg-amber-500/10 text-amber-700 border-amber-500/20 capitalize font-bold"
                         }>
                           {doc.status}
                         </Badge>
-                        <p className="text-[10px] font-mono text-slate-500">Ref: {doc.metadata?.reference_id || doc.id.split('-')[0].toUpperCase()}</p>
+                        <p className="text-[10px] font-mono text-muted-foreground">Ref: {doc.metadata?.reference_id || doc.id.split('-')[0].toUpperCase()}</p>
                       </div>
 
                       <div className="flex items-center justify-end gap-1 border-t border-border/50 pt-3">
@@ -692,7 +692,7 @@ export function AdminDocuments() {
                             {doc.file_path.startsWith('generated://') && (
                               <>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Preview" onClick={() => window.open(`/print-document/${doc.id}`, '_blank')}>
-                                  <Eye className="h-4 w-4 text-slate-700" />
+                                  <Eye className="h-4 w-4 text-foreground" />
                                 </Button>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-lg" title="Regenerate" onClick={() => handleRegenerate(doc)}>
                                   <RotateCcw className="h-4 w-4 text-amber-600" />
@@ -753,10 +753,10 @@ export function AdminDocuments() {
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <p className="font-semibold text-slate-800">{doc.profiles?.full_name || "Unknown"}</p>
+                            <p className="font-semibold text-foreground">{doc.profiles?.full_name || "Unknown"}</p>
                             <p className="text-xs text-muted-foreground">{doc.profiles?.email}</p>
                           </td>
-                          <td className="px-6 py-4 font-medium text-slate-700">
+                          <td className="px-6 py-4 font-medium text-foreground">
                             {doc.investment_properties?.title || doc.properties?.title || "N/A"}
                           </td>
                           <td className="px-6 py-4">
@@ -767,12 +767,12 @@ export function AdminDocuments() {
                                   : doc.status === 'revoked' 
                                     ? "bg-destructive/10 text-destructive border-destructive/20 capitalize font-bold"
                                     : doc.status === 'deleted'
-                                      ? "bg-slate-100 text-slate-400 border-slate-200 capitalize font-bold line-through"
+                                      ? "bg-muted text-muted-foreground border-border capitalize font-bold line-through"
                                       : "bg-amber-500/10 text-amber-700 border-amber-500/20 capitalize font-bold"
                               }>
                                 {doc.status}
                               </Badge>
-                              <p className="text-[10px] font-mono text-slate-500">Ref: {doc.metadata?.reference_id || doc.id.split('-')[0].toUpperCase()}</p>
+                              <p className="text-[10px] font-mono text-muted-foreground">Ref: {doc.metadata?.reference_id || doc.id.split('-')[0].toUpperCase()}</p>
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">
@@ -798,7 +798,7 @@ export function AdminDocuments() {
                               {doc.file_path.startsWith('generated://') && (
                                 <>
                                   <Button variant="ghost" size="icon" className="rounded-lg" title="Preview Document" onClick={() => window.open(`/print-document/${doc.id}`, '_blank')}>
-                                    <Eye className="h-4 w-4 text-slate-700" />
+                                    <Eye className="h-4 w-4 text-foreground" />
                                   </Button>
                                   <Button variant="ghost" size="icon" className="rounded-lg" title="Regenerate Document" onClick={() => handleRegenerate(doc)}>
                                     <RotateCcw className="h-4 w-4 text-amber-600" />
@@ -842,7 +842,7 @@ export function AdminDocuments() {
                   <div>
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div>
-                        <h4 className="font-bold text-lg font-serif text-slate-800">{template.name}</h4>
+                        <h4 className="font-bold text-lg font-serif text-foreground">{template.name}</h4>
                         <span className="text-[10px] bg-secondary/80 text-muted-foreground uppercase font-bold tracking-wider px-2 py-0.5 rounded-md mt-1 inline-block">
                           Type: {template.document_type.replace(/_/g, ' ')}
                         </span>
@@ -855,8 +855,8 @@ export function AdminDocuments() {
                       {template.content_html}
                     </div>
                     <div className="flex items-center gap-4 mt-4 text-[11px] text-muted-foreground font-medium">
-                      <span>Signature: <strong className="text-slate-700">{template.signature_placement?.signature || 'left'}</strong></span>
-                      <span>Seal: <strong className="text-slate-700">{template.signature_placement?.seal || 'right'}</strong></span>
+                      <span>Signature: <strong className="text-foreground">{template.signature_placement?.signature || 'left'}</strong></span>
+                      <span>Seal: <strong className="text-foreground">{template.signature_placement?.seal || 'right'}</strong></span>
                     </div>
                   </div>
 
@@ -893,13 +893,13 @@ export function AdminDocuments() {
                     </Badge>
                   </div>
                   <div>
-                    <h4 className="font-bold text-slate-800 pr-16">{sig.name}</h4>
+                    <h4 className="font-bold text-foreground pr-16">{sig.name}</h4>
                     <span className="text-[10px] bg-secondary/80 text-muted-foreground uppercase font-bold tracking-wider px-2 py-0.5 rounded-md mt-1 inline-block">
                       {sig.type}
                     </span>
                     
                     {/* Preview Box */}
-                    <div className="mt-4 bg-slate-50 border border-slate-100 rounded-xl h-24 flex items-center justify-center p-3 relative overflow-hidden">
+                    <div className="mt-4 bg-background border border-border rounded-xl h-24 flex items-center justify-center p-3 relative overflow-hidden">
                       <SignatureAssetPreview filePath={sig.file_path} />
                     </div>
                   </div>
@@ -909,7 +909,7 @@ export function AdminDocuments() {
                       variant="outline" 
                       size="sm" 
                       onClick={() => handleToggleSignature(sig)} 
-                      className={`rounded-lg font-bold text-xs h-8 ${sig.is_active ? 'text-slate-500' : 'text-primary hover:text-primary'}`}
+                      className={`rounded-lg font-bold text-xs h-8 ${sig.is_active ? 'text-muted-foreground' : 'text-primary hover:text-primary'}`}
                     >
                       {sig.is_active ? "Deactivate" : "Set Active"}
                     </Button>
@@ -966,20 +966,20 @@ export function AdminDocuments() {
                               "font-bold text-[10px] tracking-widest",
                               log.action === 'DELETED' ? "bg-red-50 text-red-700 border-red-200" :
                               log.action === 'RECOVERED' ? "bg-green-50 text-green-700 border-green-200" :
-                              "bg-slate-50 text-slate-700 border-slate-200"
+                              "bg-background text-foreground border-border"
                             )}>
                               {log.action}
                             </Badge>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="font-medium text-slate-800">{log.user_documents?.name || "Unknown Document"}</div>
+                            <div className="font-medium text-foreground">{log.user_documents?.name || "Unknown Document"}</div>
                             <div className="text-[10px] text-muted-foreground uppercase">{log.user_documents?.document_type?.replace(/_/g, ' ')}</div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="font-medium">{log.profiles?.full_name || "Unknown"}</div>
                             <div className="text-[10px] text-muted-foreground">{log.profiles?.email}</div>
                           </td>
-                          <td className="px-6 py-4 text-slate-600">
+                          <td className="px-6 py-4 text-muted-foreground">
                             {log.action_user?.full_name || "System"}
                           </td>
                           <td className="px-6 py-4 text-right">
@@ -1078,7 +1078,7 @@ export function AdminDocuments() {
       {/* MODAL: Add/Edit Template (Live Editor) */}
       <Dialog open={templateModalOpen} onOpenChange={setTemplateModalOpen}>
         <DialogContent className="max-w-[95vw] w-full max-h-[95vh] h-full overflow-hidden rounded-none sm:rounded-2xl border-border/40 p-0 flex flex-col">
-          <DialogHeader className="p-6 border-b border-border/40 shrink-0 bg-slate-50">
+          <DialogHeader className="p-6 border-b border-border/40 shrink-0 bg-background">
             <DialogTitle className="font-serif text-2xl flex items-center gap-3">
               <Edit3 className="h-6 w-6 text-primary" />
               {editingTemplate ? "Live Document Editor" : "New Document Template"}
@@ -1087,10 +1087,10 @@ export function AdminDocuments() {
           
           <div className="flex-1 overflow-hidden flex flex-col md:flex-row">
             {/* Left side: Editor Form */}
-            <div className="w-full md:w-[450px] shrink-0 border-r border-border/40 bg-slate-50 p-6 overflow-y-auto space-y-6">
+            <div className="w-full md:w-[450px] shrink-0 border-r border-border/40 bg-background p-6 overflow-y-auto space-y-6">
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs uppercase font-bold text-slate-500">Template Title</label>
+                  <label className="text-xs uppercase font-bold text-muted-foreground">Template Title</label>
                   <Input 
                     placeholder="e.g., Land Allocation Letter" 
                     value={templateName}
@@ -1099,7 +1099,7 @@ export function AdminDocuments() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase font-bold text-slate-500">Assigned Document Type</label>
+                  <label className="text-xs uppercase font-bold text-muted-foreground">Assigned Document Type</label>
                   <Select value={templateType} onValueChange={setTemplateType} disabled={!!editingTemplate}>
                     <SelectTrigger className="rounded-xl bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -1123,30 +1123,30 @@ export function AdminDocuments() {
 
               <div className="space-y-2 flex-1 flex flex-col">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs uppercase font-bold text-slate-500">HTML Template Source</label>
+                  <label className="text-xs uppercase font-bold text-muted-foreground">HTML Template Source</label>
                   <span className="text-[10px] text-primary font-bold px-2 py-0.5 bg-primary/10 rounded-full">Live Preview Active</span>
                 </div>
                 <Textarea 
                   placeholder="<h1>Document Title</h1><p>This certifies that {{investor_name}}...</p>" 
                   value={templateHtml}
                   onChange={(e) => setTemplateHtml(e.target.value)}
-                  className="font-mono text-[11px] min-h-[350px] h-full resize-none rounded-xl bg-slate-900 text-green-400 focus-visible:ring-primary p-4 leading-relaxed"
+                  className="font-mono text-[11px] min-h-[350px] h-full resize-none rounded-xl bg-secondary text-green-400 focus-visible:ring-primary p-4 leading-relaxed"
                   spellCheck={false}
                 />
               </div>
 
-              <div className="bg-white p-4 rounded-xl border border-slate-200">
-                <h4 className="text-[10px] uppercase font-bold text-slate-500 mb-2 border-b pb-2">Available Variables</h4>
+              <div className="bg-white p-4 rounded-xl border border-border">
+                <h4 className="text-[10px] uppercase font-bold text-muted-foreground mb-2 border-b pb-2">Available Variables</h4>
                 <div className="flex flex-wrap gap-1">
                   {["{{company_name}}", "{{company_name_upper}}", "{{investor_name}}", "{{investor_email}}", "{{investor_phone}}", "{{property_name}}", "{{property_location}}", "{{purchase_amount}}", "{{amount_paid}}", "{{outstanding_balance}}", "{{payment_method}}", "{{issue_date}}", "{{document_reference}}", "{{verification_code}}", "{{units_owned}}", "{{amount_invested}}", "{{admin_signature}}", "{{company_seal}}", "{{company_logo}}", "{{ownership_details}}", "{{investment_details}}"].map(v => (
-                    <code key={v} className="text-[9px] text-slate-700 bg-slate-100 border border-slate-200 px-1.5 py-0.5 rounded shadow-sm hover:bg-slate-200 cursor-copy" onClick={() => {navigator.clipboard.writeText(v); toast.success("Copied!");}}>{v}</code>
+                    <code key={v} className="text-[9px] text-foreground bg-muted border border-border px-1.5 py-0.5 rounded shadow-sm hover:bg-muted cursor-copy" onClick={() => {navigator.clipboard.writeText(v); toast.success("Copied!");}}>{v}</code>
                   ))}
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs uppercase font-bold text-slate-500">Signature Align</label>
+                  <label className="text-xs uppercase font-bold text-muted-foreground">Signature Align</label>
                   <Select value={templateSignatureX} onValueChange={setTemplateSignatureX}>
                     <SelectTrigger className="rounded-xl bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -1157,7 +1157,7 @@ export function AdminDocuments() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs uppercase font-bold text-slate-500">Seal Align</label>
+                  <label className="text-xs uppercase font-bold text-muted-foreground">Seal Align</label>
                   <Select value={templateSealX} onValueChange={setTemplateSealX}>
                     <SelectTrigger className="rounded-xl bg-white"><SelectValue /></SelectTrigger>
                     <SelectContent className="rounded-xl">
@@ -1171,8 +1171,8 @@ export function AdminDocuments() {
             </div>
 
             {/* Right side: Live Preview rendering */}
-            <div className="flex-1 bg-slate-200 overflow-y-auto p-4 md:p-10 flex justify-center custom-scrollbar shadow-inner">
-              <div className="w-full max-w-[800px] bg-white text-slate-900 p-8 md:p-14 border border-slate-300 shadow-xl min-h-[1123px] relative overflow-hidden h-fit">
+            <div className="flex-1 bg-muted overflow-y-auto p-4 md:p-10 flex justify-center custom-scrollbar shadow-inner">
+              <div className="w-full max-w-[800px] bg-white text-foreground p-8 md:p-14 border border-slate-300 shadow-xl min-h-[1123px] relative overflow-hidden h-fit">
                 {/* Background Watermark */}
                 <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none z-0">
                   <ShieldCheck className="w-[500px] h-[500px]" />
@@ -1189,24 +1189,24 @@ export function AdminDocuments() {
                         </div>
                         <div>
                           <img src={brand.logo_url || "/logo.png"} alt={brand.platform_name} className="h-8 w-auto" />
-                          <p className="text-[9px] uppercase tracking-widest text-slate-500 font-bold mt-1">Certified Legal Documentation</p>
+                          <p className="text-[9px] uppercase tracking-widest text-muted-foreground font-bold mt-1">Certified Legal Documentation</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <p className="text-[10px] font-mono font-bold text-slate-600 bg-slate-100 px-2 py-1 rounded shadow-inner">REF: PREVIEW-001</p>
+                        <p className="text-[10px] font-mono font-bold text-muted-foreground bg-muted px-2 py-1 rounded shadow-inner">REF: PREVIEW-001</p>
                       </div>
                     </div>
 
                     {/* Editor Content Injected Here */}
                     <div 
-                      className="prose max-w-none text-slate-800 font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-slate-200 prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-slate-900"
+                      className="prose max-w-none text-foreground font-serif text-sm leading-loose text-justify prose-headings:font-serif prose-headings:uppercase prose-headings:tracking-widest prose-h2:text-xl prose-h2:font-black prose-h2:text-center prose-h2:border-b prose-h2:border-border prose-h2:pb-4 prose-h2:mb-8 prose-h3:text-md prose-h3:font-bold prose-h3:mt-8 prose-h3:mb-3 prose-p:mb-4 prose-ul:list-disc prose-ul:pl-6 prose-li:pl-2 prose-strong:font-bold prose-strong:text-foreground"
                       dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(templateHtml || "<p class='text-muted-foreground italic text-center py-20'>No content provided. Start typing in the HTML source editor to see a live preview.</p>") }} 
                     />
                   </div>
 
                   {/* Dummy Footer for context */}
-                  <div className="mt-16 pt-6 border-t-[3px] border-double border-slate-800 bg-slate-50 p-6 rounded-none relative z-10">
-                     <p className="text-[10px] text-center uppercase tracking-widest font-bold text-slate-400">Footer & Signatures automatically appended during generation</p>
+                  <div className="mt-16 pt-6 border-t-[3px] border-double border-slate-800 bg-background p-6 rounded-none relative z-10">
+                     <p className="text-[10px] text-center uppercase tracking-widest font-bold text-muted-foreground">Footer & Signatures automatically appended during generation</p>
                   </div>
                 </div>
               </div>
@@ -1231,7 +1231,7 @@ export function AdminDocuments() {
           </DialogHeader>
           <div className="space-y-4 pt-4">
             <div className="space-y-2">
-              <label className="text-xs uppercase font-bold text-slate-500">Asset Type</label>
+              <label className="text-xs uppercase font-bold text-muted-foreground">Asset Type</label>
               <Select value={sigType} onValueChange={(val: any) => setSigType(val)}>
                 <SelectTrigger className="rounded-xl"><SelectValue /></SelectTrigger>
                 <SelectContent className="rounded-xl">
@@ -1242,7 +1242,7 @@ export function AdminDocuments() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs uppercase font-bold text-slate-500">Signee Name / Title</label>
+              <label className="text-xs uppercase font-bold text-muted-foreground">Signee Name / Title</label>
               <Input 
                 placeholder="e.g., Executive Director's Signature" 
                 value={sigName}
@@ -1252,7 +1252,7 @@ export function AdminDocuments() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-xs uppercase font-bold text-slate-500">Upload Image File</label>
+              <label className="text-xs uppercase font-bold text-muted-foreground">Upload Image File</label>
               <Input 
                 type="file" 
                 accept="image/png, image/svg+xml"
@@ -1262,7 +1262,7 @@ export function AdminDocuments() {
               <p className="text-[10px] text-muted-foreground">Please upload a clean, high-resolution PNG with transparent background.</p>
             </div>
 
-            <Button onClick={handleUploadSignature} disabled={submitting} className="w-full mt-4 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold">
+            <Button onClick={handleUploadSignature} disabled={submitting} className="w-full mt-4 rounded-xl bg-secondary hover:bg-slate-800 text-white font-bold">
               {submitting ? "Uploading Asset..." : "Save Asset"}
             </Button>
           </div>
@@ -1280,7 +1280,7 @@ export function AdminDocuments() {
               <p className="text-sm text-muted-foreground">No history available for this template.</p>
             ) : (
               templateHistory.map((rev: any) => (
-                <div key={rev.id} className="p-4 border rounded-xl bg-slate-50">
+                <div key={rev.id} className="p-4 border rounded-xl bg-background">
                   <div className="flex justify-between items-center mb-2">
                     <Badge>v{rev.version}</Badge>
                     <span className="text-xs text-muted-foreground">{new Date(rev.created_at).toLocaleString()}</span>
@@ -1300,16 +1300,16 @@ export function AdminDocuments() {
         <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto p-0 border-0 bg-transparent shadow-none">
           {previewTemplate && (
             <div className="bg-white rounded-xl shadow-2xl overflow-hidden relative">
-              <div className="bg-slate-900 text-white p-4 flex justify-between items-center sticky top-0 z-50">
+              <div className="bg-secondary text-white p-4 flex justify-between items-center sticky top-0 z-50">
                 <div>
                   <h3 className="font-bold">Live Template Preview</h3>
-                  <p className="text-xs text-slate-400">Viewing: {previewTemplate.name}</p>
+                  <p className="text-xs text-muted-foreground">Viewing: {previewTemplate.name}</p>
                 </div>
                 <Button variant="ghost" size="sm" className="hover:bg-slate-800 text-white" onClick={() => setPreviewModalOpen(false)}>
                   Close
                 </Button>
               </div>
-              <div className="p-8 prose max-w-none font-serif text-sm leading-loose text-justify text-slate-800 bg-white">
+              <div className="p-8 prose max-w-none font-serif text-sm leading-loose text-justify text-foreground bg-white">
                 <div dangerouslySetInnerHTML={{ 
                   __html: DOMPurify.sanitize(previewTemplate.content_html
                     .replace(/{{investor_name}}/g, "John Doe")
@@ -1372,6 +1372,6 @@ function SignatureAssetPreview({ filePath }: { filePath: string }) {
     enabled: !!filePath,
   });
 
-  if (!url) return <Loader2 className="h-5 w-5 animate-spin text-slate-400" />;
+  if (!url) return <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />;
   return <img src={url} alt="Signature Preview" className="max-h-20 max-w-full object-contain" />;
 }

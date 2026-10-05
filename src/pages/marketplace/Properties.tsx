@@ -569,7 +569,7 @@ export default function Properties() {
                       <Select value={minWalkScore || "any"} onValueChange={(v) => update("minWalkScore", v === "any" ? "" : v)}>
                         <SelectTrigger className="h-11">
                           <div className="flex items-center gap-2">
-                            <MapPin className="h-3.5 w-3.5 text-emerald-500" />
+                            <MapPin className="h-3.5 w-3.5 text-primary" />
                             <SelectValue placeholder="Any" />
                           </div>
                         </SelectTrigger>

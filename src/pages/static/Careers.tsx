@@ -162,7 +162,7 @@ export default function Careers() {
       {/* Hero Type E: People & Culture Split Hero */}
       <section className="relative bg-white dark:bg-background overflow-hidden border-b border-border pt-20">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-emerald-50/60 dark:bg-emerald-950/20" />
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/60 dark:bg-secondary/20" />
         </div>
 
         <div className="container-wide relative z-10">
@@ -170,7 +170,7 @@ export default function Careers() {
 
             {/* Left: Role & Culture Pitch */}
             <div className="lg:col-span-6 flex flex-col justify-center py-16 lg:py-24 pr-0 lg:pr-8">
-              <Badge className="mb-5 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border border-emerald-500/25 text-xs font-semibold uppercase tracking-widest w-fit">
+              <Badge className="mb-5 bg-primary/10 text-primary dark:text-primary border border-primary/25 text-xs font-semibold uppercase tracking-widest w-fit">
                 Career Opportunities
               </Badge>
               <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold tracking-tight text-foreground leading-[1.15]">
@@ -181,7 +181,7 @@ export default function Careers() {
               </p>
               <div className="mt-8 flex flex-col sm:flex-row gap-4">
                 {settings?.cta_enabled !== false && (
-                  <Button size="lg" className="bg-emerald-600 hover:bg-emerald-700 text-white h-12 px-8 font-semibold" asChild>
+                  <Button size="lg" className="bg-primary hover:bg-primary/90 text-white h-12 px-8 font-semibold" asChild>
                     <a href={settings?.cta_link || "#openings"}>{settings?.cta_text || "View Open Positions"}</a>
                   </Button>
                 )}
@@ -195,15 +195,15 @@ export default function Careers() {
               {/* Trust indicators */}
               <div className="mt-10 pt-8 border-t border-border flex flex-wrap gap-6 text-sm text-muted-foreground">
                 <span className="flex items-center gap-2">
-                  <Briefcase className="h-4 w-4 text-emerald-600" />
+                  <Briefcase className="h-4 w-4 text-primary" />
                   Full-time & Remote roles
                 </span>
                 <span className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
+                  <CheckCircle2 className="h-4 w-4 text-primary" />
                   Competitive packages
                 </span>
                 <span className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4 text-emerald-600" />
+                  <MapPin className="h-4 w-4 text-primary" />
                   Multiple locations
                 </span>
               </div>
@@ -220,7 +220,7 @@ export default function Careers() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/50 via-transparent to-transparent" />
                 <div className="absolute bottom-0 inset-x-0 p-6">
-                  <p className="text-xs uppercase tracking-wider text-emerald-300 font-semibold">Our Team</p>
+                  <p className="text-xs uppercase tracking-wider text-primary font-semibold">Our Team</p>
                   <p className="text-sm text-white/90 mt-1 font-sans">People with expertise and a commitment to client outcomes.</p>
                 </div>
               </div>

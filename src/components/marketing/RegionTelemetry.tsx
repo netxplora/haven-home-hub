@@ -24,7 +24,7 @@ export function RegionTelemetry() {
   if (isLoading || regions.length === 0) return null;
 
   return (
-    <section className="py-24 bg-slate-50 dark:bg-slate-950 border-t border-border/40">
+    <section className="py-24 bg-background dark:bg-secondary border-t border-border/40">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-sm font-bold tracking-widest text-primary uppercase mb-3">Explore Growing Regions</h2>
@@ -96,8 +96,8 @@ export function RegionTelemetry() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <div className="h-7 w-7 rounded-full bg-emerald-500/10 flex items-center justify-center shrink-0">
-                        <Briefcase className="h-3.5 w-3.5 text-emerald-500" />
+                      <div className="h-7 w-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                        <Briefcase className="h-3.5 w-3.5 text-primary" />
                       </div>
                       <div className="text-xs font-semibold leading-tight">
                         <span className="block text-muted-foreground text-[10px] uppercase">Employment</span>

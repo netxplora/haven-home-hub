@@ -91,7 +91,7 @@ export default function ForgotPassword() {
       </div>
 
       {/* Right Panel — Recovery Form */}
-      <div className="relative flex flex-col justify-center bg-slate-50 dark:bg-slate-950 px-6 py-14 sm:px-14 min-h-screen">
+      <div className="relative flex flex-col justify-center bg-background dark:bg-secondary px-6 py-14 sm:px-14 min-h-screen">
         {/* Mobile Logo & Hero (Visible only on mobile/tablet) */}
         <div className="lg:hidden relative w-full -mt-14 mb-8 rounded-b-[2rem] overflow-hidden shadow-xl">
           <div className="absolute inset-0 z-0 bg-[url('https://ilpbzriohwwnllpxndnl.supabase.co/storage/v1/object/public/public-assets/hero_luxury_penthouse.webp')] bg-cover bg-center" />

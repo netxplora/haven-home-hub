@@ -312,7 +312,7 @@ export default function PropertyMapExplorer() {
                             <p className="text-[9px] uppercase font-bold text-muted-foreground tracking-wider mb-0.5">
                               Est. Yield
                             </p>
-                            <p className="font-bold text-sm text-emerald-600">{item.yieldPct}%</p>
+                            <p className="font-bold text-sm text-primary">{item.yieldPct}%</p>
                           </div>
                         )}
                       </div>
@@ -398,7 +398,7 @@ function FilterPanel({
             <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
               <Percent className="h-3.5 w-3.5" /> Min. Projected Yield
             </label>
-            <span className="text-xs font-bold text-emerald-700 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-md">
+            <span className="text-xs font-bold text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-md">
               {minYield}%+
             </span>
           </div>

@@ -11,10 +11,10 @@ export default function Terms() {
       {/* Hero Type D: Legal Page Typography Header */}
       <section className="relative bg-white dark:bg-background border-b border-border pt-28 pb-12">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500/20" />
+          <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
         </div>
         <div className="container-tight relative z-10">
-          <p className="text-xs font-bold tracking-[0.2em] uppercase text-emerald-600 dark:text-emerald-400 mb-4">
+          <p className="text-xs font-bold tracking-[0.2em] uppercase text-primary dark:text-primary mb-4">
             Legal
           </p>
           <h1 className="font-heading text-3xl sm:text-4xl font-bold tracking-tight text-foreground leading-tight">

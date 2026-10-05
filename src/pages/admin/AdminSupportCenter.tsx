@@ -90,7 +90,7 @@ function priorityColor(priority: string) {
     case "medium":
       return "bg-amber-500/10 text-amber-600 border-amber-200";
     case "low":
-      return "bg-slate-500/10 text-slate-600 border-slate-200";
+      return "bg-slate-500/10 text-muted-foreground border-border";
     default:
       return "bg-muted text-muted-foreground border-border";
   }
