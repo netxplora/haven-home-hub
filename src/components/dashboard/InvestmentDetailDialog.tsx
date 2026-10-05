@@ -74,7 +74,7 @@ export function InvestmentDetailDialog({ investment, open, onOpenChange }: Inves
         .from("secondary_market_listings" as any)
         .select("*")
         .eq("investment_id", investment.id)
-        .eq("status", "active")
+        .in("status", ["pending", "approved"])
         .order("created_at", { ascending: false });
       if (error) {
         console.error("Error fetching listings:", error);

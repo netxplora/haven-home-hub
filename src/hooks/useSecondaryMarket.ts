@@ -9,14 +9,19 @@ export interface SecondaryMarketListing {
   property_id: string;
   investment_id: string;
   units_to_sell: number;
+  units_sold: number;
+  units_available: number;
   price_per_unit: number;
-  status: "active" | "sold" | "cancelled";
+  status: "pending" | "approved" | "rejected" | "cancelled" | "sold";
+  expires_at: string | null;
   created_at: string;
+  updated_at: string;
   property?: {
     title: string;
     location: string;
     currency: string;
     unit_price: number;
+    cover_image_url?: string;
   };
   seller?: {
     full_name: string;
@@ -26,36 +31,20 @@ export interface SecondaryMarketListing {
 export function useSecondaryMarket() {
   const queryClient = useQueryClient();
 
-  // Fetch all active listings
+  // Fetch all approved + available listings from the server-side view
   const { data: listings = [], isLoading: isLoadingListings, refetch } = useQuery({
     queryKey: ["secondary_market_listings"],
     queryFn: async () => {
+      // Use the server-side view which already filters: approved, units_available>0, property active, not expired
       const { data: records, error } = await supabase
-        .from("secondary_market_listings")
+        .from("available_market_listings" as any)
         .select("*")
-        .eq("status", "active")
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       if (!records || records.length === 0) return [] as SecondaryMarketListing[];
 
-      // Fetch related investment_properties
-      const propertyIds = [...new Set(records.map((r: any) => r.property_id).filter(Boolean))];
-      let propertiesMap: Record<string, any> = {};
-      if (propertyIds.length > 0) {
-        const { data: propsData } = await supabase
-          .from("investment_properties")
-          .select("id, title, location, currency, unit_price, cover_image_url")
-          .in("id", propertyIds);
-        if (propsData) {
-          propertiesMap = propsData.reduce((acc: Record<string, any>, p: any) => {
-            acc[p.id] = { title: p.title, location: p.location, currency: p.currency, unit_price: p.unit_price };
-            return acc;
-          }, {});
-        }
-      }
-
-      // Fetch related seller profiles
+      // Fetch seller profiles in one batch (view doesn't expose profiles directly)
       const sellerIds = [...new Set(records.map((r: any) => r.seller_id).filter(Boolean))];
       let sellersMap: Record<string, any> = {};
       if (sellerIds.length > 0) {
@@ -72,14 +61,31 @@ export function useSecondaryMarket() {
       }
 
       return records.map((r: any) => ({
-        ...r,
-        property: propertiesMap[r.property_id] || null,
+        id: r.id,
+        seller_id: r.seller_id,
+        property_id: r.property_id,
+        investment_id: r.investment_id,
+        units_to_sell: r.units_to_sell,
+        units_sold: r.units_sold ?? 0,
+        units_available: r.units_available ?? (r.units_to_sell - (r.units_sold ?? 0)),
+        price_per_unit: r.price_per_unit,
+        status: r.status,
+        expires_at: r.expires_at ?? null,
+        created_at: r.created_at,
+        updated_at: r.updated_at,
+        property: {
+          title: r.property_title,
+          location: r.property_location,
+          currency: r.currency,
+          unit_price: r.original_unit_price,
+          cover_image_url: r.cover_image_url,
+        },
         seller: sellersMap[r.seller_id] || null,
       })) as SecondaryMarketListing[];
     },
   });
 
-  // Fetch user's own active listings
+  // Fetch user's own listings (all statuses)
   const { data: myListings = [], isLoading: isLoadingMyListings } = useQuery({
     queryKey: ["my_secondary_listings"],
     queryFn: async () => {
@@ -87,51 +93,48 @@ export function useSecondaryMarket() {
       if (!user) return [];
 
       const { data: records, error } = await supabase
-        .from("secondary_market_listings")
-        .select("*")
+        .from("secondary_market_listings" as any)
+        .select("*, investment_properties!property_id(title, location, currency, unit_price, cover_image_url)")
         .eq("seller_id", user.id)
-        .eq("status", "active")
+        .not("status", "in", '("sold","cancelled")')
         .order("created_at", { ascending: false });
 
       if (error) throw error;
       if (!records || records.length === 0) return [] as SecondaryMarketListing[];
 
-      // Fetch related investment_properties
-      const propertyIds = [...new Set(records.map((r: any) => r.property_id).filter(Boolean))];
-      let propertiesMap: Record<string, any> = {};
-      if (propertyIds.length > 0) {
-        const { data: propsData } = await supabase
-          .from("investment_properties")
-          .select("id, title, location, currency, unit_price, cover_image_url")
-          .in("id", propertyIds);
-        if (propsData) {
-          propertiesMap = propsData.reduce((acc: Record<string, any>, p: any) => {
-            acc[p.id] = { title: p.title, location: p.location, currency: p.currency, unit_price: p.unit_price };
-            return acc;
-          }, {});
-        }
-      }
-
       return records.map((r: any) => ({
         ...r,
-        property: propertiesMap[r.property_id] || null,
+        units_available: (r.units_to_sell ?? 0) - (r.units_sold ?? 0),
+        property: r.investment_properties
+          ? {
+              title: r.investment_properties.title,
+              location: r.investment_properties.location,
+              currency: r.investment_properties.currency,
+              unit_price: r.investment_properties.unit_price,
+              cover_image_url: r.investment_properties.cover_image_url,
+            }
+          : null,
       })) as SecondaryMarketListing[];
     },
   });
 
-  // Purchase Listing Mutation
+  // Purchase listing — supports partial quantity
   const purchaseListing = useMutation({
-    mutationFn: async (listingId: string) => {
-      const { data, error } = await supabase.rpc("purchase_listing_with_wallet", {
+    mutationFn: async ({ listingId, unitsToBuy }: { listingId: string; unitsToBuy?: number }) => {
+      const { data, error } = await supabase.rpc("purchase_listing_with_wallet" as any, {
         p_listing_id: listingId,
+        p_units_to_buy: unitsToBuy ?? null,
       });
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["secondary_market_listings"] });
+      queryClient.invalidateQueries({ queryKey: ["my_secondary_listings"] });
       queryClient.invalidateQueries({ queryKey: ["user-investments"] });
+      queryClient.invalidateQueries({ queryKey: ["my-investments"] });
       queryClient.invalidateQueries({ queryKey: ["available-balance"] });
+      queryClient.invalidateQueries({ queryKey: ["wallet-balance"] });
       toast({
         title: "Purchase Successful",
         description: "The shares have been added to your portfolio.",
@@ -146,10 +149,10 @@ export function useSecondaryMarket() {
     },
   });
 
-  // Create Listing Mutation
+  // Create listing — now returns pending
   const createListing = useMutation({
     mutationFn: async ({ investmentId, units, price }: { investmentId: string; units: number; price: number }) => {
-      const { data, error } = await supabase.rpc("create_secondary_market_listing", {
+      const { data, error } = await supabase.rpc("create_secondary_market_listing" as any, {
         p_investment_id: investmentId,
         p_units_to_sell: units,
         p_price_per_unit: price,
@@ -160,9 +163,10 @@ export function useSecondaryMarket() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["secondary_market_listings"] });
       queryClient.invalidateQueries({ queryKey: ["my_secondary_listings"] });
+      queryClient.invalidateQueries({ queryKey: ["my-secondary-listings"] });
       toast({
-        title: "Listing Created",
-        description: "Your shares are now live on the secondary market.",
+        title: "Listing Submitted",
+        description: "Your listing is pending admin approval. You will be notified when it goes live.",
       });
     },
     onError: (error: any) => {
@@ -174,10 +178,10 @@ export function useSecondaryMarket() {
     },
   });
 
-  // Cancel Listing Mutation
+  // Cancel listing (seller)
   const cancelListing = useMutation({
     mutationFn: async (listingId: string) => {
-      const { error } = await supabase.rpc("cancel_secondary_market_listing", {
+      const { error } = await supabase.rpc("cancel_secondary_market_listing" as any, {
         p_listing_id: listingId,
       });
       if (error) throw error;
@@ -185,6 +189,7 @@ export function useSecondaryMarket() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["secondary_market_listings"] });
       queryClient.invalidateQueries({ queryKey: ["my_secondary_listings"] });
+      queryClient.invalidateQueries({ queryKey: ["my-secondary-listings"] });
       toast({
         title: "Listing Cancelled",
         description: "Your listing has been removed from the market.",

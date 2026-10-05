@@ -7,10 +7,10 @@ import { useBrand } from "@/hooks/useBrand";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { formatMoney } from "@/lib/invest";
-import { MapPin, TrendingUp, Search, RefreshCw, ShoppingCart, Info, Activity } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
-import { formatPrice, resolveImage } from "@/lib/format";
+import { MapPin, TrendingUp, Search, RefreshCw, ShoppingCart, Info, Activity, Layers } from "lucide-react";
+import { resolveImage } from "@/lib/format";
 import {
   Dialog,
   DialogContent,
@@ -19,6 +19,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 import investHero4 from "@/assets/invest-hero4.jpg";
 import { LazyImage } from "@/components/ui/LazyImage";
 
@@ -28,6 +29,7 @@ export default function SecondaryMarket() {
   const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [purchaseModal, setPurchaseModal] = useState<any>(null);
+  const [unitsToBuy, setUnitsToBuy] = useState<number>(1);
 
   const filteredListings = listings.filter((l) => {
     if (!searchQuery) return true;
@@ -38,13 +40,18 @@ export default function SecondaryMarket() {
     );
   });
 
+  const openPurchaseModal = (listing: any) => {
+    setPurchaseModal(listing);
+    setUnitsToBuy(1);
+  };
+
   const handlePurchase = async () => {
     if (!purchaseModal) return;
     try {
-      await purchaseListing(purchaseModal.id);
+      await purchaseListing({ listingId: purchaseModal.id, unitsToBuy });
       setPurchaseModal(null);
     } catch (e) {
-      // Error is handled in the hook via toast
+      // Error handled by hook toast
     }
   };
 
@@ -52,10 +59,10 @@ export default function SecondaryMarket() {
     <SiteLayout transparentNav="mobile">
       <SEO 
         title={`Secondary Share Exchange | ${brand.platform_name}`} 
-        description={`Trade verified property shares with other investors on the ${brand.platform_name} Secondary Market.`} 
+        description={`Buy and sell fractional real estate shares directly with verified investors on the ${brand.platform_name} Secondary Market.`} 
       />
       
-      {/* Hero Type C: Split Visual Asset Exchange */}
+      {/* Hero */}
       <section className="relative bg-secondary/10 overflow-hidden border-b border-border/40 pt-28 pb-16 lg:py-24">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 right-1/4 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl" />
@@ -64,7 +71,6 @@ export default function SecondaryMarket() {
 
         <div className="container-wide relative z-10">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
-            {/* Left Column: Context, Pitch, and Real-time Search */}
             <div className="lg:col-span-7 flex flex-col items-start">
               <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-primary/10 border border-primary/25 text-primary text-xs font-semibold uppercase tracking-wider mb-5">
                 <Activity className="h-3.5 w-3.5 animate-pulse" /> Peer-to-Peer Share Exchange
@@ -82,7 +88,7 @@ export default function SecondaryMarket() {
                 <div className="relative flex items-center bg-background border border-border/80 rounded-xl p-1.5 backdrop-blur-md shadow-sm focus-within:border-primary/50 transition-colors">
                   <Search className="absolute left-4 h-4 w-4 text-muted-foreground" />
                   <Input 
-                    placeholder="Search properties, cities, or asset classes..." 
+                    placeholder="Search properties or cities..." 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-10 h-11 bg-transparent border-0 text-foreground placeholder:text-muted-foreground/60 focus-visible:ring-0 text-sm font-sans"
@@ -92,18 +98,17 @@ export default function SecondaryMarket() {
 
               <div className="mt-6 flex flex-wrap items-center gap-6 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Automated Escrow Settlement
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Admin-Verified Listings
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Title Registry Verification
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Wallet Settlement
                 </span>
                 <span className="flex items-center gap-1.5">
-                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Immediate Yield Entitlement
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" /> Partial Purchase Supported
                 </span>
               </div>
             </div>
 
-            {/* Right Column: Architectural Asset Card */}
             <div className="lg:col-span-5">
               <div className="relative rounded-2xl overflow-hidden border border-border/80 shadow-lg bg-card group">
                 <div className="aspect-[4/3] w-full overflow-hidden">
@@ -121,8 +126,8 @@ export default function SecondaryMarket() {
                     <p className="text-sm font-medium text-white/90 mt-0.5">Verified Institutional Grade Units</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-xs text-white/70">Trading Window</p>
-                    <p className="text-sm font-semibold text-white">24/7 Liquidity</p>
+                    <p className="text-xs text-white/70">Available Listings</p>
+                    <p className="text-sm font-semibold text-white">{listings.length} Active</p>
                   </div>
                 </div>
               </div>
@@ -141,16 +146,16 @@ export default function SecondaryMarket() {
             <TrendingUp className="h-12 w-12 mx-auto text-muted-foreground/30 mb-4" />
             <h3 className="text-xl font-bold text-foreground">No active listings</h3>
             <p className="text-muted-foreground mt-2 max-w-md mx-auto">
-              There are currently no shares available on the secondary market. Check back later or invest in new primary offerings.
+              There are currently no approved shares available on the secondary market. Check back later or invest in new primary offerings.
             </p>
           </div>
         ) : (
           <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {filteredListings.map((listing) => {
-              const totalAskingPrice = listing.units_to_sell * listing.price_per_unit;
+              const unitsAvailable = listing.units_available ?? (listing.units_to_sell - (listing.units_sold ?? 0));
+              const totalAskingPrice = unitsAvailable * listing.price_per_unit;
               const isOwnListing = user?.id === listing.seller_id;
               
-              // Calculate premium/discount against original price
               const originalPrice = listing.property?.unit_price || 0;
               const diff = listing.price_per_unit - originalPrice;
               const diffPercentage = originalPrice > 0 ? (diff / originalPrice) * 100 : 0;
@@ -158,9 +163,9 @@ export default function SecondaryMarket() {
               return (
                 <div key={listing.id} className="group flex flex-col rounded-2xl border border-border bg-card overflow-hidden shadow-sm hover:shadow-md transition-all duration-300">
                   <div className="relative aspect-[4/3] overflow-hidden bg-muted">
-                    {(listing.property as any)?.cover_image_url ? (
+                    {listing.property?.cover_image_url ? (
                       <LazyImage 
-                        src={resolveImage((listing.property as any).cover_image_url)} 
+                        src={resolveImage(listing.property.cover_image_url)} 
                         alt={listing.property?.title}
                         aspectClass="aspect-[4/3]"
                         wrapperClassName="w-full"
@@ -168,14 +173,22 @@ export default function SecondaryMarket() {
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-muted-foreground">
-                        No Image
+                        <Layers className="h-8 w-8 opacity-20" />
                       </div>
                     )}
                     <div className="absolute top-3 right-3 flex flex-col gap-2">
                       <Badge className="bg-background/80 text-foreground backdrop-blur-md font-semibold border-none shadow-sm">
-                        {listing.units_to_sell} Shares
+                        {unitsAvailable} of {listing.units_to_sell} Units
                       </Badge>
                     </div>
+                    {listing.units_sold > 0 && (
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-black/20">
+                        <div
+                          className="h-full bg-primary/70"
+                          style={{ width: `${(listing.units_sold / listing.units_to_sell) * 100}%` }}
+                        />
+                      </div>
+                    )}
                   </div>
                   
                   <div className="p-5 flex-1 flex flex-col">
@@ -190,7 +203,7 @@ export default function SecondaryMarket() {
                       
                       <div className="space-y-3 p-3 bg-muted/50 rounded-xl mb-5">
                         <div className="flex justify-between items-center text-sm">
-                          <span className="text-muted-foreground">Asking Price / Share</span>
+                          <span className="text-muted-foreground">Price / Share</span>
                           <span className="font-bold text-foreground">
                             {formatMoney(listing.price_per_unit, listing.property?.currency)}
                           </span>
@@ -208,7 +221,7 @@ export default function SecondaryMarket() {
                         )}
                         
                         <div className="pt-2 border-t border-border/50 flex justify-between items-center">
-                          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Cost</span>
+                          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Total Value</span>
                           <span className="font-bold text-primary text-lg">
                             {formatMoney(totalAskingPrice, listing.property?.currency)}
                           </span>
@@ -229,7 +242,7 @@ export default function SecondaryMarket() {
                       ) : (
                         <Button 
                           className="w-full bg-primary hover:bg-primary/90 text-white font-semibold shadow-sm"
-                          onClick={() => setPurchaseModal(listing)}
+                          onClick={() => openPurchaseModal(listing)}
                         >
                           <ShoppingCart className="h-4 w-4 mr-2" /> Buy Shares
                         </Button>
@@ -243,52 +256,80 @@ export default function SecondaryMarket() {
         )}
       </div>
 
-      {/* Purchase Confirmation Modal */}
+      {/* Purchase Confirmation Modal with partial quantity selector */}
       <Dialog open={!!purchaseModal} onOpenChange={(open) => !open && setPurchaseModal(null)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Confirm Purchase</DialogTitle>
+            <DialogTitle>Buy Shares</DialogTitle>
             <DialogDescription>
-              You are about to purchase shares from the secondary market using your available wallet balance.
+              Select how many units to purchase. Payment will be deducted from your wallet balance.
             </DialogDescription>
           </DialogHeader>
           
-          {purchaseModal && (
-            <div className="space-y-4 py-4">
-              <div className="p-4 bg-muted/50 rounded-xl space-y-3">
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Property</span>
-                  <span className="font-medium text-right max-w-[200px] truncate">{purchaseModal.property?.title}</span>
+          {purchaseModal && (() => {
+            const unitsAvailable = purchaseModal.units_available ?? (purchaseModal.units_to_sell - (purchaseModal.units_sold ?? 0));
+            const totalCost = unitsToBuy * purchaseModal.price_per_unit;
+            return (
+              <div className="space-y-4 py-4">
+                <div className="p-4 bg-muted/50 rounded-xl space-y-3">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Property</span>
+                    <span className="font-medium text-right max-w-[200px] truncate">{purchaseModal.property?.title}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Available</span>
+                    <span className="font-bold">{unitsAvailable} units</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Price per share</span>
+                    <span className="font-medium">{formatMoney(purchaseModal.price_per_unit, purchaseModal.property?.currency)}</span>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Shares</span>
-                  <span className="font-bold">{purchaseModal.units_to_sell}</span>
+
+                <Separator />
+
+                {/* Quantity Selector */}
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold">Units to Buy</Label>
+                  <div className="flex items-center gap-3">
+                    <Button type="button" variant="outline" size="icon" className="h-10 w-10 rounded-lg shrink-0"
+                      disabled={unitsToBuy <= 1} onClick={() => setUnitsToBuy(Math.max(1, unitsToBuy - 1))}>−</Button>
+                    <Input
+                      type="number" min={1} max={unitsAvailable} value={unitsToBuy}
+                      onChange={(e) => {
+                        const v = parseInt(e.target.value, 10);
+                        if (isNaN(v)) setUnitsToBuy(1);
+                        else setUnitsToBuy(Math.min(unitsAvailable, Math.max(1, v)));
+                      }}
+                      className="h-10 flex-1 rounded-lg text-center font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                    />
+                    <Button type="button" variant="outline" size="icon" className="h-10 w-10 rounded-lg shrink-0"
+                      disabled={unitsToBuy >= unitsAvailable} onClick={() => setUnitsToBuy(Math.min(unitsAvailable, unitsToBuy + 1))}>+</Button>
+                  </div>
+                  <p className="text-[10px] text-muted-foreground text-right">Max: {unitsAvailable} units</p>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Price per share</span>
-                  <span className="font-medium">{formatMoney(purchaseModal.price_per_unit, purchaseModal.property?.currency)}</span>
-                </div>
+
                 <div className="pt-3 border-t border-border flex justify-between items-center">
                   <span className="font-medium">Total Cost</span>
                   <span className="font-bold text-primary text-xl">
-                    {formatMoney(purchaseModal.units_to_sell * purchaseModal.price_per_unit, purchaseModal.property?.currency)}
+                    {formatMoney(totalCost, purchaseModal.property?.currency)}
                   </span>
                 </div>
+                
+                <div className="bg-amber-500/10 border border-amber-500/20 text-amber-700 p-3 rounded-lg text-xs flex items-start gap-2">
+                  <Info className="h-4 w-4 shrink-0 mt-0.5" />
+                  <p>This transaction is final. Funds will be immediately deducted from your wallet and units transferred to your portfolio.</p>
+                </div>
               </div>
-              
-              <div className="bg-amber-500/10 border border-amber-500/20 text-amber-700 p-3 rounded-lg text-xs flex items-start gap-2">
-                <Info className="h-4 w-4 shrink-0 mt-0.5" />
-                <p>This transaction is final and non-refundable. Funds will be immediately deducted from your wallet and transferred to the seller.</p>
-              </div>
-            </div>
-          )}
+            );
+          })()}
 
           <DialogFooter className="gap-2 sm:gap-0">
             <Button variant="outline" onClick={() => setPurchaseModal(null)} disabled={isPurchasing}>
               Cancel
             </Button>
             <Button onClick={handlePurchase} disabled={isPurchasing || !user}>
-              {isPurchasing ? "Processing Trade..." : !user ? "Login Required" : "Confirm Purchase"}
+              {isPurchasing ? "Processing..." : !user ? "Login Required" : "Confirm Purchase"}
             </Button>
           </DialogFooter>
         </DialogContent>

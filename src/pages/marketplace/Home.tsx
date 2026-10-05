@@ -20,7 +20,7 @@ import { toast } from "@/hooks/use-toast";
 import { FreshInventorySlider } from "@/components/site/FreshInventorySlider";
 import { PromoBanner } from "@/components/site/PromoBanner";
 import { Hero3DShowcase } from "@/components/site/Hero3DShowcase";
-const investProp1 = "/images/hero/invest-prop-1.jpg";
+const investProp1 = "/images/hero/fractional-ownership.webp";
 import { lazy, Suspense } from "react";
 import { useBrand } from "@/hooks/useBrand";
 import { LazyImage } from "@/components/ui/LazyImage";

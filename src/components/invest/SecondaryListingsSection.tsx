@@ -27,14 +27,16 @@ export function SecondaryListingsSection({ propertyId, propertyTitle, currency }
         .from("secondary_market_listings" as any)
         .select("*")
         .eq("property_id", propertyId)
-        .eq("status", "active")
+        .eq("status", "approved")
+        .gt("units_to_sell", 0)
         .order("price_per_unit", { ascending: true });
 
       if (error) {
         console.error("Error fetching secondary listings:", error);
         return [];
       }
-      return (data || []) as any[];
+      // Filter out listings with no remaining units
+      return (data || []).filter((l: any) => (l.units_to_sell - (l.units_sold ?? 0)) > 0) as any[];
     },
   });
 
@@ -93,7 +95,9 @@ export function SecondaryListingsSection({ propertyId, propertyTitle, currency }
         {availableListings.length > 0 && (
           <div className="space-y-3">
             {availableListings.map((listing: any) => {
-              const total = listing.units_to_sell * Number(listing.price_per_unit);
+              const unitsAvailable = (listing.units_to_sell ?? 0) - (listing.units_sold ?? 0);
+              const total = unitsAvailable * Number(listing.price_per_unit);
+              const partialSold = (listing.units_sold ?? 0) > 0;
               return (
                 <div
                   key={listing.id}
@@ -105,7 +109,12 @@ export function SecondaryListingsSection({ propertyId, propertyTitle, currency }
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-sm">{listing.units_to_sell} unit{listing.units_to_sell > 1 ? "s" : ""}</span>
+                        <span className="font-semibold text-sm">{unitsAvailable} unit{unitsAvailable > 1 ? "s" : ""} available</span>
+                        {partialSold && (
+                          <span className="text-[10px] text-muted-foreground bg-muted rounded-full px-2 py-0.5">
+                            {listing.units_sold} of {listing.units_to_sell} already sold
+                          </span>
+                        )}
                         <span className="text-muted-foreground text-xs">·</span>
                         <span className="text-xs text-muted-foreground flex items-center gap-1">
                           <Tag className="h-3 w-3" /> {formatMoney(Number(listing.price_per_unit), currency)}/unit
@@ -126,7 +135,7 @@ export function SecondaryListingsSection({ propertyId, propertyTitle, currency }
                       <Button
                         size="sm"
                         className="rounded-xl h-10 px-6 font-bold bg-primary hover:bg-primary/90 text-white transition-all active:scale-95 flex-1 sm:flex-none max-w-[200px]"
-                        onClick={() => handleBuy(listing)}
+                        onClick={() => handleBuy({ ...listing, units_available: unitsAvailable })}
                       >
                         Buy <ArrowRight className="h-3.5 w-3.5 ml-1.5" />
                       </Button>

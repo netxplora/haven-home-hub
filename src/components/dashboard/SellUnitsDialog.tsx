@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogBody, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { formatMoney } from "@/lib/invest";
-import { Loader2, Tag, Layers, Wallet, Info, CheckCircle2, FileText } from "lucide-react";
+import { Loader2, Tag, Layers, Wallet, Info, CheckCircle2, FileText, Clock } from "lucide-react";
 
 interface SellUnitsDialogProps {
   open: boolean;
@@ -26,6 +26,21 @@ export function SellUnitsDialog({ open, onOpenChange, investment }: SellUnitsDia
   const [agreeToTerms, setAgreeToTerms] = useState<boolean>(false);
   const [submitting, setSubmitting] = useState(false);
 
+  // Fetch units already committed in pending/approved listings for this investment
+  const { data: committedData } = useQuery({
+    queryKey: ["committed-units", investment?.id],
+    enabled: open && !!investment?.id,
+    queryFn: async () => {
+      const { data, error } = await (supabase
+        .from("secondary_market_listings" as any)
+        .select("units_to_sell, units_sold")
+        .eq("investment_id", investment.id)
+        .in("status", ["pending", "approved"]));
+      if (error) return 0;
+      return (data || []).reduce((sum: number, l: any) => sum + ((l.units_to_sell ?? 0) - (l.units_sold ?? 0)), 0);
+    },
+  });
+
   if (!investment) return null;
 
   const unitsOwned = Number(investment.units_owned ?? investment.units ?? 0);
@@ -33,9 +48,12 @@ export function SellUnitsDialog({ open, onOpenChange, investment }: SellUnitsDia
   const propertyTitle = investment.investment_properties?.title ?? "Property";
   const originalUnitPrice = Number(investment.amount_invested ?? 0) / Math.max(unitsOwned, 1);
 
+  const committedUnits = committedData ?? 0;
+  const maxListable = Math.max(0, unitsOwned - committedUnits);
+
   const parsedPrice = parseFloat(pricePerUnit);
   const validPrice = !isNaN(parsedPrice) && parsedPrice > 0;
-  const validUnits = unitsToSell >= 1 && unitsToSell <= unitsOwned && Number.isInteger(unitsToSell);
+  const validUnits = unitsToSell >= 1 && unitsToSell <= maxListable && Number.isInteger(unitsToSell);
   const totalListingValue = validPrice && validUnits ? unitsToSell * parsedPrice : 0;
   const canSubmit = validPrice && validUnits && agreeToTerms && !submitting;
 
@@ -53,8 +71,8 @@ export function SellUnitsDialog({ open, onOpenChange, investment }: SellUnitsDia
       if (error) throw error;
 
       toast({
-        title: "Listing Created",
-        description: `${unitsToSell} unit${unitsToSell > 1 ? "s" : ""} of "${propertyTitle}" listed at ${formatMoney(parsedPrice, currency)} per unit.`,
+        title: "Listing Submitted for Review",
+        description: `${unitsToSell} unit${unitsToSell > 1 ? "s" : ""} of "${propertyTitle}" submitted. You will be notified once approved.`,
       });
 
       qc.invalidateQueries({ queryKey: ["my-investments"] });
@@ -132,7 +150,7 @@ export function SellUnitsDialog({ open, onOpenChange, investment }: SellUnitsDia
                   onChange={(e) => {
                     const val = parseInt(e.target.value, 10);
                     if (isNaN(val)) setUnitsToSell(1);
-                    else if (val > unitsOwned) setUnitsToSell(unitsOwned);
+                    else if (val > maxListable) setUnitsToSell(maxListable);
                     else setUnitsToSell(Math.max(1, val));
                   }}
                   className="h-11 flex-1 rounded-xl border-border bg-accent/30 text-center font-bold text-lg [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
@@ -142,13 +160,18 @@ export function SellUnitsDialog({ open, onOpenChange, investment }: SellUnitsDia
                   variant="outline"
                   size="icon"
                   className="h-11 w-11 rounded-xl shrink-0"
-                  disabled={unitsToSell >= unitsOwned}
-                  onClick={() => setUnitsToSell(Math.min(unitsOwned, unitsToSell + 1))}
+                  disabled={unitsToSell >= maxListable}
+                  onClick={() => setUnitsToSell(Math.min(maxListable, unitsToSell + 1))}
                 >
                   +
                 </Button>
               </div>
-              <p className="text-[10px] text-muted-foreground text-right">Max: {unitsOwned} unit{unitsOwned !== 1 ? "s" : ""}</p>
+              <p className="text-[10px] text-muted-foreground text-right">
+                {committedUnits > 0
+                  ? `${unitsOwned} owned · ${committedUnits} committed · Max available: ${maxListable}`
+                  : `Max: ${maxListable} unit${maxListable !== 1 ? "s" : ""}`
+                }
+              </p>
             </div>
           </div>
 
@@ -213,7 +236,7 @@ export function SellUnitsDialog({ open, onOpenChange, investment }: SellUnitsDia
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Remaining Units</span>
                 <span className="font-bold text-foreground">
-                  {validUnits ? unitsOwned - unitsToSell : unitsOwned} units
+                  {validUnits ? unitsOwned - committedUnits - unitsToSell : maxListable} units
                 </span>
               </div>
             </div>
@@ -273,8 +296,15 @@ export function SellUnitsDialog({ open, onOpenChange, investment }: SellUnitsDia
                 className="mt-0.5 rounded border-border"
               />
               <label htmlFor="listing-terms" className="text-[10px] text-muted-foreground leading-normal cursor-pointer select-none">
-                I agree to list these units on the secondary marketplace under the platform's trading regulations. I verify that I own these units free of any liens.
+                I agree to list these units on the secondary marketplace under the platform's trading regulations. I verify that I own these units free of any liens. I understand the listing is subject to admin approval before going live.
               </label>
+            </div>
+
+            <div className="flex items-start gap-2 rounded-lg bg-amber-500/10 border border-amber-500/20 p-3">
+              <Clock className="h-3.5 w-3.5 text-amber-600 shrink-0 mt-0.5" />
+              <p className="text-[10px] text-amber-700 leading-tight">
+                Your listing will be reviewed by an admin before it appears on the secondary market. This typically takes less than 24 hours.
+              </p>
             </div>
           </div>
         </DialogBody>

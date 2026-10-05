@@ -106,10 +106,16 @@ export function useRealtimeSync() {
 
           // --- Secondary Marketplace ---
           if (table === "secondary_market_listings") {
-            qc.invalidateQueries({ queryKey: ["secondary-market"] });
+            // Match exact keys used by useSecondaryMarket hook
+            qc.invalidateQueries({ queryKey: ["secondary_market_listings"] });
+            qc.invalidateQueries({ queryKey: ["my_secondary_listings"] });
+            // Used by SecondaryListingsSection per-property
             qc.invalidateQueries({ queryKey: ["secondary-listings"] });
+            // Used by InvestmentDetailDialog
             qc.invalidateQueries({ queryKey: ["my-secondary-listings"] });
-            qc.invalidateQueries({ queryKey: ["admin-secondary-market"] });
+            // Admin marketplace view
+            qc.invalidateQueries({ queryKey: ["admin-marketplace-listings"] });
+            qc.invalidateQueries({ queryKey: ["admin-marketplace-transactions"] });
           }
 
           // --- KYC & Verification ---
