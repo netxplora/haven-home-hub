@@ -23,6 +23,38 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
   const isInvestment = receipt.type === 'investment' || receipt.type === 'installment';
   const isVerified = receipt.status === 'success' || receipt.status === 'confirmed';
 
+  // Strictly validate required authoritative fields
+  const missingFields = [];
+  if (!receipt.user_name) missingFields.push("Investor Name");
+  if (!receipt.user_email) missingFields.push("Investor Email");
+  if (!receipt.receipt_id) missingFields.push("Receipt ID");
+  if (receipt.amount_paid === null || receipt.amount_paid === undefined) missingFields.push("Amount Paid");
+  if (!receipt.currency) missingFields.push("Currency");
+  
+  if ((meta.property_id || isInvestment) && !meta.property_title) {
+    missingFields.push("Property Title (Required for Investment Receipts)");
+  }
+
+  if (missingFields.length > 0) {
+    return (
+      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <DialogContent className="max-w-md bg-white p-8 sm:rounded-xl border border-red-200 shadow-2xl text-center">
+          <DialogTitle className="text-red-600 font-serif font-bold text-2xl mb-2">Data Integrity Error</DialogTitle>
+          <p className="text-sm text-gray-700 mb-6 font-medium">
+            This receipt cannot be generated because authoritative database records are missing.
+          </p>
+          <div className="bg-red-50 text-left p-4 rounded-lg border border-red-100 mb-6">
+            <p className="text-xs font-bold uppercase tracking-wider text-red-800 mb-2">Missing Records:</p>
+            <ul className="list-disc pl-5 text-sm text-red-600 font-mono">
+              {missingFields.map(f => <li key={f}>{f}</li>)}
+            </ul>
+          </div>
+          <Button onClick={onClose} variant="outline" className="w-full">Close</Button>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
       <DialogContent className="max-w-3xl bg-[#fafafa] text-black p-0 overflow-hidden max-h-[90vh] overflow-y-auto print:!transform-none print:!fixed print:!inset-0 print:!w-full print:!max-w-none print:!h-auto print:!max-h-none print:!overflow-visible print:!shadow-none print:!border-none print:!bg-white sm:rounded-xl border border-gray-200 shadow-2xl">
@@ -90,11 +122,11 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                 <div className="space-y-3">
                   <div>
                     <p className="text-[10px] uppercase text-gray-400 font-bold">Account Name</p>
-                    <p className="font-semibold text-gray-900">{receipt.user_name || "Valued Investor"}</p>
+                    <p className="font-semibold text-gray-900">{receipt.user_name}</p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase text-gray-400 font-bold">Contact Email</p>
-                    <p className="text-sm text-gray-700">{receipt.user_email || "N/A"}</p>
+                    <p className="text-sm text-gray-700">{receipt.user_email}</p>
                   </div>
                   <div>
                     <p className="text-[10px] uppercase text-gray-400 font-bold">Account ID</p>
@@ -156,10 +188,10 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                       )}
                     </div>
                     
-                    <p className="text-xl font-serif font-bold text-gray-900 mb-1.5 leading-tight">{meta.property_title || "Premium Real Estate Asset"}</p>
+                    <p className="text-xl font-serif font-bold text-gray-900 mb-1.5 leading-tight">{meta.property_title}</p>
                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1.5 mb-4">
                       <ExternalLink className="h-3.5 w-3.5" />
-                      {meta.property_location || "Location specifics documented in master file."}
+                      {meta.property_location}
                     </p>
 
                     {/* Property Specifications */}

@@ -93,6 +93,41 @@ export default function CertificateView() {
     );
   }
 
+  // Strictly validate all required authoritative fields
+  const missingFields = [];
+  if (!cert.profiles?.full_name) missingFields.push("User Full Name");
+  if (!cert.units_owned) missingFields.push("Units Owned");
+  if (!cert.investment_properties?.title) missingFields.push("Property Title");
+  if (!cert.investment_properties?.location) missingFields.push("Property Location");
+  if (cert.total_investment_amount === null || cert.total_investment_amount === undefined) missingFields.push("Total Investment Amount");
+  if (!cert.currency) missingFields.push("Currency");
+  if (!cert.issued_at) missingFields.push("Issue Date");
+
+  if (missingFields.length > 0) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center px-4">
+        <div className="rounded-2xl border border-destructive/20 bg-destructive/5 p-12 max-w-md text-center shadow-lg">
+          <div className="mx-auto w-16 h-16 bg-destructive/10 rounded-full flex items-center justify-center mb-6">
+            <ShieldCheck className="h-8 w-8 text-destructive" />
+          </div>
+          <h2 className="font-serif text-2xl font-bold text-destructive mb-3">Data Integrity Error</h2>
+          <p className="text-sm text-foreground mb-4 leading-relaxed font-medium">
+            This certificate cannot be generated because authoritative database records are missing.
+          </p>
+          <div className="text-left bg-background p-4 rounded-lg border border-border mb-6">
+            <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">Missing Fields:</p>
+            <ul className="list-disc pl-5 text-sm text-destructive font-mono">
+              {missingFields.map(f => <li key={f}>{f}</li>)}
+            </ul>
+          </div>
+          <Button variant="outline" onClick={() => navigate(-1)} className="w-full font-semibold border-destructive/20 hover:bg-destructive/10">
+            <ArrowLeft className="h-4 w-4 mr-2" /> Go Back
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const printDocument = () => {
     window.print();
   };
@@ -134,7 +169,7 @@ export default function CertificateView() {
             <div className="text-center space-y-2">
               <p className="text-muted-foreground uppercase tracking-widest text-sm font-bold">This certifies that</p>
               <h2 className="font-serif text-4xl font-bold border-b border-primary/20 inline-block pb-2 px-8">
-                {cert.profiles?.full_name || "Valued Investor"}
+                {cert.profiles.full_name}
               </h2>
             </div>
 
