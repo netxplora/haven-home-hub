@@ -32,16 +32,11 @@ export function statusLabel(status: string) {
   }
 }
 
-/** Resolve cover image URLs that may be local /src/assets paths to bundled URLs. */
-const localImages = import.meta.glob("/src/assets/*.{jpg,png,jpeg,webp}", {
-  eager: true,
-  import: "default",
-}) as Record<string, string>;
-
 export function resolveImage(url?: string | null, width?: number): string {
   if (!url) return "/placeholder.svg";
+  // Legacy: if a URL was stored as a /src/assets/ path, strip it to just the filename
   if (url.startsWith("/src/assets/")) {
-    return localImages[url] ?? url;
+    return url.replace("/src/assets/", "/images/hero/");
   }
   if (url.includes("/storage/v1/object/public/") && !url.includes("?")) {
     return url.replace("/object/public/", "/object/render/image/public/") + `?format=webp&quality=80${width ? `&width=${width}` : ''}`;

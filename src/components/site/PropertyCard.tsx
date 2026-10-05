@@ -34,7 +34,7 @@ export interface PropertyCardData {
 
 export const PropertyCard = memo(function PropertyCard({ property: rawProperty }: { property: PropertyCardData }) {
   const property = enrichProperty(rawProperty);
-  const img = resolveImage(property.cover_image_url);
+  const img = resolveImage(property.cover_image_url, 600);
   const { addToCompare, removeFromCompare, compareList } = useCompare();
   const formatPrice = useFormatPrice();
       

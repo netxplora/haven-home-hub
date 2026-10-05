@@ -87,12 +87,24 @@ const queryClient = new QueryClient({
 
 // Configure custom caching defaults for public static data to reduce repeated API requests
 queryClient.setQueryDefaults(["brand-settings"], { staleTime: 30 * 60 * 1000 });
-queryClient.setQueryDefaults(["properties"], { staleTime: 5 * 60 * 1000 });
-queryClient.setQueryDefaults(["property"], { staleTime: 5 * 60 * 1000 });
-queryClient.setQueryDefaults(["locations"], { staleTime: 15 * 60 * 1000 });
+queryClient.setQueryDefaults(["properties"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["property"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["locations"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["homepage-data"], { staleTime: 30 * 60 * 1000 });        // unified RPC
+queryClient.setQueryDefaults(["homepage-locations"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["featured-properties"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["public-site-content"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["blog-teaser"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["blog-posts"], { staleTime: 30 * 60 * 1000 });
 queryClient.setQueryDefaults(["admin-locations-list"], { staleTime: 15 * 60 * 1000 });
 queryClient.setQueryDefaults(["filter-metadata"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["invest-filter-metadata"], { staleTime: 30 * 60 * 1000 }); // RPC
+queryClient.setQueryDefaults(["invest-opportunities"], { staleTime: 10 * 60 * 1000 });
 queryClient.setQueryDefaults(["all-payment-methods"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["related"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["agents"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["blog-teaser"], { staleTime: 30 * 60 * 1000 });
+queryClient.setQueryDefaults(["reviews"], { staleTime: 30 * 60 * 1000 });
 
 // Configure custom defaults for real-time/sensitive keys to guarantee live freshness
 queryClient.setQueryDefaults(["profile"], { staleTime: 0, refetchOnMount: true });

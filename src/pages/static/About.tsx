@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Building2, Handshake, MapPin, ShieldCheck, Users } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { useBrand } from "@/hooks/useBrand";
-import investHero from "@/assets/invest-hero.jpg";
+const investHero = "/images/hero/invest-hero.jpg";
 import { LazyImage } from "@/components/ui/LazyImage";
 
 const stats = [
@@ -101,11 +101,6 @@ export default function About() {
                   className="absolute inset-0 h-full w-full object-cover"
                   loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 via-transparent to-transparent" />
-                <div className="absolute bottom-0 inset-x-0 p-6">
-                  <p className="text-xs uppercase tracking-wider text-primary font-semibold">Agency-Led Platform</p>
-                  <p className="text-sm text-white mt-1 font-sans">Every listing physically verified by our team before it goes live.</p>
-                </div>
               </div>
             </div>
           </div>

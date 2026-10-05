@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useBrand } from "@/hooks/useBrand";
-import heroImg from "@/assets/hero.webp";
+const heroImg = "/images/hero/hero.webp";
 import locationDowntown from "@/assets/location-downtown.jpg";
 
 const fallbackOpenings = [
@@ -218,11 +218,6 @@ export default function Careers() {
                   className="absolute inset-0 h-full w-full object-cover"
                   loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 via-transparent to-transparent" />
-                <div className="absolute bottom-0 inset-x-0 p-6">
-                  <p className="text-xs uppercase tracking-wider text-primary font-semibold">Our Team</p>
-                  <p className="text-sm text-white mt-1 font-sans">People with expertise and a commitment to client outcomes.</p>
-                </div>
               </div>
             </div>
           </div>

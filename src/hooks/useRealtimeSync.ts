@@ -43,6 +43,7 @@ export function useRealtimeSync() {
       "broadcast_ads",
       "blog_posts",
       "payment_methods",
+      "site_content",
     ];
 
     tables.forEach((table) => {
@@ -170,6 +171,9 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["property"] });
             qc.invalidateQueries({ queryKey: ["my-purchases"] });
             qc.invalidateQueries({ queryKey: ["my-reservations"] });
+            qc.invalidateQueries({ queryKey: ["homepage-data"] });       // unified RPC
+            qc.invalidateQueries({ queryKey: ["featured-properties"] }); // legacy
+            qc.invalidateQueries({ queryKey: ["filter-metadata"] });
           }
           if (table === "reservations") {
             qc.invalidateQueries({ queryKey: ["my-reservations"] });
@@ -224,6 +228,13 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["admin-testimonials"] });
           }
 
+          // --- Site Content (CMS) ---
+          if (table === "site_content") {
+            qc.invalidateQueries({ queryKey: ["homepage-data"] });
+            qc.invalidateQueries({ queryKey: ["public-site-content"] });
+            qc.invalidateQueries({ queryKey: ["admin-site-content"] });
+          }
+
           // --- Broadcast Ads & Blog ---
           if (table === "broadcast_ads") {
             qc.invalidateQueries({ queryKey: ["broadcast-ads"] });
@@ -231,6 +242,8 @@ export function useRealtimeSync() {
           }
           if (table === "blog_posts") {
             qc.invalidateQueries({ queryKey: ["blog-posts"] });
+            qc.invalidateQueries({ queryKey: ["blog-teaser"] });
+            qc.invalidateQueries({ queryKey: ["homepage-data"] }); // blog teaser is part of RPC
             qc.invalidateQueries({ queryKey: ["admin-blog-posts"] });
           }
 
@@ -245,7 +258,8 @@ export function useRealtimeSync() {
             qc.invalidateQueries({ queryKey: ["admin-locations"] });
             qc.invalidateQueries({ queryKey: ["admin-locations-list"] });
             qc.invalidateQueries({ queryKey: ["admin-overview-counts"] });
-            qc.invalidateQueries({ queryKey: ["homepage-locations"] });
+            qc.invalidateQueries({ queryKey: ["homepage-locations"] }); // legacy
+            qc.invalidateQueries({ queryKey: ["homepage-data"] });      // unified RPC
             qc.invalidateQueries({ queryKey: ["locations"] });
             qc.invalidateQueries({ queryKey: ["filter-metadata"] });
           }

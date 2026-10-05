@@ -31,7 +31,7 @@ import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from "@/components/ui/sheet";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState } from "@/components/ui/EmptyState";
-import heroBuy from "@/assets/hero.webp";
+const heroBuy = "/images/hero/hero.webp";
 import heroRent from "@/assets/location-downtown.jpg";
 import heroLand from "@/assets/location-hills.jpg";
 import heroAll from "@/assets/property-1.jpg";
@@ -109,21 +109,21 @@ export default function Properties() {
   /* ── Hero content logic ─────────────────────────────────────── */
   const content = useMemo(() => HERO_CONTENT[type] ?? HERO_CONTENT.all, [type]);
 
-  /* ── Fetch Metadata for Filters ────────────────────────────── */
+    /* ── Fetch Metadata for Filters ────────────────────────────── */
   const { data: filterMetadata } = useQuery({
     queryKey: ["filter-metadata", country, state],
     queryFn: async () => {
-      let countryQuery = supabase.from("properties" as any).select("country").not("country", "is", null);
-      let stateQuery = supabase.from("properties" as any).select("state").not("state", "is", null);
-      if (country && country !== "all") stateQuery = stateQuery.eq("country", country);
-      let cityQuery = supabase.from("properties" as any).select("city").not("city", "is", null);
-      if (state && state !== "all") cityQuery = cityQuery.eq("state", state);
-      else if (country && country !== "all") cityQuery = cityQuery.eq("country", country);
-      const [countries, states, cities] = await Promise.all([countryQuery, stateQuery, cityQuery]);
+      const { data, error } = await supabase.rpc("get_property_filter_metadata", {
+        country_filter: country !== "all" ? country : null,
+        state_filter: state !== "all" ? state : null
+      });
+      if (error) throw error;
+      
+      const res = data as any;
       return {
-        countries: Array.from(new Set(countries.data?.map((d: any) => d.country).filter(Boolean))) as string[],
-        states: Array.from(new Set(states.data?.map((d: any) => d.state).filter(Boolean))) as string[],
-        cities: Array.from(new Set(cities.data?.map((d: any) => d.city).filter(Boolean))) as string[],
+        countries: res?.countries?.filter(Boolean) || [],
+        states: res?.states?.filter(Boolean) || [],
+        cities: res?.cities?.filter(Boolean) || [],
       };
     },
   });
