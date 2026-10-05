@@ -14,6 +14,16 @@ ALTER TABLE public.secondary_market_listings
   CHECK (status IN ('pending', 'approved', 'rejected', 'cancelled', 'sold'));
 
 -- ============================================================
+-- 1b. ADD FK TO public.profiles SO PostgREST CAN JOIN SELLER DATA
+-- ============================================================
+ALTER TABLE public.secondary_market_listings
+  DROP CONSTRAINT IF EXISTS secondary_market_listings_seller_id_profiles_fkey;
+
+ALTER TABLE public.secondary_market_listings
+  ADD CONSTRAINT secondary_market_listings_seller_id_profiles_fkey
+  FOREIGN KEY (seller_id) REFERENCES public.profiles(id) ON DELETE SET NULL;
+
+-- ============================================================
 -- 2. ADD NEW COLUMNS
 -- ============================================================
 ALTER TABLE public.secondary_market_listings

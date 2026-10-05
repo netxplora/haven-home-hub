@@ -71,7 +71,7 @@ export function AdminMarketplace() {
           investment_properties!secondary_market_listings_property_id_fkey(
             id, title, currency, cover_image_url, location, unit_price
           ),
-          profiles!secondary_market_listings_seller_id_fkey(
+          profiles!secondary_market_listings_seller_id_profiles_fkey(
             id, full_name, email, phone
           )
         `)
