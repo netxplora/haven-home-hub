@@ -19,6 +19,11 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        // Disable service worker in dev — avoids ERR_CACHE_OPERATION_NOT_SUPPORTED
+        // for range-request assets like <video> files in dev mode
+        enabled: false,
+      },
       includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'masked-icon.svg'],
       manifest: {
         name: 'Verdant Estate',
@@ -40,7 +45,21 @@ export default defineConfig(({ mode }) => ({
             purpose: 'any maskable'
           }
         ]
-      }
+      },
+      workbox: {
+        // Exclude video/audio from precache & runtime cache.
+        // The browser Cache API cannot handle byte-range (streaming) requests,
+        // which causes ERR_CACHE_OPERATION_NOT_SUPPORTED for <video> elements.
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff,woff2}'],
+        navigateFallbackDenylist: [/^\/api\//],
+        runtimeCaching: [
+          {
+            // Explicitly bypass the SW for all video/audio file extensions
+            urlPattern: /\.(mp4|webm|ogg|mov|avi|mkv|mp3|wav|aac)$/i,
+            handler: 'NetworkOnly' as const,
+          },
+        ],
+      },
     }),
     Sitemap({
       hostname: 'https://havenhomehub.com',

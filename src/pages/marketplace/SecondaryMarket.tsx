@@ -14,14 +14,10 @@ import { resolveImage } from "@/lib/format";
 import {
   Dialog,
   DialogContent,
-  DialogHeader,
   DialogTitle,
   DialogDescription,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Separator } from "@/components/ui/separator";
 import investHero4 from "@/assets/invest-hero4.jpg";
-import { LazyImage } from "@/components/ui/LazyImage";
 
 export default function SecondaryMarket() {
   const { brand } = useBrand();
@@ -256,84 +252,191 @@ export default function SecondaryMarket() {
         )}
       </div>
 
-      {/* Purchase Confirmation Modal with partial quantity selector */}
+      {/* ── Buy Shares Modal ── */}
       <Dialog open={!!purchaseModal} onOpenChange={(open) => !open && setPurchaseModal(null)}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Buy Shares</DialogTitle>
-            <DialogDescription>
-              Select how many units to purchase. Payment will be deducted from your wallet balance.
-            </DialogDescription>
-          </DialogHeader>
-          
+        <DialogContent className="p-0 gap-0 border-0 bg-transparent shadow-none max-w-none w-auto">
           {purchaseModal && (() => {
-            const unitsAvailable = purchaseModal.units_available ?? (purchaseModal.units_to_sell - (purchaseModal.units_sold ?? 0));
-            const totalCost = unitsToBuy * purchaseModal.price_per_unit;
+            const listing = purchaseModal;
+            const unitsAvailable = listing.units_available ?? (listing.units_to_sell - (listing.units_sold ?? 0));
+            const totalCost = unitsToBuy * listing.price_per_unit;
+            const currency = listing.property?.currency;
+            const originalPrice = listing.property?.unit_price || 0;
+            const diff = listing.price_per_unit - originalPrice;
+            const diffPct = originalPrice > 0 ? (diff / originalPrice) * 100 : 0;
+
             return (
-              <div className="space-y-4 py-4">
-                <div className="p-4 bg-muted/50 rounded-xl space-y-3">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Property</span>
-                    <span className="font-medium text-right max-w-[200px] truncate">{purchaseModal.property?.title}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Available</span>
-                    <span className="font-bold">{unitsAvailable} units</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Price per share</span>
-                    <span className="font-medium">{formatMoney(purchaseModal.price_per_unit, purchaseModal.property?.currency)}</span>
-                  </div>
-                </div>
+              <>
+                {/* Accessibility */}
+                <DialogTitle className="sr-only">Buy Shares</DialogTitle>
+                <DialogDescription className="sr-only">
+                  Select the number of units to purchase. Payment will be deducted from your wallet balance.
+                </DialogDescription>
 
-                <Separator />
-
-                {/* Quantity Selector */}
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold">Units to Buy</Label>
-                  <div className="flex items-center gap-3">
-                    <Button type="button" variant="outline" size="icon" className="h-10 w-10 rounded-lg shrink-0"
-                      disabled={unitsToBuy <= 1} onClick={() => setUnitsToBuy(Math.max(1, unitsToBuy - 1))}>−</Button>
-                    <Input
-                      type="number" min={1} max={unitsAvailable} value={unitsToBuy}
-                      onChange={(e) => {
-                        const v = parseInt(e.target.value, 10);
-                        if (isNaN(v)) setUnitsToBuy(1);
-                        else setUnitsToBuy(Math.min(unitsAvailable, Math.max(1, v)));
-                      }}
-                      className="h-10 flex-1 rounded-lg text-center font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                    />
-                    <Button type="button" variant="outline" size="icon" className="h-10 w-10 rounded-lg shrink-0"
-                      disabled={unitsToBuy >= unitsAvailable} onClick={() => setUnitsToBuy(Math.min(unitsAvailable, unitsToBuy + 1))}>+</Button>
+                {/* Sheet panel — bottom on mobile, centred card on sm+ */}
+                <div className="
+                  fixed inset-x-0 bottom-0 z-50
+                  sm:relative sm:inset-auto sm:mx-auto sm:w-full sm:max-w-md
+                  flex flex-col
+                  bg-background
+                  rounded-t-2xl sm:rounded-2xl
+                  border-t border-border/60 sm:border sm:border-border
+                  shadow-2xl
+                  max-h-[92dvh] sm:max-h-[90vh]
+                  overflow-hidden
+                ">
+                  {/* Drag handle — mobile only */}
+                  <div className="flex justify-center pt-3 pb-1 sm:hidden shrink-0">
+                    <div className="h-1 w-10 rounded-full bg-border/70" />
                   </div>
-                  <p className="text-[10px] text-muted-foreground text-right">Max: {unitsAvailable} units</p>
-                </div>
 
-                <div className="pt-3 border-t border-border flex justify-between items-center">
-                  <span className="font-medium">Total Cost</span>
-                  <span className="font-bold text-primary text-xl">
-                    {formatMoney(totalCost, purchaseModal.property?.currency)}
-                  </span>
+                  {/* Property image header — eager, no LazyImage */}
+                  <div className="relative h-36 sm:h-44 shrink-0 bg-muted overflow-hidden">
+                    {listing.property?.cover_image_url ? (
+                      <img
+                        src={resolveImage(listing.property.cover_image_url)}
+                        alt={listing.property?.title ?? "Property"}
+                        loading="eager"
+                        decoding="sync"
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full flex items-center justify-center">
+                        <Layers className="h-10 w-10 text-muted-foreground/20" />
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                    <div className="absolute bottom-0 inset-x-0 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-wider text-primary mb-0.5">
+                        Secondary Market Purchase
+                      </p>
+                      <h2 className="font-bold text-base sm:text-lg text-white leading-tight line-clamp-2">
+                        {listing.property?.title}
+                      </h2>
+                      <p className="text-white/70 text-xs mt-0.5 flex items-center gap-1">
+                        <MapPin className="h-3 w-3 shrink-0" />
+                        <span className="truncate">{listing.property?.location}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Scrollable body */}
+                  <div className="flex-1 overflow-y-auto overscroll-contain px-5 py-5 space-y-5">
+
+                    {/* Listing summary rows */}
+                    <div className="rounded-xl border border-border/50 bg-muted/30 divide-y divide-border/40 text-sm">
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <span className="text-muted-foreground">Available Units</span>
+                        <span className="font-bold text-foreground">{unitsAvailable} units</span>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <span className="text-muted-foreground">Price per Share</span>
+                        <div className="text-right">
+                          <span className="font-bold text-foreground block">{formatMoney(listing.price_per_unit, currency)}</span>
+                          {diffPct !== 0 && (
+                            <span className={`text-[11px] font-semibold ${diffPct > 0 ? "text-red-500" : "text-emerald-600"}`}>
+                              {diffPct > 0 ? "+" : ""}{diffPct.toFixed(1)}% vs original
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center justify-between px-4 py-3">
+                        <span className="text-muted-foreground">Seller</span>
+                        <span className="font-medium text-foreground">{listing.seller?.full_name || "Verified Investor"}</span>
+                      </div>
+                    </div>
+
+                    {/* Units stepper */}
+                    <div className="space-y-3">
+                      <Label className="text-sm font-semibold text-foreground">Units to Buy</Label>
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          disabled={unitsToBuy <= 1}
+                          onClick={() => setUnitsToBuy(Math.max(1, unitsToBuy - 1))}
+                          className="h-12 w-12 rounded-xl border border-border bg-background text-xl font-bold flex items-center justify-center shrink-0 transition-colors hover:bg-muted active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation select-none"
+                        >
+                          −
+                        </button>
+                        <Input
+                          type="number"
+                          min={1}
+                          max={unitsAvailable}
+                          value={unitsToBuy}
+                          onChange={(e) => {
+                            const v = parseInt(e.target.value, 10);
+                            if (isNaN(v)) setUnitsToBuy(1);
+                            else setUnitsToBuy(Math.min(unitsAvailable, Math.max(1, v)));
+                          }}
+                          className="h-12 flex-1 rounded-xl text-center text-lg font-bold border-border bg-background [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                        />
+                        <button
+                          type="button"
+                          disabled={unitsToBuy >= unitsAvailable}
+                          onClick={() => setUnitsToBuy(Math.min(unitsAvailable, unitsToBuy + 1))}
+                          className="h-12 w-12 rounded-xl border border-border bg-background text-xl font-bold flex items-center justify-center shrink-0 transition-colors hover:bg-muted active:scale-95 disabled:opacity-30 disabled:cursor-not-allowed touch-manipulation select-none"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-muted-foreground">
+                        <button
+                          type="button"
+                          className="font-semibold text-primary underline-offset-2 hover:underline"
+                          onClick={() => setUnitsToBuy(unitsAvailable)}
+                        >
+                          Buy all {unitsAvailable} units
+                        </button>
+                        <span>Max: {unitsAvailable}</span>
+                      </div>
+                    </div>
+
+                    {/* Total cost */}
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 px-4 py-4 flex items-center justify-between">
+                      <div>
+                        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Total Cost</p>
+                        <p className="text-[11px] text-muted-foreground mt-0.5">
+                          {unitsToBuy} unit{unitsToBuy > 1 ? "s" : ""} × {formatMoney(listing.price_per_unit, currency)}
+                        </p>
+                      </div>
+                      <p className="font-bold text-2xl text-primary">{formatMoney(totalCost, currency)}</p>
+                    </div>
+
+                    {/* Disclaimer */}
+                    <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-400 p-3.5 rounded-xl text-xs leading-relaxed">
+                      <Info className="h-4 w-4 shrink-0 mt-0.5" />
+                      <p>This transaction is final. Funds will be immediately deducted from your wallet and shares transferred to your investment portfolio.</p>
+                    </div>
+                  </div>
+
+                  {/* Sticky footer */}
+                  <div className="shrink-0 px-5 pb-6 pt-4 border-t border-border/50 bg-background flex flex-col sm:flex-row gap-3">
+                    <Button
+                      variant="outline"
+                      className="w-full sm:w-auto sm:flex-none h-12 sm:h-10 rounded-xl font-semibold text-sm"
+                      onClick={() => setPurchaseModal(null)}
+                      disabled={isPurchasing}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      className="w-full sm:flex-1 h-12 sm:h-10 rounded-xl font-bold text-sm shadow-sm"
+                      onClick={handlePurchase}
+                      disabled={isPurchasing || !user}
+                    >
+                      {isPurchasing
+                        ? "Processing..."
+                        : !user
+                        ? "Login Required"
+                        : `Confirm Purchase · ${formatMoney(totalCost, currency)}`}
+                    </Button>
+                  </div>
                 </div>
-                
-                <div className="bg-amber-500/10 border border-amber-500/20 text-amber-700 p-3 rounded-lg text-xs flex items-start gap-2">
-                  <Info className="h-4 w-4 shrink-0 mt-0.5" />
-                  <p>This transaction is final. Funds will be immediately deducted from your wallet and units transferred to your portfolio.</p>
-                </div>
-              </div>
+              </>
             );
           })()}
-
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setPurchaseModal(null)} disabled={isPurchasing}>
-              Cancel
-            </Button>
-            <Button onClick={handlePurchase} disabled={isPurchasing || !user}>
-              {isPurchasing ? "Processing..." : !user ? "Login Required" : "Confirm Purchase"}
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </SiteLayout>
   );
 }
+
