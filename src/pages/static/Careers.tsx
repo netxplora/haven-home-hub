@@ -160,9 +160,9 @@ export default function Careers() {
       />
       
       {/* Hero Type E: People & Culture Split Hero */}
-      <section className="relative bg-white dark:bg-background overflow-hidden border-b border-border pt-20">
+      <section className="relative bg-background overflow-hidden border-b border-border pt-20">
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/60 dark:bg-secondary/20" />
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/60" />
         </div>
 
         <div className="container-wide relative z-10">
@@ -218,10 +218,10 @@ export default function Careers() {
                   className="absolute inset-0 h-full w-full object-cover"
                   loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/50 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 via-transparent to-transparent" />
                 <div className="absolute bottom-0 inset-x-0 p-6">
                   <p className="text-xs uppercase tracking-wider text-primary font-semibold">Our Team</p>
-                  <p className="text-sm text-white/90 mt-1 font-sans">People with expertise and a commitment to client outcomes.</p>
+                  <p className="text-sm text-white mt-1 font-sans">People with expertise and a commitment to client outcomes.</p>
                 </div>
               </div>
             </div>

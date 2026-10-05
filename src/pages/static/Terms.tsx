@@ -9,7 +9,7 @@ export default function Terms() {
       <SEO title="Terms of Service" description={`${brand.platform_name} Terms of Service. Please read these terms carefully before using our platform.`} />
       
       {/* Hero Type D: Legal Page Typography Header */}
-      <section className="relative bg-white dark:bg-background border-b border-border pt-28 pb-12">
+      <section className="relative bg-background border-b border-border pt-28 pb-12">
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-0 left-0 w-1 h-full bg-primary/20" />
         </div>

@@ -48,11 +48,11 @@ export default function About() {
       />
 
       {/* Hero Type F: Brand Editorial Hero */}
-      <section className="relative bg-white dark:bg-background overflow-hidden border-b border-border pt-20 pb-0">
+      <section className="relative bg-background overflow-hidden border-b border-border pt-20 pb-0">
         {/* Subtle background architectural lines */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/60 dark:bg-secondary/20" />
-          <div className="absolute top-1/4 right-1/4 w-px h-2/3 bg-emerald-200/50 dark:bg-emerald-800/30" />
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-accent/60" />
+          <div className="absolute top-1/4 right-1/4 w-px h-2/3 bg-border/60" />
         </div>
 
         <div className="container-wide relative z-10">
@@ -101,10 +101,10 @@ export default function About() {
                   className="absolute inset-0 h-full w-full object-cover"
                   loading="eager"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-emerald-950/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-secondary/70 via-transparent to-transparent" />
                 <div className="absolute bottom-0 inset-x-0 p-6">
                   <p className="text-xs uppercase tracking-wider text-primary font-semibold">Agency-Led Platform</p>
-                  <p className="text-sm text-white/90 mt-1 font-sans">Every listing physically verified by our team before it goes live.</p>
+                  <p className="text-sm text-white mt-1 font-sans">Every listing physically verified by our team before it goes live.</p>
                 </div>
               </div>
             </div>
