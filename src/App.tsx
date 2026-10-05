@@ -215,6 +215,7 @@ const App = () => (
               {/* Invest */}
               <Route path="/invest" element={<InvestHome />} />
               <Route path="/invest/opportunities" element={<InvestOpportunities />} />
+              <Route path="/invest/trade" element={<SecondaryMarket />} />
               <Route path="/invest/portfolio" element={<Navigate to="/dashboard?tab=investments" replace />} />
               <Route path="/invest/portfolio/:id" element={<ProtectedRoute><InvestPortfolioDetail /></ProtectedRoute>} />
               <Route path="/invest/withdrawals" element={<ProtectedRoute><Withdrawals /></ProtectedRoute>} />

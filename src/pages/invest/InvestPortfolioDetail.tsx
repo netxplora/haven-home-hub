@@ -14,7 +14,7 @@ import {
   Calendar, Wallet, Target, Activity, DollarSign, Building2,
   CreditCard, ArrowUpRight, Percent, Timer, ChevronRight,
   Download, PenLine, Eye, Stamp, Scale, Lock, Award,
-  Pause, Play, Zap, FileCheck
+  Pause, Play, Zap, FileCheck, Loader2, Tag, XCircle, ArrowRightLeft
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SellUnitsDialog } from "@/components/dashboard/SellUnitsDialog";
@@ -33,8 +33,25 @@ export default function InvestPortfolioDetail() {
   const qc = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
   const [isSellModalOpen, setIsSellModalOpen] = useState(false);
+  const [cancellingListingId, setCancellingListingId] = useState<string | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<any>(null);
+
+  // ── Secondary Market Active Listings for this Investment ──
+  const { data: activeListings = [], isLoading: isListingsLoading } = useQuery({
+    queryKey: ["my-secondary-listings", id],
+    enabled: !!id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("secondary_market_listings" as any)
+        .select("*")
+        .eq("investment_id", id)
+        .in("status", ["pending", "approved"])
+        .order("created_at", { ascending: false });
+      if (error) return [];
+      return (data || []) as any[];
+    },
+  });
 
   // ── Enriched Data from RPC ──
   const { data: enrichedData, isLoading, error } = useQuery({
@@ -306,18 +323,43 @@ export default function InvestPortfolioDetail() {
               </div>
             </div>
             
-            <div className="flex flex-col md:items-end gap-3 w-full md:w-auto">
+            <div className="flex flex-wrap md:flex-col md:items-end gap-3 w-full md:w-auto">
+              <div className="flex items-center gap-2 w-full md:w-auto">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="rounded-xl font-bold text-xs uppercase tracking-wider h-10 px-4 border-border/80 hover:bg-muted"
+                  asChild
+                >
+                  <Link to="/secondary-market">
+                    <ArrowRightLeft className="w-3.5 h-3.5 mr-1.5 text-primary" /> Trade Center
+                  </Link>
+                </Button>
+                {investment?.secondary_market_enabled && (
+                  <Button 
+                    variant="default" 
+                    size="sm" 
+                    className="rounded-xl font-bold text-xs uppercase tracking-wider h-10 px-4"
+                    onClick={() => {
+                      setActiveTab("liquidity");
+                      setIsSellModalOpen(true);
+                    }}
+                  >
+                    <Tag className="w-3.5 h-3.5 mr-1.5" /> Sell Units
+                  </Button>
+                )}
+              </div>
+
               {!isFunded && unitsAvailable > 0 && (
-                <div className="bg-primary/5 border border-primary/20 rounded-xl p-4 flex flex-col md:items-end w-full md:w-64 relative overflow-hidden group">
-                  <div className="absolute top-0 right-0 p-4 opacity-5 translate-x-2 -translate-y-2 transition-transform group-hover:translate-x-0 group-hover:-translate-y-0">
-                    <TrendingUp className="w-24 h-24 text-primary" />
+                <div className="bg-primary/5 border border-primary/20 rounded-xl p-3 flex items-center justify-between gap-4 w-full md:w-auto relative overflow-hidden">
+                  <div>
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-primary">Primary Allocation</p>
+                    <p className="text-xs font-semibold text-foreground">
+                      <span className={unitsAvailable < 10 ? "text-destructive" : ""}>{unitsAvailable} Units Remaining</span>
+                    </p>
                   </div>
-                  <p className="text-[11px] font-bold uppercase tracking-wider text-primary mb-1 relative z-10">Expand Position</p>
-                  <p className="text-sm font-semibold text-foreground mb-3 relative z-10">
-                    <span className={unitsAvailable < 10 ? "text-destructive" : ""}>{unitsAvailable} Units Remaining</span>
-                  </p>
-                  <Button asChild className="w-full shadow-sm relative z-10" size="sm">
-                    <Link to={`/invest/${prop.slug}`}>Buy More Units</Link>
+                  <Button asChild size="sm" variant="outline" className="h-8 px-3 text-xs font-bold shrink-0">
+                    <Link to={`/invest/${prop.slug}`}>Buy More</Link>
                   </Button>
                 </div>
               )}
@@ -1125,35 +1167,219 @@ export default function InvestPortfolioDetail() {
 
           {/* ═══ LIQUIDITY TAB ═══ */}
           <TabsContent value="liquidity" className="animate-in fade-in space-y-8 outline-none">
-            <div className="bg-card border border-border/50 rounded-2xl shadow-sm p-8 max-w-4xl">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+            <div className="bg-card border border-border/50 rounded-2xl shadow-sm p-6 sm:p-8 space-y-8">
+              {/* Header */}
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-6 border-b border-border/50">
                 <div>
-                  <h4 className="font-serif text-xl font-bold text-foreground">Secondary Market Liquidity</h4>
-                  <p className="text-sm text-muted-foreground mt-1">Liquidate your units by selling them to other investors on the open market.</p>
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="p-1.5 rounded-lg bg-primary/10 text-primary">
+                      <ArrowRightLeft className="w-4 h-4" />
+                    </span>
+                    <h4 className="font-serif text-xl font-bold text-foreground">Secondary Market &amp; Share Liquidity</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">
+                    Liquidate your holdings by listing shares on the public Trade Center, or cancel active listings anytime.
+                  </p>
                 </div>
-                <Button 
-                  className="shrink-0" 
-                  size="lg" 
-                  disabled={!investment.secondary_market_enabled || (investment.status !== 'confirmed' && investment.status !== 'active' && investment.status !== 'completed')} 
-                  onClick={() => setIsSellModalOpen(true)}
-                >
-                  {investment.secondary_market_enabled ? "Sell Units Now" : "Market Locked"}
-                </Button>
+                <div className="flex items-center gap-3 shrink-0">
+                  <Button 
+                    variant="outline"
+                    className="font-bold text-xs uppercase tracking-wider h-11 px-5 rounded-xl border-border/80 hover:bg-muted"
+                    asChild
+                  >
+                    <Link to="/secondary-market">
+                      <ExternalLink className="w-4 h-4 mr-1.5 text-primary" /> View Trade Center
+                    </Link>
+                  </Button>
+                  <Button 
+                    className="font-bold text-xs uppercase tracking-wider h-11 px-6 rounded-xl shadow-sm" 
+                    disabled={!investment.secondary_market_enabled || (investment.status !== 'confirmed' && investment.status !== 'active' && investment.status !== 'completed')} 
+                    onClick={() => setIsSellModalOpen(true)}
+                  >
+                    {investment.secondary_market_enabled ? (
+                      <><Tag className="w-4 h-4 mr-1.5" /> List Units For Sale</>
+                    ) : (
+                      <><Lock className="w-4 h-4 mr-1.5" /> Market Locked</>
+                    )}
+                  </Button>
+                </div>
               </div>
 
+              {/* Position Metrics */}
+              {(() => {
+                const unitsOwned = Number(investment.units_owned ?? 0);
+                const committedUnits = activeListings.reduce((sum: number, l: any) => sum + ((l.units_to_sell ?? 0) - (l.units_sold ?? 0)), 0);
+                const availableToList = Math.max(0, unitsOwned - committedUnits);
+                const currency = prop.currency || "USD";
+
+                return (
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                    <div className="p-4 rounded-xl border border-border/50 bg-muted/20">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Units Owned</p>
+                      <p className="font-serif text-2xl font-bold text-foreground mt-1">{unitsOwned}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Total registered units</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-border/50 bg-muted/20">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Units Listed</p>
+                      <p className="font-serif text-2xl font-bold text-amber-600 mt-1">{committedUnits}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Committed on market</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-border/50 bg-muted/20">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Available to List</p>
+                      <p className="font-serif text-2xl font-bold text-primary mt-1">{availableToList}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Uncommitted balance</p>
+                    </div>
+                    <div className="p-4 rounded-xl border border-border/50 bg-muted/20">
+                      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">Market Status</p>
+                      <div className="mt-1 flex items-center gap-1.5">
+                        <span className={`h-2 w-2 rounded-full ${investment.secondary_market_enabled ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`} />
+                        <span className="font-bold text-sm text-foreground">
+                          {investment.secondary_market_enabled ? "Open for Trading" : "Trading Locked"}
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Peer-to-peer settlement</p>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Active Listings Section */}
               {!investment.secondary_market_enabled ? (
                 <div className="p-6 bg-red-500/5 border border-red-500/20 rounded-xl text-center">
-                   <AlertCircle className="w-12 h-12 text-red-500/50 mx-auto mb-3" />
-                   <p className="font-semibold text-foreground text-red-600">Trading Locked by Administration</p>
-                   <p className="text-sm text-red-500/80 mt-1 max-w-sm mx-auto">This asset is currently locked from secondary market trading. Contact support for more information.</p>
+                  <AlertCircle className="w-10 h-10 text-red-500/60 mx-auto mb-3" />
+                  <p className="font-semibold text-foreground text-red-600">Trading Locked by Administration</p>
+                  <p className="text-sm text-red-500/80 mt-1 max-w-sm mx-auto">
+                    Secondary trading for this property has been temporarily paused by administration.
+                  </p>
+                </div>
+              ) : activeListings.length > 0 ? (
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <h5 className="font-serif text-base font-bold text-foreground flex items-center gap-2">
+                      <Tag className="w-4 h-4 text-primary" /> Active Marketplace Orders ({activeListings.length})
+                    </h5>
+                    <Badge variant="outline" className="border-primary/30 text-primary bg-primary/5 font-bold uppercase text-[10px]">
+                      Live On Exchange
+                    </Badge>
+                  </div>
+
+                  <div className="divide-y divide-border/50 border border-border/50 rounded-xl overflow-hidden bg-background">
+                    {activeListings.map((listing: any) => {
+                      const currency = prop.currency || "USD";
+                      const unitsForSale = listing.units_to_sell - (listing.units_sold || 0);
+                      const unitPrice = Number(listing.price_per_unit || 0);
+                      const totalListingValue = unitsForSale * unitPrice;
+                      const isCancelling = cancellingListingId === listing.id;
+                      const isApproved = listing.status === "approved";
+
+                      return (
+                        <div key={listing.id} className="p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-muted/10 transition-colors">
+                          <div className="space-y-1.5">
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                variant={isApproved ? "default" : "secondary"} 
+                                className="text-[9px] uppercase font-bold tracking-wider"
+                              >
+                                {isApproved ? "Active on Market" : "Pending Approval"}
+                              </Badge>
+                              <span className="text-xs text-muted-foreground">
+                                Listed {new Date(listing.created_at).toLocaleDateString()}
+                              </span>
+                            </div>
+
+                            <p className="font-serif text-lg font-bold text-foreground">
+                              {unitsForSale} {unitsForSale === 1 ? 'Unit' : 'Units'} @ {formatMoney(unitPrice, currency)} / unit
+                            </p>
+
+                            <p className="text-xs text-muted-foreground">
+                              Total Order Valuation: <span className="font-semibold text-foreground">{formatMoney(totalListingValue, currency)}</span>
+                              {listing.units_sold > 0 && ` • ${listing.units_sold} sold`}
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="h-9 px-3 text-xs font-bold rounded-lg border-border/80 hover:bg-muted"
+                              asChild
+                            >
+                              <Link to="/secondary-market">
+                                <ExternalLink className="w-3.5 h-3.5 mr-1" /> View Listing
+                              </Link>
+                            </Button>
+
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-9 px-3 text-xs font-bold rounded-lg border-red-200/60 text-red-600 hover:bg-red-500/10 hover:text-red-700"
+                              disabled={isCancelling}
+                              onClick={async () => {
+                                setCancellingListingId(listing.id);
+                                try {
+                                  const { error } = await (supabase.rpc as any)("cancel_secondary_market_listing", {
+                                    p_listing_id: listing.id,
+                                  });
+                                  if (error) throw error;
+                                  toast({
+                                    title: "Listing Cancelled",
+                                    description: "Your listing has been removed from the marketplace.",
+                                  });
+                                  qc.invalidateQueries({ queryKey: ["my-secondary-listings", id] });
+                                  qc.invalidateQueries({ queryKey: ["secondary-listings"] });
+                                  qc.invalidateQueries({ queryKey: ["portfolio-detail-enriched", id] });
+                                } catch (err: any) {
+                                  toast({
+                                    title: "Cancellation Failed",
+                                    description: err.message || "Could not cancel listing.",
+                                    variant: "destructive",
+                                  });
+                                } finally {
+                                  setCancellingListingId(null);
+                                }
+                              }}
+                            >
+                              {isCancelling ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" />
+                              ) : (
+                                <XCircle className="w-3.5 h-3.5 mr-1" />
+                              )}
+                              Cancel Order
+                            </Button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
               ) : (
-                <div className="p-6 bg-muted/30 border border-border/50 rounded-xl text-center">
-                   <TrendingUp className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                   <p className="font-semibold text-foreground">No Active Sell Orders</p>
-                   <p className="text-sm text-muted-foreground mt-1 max-w-sm mx-auto">You have not listed any units for sale. You can list your units to lock in your capital appreciation early.</p>
+                <div className="p-8 bg-muted/20 border border-dashed border-border/60 rounded-xl text-center">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
+                    <ArrowRightLeft className="w-6 h-6" />
+                  </div>
+                  <p className="font-serif text-base font-bold text-foreground">No Active Sell Orders</p>
+                  <p className="text-xs sm:text-sm text-muted-foreground mt-1 max-w-md mx-auto">
+                    You have not listed any units for sale. You can list your units on the Trade Center anytime to liquidate your position before maturity.
+                  </p>
+                  <Button 
+                    className="mt-4 font-bold text-xs uppercase tracking-wider h-10 px-5 rounded-xl shadow-sm"
+                    onClick={() => setIsSellModalOpen(true)}
+                  >
+                    <Tag className="w-3.5 h-3.5 mr-1.5" /> List Units for Sale
+                  </Button>
                 </div>
               )}
+
+              {/* Informational Guidance */}
+              <div className="bg-muted/15 border border-border/40 rounded-xl p-4 flex items-start gap-3">
+                <ShieldCheck className="w-5 h-5 text-primary shrink-0 mt-0.5" />
+                <div className="text-xs leading-relaxed text-muted-foreground">
+                  <p className="font-semibold text-foreground mb-0.5">How Secondary Market Settlement Works</p>
+                  <p>
+                    When another verified investor purchases your listed units, legal ownership is updated on-ledger, and net sales proceeds are credited immediately to your account wallet.
+                  </p>
+                </div>
+              </div>
             </div>
           </TabsContent>
 

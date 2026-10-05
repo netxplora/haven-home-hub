@@ -1,67 +1,29 @@
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, BadgeCheck, Building2, LineChart, Search, ShieldCheck, Sparkles, TrendingUp, Wallet, ArrowUpRight, DollarSign, Activity, Clock, Award, CheckCircle2 } from "lucide-react";
+import { ArrowRight, Building2, ShieldCheck, TrendingUp, Wallet, ArrowUpRight, Activity, CheckCircle2, ArrowRightLeft, HelpCircle } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { InvestmentCard } from "@/components/invest/InvestmentCard";
-const investHero = "/images/hero/invest-hero.jpg";
-const investProp1 = "/images/hero/invest-prop-1.jpg";
-import investProp2 from "@/assets/invest-prop-2.jpg";
-import investProp3 from "@/assets/invest-prop-3.jpg";
-import property4 from "@/assets/property-4.jpg";
 import type { InvestmentProperty } from "@/lib/invest";
 import { SEO } from "@/components/site/SEO";
 import { PromoBanner } from "@/components/site/PromoBanner";
-import { useAuth } from "@/hooks/useAuth";
-import { formatMoney } from "@/lib/invest";
-import { Badge } from "@/components/ui/badge";
-import { lazy, Suspense } from "react";
+import { useBrand } from "@/hooks/useBrand";
 import { LazyImage } from "@/components/ui/LazyImage";
 
-const HomeTestimonials = lazy(() => import("@/components/site/HomeTestimonials").then(m => ({ default: m.HomeTestimonials })));
+const investHero = "/images/hero/invest-hero.jpg";
 
 export default function InvestHome() {
-  const { user } = useAuth();
+  const { brand } = useBrand();
 
-  // Live portfolio summary query from DB RPC
-  const { data: portfolioSummary } = useQuery({
-    queryKey: ["invest-portfolio-summary", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_investor_portfolio_summary", { p_user_id: user!.id });
-      if (error) {
-        console.error("Portfolio summary RPC error:", error);
-        return null;
-      }
-      return data;
-    }
-  });
-
-  // Query user investments to count specific status occurrences
-  const { data: userInvestments = [] } = useQuery({
-    queryKey: ["invest-home-investments-detail", user?.id],
-    enabled: !!user,
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from("user_investments")
-        .select("status")
-        .eq("user_id", user!.id);
-      if (error) {
-        console.error("Error fetching user investments:", error);
-        return [];
-      }
-      return data || [];
-    }
-  });
-
-  const { data: featured = [] } = useQuery({
+  const { data: featured = [], isLoading: isFeaturedLoading } = useQuery({
     queryKey: ["invest-featured"],
     queryFn: async () => {
       const { data } = await supabase
         .from("investment_properties")
         .select("*")
-        .in("status", ["open", "funded"])
+        .in("status", ["open", "funded", "roi_active"])
         .order("featured", { ascending: false })
         .order("created_at", { ascending: false })
         .limit(3);
@@ -70,83 +32,109 @@ export default function InvestHome() {
   });
 
   const steps = [
-    { icon: Search, title: "Browse properties", body: "Explore professionally-vetted, income-generating properties." },
-    { icon: Wallet, title: "Choose your amount", body: "Start from the defined minimum and select how much to invest." },
-    { icon: TrendingUp, title: "Earn income", body: "Receive scheduled distributions from rental income." },
-    { icon: LineChart, title: "Track performance", body: "Monitor your portfolio and payouts from your dashboard." },
+    {
+      step: "01",
+      icon: Building2,
+      title: "Select a Property",
+      description: "Browse audited residential and commercial properties with verified financial and legal documents."
+    },
+    {
+      step: "02",
+      icon: Wallet,
+      title: "Secure Your Allocation",
+      description: "Choose your share allocation and complete payment via card, bank transfer, or balance with digital contracts."
+    },
+    {
+      step: "03",
+      icon: TrendingUp,
+      title: "Earn Distributions & Trade",
+      description: "Receive scheduled rental dividends directly to your account, and buy or sell shares on the Trade Center anytime."
+    }
   ];
 
-  const benefits = [
-    { icon: Building2, title: "Managed properties", body: "Operated by experienced partners with transparent reporting." },
-    { icon: ShieldCheck, title: "Transparent structure", body: "Clear unit pricing, fees, and distribution mechanics." },
-    { icon: BadgeCheck, title: "Passive income potential", body: "Scheduled distributions from underlying rental performance." },
-    { icon: Sparkles, title: "Diversification", body: "Spread capital across locations, asset types, and horizons." },
+  const safeguards = [
+    {
+      title: "Independent Asset SPVs",
+      description: "Each property is ring-fenced within an individual legal entity, protecting assets from platform liability."
+    },
+    {
+      title: "Verified Title & Escrow",
+      description: "All acquisitions undergo third-party title verification and formal escrow settlement prior to listing."
+    },
+    {
+      title: "Automated Distributions",
+      description: "Rental distributions are recorded on-ledger and credited directly to your investor wallet on schedule."
+    },
+    {
+      title: "Secondary Market Liquidity",
+      description: "Holders can list approved shares for sale or purchase seasoned allocations from existing investors."
+    }
   ];
 
-  const nav = Number(portfolioSummary?.nav || 0);
-  const totalInvested = Number(portfolioSummary?.total_invested || 0);
-  const totalEarnings = Number(portfolioSummary?.total_earnings || 0);
-  const averageYield = Number(portfolioSummary?.projected_return_min || 0);
-  
-  const expectedRoi = totalInvested * (averageYield / 100);
-  const currentRoiEarned = totalEarnings;
-  const remainingRoi = Math.max(0, expectedRoi - currentRoiEarned);
-
-  // Status counts
-  const activeCount = userInvestments.filter((i: any) => i.status === 'roi_active' || i.status === 'active').length;
-  const fundingCompletedCount = userInvestments.filter((i: any) => i.status === 'preparing_for_roi' || i.status === 'funding_completed').length;
-  const maturedCount = userInvestments.filter((i: any) => i.status === 'matured' || i.status === 'completed').length;
+  const faqs = [
+    {
+      q: "What is fractional real estate co-ownership?",
+      a: "Fractional co-ownership allows you to purchase a defined number of shares in an institutional-grade property asset. You earn proportional rental income distributions and capital appreciation without the overhead of direct management."
+    },
+    {
+      q: "How do I sell my shares if I want liquidity?",
+      a: "You can list your units directly on our Secondary Market / Trade Center at your chosen price. Other verified platform investors can purchase your shares, with funds settling directly to your account balance."
+    },
+    {
+      q: "When and how are rental returns paid?",
+      a: "Rental distributions are disbursed based on the property schedule (monthly or quarterly) directly to your investor account. You can view past payments and download statements anytime from your dashboard."
+    }
+  ];
 
   return (
     <SiteLayout transparentNav="mobile">
       <SEO 
-        title="Invest in Real Estate" 
-        description="Co-invest in professionally managed, income-generating properties. Start with fractional ownership and earn scheduled distributions from rental income." 
+        title={`Fractional Real Estate Investments | ${brand.platform_name}`} 
+        description="Co-invest in audited, income-generating real estate assets. Earn regular rental yield and trade existing shares on the secondary exchange." 
         canonicalUrl={`${window.location.origin}/invest`}
       />
-      {/* ── 1. Split Visual Investment Hero (Type C) ────────────── */}
+
+      {/* ── 1. Hero Section ── */}
       <section className="relative overflow-hidden bg-card border-b border-border/50 pt-16 md:pt-24 pb-12 sm:pb-16">
         <div className="container-wide">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
             
-            {/* Left Column: Investment Value Proposition */}
+            {/* Left Column: Core Value Proposition */}
             <div className="lg:col-span-6 space-y-6">
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
-                  <ShieldCheck className="h-3.5 w-3.5" /> Institutional Real Estate
-                </span>
-                <span className="text-xs font-medium text-muted-foreground">
-                  Fractional Co-Ownership
-                </span>
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase bg-primary/10 text-primary border border-primary/20">
+                <ShieldCheck className="h-3.5 w-3.5" /> Institutional Real Estate Co-Ownership
               </div>
 
-              <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-foreground tracking-tight leading-[1.12]">
-                Co-invest in vetted, income-generating <span className="text-primary font-normal">property assets</span>.
+              <h1 className="font-heading text-3xl sm:text-4xl lg:text-5xl font-bold text-foreground tracking-tight leading-[1.15]">
+                Co-invest in audited, income-generating properties.
               </h1>
 
-              <p className="text-base text-muted-foreground leading-relaxed max-w-xl">
-                Access fractional equity in audited residential and commercial properties. Receive regular yield distributions and track your portfolio value with transparent legal ownership.
+              <p className="text-base sm:text-lg text-muted-foreground leading-relaxed max-w-xl font-sans">
+                Access fractional shares in vetted residential and commercial real estate. Earn scheduled rental distributions, track asset valuation in real time, and trade shares on the secondary market.
               </p>
 
-              {/* CTAs */}
-              <div className="flex flex-col sm:flex-row items-center gap-3 pt-2">
-                <Button asChild size="lg" className="w-full sm:w-auto h-12 px-7 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-xs uppercase tracking-wider shadow-sm transition-all">
-                  <Link to="/invest/opportunities" className="flex items-center gap-2">
+              {/* Primary Navigation & Action Buttons */}
+              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-2">
+                <Button asChild size="lg" className="h-12 px-7 rounded-xl font-semibold text-xs uppercase tracking-wider shadow-sm transition-all">
+                  <Link to="/invest/opportunities" className="flex items-center justify-center gap-2">
                     Explore Opportunities <ArrowRight className="h-4 w-4" />
                   </Link>
                 </Button>
-                <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-7 rounded-xl border-border/70 text-foreground hover:bg-muted font-medium text-xs uppercase tracking-wider transition-all">
-                  <a href="#how-it-works">How It Works</a>
+                
+                <Button asChild size="lg" variant="outline" className="h-12 px-7 rounded-xl border-border/80 text-foreground hover:bg-muted font-semibold text-xs uppercase tracking-wider transition-all">
+                  <Link to="/secondary-market" className="flex items-center justify-center gap-2">
+                    <ArrowRightLeft className="h-4 w-4 text-primary" /> Trade Existing Shares
+                  </Link>
                 </Button>
               </div>
 
               {/* Trust Indicators */}
               <div className="pt-6 border-t border-border/50 flex flex-wrap items-center gap-6 text-xs text-muted-foreground">
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-primary" /> Title Deed Escrow
+                  <CheckCircle2 className="h-4 w-4 text-primary" /> Verified Title Deeds
                 </span>
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
-                  <CheckCircle2 className="h-4 w-4 text-primary" /> Quarterly Distributions
+                  <CheckCircle2 className="h-4 w-4 text-primary" /> Scheduled Dividends
                 </span>
                 <span className="flex items-center gap-1.5 font-medium text-foreground">
                   <CheckCircle2 className="h-4 w-4 text-primary" /> Secondary Market Liquidity
@@ -154,26 +142,27 @@ export default function InvestHome() {
               </div>
             </div>
 
-            {/* Right Column: Architectural Asset Showcase */}
+            {/* Right Column: Visual Showcase */}
             <div className="lg:col-span-6 relative">
               <div className="relative aspect-[4/3] sm:aspect-[16/10] lg:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 shadow-md group">
-                <img
+                <LazyImage
                   src={investHero}
-                  alt="Real Estate Portfolio Asset"
+                  alt="Real Estate Investment Asset"
+                  wrapperClassName="w-full h-full"
                   className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/15 to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent pointer-events-none" />
 
-                {/* Floating Metrics Badge */}
+                {/* Metrics Highlight Overlay */}
                 <div className="absolute bottom-4 left-4 right-4 p-4 rounded-xl bg-black/60 backdrop-blur-md border border-white/15 text-white flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Historical Yield Range</p>
-                    <p className="font-serif text-xl sm:text-2xl font-bold text-primary">9.2% – 14.5% APR</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Typical Annual Yield</p>
+                    <p className="font-heading text-xl sm:text-2xl font-bold text-primary">8.5% – 14.0% p.a.</p>
                   </div>
                   <div className="text-right">
-                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Asset Status</p>
+                    <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">Trading Available</p>
                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-white bg-primary/80 px-2.5 py-0.5 rounded-md">
-                      Audited &amp; Active
+                      Open Market
                     </span>
                   </div>
                 </div>
@@ -184,356 +173,155 @@ export default function InvestHome() {
         </div>
       </section>
 
-      {/* Investment Performance Center */}
-      <section className="container-wide pb-12 relative z-20 sm:-mt-16">
-        <div className="bg-card border border-border/50 rounded-3xl p-6 md:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-widest text-primary mb-1">Investment Performance Center</p>
-              <h2 className="font-serif text-3xl font-bold text-foreground">
-                {user ? "Your Portfolio Performance" : "Platform Performance Overview"}
+      {/* ── 2. Trade Center / Secondary Market Highlight Card ── */}
+      <section className="container-wide py-10">
+        <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-primary/5 p-6 sm:p-8 lg:p-10 shadow-sm">
+          <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="space-y-2 max-w-2xl">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-md bg-primary/10 text-primary text-xs font-bold uppercase tracking-wider">
+                <ArrowRightLeft className="h-3.5 w-3.5" /> Peer-to-Peer Liquidity
+              </div>
+              <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground tracking-tight">
+                Secondary Market &amp; Trade Center
               </h2>
-            </div>
-            {!user ? (
-              <Badge variant="outline" className="border-primary/20 text-primary bg-primary/5 px-3 py-1 font-bold text-xs uppercase rounded-lg">
-                Demo Portfolio Preview
-              </Badge>
-            ) : (
-              <Badge variant="secondary" className="font-mono text-xs font-bold uppercase rounded-lg">
-                Live Data Synchronized
-              </Badge>
-            )}
-          </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
-            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Portfolio Value</p>
-              <p className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
-                {user ? formatMoney(nav) : "$124,500.00"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <ArrowUpRight className="h-3.5 w-3.5 text-primary" /> Current Valuation
+              <p className="text-sm sm:text-base text-muted-foreground leading-relaxed font-sans">
+                Looking to buy into funded, seasoned assets with immediate rental distribution history? Or want to sell existing shares before property maturity? Explore available listings directly on the platform Trade Center.
               </p>
             </div>
 
-            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Amount Invested</p>
-              <p className="font-serif text-2xl sm:text-3xl font-bold text-foreground">
-                {user ? formatMoney(totalInvested) : "$100,000.00"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">
-                <Activity className="h-3.5 w-3.5 text-primary" /> Capital deployed
-              </p>
-            </div>
-
-            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Expected ROI / Yield</p>
-              <p className="font-serif text-2xl sm:text-3xl font-bold text-primary">
-                {user ? formatMoney(expectedRoi) : "$18,500.00"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Target: {user ? `${averageYield}%` : "18.5%"} average p.a.
-              </p>
-            </div>
-
-            <div className="bg-muted/30 rounded-2xl p-5 border border-border/60 relative overflow-hidden hover-lift transition-all">
-              <p className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground mb-1.5">Current ROI Earned</p>
-              <p className="font-serif text-2xl sm:text-3xl font-bold text-primary">
-                {user ? formatMoney(currentRoiEarned) : "$6,000.00"}
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                Remaining to accrue: {user ? formatMoney(remainingRoi) : "$12,500.00"}
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-3 gap-3 mt-6 pt-6 border-t border-border/40">
-            <div className="text-center">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Active Investments</p>
-              <p className="font-serif text-lg font-bold text-foreground">
-                {user ? activeCount : "3"}
-              </p>
-            </div>
-            <div className="text-center border-x border-border/40">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Funding Completed</p>
-              <p className="font-serif text-lg font-bold text-secondary">
-                {user ? fundingCompletedCount : "1"}
-              </p>
-            </div>
-            <div className="text-center">
-              <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider mb-1">Matured Assets</p>
-              <p className="font-serif text-lg font-bold text-green-600">
-                {user ? maturedCount : "0"}
-              </p>
-            </div>
-          </div>
-
-          {user && userInvestments.length === 0 && (
-            <div className="mt-6 p-4 bg-muted/40 rounded-xl text-center border border-dashed border-border/60">
-              <p className="text-sm text-muted-foreground">You have no active investments. Click browse below to explore opportunities.</p>
-            </div>
-          )}
-        </div>
-      </section>
-
-      <PromoBanner placement="invest_page" className="my-10" />
-
-      {/* How it works */}
-      <section id="how-it-works" className="bg-secondary/10 border-y border-border/50 py-24 scroll-mt-20">
-        <div className="container-wide">
-          <div className="mb-16 text-center max-w-2xl mx-auto">
-            <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Process Overview</span>
-            <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight">A simple way to invest in rental properties</h2>
-            <p className="mt-6 text-muted-foreground text-lg leading-relaxed">We handle the legal structures, tenant management, and property maintenance. You simply track your returns.</p>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {steps.map((s, i) => (
-              <div key={s.title} className="relative rounded-3xl border border-border/60 bg-card p-8 shadow-sm hover-lift group transition-all">
-                <span className="absolute right-6 top-6 font-serif text-5xl font-black text-secondary/10 group-hover:text-primary/10 transition-colors">0{i + 1}</span>
-                <div className="h-14 w-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-6">
-                  <s.icon className="h-6 w-6 text-primary" />
-                </div>
-                <h3 className="font-serif text-xl font-bold text-foreground mb-3">{s.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{s.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Benefits */}
-      <section className="py-24 bg-background">
-        <div className="container-wide">
-          <div className="mb-16 text-center max-w-2xl mx-auto">
-            <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Why investors choose us</span>
-            <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight">Structured, transparent, patient.</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
-            {benefits.map((b) => (
-              <div key={b.title} className="rounded-3xl border border-border/40 bg-card p-8 hover-lift transition-all">
-                <span className="grid h-14 w-14 place-items-center rounded-2xl bg-secondary text-secondary-foreground mb-6 shadow-md">
-                  <b.icon className="h-6 w-6" />
-                </span>
-                <h3 className="font-serif text-xl font-bold text-foreground mb-3">{b.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{b.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Asset Classes */}
-      <section className="container-wide py-24 border-t border-border/30">
-        <div className="mb-16 text-center max-w-3xl mx-auto">
-          <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Portfolio Diversification</span>
-          <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight">Institutional-grade asset classes</h2>
-          <p className="mt-6 text-muted-foreground text-lg leading-relaxed">Diversify your portfolio across multiple high-performing real estate sectors, each carefully vetted by our acquisition team.</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
-            <LazyImage 
-              src={investProp1} 
-              alt="Commercial Real Estate" 
-              wrapperClassName="absolute inset-0 h-full w-full"
-              className="opacity-60 transition-transform duration-700 group-hover:scale-105" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-8 text-left w-full">
-               <h3 className="font-serif text-2xl font-bold text-white mb-2">Commercial Real Estate</h3>
-               <p className="text-sm text-white/80 leading-relaxed mb-5">Stable, long-term leases with established corporate tenants providing consistent yield.</p>
-               <span className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">8-12% Target Yield</span>
-            </div>
-          </div>
-          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
-            <LazyImage 
-              src={investProp2} 
-              alt="Premium Residential" 
-              wrapperClassName="absolute inset-0 h-full w-full"
-              className="opacity-60 transition-transform duration-700 group-hover:scale-105" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-8 text-left w-full">
-               <h3 className="font-serif text-2xl font-bold text-white mb-2">Premium Residential</h3>
-               <p className="text-sm text-white/80 leading-relaxed mb-5">High-demand multi-family and luxury single-family homes in growing metropolitan areas.</p>
-               <span className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">6-9% Target Yield</span>
-            </div>
-          </div>
-          <div className="group rounded-3xl overflow-hidden border border-border/40 relative h-[420px] shadow-sm bg-neutral-900">
-            <LazyImage 
-              src={investProp3} 
-              alt="Industrial & Logistics" 
-              wrapperClassName="absolute inset-0 h-full w-full"
-              className="opacity-60 transition-transform duration-700 group-hover:scale-105" 
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-transparent" />
-            <div className="absolute bottom-0 left-0 p-8 text-left w-full">
-               <h3 className="font-serif text-2xl font-bold text-white mb-2">Industrial & Logistics</h3>
-               <p className="text-sm text-white/80 leading-relaxed mb-5">E-commerce fulfillment centers and logistics hubs with inflation-linked escalation clauses.</p>
-               <span className="inline-block bg-primary/20 text-primary border border-primary/30 px-3 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider backdrop-blur-md">7-10% Target Yield</span>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full lg:w-auto shrink-0">
+              <Button asChild size="lg" className="h-12 px-6 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm">
+                <Link to="/secondary-market" className="flex items-center justify-center gap-2">
+                  Access Trade Center <ArrowRight className="h-4 w-4" />
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Track Record */}
-      <section className="bg-primary/5 py-24 border-y border-primary/10">
-        <div className="container-wide text-center">
-          <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">By The Numbers</span>
-          <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground mb-16 tracking-tight">Our Historical Performance</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            <div className="p-6 bg-card border border-border/50 rounded-3xl shadow-sm">
-               <p className="font-serif text-4xl sm:text-5xl font-bold text-primary mb-3">$142M</p>
-               <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Assets Funded</p>
-            </div>
-            <div className="p-6 bg-card border border-border/50 rounded-3xl shadow-sm">
-               <p className="font-serif text-4xl sm:text-5xl font-bold text-primary mb-3">12.4%</p>
-               <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Avg Net Yield</p>
-            </div>
-            <div className="p-6 bg-card border border-border/50 rounded-3xl shadow-sm">
-               <p className="font-serif text-4xl sm:text-5xl font-bold text-primary mb-3">4,200+</p>
-               <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Active Investors</p>
-            </div>
-            <div className="p-6 bg-card border border-border/50 rounded-3xl shadow-sm">
-               <p className="font-serif text-4xl sm:text-5xl font-bold text-primary mb-3">100%</p>
-               <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">Distributions Paid</p>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground mt-10 font-medium">* Past performance is not indicative of future results.</p>
-        </div>
-      </section>
-
-      {/* Security & Legal */}
-      <section className="container-wide py-32">
-        <div className="grid lg:grid-cols-2 gap-16 lg:gap-24 items-center">
+      {/* ── 3. Featured Open Opportunities ── */}
+      <section className="container-wide py-12">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-8">
           <div>
-            <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Investor Protection</span>
-            <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight mb-6">Institutional-grade security & compliance</h2>
-            <p className="text-muted-foreground text-lg leading-relaxed mb-10">
-              We employ the same rigorous legal frameworks used by institutional funds to ensure your capital is protected. Every property is held in a distinct Special Purpose Vehicle (SPV), entirely separate from our operational assets.
-            </p>
-            <div className="space-y-8">
-              <div className="flex gap-5">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-                  <ShieldCheck className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-serif text-xl font-bold text-foreground mb-2">Bankruptcy-Remote SPVs</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">Each asset is ring-fenced in its own LLC, protecting investors from cross-liability and platform risk.</p>
-                </div>
-              </div>
-              <div className="flex gap-5">
-                <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center shrink-0 border border-primary/20">
-                  <BadgeCheck className="h-6 w-6 text-primary" />
-                </div>
-                <div>
-                  <h4 className="font-serif text-xl font-bold text-foreground mb-2">Third-Party Title Insurance</h4>
-                  <p className="text-sm text-muted-foreground leading-relaxed">Comprehensive title policies are secured prior to acquisition, ensuring clean and unencumbered ownership.</p>
-                </div>
-              </div>
-            </div>
+            <span className="text-xs font-semibold tracking-wider text-primary uppercase block mb-1">Open Allocations</span>
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold tracking-tight text-foreground">Featured Investment Opportunities</h2>
           </div>
-          <div className="relative">
-             <div className="absolute inset-0 bg-primary/10 translate-x-4 translate-y-4 rounded-[2rem] border border-primary/20" />
-             <LazyImage src={investProp1} alt="Legal Compliance" aspectClass="aspect-[4/3]" wrapperClassName="relative z-10 w-full rounded-[2rem] overflow-hidden border border-border shadow-2xl" className="w-full h-full object-cover" />
-          </div>
+          <Button asChild variant="outline" size="sm" className="h-10 px-5 rounded-xl border-border/80 font-semibold text-xs uppercase tracking-wider">
+            <Link to="/invest/opportunities">View All Properties <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </Button>
         </div>
+
+        {isFeaturedLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[1, 2, 3].map(i => (
+              <div key={i} className="h-80 rounded-2xl bg-muted/30 border border-border/50 animate-pulse" />
+            ))}
+          </div>
+        ) : featured.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {featured.map((p) => (
+              <InvestmentCard key={p.id} p={p} />
+            ))}
+          </div>
+        ) : (
+          <div className="p-12 text-center border border-dashed border-border rounded-2xl bg-muted/20">
+            <p className="text-muted-foreground text-sm">New investment properties are undergoing audit and will be open shortly.</p>
+            <Button asChild variant="outline" className="mt-4" size="sm">
+              <Link to="/secondary-market">Check Secondary Market Listings</Link>
+            </Button>
+          </div>
+        )}
       </section>
 
-      {/* Testimonials */}
-      <section className="bg-secondary/5 py-24 border-y border-border/50">
+      {/* ── 4. How It Works (Simple 3 Steps) ── */}
+      <section id="how-it-works" className="bg-secondary/10 border-y border-border/50 py-16 lg:py-20">
         <div className="container-wide">
           <div className="mb-12 text-center max-w-2xl mx-auto">
-            <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Client Outcomes</span>
-            <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight">Investor Success Stories</h2>
+            <span className="text-xs font-semibold tracking-wider text-primary uppercase block mb-2">Clear Process</span>
+            <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">How Fractional Investing Works</h2>
+            <p className="mt-3 text-muted-foreground text-sm sm:text-base leading-relaxed">
+              We manage the acquisitions, legal structures, and tenancy operations while you receive distributions and retain trading liquidity.
+            </p>
           </div>
-          <Suspense fallback={<div className="h-48 bg-card border border-border/50 rounded-2xl animate-pulse" />}>
-            <HomeTestimonials />
-          </Suspense>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+            {steps.map((s) => (
+              <div key={s.title} className="relative rounded-2xl border border-border/60 bg-card p-6 sm:p-8 shadow-sm">
+                <span className="absolute right-6 top-6 font-mono text-2xl font-bold text-muted-foreground/20">{s.step}</span>
+                <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-5 text-primary">
+                  <s.icon className="h-6 w-6" />
+                </div>
+                <h3 className="font-heading text-lg font-bold text-foreground mb-2">{s.title}</h3>
+                <p className="text-sm text-muted-foreground leading-relaxed font-sans">{s.description}</p>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* Featured */}
-      {featured.length > 0 && (
-        <section className="bg-secondary/5 py-24 border-t border-border/50">
-          <div className="container-wide">
-            <div className="mb-12 flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-              <div>
-                <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Available Properties</span>
-                <h2 className="font-serif text-3xl font-semibold sm:text-4xl tracking-tight text-foreground">Open for investment</h2>
-              </div>
-              <Button asChild variant="outline" size="lg" className="h-12 px-8 rounded-full border-border/80 hover:bg-accent font-bold text-xs uppercase tracking-wider">
-                <Link to="/invest/opportunities">View all opportunities <ArrowRight className="ml-2 h-4 w-4" /></Link>
-              </Button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-              {featured.map((p) => (
-                <InvestmentCard key={p.id} p={p} />
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {/* ── 5. Investor Protection & Safeguards ── */}
+      <section className="container-wide py-16">
+        <div className="mb-12 text-center max-w-2xl mx-auto">
+          <span className="text-xs font-semibold tracking-wider text-primary uppercase block mb-2">Security &amp; Compliance</span>
+          <h2 className="font-heading text-2xl sm:text-3xl lg:text-4xl font-bold text-foreground tracking-tight">Structured Investor Protection</h2>
+          <p className="mt-3 text-muted-foreground text-sm sm:text-base leading-relaxed">
+            Every property is structured using standard legal instruments to safeguard your capital and ownership rights.
+          </p>
+        </div>
 
-      {/* FAQs */}
-      <section className="bg-background py-20 border-t border-border">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {safeguards.map((item) => (
+            <div key={item.title} className="rounded-2xl border border-border/50 bg-card p-6 hover:border-primary/40 transition-colors">
+              <CheckCircle2 className="h-5 w-5 text-primary mb-3" />
+              <h4 className="font-heading text-base font-bold text-foreground mb-1.5">{item.title}</h4>
+              <p className="text-xs text-muted-foreground leading-relaxed font-sans">{item.description}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── 6. Frequently Asked Questions ── */}
+      <section className="bg-secondary/5 border-t border-border/50 py-16">
         <div className="container-narrow">
           <div className="mb-10 text-center">
-            <p className="text-sm font-medium tracking-wider text-primary uppercase">Knowledge Base</p>
-            <h2 className="mt-2 font-serif text-3xl font-semibold sm:text-4xl">Frequently Asked Questions</h2>
-            <p className="mt-4 text-muted-foreground text-lg">Everything you need to know about property investments.</p>
+            <span className="text-xs font-semibold tracking-wider text-primary uppercase block mb-2">Help &amp; Answers</span>
+            <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">Frequently Asked Questions</h2>
           </div>
-          <div className="grid gap-6">
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h3 className="font-serif text-lg font-semibold mb-2">What is fractional real estate ownership?</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Fractional ownership allows multiple investors to co-own a high-value real estate asset. Your investment purchases a specific number of units in the property trust, entitling you to a proportional share of the rental income and eventual capital appreciation upon the property's sale.
-              </p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h3 className="font-serif text-lg font-semibold mb-2">How do I earn returns?</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Returns are generated primarily through rental yield (paid out according to the distribution frequency—monthly, quarterly, or annually) and secondary through capital appreciation when the property is sold at the end of the holding period. All payouts are automatically credited to your dashboard.
-              </p>
-            </div>
-            <div className="rounded-xl border border-border bg-card p-6 shadow-sm">
-              <h3 className="font-serif text-lg font-semibold mb-2">Are my investments secure?</h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                Every property on our platform undergoes rigorous due diligence, including structural audits, legal title verification, and financial feasibility modeling. Ownership structures are legally bound in trust structures designed to protect investors. However, all real estate investments carry inherent market risks.
-              </p>
-            </div>
+
+          <div className="space-y-4">
+            {faqs.map((faq, i) => (
+              <div key={i} className="rounded-xl border border-border/60 bg-card p-6 shadow-sm">
+                <h3 className="font-heading text-base font-semibold text-foreground mb-2 flex items-start gap-2">
+                  <HelpCircle className="h-4 w-4 text-primary shrink-0 mt-1" />
+                  {faq.q}
+                </h3>
+                <p className="text-muted-foreground text-sm leading-relaxed pl-6 font-sans">
+                  {faq.a}
+                </p>
+              </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="container-tight pb-32">
-        <div className="relative overflow-hidden rounded-3xl border border-border/40 p-10 md:p-16 text-primary-foreground shadow-2xl">
-          <LazyImage 
-            src={property4} 
-            alt="Architecture and Property" 
-            wrapperClassName="absolute inset-0 h-full w-full mix-blend-luminosity opacity-40"
-            aspectClass=""
-          />
-          <div className="absolute inset-0 bg-secondary/95 backdrop-blur-[2px]" />
-          <div className="absolute top-0 right-0 -mt-16 -mr-16 h-64 w-64 bg-primary/20 rounded-full blur-3xl" />
-          
-          <div className="relative z-10 grid gap-8 md:grid-cols-[1fr_auto] md:items-center text-center md:text-left">
-            <div>
-              <h2 className="font-serif text-3xl font-bold sm:text-4xl tracking-tight text-white">
-                Ready to build your portfolio?
-              </h2>
-              <p className="mt-4 max-w-2xl text-primary-foreground/90 leading-relaxed text-lg font-medium">
-                Review available properties, choose your allocation, and monitor your distributions securely.
-              </p>
-              <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-primary-foreground/50">
-                Returns are based on estimated performance and involve inherent market risks.
-              </p>
-            </div>
-            <div className="flex justify-center md:justify-end">
-              <Button asChild size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 h-14 px-10 rounded-full font-bold text-sm tracking-wide shadow-xl">
-                <Link to="/invest/opportunities">Start Investing Now</Link>
-              </Button>
-            </div>
+      {/* ── 7. Clean Final CTA Banner ── */}
+      <section className="container-wide py-12 pb-20">
+        <div className="rounded-2xl border border-border/60 bg-card p-8 sm:p-12 text-center max-w-4xl mx-auto shadow-sm">
+          <h2 className="font-heading text-2xl sm:text-3xl font-bold text-foreground">
+            Ready to start building your real estate portfolio?
+          </h2>
+          <p className="mt-3 text-muted-foreground text-sm sm:text-base max-w-xl mx-auto font-sans">
+            Explore active primary property allocations or trade existing shares on the secondary marketplace.
+          </p>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mt-8">
+            <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8 rounded-xl font-bold text-xs uppercase tracking-wider shadow-sm">
+              <Link to="/invest/opportunities">Explore Opportunities</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 rounded-xl border-border/80 text-foreground hover:bg-muted font-bold text-xs uppercase tracking-wider">
+              <Link to="/secondary-market">Go to Trade Center</Link>
+            </Button>
           </div>
         </div>
       </section>

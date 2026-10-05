@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { SiteLayout } from "@/components/site/SiteLayout";
@@ -16,7 +16,9 @@ import {
   MapPin, 
   ArrowUpDown,
   CheckCircle2,
-  Building2
+  Building2,
+  ArrowRightLeft,
+  ArrowRight
 } from "lucide-react";
 import { SEO } from "@/components/site/SEO";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter } from "@/components/ui/sheet";
@@ -439,8 +441,30 @@ export default function InvestOpportunities() {
       )}
 
       {/* ── Main Grid ─────────────────────────────────────────── */}
-      <div className="container-wide py-12 min-h-[60vh] relative">
+      <div className="container-wide py-8 min-h-[60vh] relative">
         {!user && <AuthGateModal />}
+
+        {/* Secondary Market / Trade Center Direct Banner */}
+        <div className="mb-8 p-4 sm:p-5 rounded-2xl border border-primary/20 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2.5 rounded-xl bg-primary/10 text-primary shrink-0">
+              <ArrowRightLeft className="h-5 w-5" />
+            </div>
+            <div>
+              <p className="font-heading text-sm sm:text-base font-bold text-foreground">
+                Looking for pre-owned shares with immediate rental yields?
+              </p>
+              <p className="text-xs text-muted-foreground">
+                Explore seasoned share allocations listed by existing investors on the Trade Center.
+              </p>
+            </div>
+          </div>
+          <Button asChild size="sm" variant="outline" className="shrink-0 h-9 px-4 rounded-xl border-primary/30 text-primary hover:bg-primary/10 font-bold text-xs uppercase tracking-wider">
+            <Link to="/secondary-market" className="flex items-center gap-1.5">
+              Go to Trade Center <ArrowRight className="h-3.5 w-3.5" />
+            </Link>
+          </Button>
+        </div>
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8">
             {Array.from({ length: 6 }).map((_, i) => (
