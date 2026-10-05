@@ -28,7 +28,7 @@ export function RegionTelemetry() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
           <h2 className="text-sm font-bold tracking-widest text-primary uppercase mb-3">Explore Growing Regions</h2>
-          <p className="font-serif text-3xl md:text-5xl font-bold leading-tight text-foreground tracking-tight mb-6">
+          <p className="font-serif text-xl md:text-2xl font-medium leading-relaxed text-muted-foreground tracking-tight mb-6">
             Discover emerging markets, infrastructure development, and investment opportunities across key locations.
           </p>
         </div>

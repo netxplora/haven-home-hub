@@ -36,6 +36,7 @@ import useEmblaCarousel from "embla-carousel-react";
 export default function Home() {
   const { brand } = useBrand();
   const navigate = useNavigate();
+  const [emblaRef] = useEmblaCarousel({ align: "start", dragFree: true });
   const [searchType, setSearchType] = useState<"buy" | "rent" | "invest">("buy");
   const [searchLocation, setSearchLocation] = useState("");
   const [searchBudget, setSearchBudget] = useState("");
@@ -249,50 +250,6 @@ export default function Home() {
 
       <PromoBanner placement="homepage_hero" className="my-6" />
 
-      {/* 2. TRUST & VERIFICATION LAYER */}
-      <section className="bg-card border-b border-border/50 py-10 relative overflow-hidden">
-        <div className="container-wide">
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
-              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
-                <ShieldCheck className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="font-serif text-sm font-semibold text-foreground">Physical Audit Checked</h4>
-                <p className="text-xs text-muted-foreground mt-1">Every listing is physically audited and photographed by our teams.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
-              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
-                <CheckCircle2 className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="font-serif text-sm font-semibold text-foreground">Clean Title Verified</h4>
-                <p className="text-xs text-muted-foreground mt-1">Title documents, insurance, and HOA disclosures validated.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
-              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
-                <Lock className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="font-serif text-sm font-semibold text-foreground">Secure Escrow Gateway</h4>
-                <p className="text-xs text-muted-foreground mt-1">Payments held in regulated escrow structures until verification.</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3.5 p-4 rounded-xl hover:bg-secondary/5 transition-all">
-              <div className="h-10 w-10 rounded-full bg-primary/8 text-primary flex items-center justify-center shrink-0">
-                <Users className="h-5 w-5" />
-              </div>
-              <div>
-                <h4 className="font-serif text-sm font-semibold text-foreground">State Licensed Broker</h4>
-                <p className="text-xs text-muted-foreground mt-1">Agent status and compliance record validated prior to listing.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* 3. VERIFIED FEATURED LISTINGS (ASYMMETRICAL LAYOUT) */}
       <section className="container-wide section-gap">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 mb-10">
@@ -323,9 +280,11 @@ export default function Home() {
             ))}
           </div>
         ) : featured.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {featured.slice(0, 4).map((p) => (
-              <PropertyCard key={p.id} property={p} />
+          <div className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-4 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0">
+            {featured.map((p) => (
+              <div key={p.id} className="snap-center shrink-0 w-[85vw] sm:w-[45vw] lg:w-[23%] min-w-0">
+                <PropertyCard property={p} />
+              </div>
             ))}
           </div>
         ) : (
@@ -350,9 +309,8 @@ export default function Home() {
             alt="Real Estate Fractional Investments"
             aspectClass=""
             wrapperClassName="absolute inset-0 h-full w-full"
-            className="h-full w-full object-cover opacity-45 transition-transform duration-1000 group-hover:scale-105"
+            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0d120e] via-[#0d120e]/85 to-transparent" />
 
           <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-2xl text-left">
             <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary mb-5 border border-primary/30 backdrop-blur-sm">
@@ -421,47 +379,6 @@ export default function Home() {
         </section>
       )}
 
-      {/* NEW: DYNAMIC BENEFITS SECTION */}
-      <section className="py-24 bg-secondary/5 border-y border-border/40">
-        <div className="container-wide">
-          <div className="mb-16 text-center max-w-2xl mx-auto">
-            <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">Why Choose Us</span>
-            <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground tracking-tight">Structured, transparent, patient.</h2>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
-            {dynamicBenefits.map((b: any, i: number) => {
-               // Assign icons sequentially if they are dynamic
-               const icons = [ShieldCheck, LineChart, Lock, PieChart, CheckCircle, Sparkles, Building2, TrendingUp];
-               const Icon = b.icon || icons[i % icons.length];
-               return (
-                 <div key={i} className="rounded-3xl border border-border/60 bg-card p-8 hover-lift shadow-sm transition-all group">
-                   <span className="grid h-14 w-14 place-items-center rounded-2xl bg-primary/10 text-primary mb-6 shadow-sm transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                     <Icon className="h-6 w-6" />
-                   </span>
-                   <h3 className="font-serif text-xl font-bold text-foreground mb-3">{b.title}</h3>
-                   <p className="text-sm text-muted-foreground leading-relaxed">{b.desc}</p>
-                 </div>
-               );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* NEW: DYNAMIC STATS SECTION */}
-      <section className="container-wide py-24 text-center">
-         <span className="text-xs font-semibold tracking-widest text-primary uppercase block mb-3">By The Numbers</span>
-         <h2 className="font-serif text-3xl font-semibold sm:text-4xl lg:text-5xl text-foreground mb-16 tracking-tight">Our Historical Performance</h2>
-         <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-6">
-           {dynamicStats.map((stat: any, i: number) => (
-             <div key={i} className="p-6 bg-card border border-border/50 rounded-3xl shadow-sm hover-lift">
-               <p className="font-serif text-4xl sm:text-5xl font-bold text-secondary mb-3">{stat.value}</p>
-               <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">{stat.label}</p>
-             </div>
-           ))}
-         </div>
-      </section>
-
-
       {/* 6. BUYER SUCCESS STORIES (TESTIMONIALS) */}
       <section className="bg-primary/5 border-y border-border/40 py-16">
         <div className="container-wide">
@@ -480,52 +397,6 @@ export default function Home() {
         <Suspense fallback={<div className="min-h-[400px] w-full animate-pulse bg-muted rounded-xl" />}>
           <MarketIntelligence />
         </Suspense>
-      </section>
-
-      {/* 8. AGENT & DEVELOPER CREDIBILITY */}
-      <section className="bg-secondary py-16 text-white border-y border-secondary-foreground/10 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(184,134,11,0.1),transparent_50%)]" />
-        <div className="container-wide relative z-10">
-          <div className="text-center max-w-xl mx-auto mb-12">
-            <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Vetted Network</span>
-            <h2 className="font-serif text-3xl font-semibold">Agent & Developer Credibility</h2>
-            <p className="text-sm text-white/70 mt-2">We partner exclusively with licensed brokers and registered developers verified by state licensing boards.</p>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            {[
-              { title: "Registered Developers", count: "18 Vetted Firms" },
-              { title: "Licensed Brokerages", count: "24 Certified Agencies" },
-              { title: "State License Cleared", count: "100% Board Audited" },
-              { title: "Escrow Secured Contracts", count: "Standard Legal Formats" }
-            ].map((c, idx) => (
-              <div key={idx} className="bg-white/5 border border-white/10 rounded-xl p-6">
-                <h4 className="text-lg font-serif font-bold">{c.count}</h4>
-                <p className="text-[10px] uppercase text-white/50 tracking-wider mt-1">{c.title}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 9. PROPERTY & TRANSACTION SERVICES */}
-      <section className="container-wide py-16">
-        <div className="text-center max-w-xl mx-auto mb-12">
-          <span className="text-xs font-semibold tracking-widest uppercase text-primary mb-2 block">Services</span>
-          <h2 className="font-serif text-3xl font-semibold text-foreground">Property & Transaction Services</h2>
-        </div>
-        <div className="grid gap-6 md:grid-cols-4">
-          {[
-            { title: "Legal & Title Assistance", desc: "Expert land title searches and deed drafting support." },
-            { title: "Inspections & Audits", desc: "Independent structural, plumbing, and power audits." },
-            { title: "Facility Management", desc: "Ongoing maintenance, solar setups, and utility oversight." },
-            { title: "Moving & Logistics", desc: "Vetted moving partners to handle logistics securely." }
-          ].map((item, idx) => (
-            <div key={idx} className="p-5 border border-border/40 rounded-xl hover-lift bg-card shadow-sm">
-              <h3 className="font-serif text-base font-bold text-primary mb-2">{item.title}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{item.desc}</p>
-            </div>
-          ))}
-        </div>
       </section>
 
       {/* 10. MOBILE APP & PLATFORM EXPANSION */}
