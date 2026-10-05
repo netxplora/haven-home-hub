@@ -114,7 +114,7 @@ export function InvestmentsPanel() {
         .from("returns")
         .select(`
           *,
-          investment_properties:investment_property_id(title, currency)
+          investment_properties:property_id(title, currency)
         `)
         .eq("user_id", user!.id)
         .order("distribution_date", { ascending: false });

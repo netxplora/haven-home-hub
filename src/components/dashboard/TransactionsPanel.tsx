@@ -125,7 +125,7 @@ export function TransactionsPanel({ userId }: { userId: string }) {
               const isIncome = ["deposit", "referral_bonus", "investment_return", "marketplace_sell"].includes(t.payment_type);
               const isPending = t.status === "pending";
               return (
-                <div key={t.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-4">
+                <div key={t.transaction_id || t.id} className="rounded-xl border border-border/40 bg-card p-5 shadow-soft space-y-4">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex items-center gap-3">
                       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${isIncome ? 'bg-primary/10 text-primary' : 'bg-secondary/10 text-secondary'}`}>

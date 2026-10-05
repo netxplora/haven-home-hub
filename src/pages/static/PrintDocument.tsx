@@ -19,33 +19,25 @@ export default function PrintDocument() {
   const { data: doc, isLoading, error } = useQuery({
     queryKey: ["print-document", id],
     queryFn: async () => {
-      // First try with profiles join
+      // Fetch document
       const { data, error } = await supabase
         .from("user_documents")
-        .select(`
-          *,
-          profiles:user_id(full_name, email)
-        `)
+        .select("*")
         .eq("id", id)
         .neq("status", "deleted")
         .maybeSingle();
 
-      // If the join fails due to RLS on profiles, try without the join
-      if (error) {
-        console.warn("PrintDocument: profiles join failed, retrying without join:", error.message);
-        const { data: fallbackData, error: fallbackError } = await supabase
-          .from("user_documents")
-          .select("*")
-          .eq("id", id)
-          .neq("status", "deleted")
-          .maybeSingle();
-        if (fallbackError) throw fallbackError;
-        if (!fallbackData) throw new Error("Document not found");
-        return { ...fallbackData, profiles: null };
-      }
-
+      if (error) throw error;
       if (!data) throw new Error("Document not found");
-      return data;
+      
+      // Fetch user profile separately
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name, email")
+        .eq("id", data.user_id)
+        .single();
+        
+      return { ...data, profiles: profile || null };
     },
     enabled: !!id,
   });

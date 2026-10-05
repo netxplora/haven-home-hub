@@ -21,14 +21,21 @@ export default function VerifyDocument() {
           status,
           verification_code,
           created_at,
-          profiles:user_id(full_name),
+          user_id,
           properties(title),
           investment_properties(title)
         `)
         .eq("id", id)
         .single();
       if (error) throw error;
-      return data;
+      
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", data.user_id)
+        .single();
+        
+      return { ...data, profiles: profile || null };
     },
     enabled: !!id,
   });

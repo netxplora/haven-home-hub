@@ -82,12 +82,25 @@ export function AdminDocuments() {
         .from("user_documents")
         .select(`
           *,
-          profiles:user_id(full_name, email),
           investment_properties(title),
           properties(title)
         `)
         .order("created_at", { ascending: false });
       if (error) throw error;
+      
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(d => d.user_id).filter(Boolean))];
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase.from('profiles').select('id, full_name, email').in('id', userIds);
+          if (profiles) {
+            const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
+            data.forEach(d => {
+              (d as any).profiles = profileMap[d.user_id] || null;
+            });
+          }
+        }
+      }
+      
       return data || [];
     },
   });
@@ -137,11 +150,24 @@ export function AdminDocuments() {
         .select(`
           *,
           user_documents (name, document_type),
-          profiles:user_id (full_name, email),
           action_user:action_by (full_name)
         `)
         .order("created_at", { ascending: false });
       if (error) throw error;
+
+      if (data && data.length > 0) {
+        const userIds = [...new Set(data.map(d => d.user_id).filter(Boolean))];
+        if (userIds.length > 0) {
+          const { data: profiles } = await supabase.from('profiles').select('id, full_name, email').in('id', userIds);
+          if (profiles) {
+            const profileMap = Object.fromEntries(profiles.map(p => [p.id, p]));
+            data.forEach(d => {
+              (d as any).profiles = profileMap[d.user_id] || null;
+            });
+          }
+        }
+      }
+
       return data || [];
     },
   });

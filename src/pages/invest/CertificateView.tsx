@@ -23,39 +23,48 @@ export default function CertificateView() {
         .from("investment_certificates")
         .select(`
           *,
-          investment_properties(title, slug, location, description),
-          profiles(full_name, email)
+          investment_properties(title, slug, location, description)
         `)
         .eq("id", id)
         .maybeSingle();
       
-      if (directHit) return directHit as any;
+      if (directHit) {
+        const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', directHit.user_id).maybeSingle();
+        directHit.profiles = profile;
+        return directHit as any;
+      }
 
       // Try 2: Lookup by investment_id (user navigated from portfolio)
       const { data: byInvestment, error: invError } = await (supabase as any)
         .from("investment_certificates")
         .select(`
           *,
-          investment_properties(title, slug, location, description),
-          profiles(full_name, email)
+          investment_properties(title, slug, location, description)
         `)
         .eq("investment_id", id)
         .maybeSingle();
       
-      if (byInvestment) return byInvestment as any;
+      if (byInvestment) {
+        const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', byInvestment.user_id).maybeSingle();
+        byInvestment.profiles = profile;
+        return byInvestment as any;
+      }
 
       // Try 3: Lookup by certificate_id text field
       const { data: byCertId, error: certIdError } = await (supabase as any)
         .from("investment_certificates")
         .select(`
           *,
-          investment_properties(title, slug, location, description),
-          profiles(full_name, email)
+          investment_properties(title, slug, location, description)
         `)
         .eq("certificate_id", id)
         .maybeSingle();
       
-      if (byCertId) return byCertId as any;
+      if (byCertId) {
+        const { data: profile } = await supabase.from('profiles').select('full_name, email').eq('id', byCertId.user_id).maybeSingle();
+        byCertId.profiles = profile;
+        return byCertId as any;
+      }
 
       return null;
     }

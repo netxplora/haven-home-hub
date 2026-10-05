@@ -1,8 +1,10 @@
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Printer, ShieldCheck, CheckCircle2, Download, ExternalLink, CalendarClock, ChartLine } from "lucide-react";
+import { Printer, ShieldCheck, CheckCircle2, Download, ExternalLink, CalendarClock, ChartLine, Loader2 } from "lucide-react";
 import { formatMoney } from "@/lib/invest";
 import { useBrand } from "@/hooks/useBrand";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ReceiptDialogProps {
   open: boolean;
@@ -12,16 +14,43 @@ interface ReceiptDialogProps {
 
 export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
   const { brand } = useBrand();
-  
+
+  const meta = receipt?.metadata || {};
+  const isInvestment = receipt?.type === 'investment' || receipt?.type === 'installment';
+  const isVerified = receipt?.status === 'success' || receipt?.status === 'confirmed';
+
+  // Fetch authoritative property title if missing from metadata
+  const { data: authoritativeTitle, isLoading: isFetchingTitle } = useQuery({
+    queryKey: ["receipt-property-title", receipt?.payment_id],
+    queryFn: async () => {
+      if (!receipt?.payment_id) return null;
+      const { data } = await supabase
+        .from("payments")
+        .select(`
+          investment_property_id,
+          property_id,
+          investment_properties:investment_property_id(title),
+          properties:property_id(title)
+        `)
+        .eq("id", receipt.payment_id)
+        .single();
+        
+      if (data) {
+        // @ts-ignore
+        return data.investment_properties?.title || data.properties?.title || null;
+      }
+      return null;
+    },
+    enabled: !!open && !!receipt && ((!!meta.property_id || isInvestment) && !meta.property_title && !!receipt.payment_id),
+  });
+
   if (!receipt) return null;
 
   const handlePrint = () => {
     window.print();
   };
 
-  const meta = receipt.metadata || {};
-  const isInvestment = receipt.type === 'investment' || receipt.type === 'installment';
-  const isVerified = receipt.status === 'success' || receipt.status === 'confirmed';
+  const propertyTitle = meta.property_title || authoritativeTitle;
 
   // Strictly validate required authoritative fields
   const missingFields = [];
@@ -31,14 +60,28 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
   if (receipt.amount_paid === null || receipt.amount_paid === undefined) missingFields.push("Amount Paid");
   if (!receipt.currency) missingFields.push("Currency");
   
-  if ((meta.property_id || isInvestment) && !meta.property_title) {
+  if ((meta.property_id || isInvestment) && !propertyTitle) {
     missingFields.push("Property Title (Required for Investment Receipts)");
+  }
+
+  if (isFetchingTitle) {
+    return (
+      <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+        <DialogContent aria-describedby={undefined} className="max-w-md bg-white p-8 sm:rounded-xl border border-gray-200 shadow-2xl text-center">
+          <DialogTitle className="sr-only">Loading Data</DialogTitle>
+          <div className="flex flex-col items-center justify-center py-8">
+            <Loader2 className="h-8 w-8 text-primary animate-spin mb-4" />
+            <p className="text-sm font-medium text-muted-foreground">Verifying authoritative records...</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
   }
 
   if (missingFields.length > 0) {
     return (
       <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-        <DialogContent className="max-w-md bg-white p-8 sm:rounded-xl border border-red-200 shadow-2xl text-center">
+        <DialogContent aria-describedby={undefined} className="max-w-md bg-white p-8 sm:rounded-xl border border-red-200 shadow-2xl text-center">
           <DialogTitle className="text-red-600 font-serif font-bold text-2xl mb-2">Data Integrity Error</DialogTitle>
           <p className="text-sm text-gray-700 mb-6 font-medium">
             This receipt cannot be generated because authoritative database records are missing.
@@ -57,7 +100,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
 
   return (
     <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
-      <DialogContent className="max-w-3xl bg-[#fafafa] text-black p-0 overflow-hidden max-h-[90vh] overflow-y-auto print:!transform-none print:!fixed print:!inset-0 print:!w-full print:!max-w-none print:!h-auto print:!max-h-none print:!overflow-visible print:!shadow-none print:!border-none print:!bg-white sm:rounded-xl border border-gray-200 shadow-2xl">
+      <DialogContent aria-describedby={undefined} className="max-w-3xl bg-[#fafafa] text-black p-0 overflow-hidden max-h-[90vh] overflow-y-auto print:!transform-none print:!fixed print:!inset-0 print:!w-full print:!max-w-none print:!h-auto print:!max-h-none print:!overflow-visible print:!shadow-none print:!border-none print:!bg-white sm:rounded-xl border border-gray-200 shadow-2xl">
         <DialogTitle className="sr-only">Receipt Details</DialogTitle>
         <style>{`
           @media print {
@@ -159,7 +202,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
             </div>
 
             {/* Property Information (If applicable) */}
-            {(meta.property_title || isInvestment) && (
+            {(propertyTitle || isInvestment) && (
               <div className="mb-8 border border-gray-200 rounded-lg overflow-hidden">
                 <h3 className="text-xs font-bold text-gray-800 uppercase tracking-wider bg-gray-50 p-3.5 border-b border-gray-200">Property Summary</h3>
                 <div className="p-5 flex flex-col sm:flex-row gap-5 items-start bg-white">
@@ -188,7 +231,7 @@ export function ReceiptDialog({ open, onClose, receipt }: ReceiptDialogProps) {
                       )}
                     </div>
                     
-                    <p className="text-xl font-serif font-bold text-gray-900 mb-1.5 leading-tight">{meta.property_title}</p>
+                    <p className="text-xl font-serif font-bold text-gray-900 mb-1.5 leading-tight">{propertyTitle}</p>
                     <p className="text-sm font-medium text-gray-500 flex items-center gap-1.5 mb-4">
                       <ExternalLink className="h-3.5 w-3.5" />
                       {meta.property_location}
