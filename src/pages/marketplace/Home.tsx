@@ -303,40 +303,43 @@ export default function Home() {
 
       {/* 5. INVESTMENT OPPORTUNITIES (FRACTIONAL PREVIEW) */}
       <section className="container-wide section-gap">
-        <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl min-h-[460px] flex items-center group bg-secondary">
+        <div className="relative overflow-hidden rounded-3xl border border-border/60 shadow-xl min-h-[480px] flex items-center group bg-slate-950">
           <LazyImage
             src={investProp1}
             alt="Real Estate Fractional Investments"
             aspectClass=""
             wrapperClassName="absolute inset-0 h-full w-full"
-            className="h-full w-full object-cover transition-transform duration-1000 group-hover:scale-105"
+            className="h-full w-full object-cover object-center transition-transform duration-1000 group-hover:scale-105"
           />
 
+          {/* Low-opacity elegant gradient overlay: keeps the property image prominently visible while maximizing text legibility */}
+          <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/20 z-[1]" />
+
           <div className="relative z-10 p-8 sm:p-12 lg:p-16 max-w-2xl text-left">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-primary/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-primary mb-5 border border-primary/30 backdrop-blur-sm">
-              <PieChart className="h-3.5 w-3.5" /> Fractional Ownership
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-500/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider text-emerald-300 mb-5 border border-emerald-400/30 backdrop-blur-md shadow-sm">
+              <PieChart className="h-3.5 w-3.5 text-emerald-400" /> Fractional Ownership
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight">
+            <h2 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-semibold text-white leading-tight drop-shadow-sm">
               Build Wealth Through Premium Real Estate
             </h2>
-            <p className="mt-4 text-base sm:text-lg text-white/70 leading-relaxed max-w-xl font-normal">
+            <p className="mt-4 text-base sm:text-lg text-slate-200 leading-relaxed max-w-xl font-normal drop-shadow-sm">
               Co-invest in vetted, income-generating residential and commercial properties. Receive scheduled yields and track valuation directly from your dashboard.
             </p>
             
             <div className="mt-8 flex flex-wrap items-center gap-8 sm:gap-12 max-w-lg mb-8">
               <div className="flex flex-col">
-                 <div className="text-3xl font-serif font-bold text-white">42+</div>
-                 <div className="text-[10px] text-white/60 mt-1 uppercase tracking-widest font-semibold">Active Units</div>
+                 <div className="text-3xl font-serif font-bold text-white drop-shadow-sm">42+</div>
+                 <div className="text-xs text-slate-200 mt-1 uppercase tracking-wider font-semibold">Active Units</div>
               </div>
-              <div className="h-10 w-px bg-white/15 hidden sm:block"></div>
+              <div className="h-10 w-px bg-white/20 hidden sm:block"></div>
               <div className="flex flex-col">
-                 <div className="text-3xl font-serif font-bold text-primary">12.4%</div>
-                 <div className="text-[10px] text-white/60 mt-1 uppercase tracking-widest font-semibold">Avg Target Yield</div>
+                 <div className="text-3xl font-serif font-bold text-emerald-400 drop-shadow-sm">12.4%</div>
+                 <div className="text-xs text-slate-200 mt-1 uppercase tracking-wider font-semibold">Avg Target Yield</div>
               </div>
-              <div className="h-10 w-px bg-white/15 hidden sm:block"></div>
+              <div className="h-10 w-px bg-white/20 hidden sm:block"></div>
               <div className="flex flex-col">
-                 <div className="text-3xl font-serif font-bold text-white">$4.2M</div>
-                 <div className="text-[10px] text-white/60 mt-1 uppercase tracking-widest font-semibold">Funded Value</div>
+                 <div className="text-3xl font-serif font-bold text-white drop-shadow-sm">$4.2M</div>
+                 <div className="text-xs text-slate-200 mt-1 uppercase tracking-wider font-semibold">Funded Value</div>
               </div>
             </div>
 
@@ -344,7 +347,7 @@ export default function Home() {
               <Button asChild size="lg" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90 font-semibold text-sm shadow-emerald transition-all">
                 <Link to="/invest" className="flex items-center gap-2">Start Investing <ArrowRight className="h-4 w-4" /></Link>
               </Button>
-              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-transparent text-white border-white/20 hover:bg-white/10 hover:border-white/40 font-medium text-sm transition-all">
+              <Button asChild size="lg" variant="outline" className="w-full sm:w-auto h-12 px-8 rounded-xl bg-white/10 backdrop-blur-sm text-white border-white/30 hover:bg-white/20 hover:border-white/50 font-medium text-sm transition-all">
                 <Link to="/invest/opportunities">View Opportunities</Link>
               </Button>
             </div>
