@@ -18,6 +18,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import investHero4 from "@/assets/invest-hero4.jpg";
+import { LazyImage } from "@/components/ui/LazyImage";
 
 export default function SecondaryMarket() {
   const { brand } = useBrand();
