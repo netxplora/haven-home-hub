@@ -4,12 +4,13 @@ import { SEO } from "@/components/site/SEO";
 import { useSecondaryMarket } from "@/hooks/useSecondaryMarket";
 import { useAuth } from "@/hooks/useAuth";
 import { useBrand } from "@/hooks/useBrand";
+import { useUserBalance } from "@/hooks/useUserBalance";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { formatMoney } from "@/lib/invest";
-import { MapPin, TrendingUp, Search, RefreshCw, ShoppingCart, Info, Activity, Layers } from "lucide-react";
+import { MapPin, TrendingUp, Search, RefreshCw, ShoppingCart, Info, Activity, Layers, Wallet, CreditCard, PlusCircle, AlertCircle } from "lucide-react";
 import { resolveImage } from "@/lib/format";
 import {
   Dialog,
@@ -19,14 +20,19 @@ import {
 } from "@/components/ui/dialog";
 import investHero4 from "@/assets/invest-hero4.jpg";
 import { LazyImage } from "@/components/ui/LazyImage";
+import { DepositDialog } from "@/components/dashboard/DepositDialog";
 
 export default function SecondaryMarket() {
   const { brand } = useBrand();
   const { listings, isLoadingListings, purchaseListing, isPurchasing } = useSecondaryMarket();
   const { user } = useAuth();
+  const { balance: walletBalance, refetch: refetchBalance } = useUserBalance();
   const [searchQuery, setSearchQuery] = useState("");
   const [purchaseModal, setPurchaseModal] = useState<any>(null);
   const [unitsToBuy, setUnitsToBuy] = useState<number>(1);
+  const [paymentOption, setPaymentOption] = useState<"balance" | "card">("balance");
+  const [depositOpen, setDepositOpen] = useState(false);
+  const [depositAmountNeeded, setDepositAmountNeeded] = useState<number | undefined>(undefined);
 
   const filteredListings = listings.filter((l) => {
     if (!searchQuery) return true;
@@ -40,16 +46,23 @@ export default function SecondaryMarket() {
   const openPurchaseModal = (listing: any) => {
     setPurchaseModal(listing);
     setUnitsToBuy(1);
+    setPaymentOption("balance");
   };
 
   const handlePurchase = async () => {
     if (!purchaseModal) return;
     try {
       await purchaseListing({ listingId: purchaseModal.id, unitsToBuy });
+      refetchBalance();
       setPurchaseModal(null);
     } catch (e) {
       // Error handled by hook toast
     }
+  };
+
+  const handleOpenDeposit = (neededAmount?: number) => {
+    setDepositAmountNeeded(neededAmount && neededAmount > 0 ? Math.ceil(neededAmount) : undefined);
+    setDepositOpen(true);
   };
 
   return (
@@ -402,10 +415,112 @@ export default function SecondaryMarket() {
                       <p className="font-bold text-2xl text-primary">{formatMoney(totalCost, currency)}</p>
                     </div>
 
+                    {/* Payment Options Selection */}
+                    <div className="space-y-2">
+                      <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Payment Method</Label>
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                        {/* Option 1: Available Balance */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentOption("balance")}
+                          className={`flex items-start gap-3 rounded-xl border p-3 text-left transition ${
+                            paymentOption === "balance"
+                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                              : "border-border hover:bg-muted/40"
+                          }`}
+                        >
+                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            paymentOption === "balance" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}>
+                            <Wallet className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-foreground">Available Balance</p>
+                            <p className="text-xs font-semibold text-primary">{formatMoney(walletBalance, currency)}</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Use Haven Homes wallet</p>
+                          </div>
+                        </button>
+
+                        {/* Option 2: Card / External */}
+                        <button
+                          type="button"
+                          onClick={() => setPaymentOption("card")}
+                          className={`flex items-start gap-3 rounded-xl border p-3 text-left transition ${
+                            paymentOption === "card"
+                              ? "border-primary bg-primary/5 ring-1 ring-primary/20"
+                              : "border-border hover:bg-muted/40"
+                          }`}
+                        >
+                          <div className={`h-8 w-8 rounded-lg flex items-center justify-center shrink-0 ${
+                            paymentOption === "card" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                          }`}>
+                            <CreditCard className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs font-bold text-foreground">Card / Direct</p>
+                            <p className="text-[10px] text-muted-foreground mt-0.5">Visa / Mastercard / Digital</p>
+                            <p className="text-[10px] text-muted-foreground">Pay securely with card</p>
+                          </div>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Insufficient Balance State */}
+                    {paymentOption === "balance" && walletBalance < totalCost && (
+                      <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-3.5 space-y-2.5">
+                        <div className="flex items-center gap-2 text-destructive text-xs font-semibold">
+                          <AlertCircle className="h-4 w-4 shrink-0" />
+                          <span>Insufficient Balance</span>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-xs py-1 border-y border-destructive/10">
+                          <div>
+                            <span className="text-muted-foreground block text-[10px]">Available</span>
+                            <span className="font-semibold text-foreground">{formatMoney(walletBalance, currency)}</span>
+                          </div>
+                          <div>
+                            <span className="text-muted-foreground block text-[10px]">Required</span>
+                            <span className="font-semibold text-destructive">{formatMoney(totalCost, currency)}</span>
+                          </div>
+                        </div>
+                        <Button
+                          type="button"
+                          size="sm"
+                          className="w-full h-8 text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground"
+                          onClick={() => handleOpenDeposit(totalCost - walletBalance)}
+                        >
+                          <PlusCircle className="h-3.5 w-3.5 mr-1.5" /> Deposit Funds ({formatMoney(totalCost - walletBalance, currency)})
+                        </Button>
+                      </div>
+                    )}
+
+                    {paymentOption === "card" && (
+                      <div className="rounded-xl border border-border bg-muted/20 p-3.5 space-y-2">
+                        <div className="flex items-center gap-2 text-foreground text-xs font-semibold">
+                          <CreditCard className="h-4 w-4 text-primary" />
+                          <span>Direct Card Funding</span>
+                        </div>
+                        <p className="text-xs text-muted-foreground">
+                          Fund your wallet using card or preferred payment methods, then complete your share acquisition immediately.
+                        </p>
+                        <Button
+                          type="button"
+                          size="sm"
+                          variant="outline"
+                          className="w-full h-8 text-xs font-semibold rounded-lg border-primary/30 text-primary hover:bg-primary/10"
+                          onClick={() => handleOpenDeposit(totalCost)}
+                        >
+                          Proceed with Card / Direct ({formatMoney(totalCost, currency)})
+                        </Button>
+                      </div>
+                    )}
+
                     {/* Disclaimer */}
-                    <div className="flex items-start gap-2.5 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-amber-800 dark:text-amber-400 p-3.5 rounded-xl text-xs leading-relaxed">
-                      <Info className="h-4 w-4 shrink-0 mt-0.5" />
-                      <p>This transaction is final. Funds will be immediately deducted from your wallet and shares transferred to your investment portfolio.</p>
+                    <div className="flex items-start gap-2.5 bg-muted/40 border border-border text-muted-foreground p-3 rounded-xl text-[11px] leading-relaxed">
+                      <Info className="h-3.5 w-3.5 shrink-0 mt-0.5 text-primary" />
+                      <p>
+                        Payment Source: <strong className="text-foreground">{paymentOption === "balance" ? "Haven Homes Balance" : "Card / Direct Payment"}</strong>. 
+                        Shares will be transferred immediately upon confirmed transaction.
+                      </p>
                     </div>
                   </div>
 
@@ -421,13 +536,15 @@ export default function SecondaryMarket() {
                     </Button>
                     <Button
                       className="w-full sm:flex-1 h-12 sm:h-10 rounded-xl font-bold text-sm shadow-sm"
-                      onClick={handlePurchase}
-                      disabled={isPurchasing || !user}
+                      onClick={paymentOption === "balance" ? handlePurchase : () => handleOpenDeposit(totalCost)}
+                      disabled={isPurchasing || !user || (paymentOption === "balance" && walletBalance < totalCost)}
                     >
                       {isPurchasing
                         ? "Processing..."
                         : !user
                         ? "Login Required"
+                        : paymentOption === "balance" && walletBalance < totalCost
+                        ? "Insufficient Balance"
                         : `Confirm Purchase · ${formatMoney(totalCost, currency)}`}
                     </Button>
                   </div>
@@ -437,6 +554,15 @@ export default function SecondaryMarket() {
           })()}
         </DialogContent>
       </Dialog>
+
+      <DepositDialog
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        initialAmount={depositAmountNeeded}
+        onSuccess={() => {
+          refetchBalance();
+        }}
+      />
     </SiteLayout>
   );
 }

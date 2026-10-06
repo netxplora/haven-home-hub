@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { ArrowDownToLine, Clock, CheckCircle2, XCircle, AlertCircle, Wallet } from "lucide-react";
+import { ArrowDownToLine, Clock, CheckCircle2, XCircle, AlertCircle, Wallet, PlusCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { WithdrawalDialog } from "@/components/dashboard/WithdrawalDialog";
+import { DepositDialog } from "@/components/dashboard/DepositDialog";
 import { formatMoney } from "@/lib/invest";
 
 export function WithdrawalsPanel({ userId }: { userId: string }) {
   const [open, setOpen] = useState(false);
+  const [depositOpen, setDepositOpen] = useState(false);
   
-  const { data: balance = 0, isLoading: isBalanceLoading } = useQuery({
+  const { data: balance = 0, isLoading: isBalanceLoading, refetch: refetchBalance } = useQuery({
     queryKey: ["available-balance", userId],
     queryFn: async () => {
       const { data } = await supabase.rpc("user_available_balance");
@@ -51,26 +53,82 @@ export function WithdrawalsPanel({ userId }: { userId: string }) {
     }
   }
 
+  const completedTotal = items
+    .filter(i => i.status === "completed")
+    .reduce((sum, i) => sum + Number(i.amount || 0), 0);
+  const pendingCount = items.filter(i => i.status === "pending" || i.status === "processing").length;
+
   return (
-    <div className="space-y-8 ">
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between p-6 rounded-xl border border-border/50 bg-card shadow-soft">
-        <div>
-          <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground mb-2">Available for withdrawal</p>
-          {isBalanceLoading ? (
-            <Skeleton className="h-10 w-32" />
-          ) : (
-            <p className="font-serif text-3xl font-semibold">{formatMoney(balance)}</p>
-          )}
-          <p className="mt-2 text-xs text-muted-foreground max-w-sm">Withdrawal requests are processed within 24-48 hours via your preferred payout method.</p>
+    <div className="space-y-6 sm:space-y-8">
+      {/* 2x Grid Metrics on Mobile, 4 columns on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
+        <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-5 shadow-sm flex flex-col justify-between min-h-[120px] sm:min-h-[140px]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">Available Balance</span>
+            <span className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-primary/10 text-primary shrink-0">
+              <Wallet className="h-3.5 w-3.5 sm:h-4 w-4" />
+            </span>
+          </div>
+          <div>
+            <p className="font-serif text-base sm:text-2xl font-bold text-foreground tracking-tight">{formatMoney(balance)}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">Cleared for payout</p>
+          </div>
         </div>
-        <div className="w-full sm:w-auto">
+
+        <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-5 shadow-sm flex flex-col justify-between min-h-[120px] sm:min-h-[140px]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">Total Paid Out</span>
+            <span className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 shrink-0">
+              <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 w-4" />
+            </span>
+          </div>
+          <div>
+            <p className="font-serif text-base sm:text-2xl font-bold text-foreground tracking-tight">{formatMoney(completedTotal)}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">Disbursed funds</p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-5 shadow-sm flex flex-col justify-between min-h-[120px] sm:min-h-[140px]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">Pending Review</span>
+            <span className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 shrink-0">
+              <Clock className="h-3.5 w-3.5 sm:h-4 w-4" />
+            </span>
+          </div>
+          <div>
+            <p className="font-serif text-base sm:text-2xl font-bold text-foreground tracking-tight">{pendingCount}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">In progress</p>
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-5 shadow-sm flex flex-col justify-between min-h-[120px] sm:min-h-[140px]">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider text-muted-foreground truncate">Total Requests</span>
+            <span className="grid h-7 w-7 sm:h-8 sm:w-8 place-items-center rounded-xl bg-secondary/10 text-secondary shrink-0">
+              <ArrowDownToLine className="h-3.5 w-3.5 sm:h-4 w-4" />
+            </span>
+          </div>
+          <div>
+            <p className="font-serif text-base sm:text-2xl font-bold text-foreground tracking-tight">{items.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">Lifetime payouts</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Action Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 sm:p-6 rounded-2xl border border-border/70 bg-card shadow-sm gap-4">
+        <div>
+          <h3 className="font-serif text-base sm:text-lg font-semibold text-foreground">Withdrawal Payouts</h3>
+          <p className="mt-1 text-xs text-muted-foreground max-w-md">Withdrawal requests are processed within 24-48 hours via your preferred payout method.</p>
+        </div>
+        <div className="flex items-center gap-2.5 w-full sm:w-auto">
           <Button
-            size="lg"
-            className="w-full sm:w-auto rounded-lg bg-primary text-primary-foreground h-11 px-6 font-medium shadow-sm hover:bg-primary/90 disabled:opacity-50"
+            size="sm"
+            className="flex-1 sm:flex-initial rounded-xl bg-primary text-primary-foreground h-10 px-5 font-semibold text-xs shadow-sm hover:bg-primary/90 disabled:opacity-50"
             disabled={balance <= 0 || isBalanceLoading}
             onClick={() => setOpen(true)}
           >
-            <ArrowDownToLine className="mr-2 h-4 w-4" />
+            <ArrowDownToLine className="mr-1.5 h-3.5 w-3.5" />
             Request Payout
           </Button>
         </div>
@@ -172,6 +230,11 @@ export function WithdrawalsPanel({ userId }: { userId: string }) {
         )}
       </div>
       <WithdrawalDialog open={open} onClose={() => setOpen(false)} available={balance} />
+      <DepositDialog 
+        open={depositOpen} 
+        onClose={() => setDepositOpen(false)} 
+        onSuccess={() => refetchBalance()} 
+      />
     </div>
   );
 }

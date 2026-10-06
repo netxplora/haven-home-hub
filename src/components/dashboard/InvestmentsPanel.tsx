@@ -312,7 +312,7 @@ export function InvestmentsPanel() {
           {investments.length === 0 ? (
             <EmptyState message="No active holdings found" description="Build your institutional-grade portfolio by acquiring verified real estate assets." />
           ) : viewMode === 'grid' ? (
-            <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+            <div className="grid grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
                {investments.map((inv: any) => (
                   <InvestmentGridCard 
                     key={inv.id} 
@@ -390,23 +390,23 @@ export function InvestmentsPanel() {
           )}
         </TabsContent>
 
-        {/* ── 3. ROI & Returns Tab ── */}
-        <TabsContent value="roi" className="space-y-6 outline-none">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Total ROI Earned</p>
-              <p className="text-3xl font-bold font-serif text-foreground">{formatMoney(totalEarnings)}</p>
-              <p className="text-xs text-muted-foreground mt-2">Valued in USD equivalents</p>
+        {/* ── 3. ROI & Returns Tab - 2x grid on mobile ── */}
+        <TabsContent value="roi" className="space-y-4 sm:space-y-6 outline-none">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-2.5 sm:gap-4 md:gap-6">
+            <div className="bg-card border border-border/70 rounded-2xl p-3.5 sm:p-5 shadow-sm">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 truncate">Total ROI Earned</p>
+              <p className="text-base sm:text-2xl font-bold font-serif text-foreground truncate">{formatMoney(totalEarnings)}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">USD equivalents</p>
             </div>
-            <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Weighted Average Yield</p>
-              <p className="text-3xl font-bold font-serif text-green-600">{averageYield}%</p>
-              <p className="text-xs text-muted-foreground mt-2">Weighted average return per annum</p>
+            <div className="bg-card border border-border/70 rounded-2xl p-3.5 sm:p-5 shadow-sm">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 truncate">Average Yield</p>
+              <p className="text-base sm:text-2xl font-bold font-serif text-emerald-600 dark:text-emerald-400 truncate">+{averageYield}%</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">Return p.a.</p>
             </div>
-            <div className="bg-card border border-border/50 rounded-xl p-6 shadow-sm">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1">Distributions Processed</p>
-              <p className="text-3xl font-bold font-serif text-foreground">{returns.length}</p>
-              <p className="text-xs text-muted-foreground mt-2">Secured directly to available balance</p>
+            <div className="col-span-2 lg:col-span-1 bg-card border border-border/70 rounded-2xl p-3.5 sm:p-5 shadow-sm">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-1 truncate">Distributions Processed</p>
+              <p className="text-base sm:text-2xl font-bold font-serif text-foreground truncate">{returns.length}</p>
+              <p className="text-[10px] sm:text-xs text-muted-foreground mt-1 truncate">Secured dividend payouts</p>
             </div>
           </div>
 

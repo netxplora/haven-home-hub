@@ -17,11 +17,13 @@ import {
   Calendar,
   MessageSquare,
   LogOut,
-  Home
+  Home,
+  PlusCircle
 } from "lucide-react";
 
 // Modularized Panels
 import { OverviewPanel } from "@/components/dashboard/OverviewPanel";
+import { DepositPanel } from "@/components/dashboard/DepositPanel";
 import { WithdrawalsPanel } from "@/components/dashboard/WithdrawalsPanel";
 import { TransactionsPanel } from "@/components/dashboard/TransactionsPanel";
 import { InvestmentsPanel } from "@/components/dashboard/InvestmentsPanel";
@@ -68,6 +70,7 @@ export default function UserDashboard() {
 
   const menuItems = [
     { id: "overview", label: "Dashboard", icon: LayoutDashboard },
+    { id: "deposit", label: "Deposit", icon: PlusCircle },
     { id: "my-properties", label: "My Properties", icon: Home },
     { id: "investments", label: "Investments", icon: TrendingUp },
     { id: "withdrawals", label: "Withdrawals", icon: Wallet },
@@ -88,6 +91,8 @@ export default function UserDashboard() {
     switch (activeTab) {
       case "overview":
         return <OverviewPanel userId={user.id} onNavigate={handleTabChange} />;
+      case "deposit":
+        return <DepositPanel userId={user.id} onNavigate={handleTabChange} />;
       case "investments":
         return <InvestmentsPanel />;
       case "my-properties":

@@ -99,21 +99,51 @@ export function AdminPayments() {
       toast({ title: "Admin note required", description: "Please enter a reason or note for this action.", variant: "destructive" });
       return;
     }
-    const dbStatus = action === "confirmed" ? "success" : action;
-    const { error } = await supabase.rpc("admin_verify_payment", {
-      p_payment_id: id,
-      p_new_status: dbStatus,
-      p_notes: adminNote.trim()
-    });
-    if (error) {
-      toast({ title: "Operation failed", description: error.message, variant: "destructive" });
-    } else {
-      // When confirming a full purchase payment, use the RPC
-      if (action === "confirmed" && selectedPayment?.payment_type === "purchase") {
-        await (supabase as any).rpc("complete_property_purchase", {
-          p_payment_id: selectedPayment.id
+    if (selectedPayment?.payment_type === "deposit") {
+      let err: any = null;
+      if (action === "confirmed") {
+        const { error } = await supabase.rpc("admin_approve_deposit", {
+          p_payment_id: id,
+          p_admin_notes: adminNote.trim()
         });
+        err = error;
+      } else if (action === "failed") {
+        const { error } = await supabase.rpc("admin_decline_deposit", {
+          p_payment_id: id,
+          p_rejection_reason: adminNote.trim()
+        });
+        err = error;
+      } else {
+        const { error } = await supabase.rpc("admin_verify_payment", {
+          p_payment_id: id,
+          p_new_status: "processing",
+          p_notes: adminNote.trim()
+        });
+        err = error;
       }
+      if (err) {
+        toast({ title: "Operation failed", description: err.message, variant: "destructive" });
+        return;
+      }
+    } else {
+      const dbStatus = action === "confirmed" ? "success" : action;
+      const { error } = await supabase.rpc("admin_verify_payment", {
+        p_payment_id: id,
+        p_new_status: dbStatus,
+        p_notes: adminNote.trim()
+      });
+      if (error) {
+        toast({ title: "Operation failed", description: error.message, variant: "destructive" });
+        return;
+      } else {
+        // When confirming a full purchase payment, use the RPC
+        if (action === "confirmed" && selectedPayment?.payment_type === "purchase") {
+          await (supabase as any).rpc("complete_property_purchase", {
+            p_payment_id: selectedPayment.id
+          });
+        }
+      }
+    }
 
       toast({ title: `Transaction marked as ${action.replace("_", " ")}` });
       qc.invalidateQueries({ queryKey: ["admin-payments-all"] });
@@ -130,7 +160,6 @@ export function AdminPayments() {
       setSelectedPayment(null);
       setAdminNote("");
     }
-  }
 
   if (isLoading) return <Skeleton className="h-96 rounded-xl" />;
 
@@ -178,6 +207,7 @@ export function AdminPayments() {
           <SelectTrigger className="w-[180px] rounded-xl border-border/50 bg-card"><SelectValue placeholder="Filter Type" /></SelectTrigger>
           <SelectContent className="rounded-xl">
             <SelectItem value="all">All types</SelectItem>
+            <SelectItem value="deposit">Deposit</SelectItem>
             <SelectItem value="investment">Investment</SelectItem>
             <SelectItem value="booking">Booking</SelectItem>
             <SelectItem value="reservation">Reservation</SelectItem>

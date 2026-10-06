@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { AdminDeposits } from "./AdminDeposits";
 import { AdminPayments } from "./AdminPayments";
 import { AdminInvestors } from "./AdminInvestors";
 import { AdminInstallments } from "./AdminInstallments";
@@ -24,6 +25,7 @@ export function AdminFinanceCenter() {
         <div className="flex space-x-6 min-w-max">
           {[
             { id: "verification", label: "Verification Queue" },
+            { id: "deposits", label: "Deposits" },
             { id: "investments", label: "Investments" },
             { id: "installments", label: "Installments" },
             { id: "reservations", label: "Reservations" },
@@ -51,6 +53,7 @@ export function AdminFinanceCenter() {
 
       <div className="pt-2">
         {activeTab === "verification" && <AdminVerificationQueue />}
+        {activeTab === "deposits" && <AdminDeposits />}
         {activeTab === "investments" && <AdminInvestors />}
         {activeTab === "installments" && <AdminInstallments />}
         {activeTab === "reservations" && <AdminReservations />}

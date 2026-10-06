@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/hooks/use-toast";
 import { formatMoney } from "@/lib/invest";
-import { Loader2, Wallet, ShieldCheck, ArrowRight, Layers } from "lucide-react";
+import { Loader2, Wallet, ShieldCheck, ArrowRight, Layers, PlusCircle } from "lucide-react";
+import { DepositDialog } from "@/components/dashboard/DepositDialog";
 
 interface SecondaryListing {
   id: string;
@@ -43,6 +44,7 @@ export function BuyListingDialog({
   const qc = useQueryClient();
   const [submitting, setSubmitting] = useState(false);
   const [unitsToBuy, setUnitsToBuy] = useState<number>(1);
+  const [depositOpen, setDepositOpen] = useState(false);
 
   if (!listing) return null;
 
@@ -189,15 +191,24 @@ export function BuyListingDialog({
           </div>
 
           {!hasEnoughBalance && (
-            <div className="rounded-xl border border-red-200/50 bg-red-500/5 p-4 flex items-start gap-3">
-              <Wallet className="h-4 w-4 text-red-500 shrink-0 mt-0.5" />
-              <div>
-                <p className="text-xs font-semibold text-red-700">Insufficient Balance</p>
-                <p className="text-[10px] text-red-600/80 mt-0.5">
-                  You need {formatMoney(totalPrice - walletBalance, currency)} more to complete this purchase.
-                  Earn more through dividend payouts or sell existing units.
-                </p>
+            <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-3">
+              <div className="flex items-start gap-2.5">
+                <Wallet className="h-4 w-4 text-destructive shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-xs font-semibold text-destructive">Insufficient Balance</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    You need {formatMoney(totalPrice - walletBalance, currency)} more to complete this purchase.
+                  </p>
+                </div>
               </div>
+              <Button
+                type="button"
+                size="sm"
+                className="w-full text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground h-9"
+                onClick={() => setDepositOpen(true)}
+              >
+                <PlusCircle className="h-3.5 w-3.5 mr-1.5" /> Deposit Funds ({formatMoney(totalPrice - walletBalance, currency)})
+              </Button>
             </div>
           )}
 
@@ -236,6 +247,17 @@ export function BuyListingDialog({
           </Button>
         </DialogFooter>
       </DialogContent>
+
+      <DepositDialog
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        initialAmount={totalPrice > walletBalance ? totalPrice - walletBalance : undefined}
+        onSuccess={() => {
+          qc.invalidateQueries({ queryKey: ["user-available-balance"] });
+          qc.invalidateQueries({ queryKey: ["available-balance"] });
+          qc.invalidateQueries({ queryKey: ["wallet-balance"] });
+        }}
+      />
     </Dialog>
   );
 }

@@ -99,36 +99,36 @@ export function ReferralsPanel({ userId }: { userId: string }) {
             confirmed investment.
           </p>
 
-          <div className="mt-8 grid sm:grid-cols-2 gap-4">
-            <div className="rounded-lg bg-white/10 border border-white/15 p-4">
-              <p className="text-xs font-medium uppercase tracking-wider opacity-70 mb-1.5">
+          <div className="mt-6 sm:mt-8 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+            <div className="rounded-xl bg-white/10 border border-white/15 p-3.5 sm:p-4">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
                 Referral Code
               </p>
-              <span className="text-xl font-mono font-semibold tracking-tight select-all">
+              <span className="text-lg sm:text-xl font-mono font-bold tracking-tight select-all block">
                 {referralCode || "Loading..."}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => copyToClipboard(referralCode)}
-                className="mt-3 h-8 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium"
+                className="mt-2.5 h-8 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium w-full sm:w-auto"
               >
                 <Copy className="h-3 w-3 mr-1.5" />
                 Copy Code
               </Button>
             </div>
-            <div className="rounded-lg bg-white/10 border border-white/15 p-4">
-              <p className="text-xs font-medium uppercase tracking-wider opacity-70 mb-1.5">
+            <div className="rounded-xl bg-white/10 border border-white/15 p-3.5 sm:p-4">
+              <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider opacity-80 mb-1">
                 Referral Link
               </p>
-              <span className="text-sm font-medium truncate opacity-80 block overflow-hidden">
+              <span className="text-xs sm:text-sm font-medium truncate opacity-90 block overflow-hidden">
                 {referralLink || "Loading..."}
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={() => copyToClipboard(referralLink)}
-                className="mt-3 h-8 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium"
+                className="mt-2.5 h-8 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium w-full sm:w-auto"
               >
                 <Copy className="h-3 w-3 mr-1.5" />
                 Copy Link
@@ -138,8 +138,8 @@ export function ReferralsPanel({ userId }: { userId: string }) {
         </div>
       </div>
 
-      {/* ── Stats Row ── */}
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {/* ── Stats Row - 2x grid on mobile ── */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         {[
           {
             label: "Total Referrals",
@@ -151,13 +151,13 @@ export function ReferralsPanel({ userId }: { userId: string }) {
             label: "Active Investors",
             value: stats.activeInvestors.toString(),
             icon: UserCheck,
-            color: "text-green-600 bg-green-500/10",
+            color: "text-emerald-600 bg-emerald-500/10",
           },
           {
             label: "Total Earned",
             value: formatMoney(stats.totalEarned),
             icon: DollarSign,
-            color: "text-amber-600 bg-amber-500/10",
+            color: "text-amber-600 dark:text-amber-400 bg-amber-500/10",
           },
           {
             label: "Wallet Balance",
@@ -168,20 +168,20 @@ export function ReferralsPanel({ userId }: { userId: string }) {
         ].map((stat) => (
           <div
             key={stat.label}
-            className="rounded-xl border border-border bg-card p-5 shadow-sm"
+            className="rounded-2xl border border-border/70 bg-card p-3.5 sm:p-5 shadow-sm flex flex-col justify-between min-h-[110px] sm:min-h-[130px]"
           >
-            <div className="flex items-center gap-3">
-              <div className={`rounded-xl p-3 ${stat.color}`}>
-                <stat.icon className="h-5 w-5" />
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-[10px] sm:text-[11px] font-semibold text-muted-foreground uppercase tracking-wider truncate">
+                {stat.label}
+              </span>
+              <div className={`rounded-xl p-2 shrink-0 ${stat.color}`}>
+                <stat.icon className="h-3.5 w-3.5 sm:h-4 w-4" />
               </div>
-              <div>
-                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-                  {stat.label}
-                </p>
-                <p className="text-xl font-serif font-bold mt-0.5">
-                  {stat.value}
-                </p>
-              </div>
+            </div>
+            <div>
+              <p className="text-base sm:text-xl md:text-2xl font-serif font-bold text-foreground truncate">
+                {stat.value}
+              </p>
             </div>
           </div>
         ))}

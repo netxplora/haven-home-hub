@@ -87,9 +87,17 @@ export function AdminVerificationQueue() {
         }
         toast({ title: "Investment Verified", description: "Certificate has been issued successfully." });
       } else {
-        // Generic payment verification
-        const { error } = await (supabase.from("payments") as any).update({ status: "success" }).eq("id", item.id);
-        if (error) throw error;
+        if (item.type === "deposit") {
+          const { error: depError } = await supabase.rpc("admin_approve_deposit", {
+            p_payment_id: item.id,
+            p_admin_notes: "Approved via Verification Queue"
+          });
+          if (depError) throw depError;
+        } else {
+          // Generic payment verification
+          const { error } = await (supabase.from("payments") as any).update({ status: "success" }).eq("id", item.id);
+          if (error) throw error;
+        }
         
         if (item.type === "reservation") {
           const reservationId = item.raw.reservation_id || item.raw.target_id;

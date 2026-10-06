@@ -6,13 +6,16 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { 
   ChevronRight, ArrowLeft, Loader2, CheckCircle2, ShieldCheck, Wallet, Copy, Upload, 
-  Building2, ExternalLink, Clock, Check, ZoomIn, Eye, AlertTriangle, ArrowUpRight 
+  Building2, ExternalLink, Clock, Check, ZoomIn, Eye, AlertTriangle, ArrowUpRight,
+  CreditCard, PlusCircle, AlertCircle
 } from "lucide-react";
 import { formatMoney, InvestmentProperty, fundingPercent, availableUnits } from "@/lib/invest";
 import { PaymentMethodPicker, type PaymentMethod } from "@/components/payments/PaymentMethodPicker";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useUserBalance } from "@/hooks/useUserBalance";
+import { DepositDialog } from "@/components/dashboard/DepositDialog";
 import { QRCodeSVG } from "qrcode.react";
 import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
@@ -55,7 +58,10 @@ export function FractionalPaymentDialog({
   onSuccess
 }: FractionalPaymentDialogProps) {
   const { user } = useAuth();
+  const { balance: walletBalance, refetch: refetchBalance } = useUserBalance();
   const [step, setStep] = useState<Step>("summary");
+  const [paymentSource, setPaymentSource] = useState<"balance" | "card">("balance");
+  const [depositOpen, setDepositOpen] = useState(false);
   const [method, setMethod] = useState<PaymentMethod>("digital_currency");
   const [ackChecked, setAckChecked] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -120,6 +126,41 @@ export function FractionalPaymentDialog({
     setTimeout(() => {
       setCopyStates(prev => ({ ...prev, [key]: false }));
     }, 1500);
+  };
+
+  const handleWalletPurchase = async () => {
+    setLoading(true);
+    try {
+      const { data, error } = await (supabase.rpc as any)("process_wallet_primary_investment", {
+        p_property_id: property.id,
+        p_units: units,
+        p_investment_type: investMode,
+        p_total_amount: totalAmount,
+        p_down_payment: downPaymentAmount,
+        p_duration_months: durationMonths,
+        p_monthly_installment: monthlyInstallment,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Investment Confirmed",
+        description: `Your purchase of ${units} unit(s) in "${property.title}" was completed successfully using your available balance.`,
+      });
+
+      refetchBalance();
+      setInvestmentId(data);
+      setStep("confirm");
+      onSuccess();
+    } catch (err: any) {
+      toast({
+        title: "Purchase Failed",
+        description: err.message || "Could not complete purchase with wallet balance.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleCreateInvestment = async () => {
@@ -489,83 +530,167 @@ export function FractionalPaymentDialog({
           {/* STEP 3: PAYMENT METHOD SELECTION */}
           {step === "method" && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-              <PaymentMethodPicker value={method} onChange={setMethod} />
-              
-              {/* Buy Digital Currency assistance section */}
-              {method === "third_party_provider" && (
-                <div className="space-y-4 animate-in fade-in duration-300">
-                  <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
-                    <h5 className="font-bold text-xs text-primary dark:text-primary flex items-center gap-1.5">
-                      <Wallet className="h-4 w-4" />
-                      Buy Digital Currency Assistance Flow
-                    </h5>
-                    <p className="text-[11px] text-primary/80 leading-relaxed mt-1">
-                      If you do not hold digital currency in a personal wallet, purchase cryptocurrency instantly with your credit/debit card from our licensed partners. Once purchased, send the assets directly to the address provided on the next step.
+              <div className="space-y-2">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Select Payment Source</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Option 1: Available Balance */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentSource("balance")}
+                    className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${
+                      paymentSource === "balance"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
+                        : "border-border hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      paymentSource === "balance" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                      <Wallet className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-foreground">Available Balance</p>
+                      <p className="text-base font-bold text-primary">{formatMoney(walletBalance, property.currency)}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">Use your Haven Homes balance</p>
+                    </div>
+                  </button>
+
+                  {/* Option 2: Card / Direct */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentSource("card")}
+                    className={`flex items-start gap-3 rounded-xl border p-4 text-left transition ${
+                      paymentSource === "card"
+                        ? "border-primary bg-primary/5 ring-1 ring-primary/20 shadow-sm"
+                        : "border-border hover:bg-muted/40"
+                    }`}
+                  >
+                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      paymentSource === "card" ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
+                    }`}>
+                      <CreditCard className="h-5 w-5" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-foreground">Card / Direct</p>
+                      <p className="text-xs text-muted-foreground mt-1">Visa / Mastercard / supported cards</p>
+                      <p className="text-[11px] font-medium text-foreground mt-0.5">Pay securely with card</p>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
+              {/* Balance payment details */}
+              {paymentSource === "balance" && (
+                <div className="space-y-4">
+                  {walletBalance >= currentAmount ? (
+                    <div className="rounded-xl border border-primary/20 bg-primary/5 p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-primary text-xs font-semibold">
+                        <CheckCircle2 className="h-4 w-4" />
+                        <span>Sufficient Balance Available</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-xs pt-1 border-t border-primary/10">
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">Payment Amount</span>
+                          <span className="font-bold text-foreground text-sm">{formatMoney(currentAmount, property.currency)}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">Remaining Balance After</span>
+                          <span className="font-bold text-primary text-sm">{formatMoney(walletBalance - currentAmount, property.currency)}</span>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-destructive/20 bg-destructive/5 p-4 space-y-3">
+                      <div className="flex items-center gap-2 text-destructive text-xs font-semibold">
+                        <AlertCircle className="h-4 w-4 shrink-0" />
+                        <span>Insufficient Balance</span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4 text-xs py-2 border-y border-destructive/10">
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">Available Balance</span>
+                          <span className="font-bold text-foreground">{formatMoney(walletBalance, property.currency)}</span>
+                        </div>
+                        <div>
+                          <span className="text-muted-foreground block text-[10px]">Required</span>
+                          <span className="font-bold text-destructive">{formatMoney(currentAmount, property.currency)}</span>
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full text-xs font-semibold rounded-lg bg-primary hover:bg-primary/90 text-primary-foreground h-9"
+                        onClick={() => setDepositOpen(true)}
+                      >
+                        <PlusCircle className="h-3.5 w-3.5 mr-1.5" /> Deposit Funds ({formatMoney(currentAmount - walletBalance, property.currency)})
+                      </Button>
+                    </div>
+                  )}
+
+                  <div className="flex items-start gap-2.5 bg-muted/40 border border-border text-muted-foreground p-3.5 rounded-xl text-xs leading-relaxed">
+                    <ShieldCheck className="h-4 w-4 shrink-0 mt-0.5 text-primary" />
+                    <p>
+                      Payment Source: <strong className="text-foreground">Haven Homes Balance</strong>. 
+                      Your balance will be verified and deducted atomically. Fractional certificates will be issued immediately.
                     </p>
                   </div>
+                </div>
+              )}
 
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div className="border border-border rounded-xl p-4 bg-card hover:border-primary/30 hover:shadow-sm transition-all flex flex-col justify-between">
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <span className="font-bold text-sm text-foreground">MoonPay</span>
-                          <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">Recommended</span>
-                        </div>
-                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                          Supported cards: Visa, Mastercard, Apple Pay, Google Pay. Global support covering 150+ countries. Fast clearance times.
+              {/* Card / Direct payment provider selection */}
+              {paymentSource === "card" && (
+                <div className="space-y-4">
+                  <PaymentMethodPicker value={method} onChange={setMethod} />
+                  
+                  {/* Buy Digital Currency assistance section */}
+                  {method === "third_party_provider" && (
+                    <div className="space-y-4 animate-in fade-in duration-300">
+                      <div className="p-4 bg-primary/5 border border-primary/20 rounded-xl">
+                        <h5 className="font-bold text-xs text-primary dark:text-primary flex items-center gap-1.5">
+                          <Wallet className="h-4 w-4" />
+                          Buy Digital Currency Assistance Flow
+                        </h5>
+                        <p className="text-[11px] text-primary/80 leading-relaxed mt-1">
+                          If you do not hold digital currency in a personal wallet, purchase cryptocurrency instantly with your credit/debit card from our licensed partners.
                         </p>
                       </div>
-                      <Button asChild size="sm" variant="outline" className="mt-4 w-full text-xs font-semibold rounded-lg">
-                        <a href="https://www.moonpay.com/buy" target="_blank" rel="noopener noreferrer">
-                          Visit MoonPay <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-                        </a>
-                      </Button>
-                    </div>
 
-                    <div className="border border-border rounded-xl p-4 bg-card hover:border-primary/30 hover:shadow-sm transition-all flex flex-col justify-between">
-                      <div>
-                        <div className="flex justify-between items-start">
-                          <span className="font-bold text-sm text-foreground">Transak</span>
-                          <span className="text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded font-bold">Card & Bank</span>
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="border border-border rounded-xl p-4 bg-card hover:border-primary/30 hover:shadow-sm transition-all flex flex-col justify-between">
+                          <div>
+                            <div className="flex justify-between items-start">
+                              <span className="font-bold text-sm text-foreground">MoonPay</span>
+                              <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-bold">Recommended</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                              Supported cards: Visa, Mastercard, Apple Pay, Google Pay. Global support covering 150+ countries. Fast clearance times.
+                            </p>
+                          </div>
+                          <Button asChild size="sm" variant="outline" className="mt-4 w-full text-xs font-semibold rounded-lg">
+                            <a href="https://www.moonpay.com/buy" target="_blank" rel="noopener noreferrer">
+                              Visit MoonPay <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                            </a>
+                          </Button>
                         </div>
-                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
-                          Supported options: Card, Local Bank Transfers. High conversion limits, covering UK, Europe, Americas, and Asia.
-                        </p>
-                      </div>
-                      <Button asChild size="sm" variant="outline" className="mt-4 w-full text-xs font-semibold rounded-lg">
-                        <a href="https://global.transak.com/" target="_blank" rel="noopener noreferrer">
-                          Visit Transak <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
-                        </a>
-                      </Button>
-                    </div>
-                  </div>
 
-                  {/* Guided Onboarding Checklist timeline */}
-                  <div className="rounded-xl border border-border bg-accent/10 p-5 space-y-3">
-                    <span className="text-xs font-bold text-foreground block tracking-wider uppercase">How to Purchase & Complete Investment:</span>
-                    <div className="relative pl-5 border-l border-border/80 space-y-4 text-xs text-muted-foreground">
-                      <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">1</span>
-                        <p className="font-semibold text-foreground">Choose preferred provider</p>
-                        <p className="text-[10px] mt-0.5">Click "Visit Provider" above to start purchase flow on their verified portal.</p>
-                      </div>
-                      <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">2</span>
-                        <p className="font-semibold text-foreground">Purchase digital assets with credit/debit card</p>
-                        <p className="text-[10px] mt-0.5">Buy the exact amount needed: {paymentConfigs.supported_currency || 'USDT'}.</p>
-                      </div>
-                      <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">3</span>
-                        <p className="font-semibold text-foreground">Transfer digital currency to platform wallet</p>
-                        <p className="text-[10px] mt-0.5">Input the platform wallet address displayed on the next step as destination.</p>
-                      </div>
-                      <div className="relative">
-                        <span className="absolute -left-[27px] top-[2px] h-3.5 w-3.5 rounded-full bg-primary border border-background flex items-center justify-center text-[8px] text-white font-bold">4</span>
-                        <p className="font-semibold text-foreground">Return here and submit details</p>
-                        <p className="text-[10px] mt-0.5">Enter hash/reference key and upload screenshot confirmation receipt.</p>
+                        <div className="border border-border rounded-xl p-4 bg-card hover:border-primary/30 hover:shadow-sm transition-all flex flex-col justify-between">
+                          <div>
+                            <div className="flex justify-between items-start">
+                              <span className="font-bold text-sm text-foreground">Transak</span>
+                              <span className="text-[9px] bg-accent text-accent-foreground px-1.5 py-0.5 rounded font-bold">Card & Bank</span>
+                            </div>
+                            <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">
+                              Supported options: Card, Local Bank Transfers. High conversion limits, covering UK, Europe, Americas, and Asia.
+                            </p>
+                          </div>
+                          <Button asChild size="sm" variant="outline" className="mt-4 w-full text-xs font-semibold rounded-lg">
+                            <a href="https://global.transak.com/" target="_blank" rel="noopener noreferrer">
+                              Visit Transak <ArrowUpRight className="ml-1 h-3.5 w-3.5" />
+                            </a>
+                          </Button>
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
             </div>
@@ -878,9 +1003,33 @@ export function FractionalPaymentDialog({
               <Button variant="outline" className="h-13 w-13 shrink-0 rounded-xl" onClick={() => setStep("acknowledgement")}>
                 <ArrowLeft className="h-4 w-4" />
               </Button>
-              <Button className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white" disabled={loading} onClick={handleCreateInvestment}>
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <>Confirm Method <ChevronRight className="ml-1 h-4 w-4" /></>}
-              </Button>
+              {paymentSource === "balance" ? (
+                <Button
+                  className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white"
+                  disabled={loading || walletBalance < currentAmount}
+                  onClick={handleWalletPurchase}
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : walletBalance < currentAmount ? (
+                    "Insufficient Balance"
+                  ) : (
+                    <>Confirm Purchase with Balance <ChevronRight className="ml-1 h-4 w-4" /></>
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  className="flex-1 h-13 text-sm font-semibold rounded-xl bg-primary hover:bg-primary/90 text-white"
+                  disabled={loading}
+                  onClick={handleCreateInvestment}
+                >
+                  {loading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <>Proceed with Card / Direct <ChevronRight className="ml-1 h-4 w-4" /></>
+                  )}
+                </Button>
+              )}
             </div>
           )}
           {step === "instructions" && (
@@ -932,6 +1081,15 @@ export function FractionalPaymentDialog({
           </Button>
         </DialogContent>
       </Dialog>
+
+      <DepositDialog
+        open={depositOpen}
+        onClose={() => setDepositOpen(false)}
+        initialAmount={currentAmount > walletBalance ? currentAmount - walletBalance : undefined}
+        onSuccess={() => {
+          refetchBalance();
+        }}
+      />
     </Dialog>
   );
 }
