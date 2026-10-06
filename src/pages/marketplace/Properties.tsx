@@ -244,10 +244,7 @@ export default function Properties() {
       {/* ── 1. Editorial Property Hero (Type A) ──────────────────── */}
       <section className="relative overflow-hidden bg-card border-b border-border/50 pt-16 md:pt-24 pb-8 md:pb-12">
         <div className="container-wide">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
-            {/* Left Column: Editorial Information & Search */}
-            <div className="lg:col-span-6 xl:col-span-6 space-y-5">
+          <div className="max-w-2xl space-y-5">
               <div className="flex items-center gap-2">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold tracking-wider uppercase bg-primary/10 text-primary border border-primary/20">
                   {content.badge}
@@ -308,29 +305,6 @@ export default function Properties() {
                   Search
                 </Button>
               </form>
-            </div>
-
-            {/* Right Column: Architectural Photography Showcase */}
-            <div className="lg:col-span-6 xl:col-span-6 relative">
-              <div className="relative aspect-[16/10] sm:aspect-[16/9] lg:aspect-[4/3] rounded-2xl sm:rounded-3xl overflow-hidden border border-border/60 shadow-md group">
-                <img
-                  key={content.img}
-                  src={content.img}
-                  alt={content.title}
-                  className="h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent pointer-events-none" />
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between text-white">
-                  <span className="text-xs font-semibold drop-shadow-sm px-2.5 py-1 rounded-md bg-black/40 backdrop-blur-md border border-white/15">
-                    {content.subtitle}
-                  </span>
-                  <span className="text-[11px] font-medium drop-shadow-sm text-white/80">
-                    Physical Inspections Confirmed
-                  </span>
-                </div>
-              </div>
-            </div>
-
           </div>
         </div>
       </section>
