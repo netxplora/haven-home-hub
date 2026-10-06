@@ -26,7 +26,7 @@ import { useBrand } from "@/hooks/useBrand";
 import { LazyImage } from "@/components/ui/LazyImage";
 
 const RegionTelemetry = lazy(() => import("@/components/marketing/RegionTelemetry").then(m => ({ default: m.RegionTelemetry })));
-const MarketIntelligence = lazy(() => import("@/components/site/MarketIntelligence").then(m => ({ default: m.MarketIntelligence })));
+
 const AIPropertyAdvisor = lazy(() => import("@/components/site/AIPropertyAdvisor").then(m => ({ default: m.AIPropertyAdvisor })));
 const HomeTestimonials = lazy(() => import("@/components/site/HomeTestimonials").then(m => ({ default: m.HomeTestimonials })));
 import useEmblaCarousel from "embla-carousel-react";
@@ -395,12 +395,7 @@ export default function Home() {
         </div>
       </section>
 
-      {/* 7. SMART MARKET INTELLIGENCE */}
-      <section className="container-wide py-16">
-        <Suspense fallback={<div className="min-h-[400px] w-full animate-pulse bg-muted rounded-xl" />}>
-          <MarketIntelligence />
-        </Suspense>
-      </section>
+
 
       {/* 10. MOBILE APP & PLATFORM EXPANSION */}
       <section className="bg-accent/25 border-y border-border/50 py-16">
