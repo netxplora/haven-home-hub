@@ -47,10 +47,17 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
+        // Raise precache size limit to 10 MiB (default is 2 MiB)
+        maximumFileSizeToCacheInBytes: 10 * 1024 * 1024,
         // Exclude video/audio from precache & runtime cache.
         // The browser Cache API cannot handle byte-range (streaming) requests,
         // which causes ERR_CACHE_OPERATION_NOT_SUPPORTED for <video> elements.
         globPatterns: ['**/*.{js,css,html,ico,png,svg,webp,jpg,jpeg,woff,woff2}'],
+        // Exclude large/unused assets from precache
+        globIgnores: [
+          '**/images/unused/**',
+          '**/regions/region_major_city_skyline_*.png',
+        ],
         navigateFallbackDenylist: [/^\/api\//],
         runtimeCaching: [
           {
