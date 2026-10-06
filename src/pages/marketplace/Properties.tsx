@@ -674,7 +674,7 @@ export default function Properties() {
       {/* ── Main Grid / Map ────────────────────────────────────── */}
       <div className="container-wide py-10 min-h-[60vh]">
         {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6">
             {Array.from({ length: 8 }).map((_, i) => (
               <div key={i} className="space-y-3">
                 <Skeleton className="aspect-[4/3] w-full rounded-2xl" />
@@ -698,7 +698,7 @@ export default function Properties() {
           </div>
         ) : (
           <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6 animate-in fade-in duration-500">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-5 lg:gap-6 animate-in fade-in duration-500">
               {filteredProperties.map((p: any) => <PropertyCard key={p.id} property={p} />)}
             </div>
             <div className="mt-14 flex justify-center">

@@ -49,7 +49,7 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
   const isNew = property.created_at ? new Date(property.created_at) > new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) : false;
 
   return (
-    <div className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card shadow-card transition-all duration-300 ease-out hover:shadow-lg hover:border-primary/40 hover:-translate-y-1 flex flex-col h-full">
+    <div className="group relative overflow-hidden rounded-xl sm:rounded-2xl border border-border/70 bg-card shadow-card transition-all duration-300 ease-out hover:shadow-lg hover:border-primary/40 hover:-translate-y-1 flex flex-col h-full">
       <Link to={`/properties/${property.slug}`} className="absolute inset-0 z-0" aria-label={`View details for ${property.title}`} />
       
       {/* Image Block */}
@@ -66,16 +66,16 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
         {/* Glassmorphic Badges */}
         <div className="absolute left-4 top-4 flex flex-col gap-1.5 z-10">
           <div className="flex flex-wrap gap-1.5">
-            <Badge className="bg-background/90 text-foreground hover:bg-background border border-white/20 backdrop-blur-md shadow-sm text-[10px] font-bold uppercase tracking-wider px-2.5 py-1">
+            <Badge className="bg-background/90 text-foreground hover:bg-background border border-white/20 backdrop-blur-md shadow-sm text-[9px] sm:text-[10px] font-bold uppercase tracking-wider px-2 sm:px-2.5 py-0.5 sm:py-1">
               {propertyTypeLabel(property.property_type)}
             </Badge>
             {property.isVerified && (
-              <Badge className="badge-verified-gold backdrop-blur-sm shadow-sm gap-1 text-[10px] uppercase font-bold py-1 px-2.5">
+              <Badge className="badge-verified-gold backdrop-blur-sm shadow-sm gap-1 text-[9px] sm:text-[10px] uppercase font-bold py-0.5 sm:py-1 px-2 sm:px-2.5">
                 <ShieldCheck className="h-3.5 w-3.5" /> {"Verified"}
               </Badge>
             )}
             {property.featured && (
-              <Badge className="bg-primary/95 text-primary-foreground border border-primary/20 backdrop-blur-sm shadow-sm gap-1 text-[10px] uppercase font-bold px-2.5 py-1">
+              <Badge className="bg-primary/95 text-primary-foreground border border-primary/20 backdrop-blur-sm shadow-sm gap-1 text-[9px] sm:text-[10px] uppercase font-bold px-2 sm:px-2.5 py-0.5 sm:py-1">
                 <Star className="h-3 w-3 fill-current" /> {"Featured"}
               </Badge>
             )}
@@ -133,15 +133,15 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
       </div>
       
       {/* Content Block */}
-      <div className="relative z-10 p-5 pointer-events-none flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-background/50">
+      <div className="relative z-10 p-3 sm:p-5 pointer-events-none flex-1 flex flex-col justify-between bg-gradient-to-b from-card to-background/50">
         <div>
-          <p className="font-serif text-lg sm:text-xl font-bold text-primary transition-colors group-hover:text-primary-dark">
+          <p className="font-serif text-sm sm:text-lg md:text-xl font-bold text-primary transition-colors group-hover:text-primary-dark">
             {formatPrice(property.price, property.currency, property.property_type)}
           </p>
-          <h3 className="mt-1.5 line-clamp-1 text-sm sm:text-[15px] font-bold text-foreground group-hover:text-primary transition-colors duration-300">
+          <h3 className="mt-1 sm:mt-1.5 line-clamp-1 text-xs sm:text-[15px] font-bold text-foreground group-hover:text-primary transition-colors duration-300">
             {property.title}
           </h3>
-          <p className="mt-1.5 flex items-center gap-1.5 text-xs text-muted-foreground font-medium">
+          <p className="mt-1 sm:mt-1.5 flex items-center gap-1 text-[10px] sm:text-xs text-muted-foreground font-medium">
             <MapPin className="h-3.5 w-3.5 text-primary/60 shrink-0" />
             <span className="truncate">
               {property.city && property.country 
@@ -149,7 +149,7 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
                 : property.locations?.name ?? property.address ?? "—"}
             </span>
           </p>
-          <p className="mt-2 text-[10px] font-semibold text-muted-foreground flex items-center justify-between">
+          <p className="mt-1.5 text-[9px] sm:text-[10px] font-semibold text-muted-foreground flex items-center justify-between">
             <span>Listed {property.daysOnMarket}d ago</span>
             <span className={property.daysOnMarket < 15 ? "text-green-600 dark:text-green-400 animate-pulse" : "text-muted-foreground"}>
               {property.daysOnMarket < 15 ? "High Demand" : "Stable Demand"}
@@ -158,7 +158,7 @@ export const PropertyCard = memo(function PropertyCard({ property: rawProperty }
         </div>
         
         {/* Specs Toolbar */}
-        <div className="mt-5 pt-4 border-t border-border/40 flex items-center gap-4 text-xs text-muted-foreground font-semibold">
+        <div className="mt-3 sm:mt-5 pt-3 sm:pt-4 border-t border-border/40 flex items-center gap-2 sm:gap-4 text-[10px] sm:text-xs text-muted-foreground font-semibold">
           {property.property_type === 'land' ? (
             <>
               {property.size_sqm != null && (
